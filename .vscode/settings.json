@@ -1,0 +1,54 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.rulers": [100],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.eol": "\n",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "javascript.suggest.autoImports": true,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "prettier.requireConfig": true,
+  "npm.packageManager": "npm",
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+  "workbench.startupEditor": "none"
+}
+"@ | Out-File -FilePath .vscode/settings.json -Encoding utf8
+
+# Create extensions.json
+@"
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next",
+    "eamodio.gitlens",
+    "wayou.vscode-todo-highlight",
+    "formulahendry.auto-rename-tag",
+    "formulahendry.auto-close-tag",
+    "christian-kohler.path-intellisense",
+    "mikestead.dotenv",
+    "usernamehw.errorlens",
+    "wix.vscode-import-cost",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

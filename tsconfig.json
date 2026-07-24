@@ -1,10 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -18,8 +31,35 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@app/*": [
+        "./src/app/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*"
+      ],
+      "@types/*": [
+        "./src/types/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@features/*": [
+        "./src/features/*"
+      ],
+      "@content/*": [
+        "./src/content/*"
+      ],
+      "@styles/*": [
+        "./src/styles/*"
+      ]
     }
   },
   "include": [
@@ -27,8 +67,16 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "*.config.ts",
+    "*.config.js",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    ".next",
+    "out",
+    "dist",
+    "build",
+    "coverage"
+  ]
 }

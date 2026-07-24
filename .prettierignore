@@ -1,0 +1,52 @@
+# Build outputs
+.next/
+out/
+dist/
+build/
+.vercel/
+coverage/
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment files
+.env*
+*.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# Generated files
+*.min.js
+*.min.css
+*.d.ts
+*.map
+
+# Public assets
+public/
+
+# Next.js
+next-env.d.ts
+next.config.js
+tsconfig.json
+
+# Misc
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot
