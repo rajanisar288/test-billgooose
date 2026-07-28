@@ -20,7 +20,7 @@ module.exports = {
         'deps',
       ],
     ],
-    'subject-case': [2, 'always', 'sentence-case'],
+    'subject-case': [2, 'always', 'lower-case'], // Changed from 'sentence-case'
     'subject-max-length': [2, 'always', 72],
   },
 };
