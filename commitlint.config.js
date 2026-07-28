@@ -18,9 +18,11 @@ module.exports = {
         'revert',
         'security',
         'deps',
+        'SI',
       ],
     ],
-    'subject-case': [2, 'always', 'lower-case'], // Changed from 'sentence-case'
+    'type-case': [0],
+    'subject-case': [2, 'always', 'lower-case'],
     'subject-max-length': [2, 'always', 72],
   },
 };
