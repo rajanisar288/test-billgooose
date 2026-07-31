@@ -1,0 +1,631 @@
+{
+  "header": {
+    "logo": {
+      "src": "/images/updated-logo.png",
+      "alt": "BillGoose",
+      "width": 267,
+      "height": 83
+    },
+    "navigation": [
+      {
+        "id": 1,
+        "label": "Compare",
+        "href": "/compare",
+        "hasDropdown": true
+      },
+      {
+        "id": 2,
+        "label": "Guides",
+        "href": "/guides",
+        "hasDropdown": false
+      },
+      {
+        "id": 3,
+        "label": "Help",
+        "href": "/help",
+        "hasDropdown": false
+      }
+    ],
+    "compareMenu": [
+      {
+        "id": 1,
+        "label": "Energy",
+        "href": "/compare/energy"
+      },
+      {
+        "id": 2,
+        "label": "Broadband",
+        "href": "/compare/broadband"
+      },
+      {
+        "id": 3,
+        "label": "Mobile",
+        "href": "/compare/mobile"
+      },
+      {
+        "id": 4,
+        "label": "Insurance",
+        "href": "/compare/insurance"
+      },
+      {
+        "id": 5,
+        "label": "Credit Cards",
+        "href": "/compare/credit-cards"
+      },
+      {
+        "id": 6,
+        "label": "Loans",
+        "href": "/compare/loans"
+      }
+    ],
+    "account": {
+      "label": "My account",
+      "href": "/account"
+    }
+  },
+  "hero": {
+    "heading": {
+      "firstLine": "Compare Household",
+      "secondLine": "Bills Without the",
+      "thirdLineStart": "Wild",
+      "highlightedWord": "Goose",
+      "thirdLineEnd": "Chase",
+      "underlineImage": "/images/underline-svg.png"
+    },
+    "description": "Save money across Energy, Broadband, Mobile, Insurance, Credit Cards and Loans with trusted UK price comparisons.",
+    "postcode": {
+      "label": "Enter your postcode",
+      "placeholder": "Enter your postcode",
+      "emptyError": "Please enter your postcode."
+    },
+    "button": {
+      "label": "Find energy deals",
+      "href": "/compare/energy"
+    },
+    "image": {
+      "src": "/images/hero-img.png",
+      "alt": "BillGoose mascot with household bill comparison icons"
+    },
+    "mobileImage": {
+      "src": "/images/mobile.png",
+      "alt": "BillGoose mascot with household bill comparison icons"
+    },
+    "benefits": [
+      {
+        "id": 1,
+        "label": "Free Comparison"
+      },
+      {
+        "id": 2,
+        "label": "Trusted UK Providers"
+      },
+      {
+        "id": 3,
+        "label": "No Obligation"
+      },
+      {
+        "id": 4,
+        "label": "Secure & Private"
+      }
+    ],
+    "trust": {
+      "startText": "Trusted by thousands of",
+      "highlightedText": "UK households",
+      "separator": "·",
+      "endText": "Comparing deals from"
+    },
+    "providers": [
+      {
+        "id": 1,
+        "name": "British Gas",
+        "src": "/images/british-gas.png",
+        "alt": "British Gas logo",
+        "width": 126,
+        "height": 49
+      },
+      {
+        "id": 2,
+        "name": "Octopus Energy",
+        "src": "/images/octopus.png",
+        "alt": "Octopus Energy logo",
+        "width": 126,
+        "height": 49
+      },
+      {
+        "id": 3,
+        "name": "EDF",
+        "src": "/images/edf.png",
+        "alt": "EDF logo",
+        "width": 126,
+        "height": 49
+      },
+      {
+        "id": 4,
+        "name": "BT Energy",
+        "src": "/images/energy.png",
+        "alt": "BT Energy logo",
+        "width": 126,
+        "height": 49
+      },
+      {
+        "id": 5,
+        "name": "Vodafone",
+        "src": "/images/vodafone.png",
+        "alt": "Vodafone logo",
+        "width": 126,
+        "height": 49
+      },
+      {
+        "id": 6,
+        "name": "Aviva",
+        "src": "/images/aviva.png",
+        "alt": "Aviva logo",
+        "width": 126,
+        "height": 49
+      },
+      {
+        "id": 7,
+        "name": "Barclaycard",
+        "src": "/images/barclays.png",
+        "alt": "Barclaycard logo",
+        "width": 126,
+        "height": 49
+      }
+    ]
+  },
+  "compare": {
+    "label": {
+      "text": "Compare",
+      "icon": "/images/compare-icon.png"
+    },
+    "heading": "Compare everything in one place",
+    "description": "Six essential household comparisons all with the same trusted UK providers you know.",
+    "items": [
+      {
+        "id": "energy",
+        "title": "Energy",
+        "description": "Fast switching, fixed & variable tariffs",
+        "icon": "/images/energy-icon.png",
+        "linkText": "Compare Now",
+        "href": "/energy"
+      },
+      {
+        "id": "broadband",
+        "title": "Broadband",
+        "description": "Fast fibre deals from top UK providers",
+        "icon": "/images/broadband.png",
+        "linkText": "Compare Now",
+        "href": "/broadband"
+      },
+      {
+        "id": "mobile",
+        "title": "Mobile",
+        "description": "Latest SIM-only and contract deals",
+        "icon": "/images/mobile-icon.png",
+        "linkText": "Compare Now",
+        "href": "/mobile"
+      },
+      {
+        "id": "insurance",
+        "title": "Insurance",
+        "description": "Car, Home, Travel & Pet cover",
+        "icon": "/images/insurance.png",
+        "linkText": "Compare Now",
+        "href": "/insurance"
+      },
+      {
+        "id": "credit-cards",
+        "title": "Credit Cards",
+        "description": "0% balance transfer & rewards",
+        "icon": "/images/credit-cards.png",
+        "linkText": "Compare Now",
+        "href": "/credit-cards"
+      },
+      {
+        "id": "loans",
+        "title": "Loans",
+        "description": "Personal loans up to £25,000",
+        "icon": "/images/loans.png",
+        "linkText": "Compare Now",
+        "href": "/loans"
+      }
+    ]
+  },
+  "whyBillGoose": {
+    "backgroundImage": "/images/why-billgoose-bg.png",
+    "badge": {
+      "text": "Why billgoose",
+      "icon": "/images/why-billgoose-icon.png"
+    },
+    "heading": "Why thousands of UK households choose us",
+    "description": "Independent, transparent, and refreshingly simple.",
+    "items": [
+      {
+        "id": "compare-deals",
+        "title": "Compare Hundreds of Deals",
+        "description": "One search shows tariffs, contracts and offers from trusted UK providers with no jumping between sites.",
+        "image": "/images/card-1-img.png",
+        "imageAlt": "BillGoose comparing household deals"
+      },
+      {
+        "id": "save-time-money",
+        "title": "Save Time & Money",
+        "description": "Households save an average of £487 a year switching through BillGoose. Free forever, no hidden fees.",
+        "image": "/images/card-2-img.png",
+        "imageAlt": "BillGoose helping customers save time and money"
+      },
+      {
+        "id": "simple-secure",
+        "title": "Simple & Secure",
+        "description": "GDPR-compliant, bank-grade encryption, and clear sponsored labels. Your data stays yours.",
+        "image": "/images/card-3-img.png",
+        "imageAlt": "BillGoose representing secure household comparisons"
+      }
+    ]
+  },
+  "howItWorks": {
+    "badge": {
+      "text": "How it works",
+      "icon": "/images/how-it-works-icon.png"
+    },
+    "heading": "Save on your bills in four steps",
+    "steps": [
+      {
+        "id": "choose-category",
+        "number": 1,
+        "title": "Choose a category",
+        "description": "Pick from Energy, Broadband, Mobile, Insurance, Credit Cards or Loans.",
+        "image": "/images/step-1.png",
+        "imageAlt": "Choose a household comparison category",
+        "stepImage": "/images/step-1-img.png"
+      },
+      {
+        "id": "enter-details",
+        "number": 2,
+        "title": "Enter your details",
+        "description": "Postcode and a few quick answers takes under 2 minutes.",
+        "image": "/images/step-2.png",
+        "imageAlt": "Enter your comparison details",
+        "stepImage": "/images/step-2-img.png"
+      },
+      {
+        "id": "compare-offers",
+        "number": 3,
+        "title": "Compare offers",
+        "description": "See personalised deals side-by-side, ranked by savings and features.",
+        "image": "/images/step-3.png",
+        "imageAlt": "Compare available household offers",
+        "stepImage": "/images/step-3-img.png"
+      },
+      {
+        "id": "switch-save",
+        "number": 4,
+        "title": "Switch & Save",
+        "description": "Choose your winner, we handle the switch. Sit back and save.",
+        "image": "/images/step-4.png",
+        "imageAlt": "Switch provider and save money",
+        "stepImage": "/images/step-4-img.png"
+      }
+    ]
+  },
+  "guides": {
+    "badge": {
+      "text": "Guides",
+      "icon": "/images/guides-icon.png"
+    },
+    "heading": "Money advice from the flock",
+    "description": "Impartial UK guides written by our editorial team.",
+    "allGuides": {
+      "text": "All guides",
+      "href": "/guides"
+    },
+    "items": [
+      {
+        "id": "energy-winter",
+        "category": "Energy",
+        "readTime": "6 min read",
+        "title": "10 ways to reduce your energy bills this winter",
+        "image": "/images/guide-1.png",
+        "imageAlt": "Warm home interior during winter",
+        "linkText": "Read Guide",
+        "href": "/guides/reduce-energy-bills"
+      },
+      {
+        "id": "broadband-providers",
+        "category": "Broadband",
+        "readTime": "8 min read",
+        "title": "Best UK broadband providers of 2026",
+        "image": "/images/guide-2.png",
+        "imageAlt": "Broadband router and network cables",
+        "linkText": "Read Guide",
+        "href": "/guides/best-broadband-providers"
+      },
+      {
+        "id": "credit-score",
+        "category": "Credit",
+        "readTime": "5 min read",
+        "title": "How to improve your credit score in 90 days",
+        "image": "/images/guide-3.png",
+        "imageAlt": "Person using a credit card and mobile phone",
+        "linkText": "Read Guide",
+        "href": "/guides/improve-credit-score"
+      },
+      {
+        "id": "electric-car-insurance",
+        "category": "Insurance",
+        "readTime": "10 min read",
+        "title": "The complete insurance buying guide",
+        "image": "/images/guide-4.png",
+        "imageAlt": "Electric car parked outside a home",
+        "linkText": "Read Guide",
+        "href": "/guides/insurance-buying-guide"
+      }
+    ]
+  },
+  "reviews": {
+    "badge": {
+      "text": "Reviews",
+      "icon": "/images/reviews-icon.png"
+    },
+    "heading": {
+      "before": "Loved by UK",
+      "highlighted": "households",
+      "underlineImage": "/images/underline-svg.png"
+    },
+    "description": "Real reviews from real savers. Rated 4.8 on Trustpilot.",
+    "starIcon": "/images/star.png",
+    "quoteIcon": "/images/quotes.png",
+    "items": [
+      {
+        "id": "jaylyn-franci",
+        "text": "Switched my energy in under five minutes and saved over £600 this year. The mascot made me smile too!",
+        "name": "Jaylyn Franci",
+        "city": "Manchester",
+        "savedLabel": "Saved",
+        "amount": "£612",
+        "initials": "JF"
+      },
+      {
+        "id": "alfonso-madsen",
+        "text": "Compared broadband and mobile at once. Clear labels on sponsored deals, really trustworthy.",
+        "name": "Alfonso Rhiel Madsen",
+        "city": "London",
+        "savedLabel": "Saved",
+        "amount": "£340",
+        "avatar": "/images/person-2.png"
+      },
+      {
+        "id": "ryan-stanton",
+        "text": "Best car insurance renewal in years. Simple, no spam, no phone calls. Just a better price.",
+        "name": "Ryan Stanton",
+        "city": "Birmingham",
+        "savedLabel": "Saved",
+        "amount": "£210",
+        "avatar": "/images/person-3.png"
+      },
+      {
+        "id": "emma-wilson",
+        "text": "The comparison was easy to understand and I found a much cheaper broadband package.",
+        "name": "Emma Wilson",
+        "city": "Leeds",
+        "savedLabel": "Saved",
+        "amount": "£286",
+        "initials": "EW"
+      },
+      {
+        "id": "daniel-hughes",
+        "text": "Everything was explained clearly and the switching process was quicker than expected.",
+        "name": "Daniel Hughes",
+        "city": "Bristol",
+        "savedLabel": "Saved",
+        "amount": "£425",
+        "initials": "DH"
+      }
+    ]
+  },
+  "trust": {
+    "badge": {
+      "text": "Trust & transparency",
+      "icon": "/images/trust-icon.png"
+    },
+    "heading": "Built on trust, because it's your money",
+    "items": [
+      {
+        "id": "independent-comparison",
+        "title": "Independent comparison",
+        "description": "We show you the market not just partners who pay us most.",
+        "icon": "/images/shield.png"
+      },
+      {
+        "id": "sponsored-labels",
+        "title": "Clear sponsored labels",
+        "description": "Every sponsored placement is clearly marked. Always.",
+        "icon": "/images/clear.png"
+      },
+      {
+        "id": "secure-data",
+        "title": "Secure data handling",
+        "description": "Bank-grade encryption. GDPR-compliant. UK-hosted.",
+        "icon": "/images/lock.png"
+      },
+      {
+        "id": "privacy-controls",
+        "title": "Privacy controls",
+        "description": "You choose what's shared. Delete your data any time.",
+        "icon": "/images/tick.png"
+      },
+      {
+        "id": "no-hidden-fees",
+        "title": "No hidden fees",
+        "description": "BillGoose is 100% free for households. We're paid by providers.",
+        "icon": "/images/fees.png"
+      },
+      {
+        "id": "editorial-standards",
+        "title": "Editorial standards",
+        "description": "Guides written by our team, reviewed for accuracy.",
+        "icon": "/images/star-standard.png"
+      }
+    ]
+  },
+  "lowerHero": {
+    "heading": "Easily compare household bills",
+    "description": "Quickly compare your household bills to find the best deals and save money effortlessly.",
+    "backgroundImage": {
+      "src": "/images/lower-hero-frame.png",
+      "alt": "BillGoose household comparison banner"
+    },
+    "mobileBackgroundImage": {
+      "src": "/images/mobile-lower-hero.png",
+      "alt": "BillGoose household comparison banner"
+    },
+    "postcode": {
+      "label": "Enter your postcode",
+      "placeholder": "Enter your postcode",
+      "emptyError": "Please enter your postcode"
+    },
+    "button": {
+      "label": "Find energy deals",
+      "href": "/energy"
+    }
+  },
+  "newsletter": {
+    "heading": "Never miss a better deal",
+    "description": "Monthly savings tips, price alerts, and UK bill guides straight to your inbox.",
+    "form": {
+      "label": "Email address",
+      "placeholder": "Enter your email",
+      "buttonLabel": "Subscribe",
+      "helperText": "No spam. Unsubscribe any time.",
+      "emptyError": "Please enter your email address",
+      "invalidError": "Please enter a valid email address",
+      "successMessage": "Thanks for subscribing."
+    }
+  },
+  "footer": {
+    "columns": [
+      {
+        "id": "compare",
+        "heading": "Compare",
+        "links": [
+          {
+            "id": "energy",
+            "label": "Energy",
+            "href": "/energy"
+          },
+          {
+            "id": "broadband",
+            "label": "Broadband",
+            "href": "/broadband"
+          },
+          {
+            "id": "mobile",
+            "label": "Mobile",
+            "href": "/mobile",
+            "badge": "New"
+          },
+          {
+            "id": "insurance",
+            "label": "Insurance",
+            "href": "/insurance"
+          },
+          {
+            "id": "credit-cards",
+            "label": "Credit Cards",
+            "href": "/credit-cards"
+          },
+          {
+            "id": "loans",
+            "label": "Loans",
+            "href": "/loans"
+          }
+        ]
+      },
+      {
+        "id": "company",
+        "heading": "Company",
+        "links": [
+          {
+            "id": "about-us",
+            "label": "About us",
+            "href": "/about"
+          },
+          {
+            "id": "careers",
+            "label": "Careers",
+            "href": "/careers"
+          },
+          {
+            "id": "press",
+            "label": "Press",
+            "href": "/press"
+          },
+          {
+            "id": "company-contact",
+            "label": "Contact",
+            "href": "/contact"
+          }
+        ]
+      },
+      {
+        "id": "support",
+        "heading": "Support",
+        "links": [
+          {
+            "id": "help-centre",
+            "label": "Help Centre",
+            "href": "/help"
+          },
+          {
+            "id": "support-contact",
+            "label": "Contact",
+            "href": "/contact"
+          },
+          {
+            "id": "accessibility",
+            "label": "Accessibility",
+            "href": "/accessibility"
+          }
+        ]
+      },
+      {
+        "id": "legal",
+        "heading": "Legal",
+        "links": [
+          {
+            "id": "privacy",
+            "label": "Privacy",
+            "href": "/privacy"
+          },
+          {
+            "id": "cookies",
+            "label": "Cookies",
+            "href": "/cookies"
+          },
+          {
+            "id": "terms",
+            "label": "Terms",
+            "href": "/terms"
+          },
+          {
+            "id": "affiliate-disclosure",
+            "label": "Affiliate Disclosure",
+            "href": "/affiliate-disclosure"
+          },
+          {
+            "id": "editorial-policy",
+            "label": "Editorial Policy",
+            "href": "/editorial-policy"
+          }
+        ]
+      }
+    ],
+    "logo": {
+      "src": "/images/footer-logo.png",
+      "alt": "BillGoose",
+      "href": "/",
+      "ariaLabel": "Go to the BillGoose homepage"
+    },
+    "copyright": "© 2026 BillGoose Ltd. Registered in England & Wales. All rights reserved."
+  }
+}
