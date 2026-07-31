@@ -2,13 +2,13 @@
 
 :root {
   /* Brand colours */
-  --brand-primary: #07998a;
+  --brand-primary: #00897b;
   --brand-primary-hover: #067f74;
   --brand-primary-active: #056d64;
   --brand-primary-light: #e7f7f4;
   --brand-primary-soft: #f2fbf9;
 
-  --brand-secondary: #105089;
+  --brand-secondary: #0c3354;
   --brand-secondary-hover: #052c47;
   --brand-secondary-light: #174b6d;
   --brand-secondary-soft: #eef4f7;
@@ -157,7 +157,6 @@
     font-family: inherit;
     font-weight: 700;
     line-height: 1.15;
-    text-wrap: balance;
   }
 
   h1 {
@@ -648,5 +647,30 @@
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@keyframes provider-carousel-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.provider-carousel-track {
+  animation: provider-carousel-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.provider-carousel:hover .provider-carousel-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .provider-carousel-track {
+    animation-play-state: paused;
   }
 }

@@ -20,9 +20,9 @@
 ## Code Quality Commands
 
 npm run lint Check ESLint errors
-npm run lint:fix Auto-fix ESLint errors
+npm run lint: fix Auto-fix ESLint errors
 npm run format Format all files with Prettier
-npm run format:check Check formatting without fixing
+npm run format: check Check formatting without fixing
 npm run type-check Run TypeScript type checking
 npm run validate Run all checks (format:check + lint + type-check)
 npm run validate:fix Auto-fix all issues (format + lint:fix + type-check)
