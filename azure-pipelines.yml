@@ -37,4 +37,3 @@ steps:
       api_location: ''
       output_location: ''
       skip_app_build: true
-      deployment_environment: 'uat'
