@@ -1,3 +1,4 @@
+import Footer2 from '@/components/marketing/Footer2';
 import ResultFilters from '@/components/result/result-filters';
 import ResultHero from '@/components/result/result-hero';
 import ResultPlans from '@/components/result/result-plans';
@@ -25,6 +26,7 @@ export default function ResultPage() {
           <ResultPlans />
         </div>
       </section>
+      <Footer2 />
     </main>
   );
 }

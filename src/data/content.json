@@ -1611,6 +1611,166 @@
           "primaryButton": "Select Plan"
         }
       ]
+    },
+    "planDetailsDrawer": {
+      "heading": "Details",
+      "closeButtonLabel": "Close plan details",
+      "monthlyCostLabel": "Estimated monthly cost",
+      "annualCostLabel": "Estimated annual cost",
+      "annualMultiplier": 12,
+      "selectPlanButton": "Select Plan",
+      "extraInformationHeading": "Extra plan information",
+      "starAlt": "Rating star",
+      "tabs": {
+        "defaultValue": "details",
+        "options": [
+          {
+            "id": "details",
+            "label": "Details",
+            "value": "details"
+          },
+          {
+            "id": "comparison",
+            "label": "Comparison",
+            "value": "comparison"
+          },
+          {
+            "id": "supplier",
+            "label": "Supplier",
+            "value": "supplier"
+          }
+        ]
+      },
+      "details": {
+        "columns": {
+          "first": "",
+          "electricity": "Electricity",
+          "gas": "Gas"
+        },
+        "rows": [
+          {
+            "id": "tariff-type",
+            "label": "Tariff type",
+            "electricity": "Tracker",
+            "gas": "Tracker"
+          },
+          {
+            "id": "contract-length",
+            "label": "Contract length",
+            "electricity": "24 months",
+            "gas": "24 months"
+          },
+          {
+            "id": "early-exit-fees",
+            "label": "Early exit fees",
+            "electricity": "£95.00",
+            "gas": "£95.00"
+          },
+          {
+            "id": "unit-rate",
+            "label": "Unit rate per kWh",
+            "electricity": "24.330p",
+            "gas": "£295.00"
+          },
+          {
+            "id": "standing-charge",
+            "label": "Standing charge per day",
+            "electricity": "44.780p",
+            "gas": "29.510p"
+          },
+          {
+            "id": "payment-method",
+            "label": "Payment method",
+            "electricity": "Monthly direct debit",
+            "gas": "Monthly direct debit"
+          },
+          {
+            "id": "rate-guaranteed",
+            "label": "Rate guaranteed",
+            "electricity": "No guarantee",
+            "gas": "No guarantee"
+          },
+          {
+            "id": "discounts",
+            "label": "Discounts",
+            "electricity": "None",
+            "gas": "None"
+          }
+        ]
+      },
+      "comparison": {
+        "columns": {
+          "first": "",
+          "current": "Current plan",
+          "selected": "Selected plan"
+        },
+        "rows": [
+          {
+            "id": "monthly-cost",
+            "label": "Monthly cost",
+            "current": "£332.00",
+            "selected": "£284.90"
+          },
+          {
+            "id": "annual-cost",
+            "label": "Annual cost",
+            "current": "£3,984.00",
+            "selected": "£3,418.80"
+          },
+          {
+            "id": "contract",
+            "label": "Contract",
+            "current": "Variable",
+            "selected": "12 months fixed"
+          },
+          {
+            "id": "payment",
+            "label": "Payment method",
+            "current": "Monthly direct debit",
+            "selected": "Monthly direct debit"
+          },
+          {
+            "id": "exit-fees",
+            "label": "Exit fees",
+            "current": "None",
+            "selected": "£95.00"
+          }
+        ]
+      },
+      "supplier": {
+        "columns": {
+          "first": "",
+          "label": "Supplier information",
+          "value": "Details"
+        },
+        "rows": [
+          {
+            "id": "supplier-name",
+            "label": "Supplier",
+            "value": "Octopus Energy"
+          },
+          {
+            "id": "customer-service",
+            "label": "Customer service",
+            "value": "24/7 online support"
+          },
+          {
+            "id": "renewable-energy",
+            "label": "Renewable energy",
+            "value": "100% renewable electricity"
+          },
+          {
+            "id": "billing",
+            "label": "Billing",
+            "value": "Online billing"
+          },
+          {
+            "id": "smart-meter",
+            "label": "Smart meter",
+            "value": "Supported"
+          }
+        ]
+      }
     }
   }
 }

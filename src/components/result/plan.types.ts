@@ -37,6 +37,7 @@ export type ViewDealPlan = {
 export type FeaturedBroadbandPlan = {
   id: string;
   type: 'featured-broadband';
+
   featured: {
     eyebrow: string;
     heading: string;
@@ -45,6 +46,7 @@ export type FeaturedBroadbandPlan = {
     iconAlt: string;
     backgroundImage: string;
   };
+
   provider: string;
   description: string;
   logo: string;

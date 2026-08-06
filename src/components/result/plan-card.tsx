@@ -7,11 +7,12 @@ import data from '@/data/content.json';
 
 type PlanCardProps = {
   plan: StandardPlan;
+  onViewDetails: (plan: StandardPlan) => void;
 };
 
 const STAR_COUNT = 5;
 
-export default function PlanCard({ plan }: PlanCardProps) {
+export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
   const { plans } = data.resultPage;
 
   const isViewDeal = plan.type === 'view-deal';
@@ -44,7 +45,6 @@ export default function PlanCard({ plan }: PlanCardProps) {
           xl:gap-5
         "
       >
-        {/* Provider information */}
         <div
           className="
             flex min-w-0 flex-1
@@ -55,7 +55,6 @@ export default function PlanCard({ plan }: PlanCardProps) {
             xl:gap-5
           "
         >
-          {/* Provider image without background wrapper */}
           <Image
             src={plan.logo}
             alt={plan.logoAlt}
@@ -113,7 +112,6 @@ export default function PlanCard({ plan }: PlanCardProps) {
                 gap-y-1
               "
             >
-              {/* Five individual stars */}
               <div
                 className="
                   flex shrink-0
@@ -222,7 +220,6 @@ export default function PlanCard({ plan }: PlanCardProps) {
           </div>
         </div>
 
-        {/* Price and actions */}
         <div
           className="
             flex w-full flex-col
@@ -328,6 +325,9 @@ export default function PlanCard({ plan }: PlanCardProps) {
           >
             <button
               type="button"
+              onClick={() => {
+                onViewDetails(plan);
+              }}
               className="
                 inline-flex h-10 w-full
                 shrink-0 items-center

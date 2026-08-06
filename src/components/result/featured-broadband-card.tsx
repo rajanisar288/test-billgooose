@@ -33,7 +33,6 @@ export default function FeaturedBroadbandCard({ plan }: FeaturedBroadbandCardPro
         className="
           relative min-h-[128px]
           overflow-hidden
-          bg-[linear-gradient(90deg,#105089_0%,#0D3B66_110.03%)]
           px-4 py-5
 
           sm:min-h-[112px]
@@ -48,6 +47,19 @@ export default function FeaturedBroadbandCard({ plan }: FeaturedBroadbandCardPro
           fill
           aria-hidden="true"
           className="object-cover"
+        />
+
+        {/* Darker gradient overlay */}
+        <div
+          aria-hidden="true"
+          className="
+    absolute inset-0
+    bg-[linear-gradient(90deg,rgba(16,80,137,0.72)_0%,rgba(13,59,102,0.68)_55%,rgba(11,43,67,0.64)_100%)]
+
+    sm:bg-[linear-gradient(90deg,rgba(16,80,137,0.68)_0%,rgba(13,59,102,0.64)_55%,rgba(11,43,67,0.60)_100%)]
+
+    xl:bg-[linear-gradient(90deg,rgba(16,80,137,0.4)_0%,rgba(13,59,102,0.0)_99.03%),linear-gradient(0deg,rgba(0,0,0,0.18),rgba(0,0,0,0.8))]
+  "
         />
 
         <div
@@ -214,9 +226,7 @@ export default function FeaturedBroadbandCard({ plan }: FeaturedBroadbandCardPro
                   "
                   aria-label="5-star rating"
                 >
-                  {Array.from({
-                    length: STAR_COUNT,
-                  }).map((_, index) => (
+                  {Array.from({ length: STAR_COUNT }).map((_, index) => (
                     <Image
                       key={`featured-star-${index}`}
                       src={plans.starIcon}
