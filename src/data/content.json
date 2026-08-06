@@ -1430,6 +1430,187 @@
           }
         ]
       }
+    },
+    "plans": {
+      "starIcon": "/images/star.png",
+      "savingIcon": "/images/percentage-icon.png",
+      "viewDealIcon": "/images/view-plan-icon.png",
+      "wifiIcon": "/images/wifi-card-2.png",
+      "buttonArrowIcon": "/images/arrow-plan-cards.png",
+      "items": [
+        {
+          "id": "octopus-energy",
+          "type": "select-plan",
+          "provider": "Octopus Energy",
+          "description": "Simple Fixed – 12 month fixed · Dual fuel",
+          "logo": "/images/card-1-provider.png",
+          "logoAlt": "Octopus Energy",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": ["Price locked for 12 months", "24/7 chat support"],
+          "priceLabel": "Price",
+          "price": "£284.90",
+          "pricePeriod": "/mo",
+          "saving": "Save £580/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "hyperoptic-featured",
+          "type": "featured-broadband",
+          "featured": {
+            "eyebrow": "Featured deal",
+            "heading": "Don't forget broadband!",
+            "description": "87% of energy switchers also save on broadband",
+            "icon": "/images/broadband-card-2.png",
+            "iconAlt": "Broadband router",
+            "backgroundImage": "/images/bg-card-2.png"
+          },
+          "provider": "Hyperoptic",
+          "description": "Gigabit Broadband",
+          "logo": "/images/card-2-provider.png",
+          "logoAlt": "Hyperoptic",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": [
+            "1Gbps download speed",
+            "Symmetrical upload speed",
+            "Wi-Fi 6 router included"
+          ],
+          "priceLabel": "Price",
+          "price": "£25",
+          "pricePeriod": "/mo",
+          "saving": "Save £240/yr",
+          "primaryButton": "Compare All Broadband"
+        },
+        {
+          "id": "british-gas",
+          "type": "select-plan",
+          "provider": "British Gas",
+          "description": "Fixed 24 – 24 month fixed · Dual fuel",
+          "logo": "/images/card-3-provider.png",
+          "logoAlt": "British Gas",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": ["Longest price lock available", "Exit fee applies before term end"],
+          "priceLabel": "Price",
+          "price": "£249.99",
+          "pricePeriod": "/mo",
+          "saving": "Save £590/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "true-energy",
+          "type": "select-plan",
+          "provider": "TrueEnergy",
+          "description": "Fixed Rate Tariff – 12 month fixed · Dual fuel",
+          "logo": "/images/card-4-provider.png",
+          "logoAlt": "TrueEnergy",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": [
+            "Pay for what you use",
+            "Price locked for 12 months",
+            "Smart meter included"
+          ],
+          "priceLabel": "Price",
+          "price": "£259.55",
+          "pricePeriod": "/mo",
+          "saving": "Save £580/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "shell-energy",
+          "type": "view-deal",
+          "provider": "Shell Energy",
+          "description": "Flexible Saver – No fixed contract",
+          "logo": "/images/card-5-provider.png",
+          "logoAlt": "Shell Energy",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": [
+            "Leave any time, no fee",
+            "Green energy sourced",
+            "Free smart meter upgrade"
+          ],
+          "priceLabel": "Price",
+          "price": "£271.10",
+          "pricePeriod": "/mo",
+          "saving": "Save £580/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "View Deal"
+        },
+        {
+          "id": "eon",
+          "type": "view-deal",
+          "provider": "E.ON",
+          "description": "Unlimited Energy – 12 month contract",
+          "logo": "/images/card-6-provider.png",
+          "logoAlt": "E.ON",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": ["Same price every month", "No usage surprises", "Smart meter included"],
+          "priceLabel": "Price",
+          "price": "£353.30",
+          "pricePeriod": "/mo",
+          "saving": "Save £580/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "View Deal"
+        },
+        {
+          "id": "sse-energy-solutions",
+          "type": "view-deal",
+          "provider": "SSE Energy Solutions",
+          "description": "Green Flex – No fixed contract",
+          "logo": "/images/card-7-provider.png",
+          "logoAlt": "SSE Energy Solutions",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": ["100% renewable sourced", "Cancel anytime"],
+          "priceLabel": "Price",
+          "price": "£298.00",
+          "pricePeriod": "/mo",
+          "saving": "Save £590/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "View Deal"
+        },
+        {
+          "id": "Octopus Energy-1",
+          "type": "select-plan",
+          "provider": "Octopus Energy",
+          "description": "Agile Octopus — Flexible tariff",
+          "logo": "/images/card-8-9-10-provider.png",
+          "logoAlt": "Octopus Energy",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": ["100% renewable sourced", "Cancel anytime"],
+          "priceLabel": "Price",
+          "price": "£298.00",
+          "pricePeriod": "/mo",
+          "saving": "Save £580/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "Octopus Energy-2",
+          "type": "select-plan",
+          "provider": "Octopus Energy",
+          "description": "Agile Octopus — Flexible tariff",
+          "logo": "/images/card-8-9-10-provider.png",
+          "logoAlt": "Octopus Energy",
+          "rating": "4.3",
+          "contract": "12 month contract",
+          "features": ["100% renewable sourced", "Cancel anytime"],
+          "priceLabel": "Price",
+          "price": "£298.00",
+          "pricePeriod": "/mo",
+          "saving": "Save £580/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        }
+      ]
     }
   }
 }

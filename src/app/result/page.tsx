@@ -1,5 +1,6 @@
 import ResultFilters from '@/components/result/result-filters';
 import ResultHero from '@/components/result/result-hero';
+import ResultPlans from '@/components/result/result-plans';
 import ResultsStatus from '@/components/result/results-status';
 
 export default function ResultPage() {
@@ -20,7 +21,9 @@ export default function ResultPage() {
           lg:px-10
         "
       >
-        {/* Result cards will be added here */}
+        <div className="mt-5 sm:mt-6 xl:mt-7">
+          <ResultPlans />
+        </div>
       </section>
     </main>
   );
