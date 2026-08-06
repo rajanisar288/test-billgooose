@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 
 import JourneyShell from '../../components/journey/JourneyShell';
 
@@ -7,5 +8,9 @@ type JourneyLayoutProps = {
 };
 
 export default function JourneyLayout({ children }: JourneyLayoutProps) {
-  return <JourneyShell>{children}</JourneyShell>;
+  return (
+    <Suspense fallback={null}>
+      <JourneyShell>{children}</JourneyShell>
+    </Suspense>
+  );
 }
