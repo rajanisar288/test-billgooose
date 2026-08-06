@@ -187,7 +187,7 @@
         "description": "Fast switching, fixed & variable tariffs",
         "icon": "/images/energy-icon.png",
         "linkText": "Compare Now",
-        "href": "/energy"
+        "href": "/compare"
       },
       {
         "id": "broadband",
@@ -195,7 +195,7 @@
         "description": "Fast fibre deals from top UK providers",
         "icon": "/images/broadband.png",
         "linkText": "Compare Now",
-        "href": "/broadband"
+        "href": "/compare"
       },
       {
         "id": "mobile",
@@ -203,7 +203,7 @@
         "description": "Latest SIM-only and contract deals",
         "icon": "/images/mobile-icon.png",
         "linkText": "Compare Now",
-        "href": "/mobile"
+        "href": "/compare"
       },
       {
         "id": "insurance",
@@ -211,7 +211,7 @@
         "description": "Car, Home, Travel & Pet cover",
         "icon": "/images/insurance.png",
         "linkText": "Compare Now",
-        "href": "/insurance"
+        "href": "/compare"
       },
       {
         "id": "credit-cards",
@@ -219,7 +219,7 @@
         "description": "0% balance transfer & rewards",
         "icon": "/images/credit-cards.png",
         "linkText": "Compare Now",
-        "href": "/credit-cards"
+        "href": "/compare"
       },
       {
         "id": "loans",
@@ -227,7 +227,7 @@
         "description": "Personal loans up to £25,000",
         "icon": "/images/loans.png",
         "linkText": "Compare Now",
-        "href": "/loans"
+        "href": "/compare"
       }
     ]
   },
@@ -627,5 +627,809 @@
       "ariaLabel": "Go to the BillGoose homepage"
     },
     "copyright": "© 2026 BillGoose Ltd. Registered in England & Wales. All rights reserved."
+  },
+  "compareFlow": {
+    "backButton": {
+      "label": "Back to website",
+      "href": "/"
+    },
+    "heading": {
+      "firstLine": "Activate extra services",
+      "secondLine": "for bigger discounts"
+    },
+    "description": "It's easy to save on your household bills when you get it together: add energy, broadband, mobile and insurance to one great value account today.",
+    "form": {
+      "postcode": {
+        "label": "Postal code",
+        "placeholder": "SW99NW",
+        "changeText": "Change postal code",
+        "invalidError": "Please enter a valid UK postcode."
+      },
+      "address": {
+        "label": "Your address",
+        "placeholder": "19 Masons Way, Wallyford Musselburgh EH21 8BF",
+        "manualText": "Enter address manually",
+        "options": [
+          {
+            "id": 1,
+            "label": "19 Masons Way, Wallyford, Musselburgh EH21 8BF"
+          },
+          {
+            "id": 2,
+            "label": "20 Masons Way, Wallyford, Musselburgh EH21 8BF"
+          },
+          {
+            "id": 3,
+            "label": "21 Masons Way, Wallyford, Musselburgh EH21 8BF"
+          },
+          {
+            "id": 4,
+            "label": "22 Masons Way, Wallyford, Musselburgh EH21 8BF"
+          }
+        ]
+      },
+      "occupancy": {
+        "label": "Are you a renter or homeowner?",
+        "defaultValue": "homeowner",
+        "options": [
+          {
+            "id": "rental",
+            "label": "Rental",
+            "value": "rental"
+          },
+          {
+            "id": "homeowner",
+            "label": "Homeowner",
+            "value": "homeowner"
+          }
+        ]
+      },
+      "propertyStatus": {
+        "label": "Are you already in the property?",
+        "defaultValue": "yes",
+        "options": [
+          {
+            "id": "yes",
+            "label": "Yes",
+            "value": "yes"
+          },
+          {
+            "id": "no",
+            "label": "No",
+            "value": "no"
+          }
+        ]
+      },
+      "continueButton": {
+        "label": "Continue"
+      }
+    },
+    "image": {
+      "src": "/images/compare-flow-img.png",
+      "alt": "BillGoose mascot surrounded by household service icons"
+    }
+  },
+  "footer2": {
+    "copyright": "© BillGoose 2026 (ADR C35DWEL02)",
+    "navigationAriaLabel": "Compare flow legal navigation",
+    "links": [
+      {
+        "id": "cookies",
+        "label": "Cookies",
+        "href": "/cookies"
+      },
+      {
+        "id": "privacy",
+        "label": "Privacy",
+        "href": "/privacy"
+      },
+      {
+        "id": "terms-and-conditions",
+        "label": "Terms & Conditions",
+        "href": "/terms"
+      }
+    ]
+  },
+  "journey": {
+    "mobileHeader": {
+      "logo": {
+        "src": "/images/billgoose-logo.png",
+        "alt": "BillGoose",
+        "width": 126,
+        "height": 40
+      },
+      "stepPrefix": "Step",
+      "stepSeparator": "of"
+    },
+    "sidebar": {
+      "logo": {
+        "src": "/images/sidebar-logo.png",
+        "alt": "BillGoose",
+        "href": "/",
+        "ariaLabel": "Go to BillGoose home page",
+        "width": 225,
+        "height": 70
+      },
+      "navigationAriaLabel": "Journey progress",
+      "steps": [
+        {
+          "number": 1,
+          "title": "Personal Details",
+          "description": "Tell us about your details"
+        },
+        {
+          "number": 2,
+          "title": "Contract Details",
+          "description": "Select your contract start date"
+        },
+        {
+          "number": 3,
+          "title": "Household",
+          "description": "Tell us about your household"
+        },
+        {
+          "number": 4,
+          "title": "Payment Method Type",
+          "description": "Select how you’d like to pay"
+        }
+      ],
+      "instantAccess": {
+        "icon": {
+          "src": "/images/link-icon.png",
+          "alt": "",
+          "width": 30,
+          "height": 30
+        },
+        "heading": "Instant Access Link",
+        "description": "Copy your instant access link and continue from any device",
+        "url": "www.magiclink.com",
+        "copyButton": "Copy"
+      },
+      "footer": {
+        "copyright": "© BillGoose 2026",
+        "email": "query@billgoose.com"
+      }
+    },
+    "navigation": {
+      "backButton": "Back",
+      "continueButton": "Continue",
+      "completeButton": "Complete",
+      "backToWebsiteHref": "/"
+    },
+    "personalDetails": {
+      "heading": "Personal details",
+      "description": "Please enter your personal details below.",
+      "storageKey": "journeyPersonalDetails",
+      "fields": {
+        "title": {
+          "label": "Title",
+          "defaultValue": "Mr",
+          "options": [
+            {
+              "id": "mr",
+              "label": "Mr",
+              "value": "Mr"
+            },
+            {
+              "id": "mrs",
+              "label": "Mrs",
+              "value": "Mrs"
+            },
+            {
+              "id": "miss",
+              "label": "Miss",
+              "value": "Miss"
+            },
+            {
+              "id": "ms",
+              "label": "Ms",
+              "value": "Ms"
+            },
+            {
+              "id": "dr",
+              "label": "Dr",
+              "value": "Dr"
+            }
+          ]
+        },
+        "firstName": {
+          "label": "First name",
+          "placeholder": "Enter your first name",
+          "defaultValue": "Jaylon"
+        },
+        "lastName": {
+          "label": "Last name",
+          "placeholder": "Enter your last name",
+          "defaultValue": "Dorwart"
+        },
+        "email": {
+          "label": "Email address",
+          "placeholder": "Enter your email address"
+        },
+        "mobileNumber": {
+          "label": "Mobile number",
+          "placeholder": "Enter your mobile number"
+        },
+        "dateOfBirth": {
+          "label": "Date of birth",
+          "placeholder": "DD/MM/YYYY"
+        }
+      },
+      "terms": {
+        "acceptedTermsDefault": true,
+        "marketingConsentDefault": false,
+        "acceptedTermsText": "By proceeding with your quote, you are confirming that you agree to the terms & conditions of our service and to our privacy policy that govern how your information will be processed.",
+        "marketingConsentText": "Please tick this box if you’d like to hear from us with future offers and promotions."
+      }
+    },
+    "contractDetails": {
+      "heading": "Contract dates",
+      "description": "Please confirm when you’d like your new energy contract to begin.",
+      "storageKey": "journeyContractDate",
+      "fields": {
+        "contractDate": {
+          "label": "Contract start date",
+          "placeholder": "DD/MM/YYYY"
+        }
+      },
+      "information": {
+        "overlapText": "If your selected contract start date overlaps with an existing energy contract, you won't be able to proceed with your application.",
+        "endDateText": "The switch contract end date will be set to 1 year from your selected switch start date."
+      },
+      "warning": {
+        "heading": "IMPORTANT",
+        "description": "You'll be on supply during your cooling-off period, which means you'll be liable for any consumption of energy and broadband services during this time, even if you are within the 14 day cooling off period."
+      },
+      "acknowledgement": {
+        "defaultValue": true,
+        "text": "I acknowledge and understand that I am waiving my rights when cancelling my contract during the cooling off period."
+      }
+    },
+    "household": {
+      "heading": "Household",
+      "description": "Tell us about house type and household size.",
+      "storageKey": "journeyHouseholdDetails",
+      "propertyType": {
+        "options": [
+          {
+            "id": "house",
+            "label": "House",
+            "description": "I’m looking for my house",
+            "value": "house",
+            "icon": "/images/household-icon.png",
+            "iconAlt": ""
+          },
+          {
+            "id": "flat",
+            "label": "Flat",
+            "description": "I’m looking for my flat",
+            "value": "flat",
+            "icon": "/images/flat-icon.png",
+            "iconAlt": ""
+          }
+        ]
+      },
+      "occupants": {
+        "heading": "Number of occupants",
+        "description": "Include all residents, even kids, to match your allowance to actual use.",
+        "icon": "/images/occupants-icon.png",
+        "iconAlt": "",
+        "defaultValue": "4-6",
+        "options": [
+          {
+            "id": "2-to-3",
+            "label": "2 to 3",
+            "value": "2-3"
+          },
+          {
+            "id": "4-to-6",
+            "label": "4 to 6",
+            "value": "4-6"
+          },
+          {
+            "id": "6-plus",
+            "label": "6+",
+            "value": "6+"
+          }
+        ]
+      },
+      "bedrooms": {
+        "heading": "Number of bedrooms",
+        "description": "Used to estimate the household’s base energy allowance.",
+        "icon": "/images/rooms-icon.png",
+        "iconAlt": "",
+        "defaultValue": "2-3",
+        "options": [
+          {
+            "id": "1-bedroom",
+            "label": "1 bedroom",
+            "value": "1"
+          },
+          {
+            "id": "2-to-3-bedrooms",
+            "label": "2 to 3 bedrooms",
+            "value": "2-3"
+          },
+          {
+            "id": "4-plus-bedrooms",
+            "label": "4+ bedrooms",
+            "value": "4+"
+          }
+        ]
+      }
+    },
+    "paymentMethod": {
+      "heading": "Payment method type",
+      "description": "Select how you’d like to pay.",
+      "storageKey": "journeyPaymentMethod",
+      "defaultValue": "monthly-direct-debit",
+      "options": [
+        {
+          "id": "monthly-direct-debit",
+          "label": "Monthly direct debit",
+          "description": "Your monthly payment will be gently deducted from your card automatically.",
+          "value": "monthly-direct-debit",
+          "icon": "/images/household-icon.png",
+          "iconAlt": ""
+        },
+        {
+          "id": "pre-payment",
+          "label": "Pre Payment",
+          "description": "Your monthly payment will be securely deducted from your account on the agreed date.",
+          "value": "pre-payment",
+          "icon": "/images/flat-icon.png",
+          "iconAlt": ""
+        }
+      ]
+    },
+    "gasWarningModal": {
+      "heading": "Gas not found",
+      "description": "You selected Gas & Electricity (Dual Fuel), but we couldn't find gas at this property. You can switch to Electricity only, or update your gas consumption details.",
+      "warningIcon": "/images/warning-modal-icon.png",
+      "warningIconAlt": "",
+      "updateButton": "Update Gas Consumption",
+      "electricityButton": "Electricity Only"
+    },
+    "servicesModal": {
+      "heading": "Services",
+      "description": "Please confirm when you’d like your new energy contract to begin.",
+      "defaultValue": "dual-fuel",
+      "closeButton": "Close",
+      "selectButton": "Select",
+      "options": [
+        {
+          "id": "dual-fuel",
+          "label": "Gas & Electricity (Dual Fuel)",
+          "value": "dual-fuel",
+          "icon": "/images/dual-fuel-icon.png",
+          "iconAlt": ""
+        },
+        {
+          "id": "electricity-only",
+          "label": "Electricity only",
+          "value": "electricity-only",
+          "icon": "/images/electricity-icon.png",
+          "iconAlt": ""
+        }
+      ]
+    },
+    "updateConsumptionModal": {
+      "heading": "Update Your Consumption",
+      "mprnQuestion": "Do you know your MPRN Number?",
+      "mprnLabel": "Your MPRN number",
+      "mprnPlaceholder": "Enter your MPRN number",
+      "usageQuestion": "Do you know how much you pay or use for your energy?",
+      "estimateHeading": "Check your recent bill for an accurate estimate.",
+      "estimateDescription": "If you use gas, please enter usage for GAS.",
+      "gasUsageLabel": "I spend on Gas",
+      "gasUsageUnit": "(kwh)",
+      "gasUsagePlaceholder": "0.00 kwh",
+      "yesButton": "Yes",
+      "noButton": "No",
+      "monthlyButton": "Monthly",
+      "yearlyButton": "Yearly",
+      "cancelButton": "Cancel",
+      "submitButton": "Submit",
+      "defaultKnowsMprn": true,
+      "defaultKnowsUsage": true,
+      "defaultUsagePeriod": "monthly",
+      "usageEstimate": {
+        "heading": "Usage Estimate",
+        "description": "If you use gas, please enter usage for GAS.",
+        "defaultValue": "medium",
+        "informationLabel": "Usage estimate information",
+        "options": [
+          {
+            "id": "low",
+            "label": "Low",
+            "description": "e.g. Flat or general low usage",
+            "value": "low"
+          },
+          {
+            "id": "medium",
+            "label": "Medium",
+            "description": "e.g. Large flat/medium house",
+            "value": "medium"
+          },
+          {
+            "id": "high",
+            "label": "High",
+            "description": "e.g. Large house or general high usage",
+            "value": "high"
+          }
+        ]
+      }
+    }
+  },
+  "currentUsage": {
+    "statusBar": {
+      "backButton": "Back",
+      "liveMeterText": "Live meter data",
+      "updatedText": "Updated just now",
+      "mprnLabel": "MPRN:",
+      "mprnValue": "102 8876 5432 108",
+      "mpanLabel": "MPAN:",
+      "mpanValue": "492 3046 7980"
+    },
+    "header": {
+      "heading": "Your Current Usage",
+      "description": "Your details were used to estimate energy usage; please verify if needed.",
+      "periods": {
+        "defaultValue": "monthly",
+        "options": [
+          {
+            "id": "monthly",
+            "label": "Monthly",
+            "value": "monthly"
+          },
+          {
+            "id": "annual",
+            "label": "Annual",
+            "value": "annual"
+          }
+        ]
+      }
+    },
+    "summary": {
+      "amount": "£121.34",
+      "period": "/month",
+      "description": "is your estimated monthly spend",
+      "totalUsage": "958 kWh total",
+      "serviceLabel": "Gas & Electricity",
+      "serviceIcon": "/images/gas-electricity-icon.png",
+      "compareButton": "Compare Energy Prices",
+      "updateButton": "Update Gas Consumption",
+      "mascot": {
+        "src": "/images/usage-goose.png",
+        "alt": "BillGoose mascot"
+      }
+    },
+    "usageCards": [
+      {
+        "id": "gas",
+        "title": "Gas",
+        "address": "59 Masons Way, Wallyford Mussel",
+        "usage": "650",
+        "unit": "kWh",
+        "price": "~£46/mo",
+        "buttonLabel": "Update Gas Consumption",
+        "icon": "/images/gas-usage-icon.png",
+        "iconAlt": "",
+        "borderColor": "#DC6803"
+      },
+      {
+        "id": "electricity",
+        "title": "Electricity",
+        "address": "59 Masons Way, Wallyford Mussel",
+        "usage": "650",
+        "unit": "kWh",
+        "price": "~£46/mo",
+        "buttonLabel": "Update Electricity Consumption",
+        "icon": "/images/electricity-usage-icon.png",
+        "iconAlt": "",
+        "borderColor": "#105089"
+      }
+    ],
+    "estimatedPayment": {
+      "date": "02/12/2024",
+      "description": "Estimated Payment Starting",
+      "icon": "/images/estimated-usage-icon.png",
+      "iconAlt": ""
+    },
+    "importantNotice": {
+      "heading": "Important",
+      "description": "These figures are fetched directly from your smart meter. If your meter is not yet smart, readings are estimated based on your property profile.",
+      "actionLabel": "Update consumption manually",
+      "icon": "/images/warning-icon.png",
+      "iconAlt": ""
+    },
+    "preferences": {
+      "heading": "Your Preferences",
+      "icon": "/images/preferences-icon.png",
+      "iconAlt": "",
+      "editIcon": "/images/edit-icon.png",
+      "editIconAlt": "",
+      "items": [
+        {
+          "id": "address",
+          "title": "Address",
+          "description": "59 Masons Way, Wallyford Mussel",
+          "icon": "/images/address-icon.png",
+          "iconAlt": ""
+        },
+        {
+          "id": "service",
+          "title": "Service",
+          "description": "Gas & Electricity (Dual Fuel)",
+          "icon": "/images/service-icon.png",
+          "iconAlt": ""
+        },
+        {
+          "id": "house-type",
+          "title": "House Type",
+          "description": "House · Bedrooms: 1",
+          "icon": "/images/house-type-icon.png",
+          "iconAlt": ""
+        },
+        {
+          "id": "contract-date",
+          "title": "02/12/2024",
+          "description": "Estimated Contract Starting",
+          "icon": "/images/contract-usage-icon.png",
+          "iconAlt": ""
+        }
+      ]
+    },
+    "footer": {
+      "backButton": "Back",
+      "estimatedCostLabel": "Current estimated cost",
+      "estimatedCost": "£121/month",
+      "compareButton": "Compare Energy Prices"
+    }
+  },
+  "resultPage": {
+    "hero": {
+      "heading": {
+        "firstLine": "Your home essentials.",
+        "secondLine": "Under one wing."
+      },
+      "mascot": {
+        "src": "/images/goose.png",
+        "alt": "BillGoose mascot"
+      },
+      "services": [
+        {
+          "id": "energy",
+          "icon": "/images/energy-icon.png",
+          "alt": "Energy"
+        },
+        {
+          "id": "gas",
+          "icon": "/images/gas.png",
+          "alt": "Gas"
+        },
+        {
+          "id": "broadband",
+          "icon": "/images/broadband.png",
+          "alt": "Broadband"
+        },
+        {
+          "id": "insurance",
+          "icon": "/images/insurance.png",
+          "alt": "Insurance"
+        },
+        {
+          "id": "credit-card",
+          "icon": "/images/credit-cards.png",
+          "alt": "Credit card"
+        },
+        {
+          "id": "loans",
+          "icon": "/images/loans.png",
+          "alt": "Loans"
+        }
+      ]
+    },
+    "filters": {
+      "heading": "Filters",
+      "applyButton": "Apply filters",
+      "resetButton": "Reset filters",
+      "dropdownAriaLabel": "Select an option",
+      "fields": [
+        {
+          "id": "plans",
+          "label": "Your plans",
+          "placeholder": "Only show plans",
+          "defaultValue": "",
+          "options": [
+            {
+              "id": "all-plans",
+              "label": "All plans",
+              "value": "all"
+            },
+            {
+              "id": "recommended",
+              "label": "Recommended plans",
+              "value": "recommended"
+            },
+            {
+              "id": "green-energy",
+              "label": "Green energy plans",
+              "value": "green-energy"
+            },
+            {
+              "id": "exclusive",
+              "label": "Exclusive plans",
+              "value": "exclusive"
+            }
+          ]
+        },
+        {
+          "id": "plan-type",
+          "label": "Plan type",
+          "placeholder": "Dual Fuel",
+          "defaultValue": "dual-fuel",
+          "options": [
+            {
+              "id": "dual-fuel",
+              "label": "Dual Fuel",
+              "value": "dual-fuel"
+            },
+            {
+              "id": "electricity-only",
+              "label": "Electricity only",
+              "value": "electricity-only"
+            },
+            {
+              "id": "gas-only",
+              "label": "Gas only",
+              "value": "gas-only"
+            }
+          ]
+        },
+        {
+          "id": "payment-method",
+          "label": "Payment method",
+          "placeholder": "Monthly direct debit",
+          "defaultValue": "monthly-direct-debit",
+          "options": [
+            {
+              "id": "monthly-direct-debit",
+              "label": "Monthly direct debit",
+              "value": "monthly-direct-debit"
+            },
+            {
+              "id": "quarterly-direct-debit",
+              "label": "Quarterly direct debit",
+              "value": "quarterly-direct-debit"
+            },
+            {
+              "id": "prepayment",
+              "label": "Prepayment",
+              "value": "prepayment"
+            },
+            {
+              "id": "pay-on-receipt",
+              "label": "Pay on receipt",
+              "value": "pay-on-receipt"
+            }
+          ]
+        },
+        {
+          "id": "rate-type",
+          "label": "Rate type",
+          "placeholder": "Fixed or variable",
+          "defaultValue": "",
+          "options": [
+            {
+              "id": "all-rate-types",
+              "label": "Fixed or variable",
+              "value": "all"
+            },
+            {
+              "id": "fixed",
+              "label": "Fixed",
+              "value": "fixed"
+            },
+            {
+              "id": "variable",
+              "label": "Variable",
+              "value": "variable"
+            }
+          ]
+        },
+        {
+          "id": "plan-features",
+          "label": "Plan features",
+          "placeholder": "Fixed or variable",
+          "defaultValue": "",
+          "options": [
+            {
+              "id": "all-features",
+              "label": "All plan features",
+              "value": "all"
+            },
+            {
+              "id": "no-exit-fee",
+              "label": "No exit fee",
+              "value": "no-exit-fee"
+            },
+            {
+              "id": "renewable-energy",
+              "label": "Renewable energy",
+              "value": "renewable-energy"
+            },
+            {
+              "id": "smart-meter",
+              "label": "Smart meter included",
+              "value": "smart-meter"
+            }
+          ]
+        }
+      ]
+    },
+    "resultsStatus": {
+      "heading": "Results summary",
+      "descriptionStart": "6",
+      "descriptionRest": "17 tariffs you can switch to through us, starting with the lowest monthly cost.",
+      "planTabs": {
+        "defaultValue": "all",
+        "options": [
+          {
+            "id": "all",
+            "label": "All",
+            "value": "all"
+          },
+          {
+            "id": "fixed",
+            "label": "Fixed",
+            "value": "fixed"
+          },
+          {
+            "id": "variable",
+            "label": "Variable",
+            "value": "variable"
+          }
+        ]
+      },
+      "sort": {
+        "label": "Sort:",
+        "icon": "/images/sort-icon.png",
+        "iconAlt": "",
+        "defaultValue": "recommended",
+        "options": [
+          {
+            "id": "recommended",
+            "label": "Recommended",
+            "value": "recommended"
+          },
+          {
+            "id": "lowest-cost",
+            "label": "Lowest monthly cost",
+            "value": "lowest-cost"
+          },
+          {
+            "id": "highest-saving",
+            "label": "Highest saving",
+            "value": "highest-saving"
+          }
+        ]
+      },
+      "periodTabs": {
+        "defaultValue": "monthly",
+        "options": [
+          {
+            "id": "monthly",
+            "label": "Monthly",
+            "value": "monthly"
+          },
+          {
+            "id": "annual",
+            "label": "Annual",
+            "value": "annual"
+          }
+        ]
+      }
+    }
   }
 }
