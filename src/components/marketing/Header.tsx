@@ -142,43 +142,51 @@ export default function Header() {
               })}
             </nav>
 
-            {/* Desktop menu and account pill */}
-            <div className="flex h-[50px] w-[87px] items-center gap-[6px] rounded-[100px] border border-[#EAECF0] bg-[#F9FAFB] py-3 pl-[14px] pr-[7px] shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]">
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen((previousState) => !previousState)}
-                className="flex h-6 w-6 shrink-0 items-center justify-center text-secondary transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-                aria-expanded={isMobileMenuOpen}
-              >
-                {isMobileMenuOpen ? (
-                  <X
-                    size={18}
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Menu
-                    size={18}
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  />
-                )}
-              </button>
+            {/* Desktop sign-in pill */}
+            <Link
+              href={header.account.href}
+              aria-label={header.account.label}
+              onClick={closeMenus}
+              className="
+    inline-flex h-[50px] items-center gap-[10px]
+    rounded-[100px]
+    border border-[#EAECF0]
+    bg-[#F9FAFB]
+    py-[7px] pl-5 pr-[7px]
+    shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
-              <Link
-                href={header.account.href}
-                aria-label={header.account.label}
-                onClick={closeMenus}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00796D] text-white transition-colors hover:bg- focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+    font-red-hat-display
+    text-[16px] font-bold
+    leading-6 text-[#355E87]
+
+    transition-colors
+
+    hover:bg-white
+    hover:text-[#00897B]
+
+    focus-visible:outline-none
+    focus-visible:ring-2
+    focus-visible:ring-[#00897B]
+    focus-visible:ring-offset-2
+  "
+            >
+              <span className="whitespace-nowrap">Sign In</span>
+
+              <span
+                className="
+      flex h-9 w-9 shrink-0
+      items-center justify-center
+      rounded-full bg-[#00897B]
+      text-white
+    "
               >
                 <UserRound
-                  size={17}
+                  size={19}
                   strokeWidth={2}
                   aria-hidden="true"
                 />
-              </Link>
-            </div>
+              </span>
+            </Link>
           </div>
 
           {/* Mobile menu and account pill */}
