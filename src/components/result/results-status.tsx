@@ -86,7 +86,9 @@ export default function ResultsStatus() {
               xl:leading-none
             "
           >
-            <strong className="font-bold text-[#667085]">{resultsStatus.descriptionStart}</strong>{' '}
+            <strong className="font-extrabold text-[#101828]">
+              {resultsStatus.descriptionStart}
+            </strong>{' '}
             {resultsStatus.descriptionRest}
           </p>
 
