@@ -35,9 +35,9 @@ export default function ImportantNotice() {
         <div className="min-w-0">
           <h2
             className="
-              font-inter text-[12px]
-              font-bold uppercase
-              leading-[18px] text-[#B54708]
+              font-inter
+              text-[14px] font-bold uppercase
+              leading-5 text-[#B54708]
 
               lg:text-[14px]
               lg:leading-5
@@ -49,8 +49,8 @@ export default function ImportantNotice() {
           <p
             className="
               mt-1 font-inter
-              text-[12px] font-normal
-              leading-[18px] text-[#B54708]
+              text-[14px] font-normal
+              leading-5 text-[#B54708]
 
               lg:text-[14px]
               lg:leading-5
@@ -62,10 +62,12 @@ export default function ImportantNotice() {
           <button
             type="button"
             className="
-              mt-3 inline-flex items-center
-              gap-2 font-inter
-              text-[12px] font-bold
-              leading-[18px] text-[#B54708]
+              mt-3 inline-flex
+              items-center gap-2
+
+              font-inter
+              text-[14px] font-bold
+              leading-5 text-[#B54708]
 
               hover:underline
 
@@ -77,7 +79,7 @@ export default function ImportantNotice() {
 
             <ArrowRight
               aria-hidden="true"
-              className="h-3 w-3 shrink-0"
+              className="h-3.5 w-3.5 shrink-0"
               strokeWidth={1.67}
             />
           </button>

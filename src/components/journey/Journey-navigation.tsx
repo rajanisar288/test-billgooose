@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft } from 'lucide-react';
 
 import data from '@/data/content.json';
 
@@ -42,29 +42,80 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
   return (
     <footer className="z-40 shrink-0 border-t border-[#E4E7EC] bg-white">
       <div className="mx-auto flex min-h-[68px] w-full max-w-[1120px] items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-6">
+        {/* Mobile back button */}
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Back"
+          className="
+    flex h-[58px] w-[58px]
+    shrink-0 items-center justify-center
+    rounded-full
+    border border-[#D0D5DD]
+    bg-white
+    text-[#344054]
+    shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+    transition-colors
+
+    hover:bg-[#F9FAFB]
+
+    focus-visible:outline-none
+    focus-visible:ring-4
+    focus-visible:ring-[#EEFFFB]
+
+    lg:hidden
+  "
+        >
+          <ChevronLeft
+            aria-hidden="true"
+            className="h-[22px] w-[22px]"
+            strokeWidth={2.2}
+          />
+        </button>
+
+        {/* Laptop / Desktop back button */}
         <button
           type="button"
           onClick={handleBack}
           className="
-            inline-flex h-9 items-center justify-center gap-1.5
-            rounded-full border border-[#D0D5DD] bg-white
-            px-4 font-inter text-[13px] font-medium text-[#344054]
-            shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
-            transition
+    hidden
 
-            hover:bg-[#F9FAFB]
+    lg:inline-flex
+    lg:h-12
+    lg:items-center
+    lg:justify-center
+    lg:gap-2
+    lg:rounded-full
+    lg:border
+    lg:border-[#D0D5DD]
+    lg:bg-white
+    lg:px-5
 
-            focus-visible:outline-none
-            focus-visible:ring-4
-            focus-visible:ring-[#E6F4F2]
-          "
+    lg:font-inter
+    lg:text-[14px]
+    lg:font-semibold
+    lg:leading-5
+    lg:text-[#344054]
+
+    lg:shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+    lg:transition-colors
+
+    lg:hover:bg-[#F9FAFB]
+
+    lg:focus-visible:outline-none
+    lg:focus-visible:ring-4
+    lg:focus-visible:ring-[#EEFFFB]
+  "
         >
-          <ArrowLeft
-            size={15}
-            strokeWidth={1.8}
+          <ChevronLeft
+            aria-hidden="true"
+            className="h-[18px] w-[18px]"
+            strokeWidth={2}
           />
 
-          <span>{navigation.backButton}</span>
+          <span>Back</span>
         </button>
 
         <button

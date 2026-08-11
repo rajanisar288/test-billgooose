@@ -10,6 +10,9 @@ import { MapPin } from 'lucide-react';
 
 import data from '@/data/content.json';
 
+const UK_POSTCODE_REGEX =
+  /^(GIR\s?0AA|(?:(?:[A-PR-UWYZ][0-9][0-9A-HJKSTUW]?)|(?:[A-PR-UWYZ][A-HK-Y][0-9][0-9ABEHMNPRV-Y]?))\s?[0-9][ABD-HJLNP-UW-Z]{2})$/i;
+
 export default function LowerHero() {
   const router = useRouter();
   const { lowerHero } = data;
@@ -20,16 +23,21 @@ export default function LowerHero() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formattedPostcode = postcode.trim();
+    const formattedPostcode = postcode.trim().toUpperCase().replace(/\s+/g, ' ');
 
     if (!formattedPostcode) {
       setPostcodeError(lowerHero.postcode.emptyError);
       return;
     }
 
+    if (!UK_POSTCODE_REGEX.test(formattedPostcode)) {
+      setPostcodeError('Please enter a valid UK postcode.');
+      return;
+    }
+
     setPostcodeError('');
 
-    router.push(`${lowerHero.button.href}?postcode=${encodeURIComponent(formattedPostcode)}`);
+    router.push(`/compare?postcode=${encodeURIComponent(formattedPostcode)}`);
   };
 
   const handlePostcodeChange = (value: string) => {

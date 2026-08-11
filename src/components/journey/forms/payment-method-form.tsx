@@ -85,20 +85,23 @@ export default function PaymentMethodForm() {
   return (
     <>
       <div className="w-full">
-        {/* Heading */}
-        <header className="mb-7 sm:mb-8 lg:mb-9">
+        {/* Desktop heading only */}
+        <header
+          className="
+            hidden
+
+            lg:mb-9
+            lg:block
+          "
+        >
           <h1
             className="
               font-red-hat-display
-              text-[30px] font-extrabold
-              leading-[38px] tracking-[0]
+              text-[40px]
+              font-extrabold
+              leading-[56px]
+              tracking-[0]
               text-[#0C3354]
-
-              sm:text-[34px]
-              sm:leading-[44px]
-
-              lg:text-[40px]
-              lg:leading-[56px]
             "
           >
             {paymentMethod.heading}
@@ -107,15 +110,14 @@ export default function PaymentMethodForm() {
           <p
             className="
               mt-1
-              font-inter text-[14px]
-              font-normal leading-[21px]
-              tracking-[0] text-[#667085]
 
-              sm:text-[16px]
-              sm:leading-6
+              font-inter
+              text-[18px]
+              font-normal
+              leading-[25px]
+              tracking-[0]
 
-              lg:text-[18px]
-              lg:leading-[25px]
+              text-[#667085]
             "
           >
             {paymentMethod.description}
@@ -125,10 +127,16 @@ export default function PaymentMethodForm() {
         <form
           id="journey-step-form-4"
           onSubmit={handleSubmit}
-          className="space-y-3 sm:space-y-4"
+          className="
+            space-y-3
+
+            sm:space-y-4
+          "
         >
-          {paymentMethod.options.map((option) => {
+          {paymentMethod.options.map((option, index) => {
             const isSelected = selectedPaymentMethod === option.value;
+
+            const mobileIcon = index === 0 ? '/images/step-4-1.png' : '/images/step-4-2.png';
 
             return (
               <button
@@ -139,44 +147,79 @@ export default function PaymentMethodForm() {
                   setSelectedPaymentMethod(option.value);
                 }}
                 className={`
-                  flex min-h-[128px] w-full
-                  flex-col items-start
-                  justify-between gap-3
-                  rounded-[14px]
-                  bg-white p-4
-                  text-left
-                  transition-colors duration-200
+                    flex min-h-[128px]
+                    w-full
+                    flex-col
+                    items-start
+                    justify-between
+                    gap-3
 
-                  sm:min-h-[140px]
-                  sm:rounded-[16px]
-                  sm:p-[18px]
+                    rounded-[14px]
 
-                  lg:h-[157px]
-                  lg:min-h-[157px]
-                  lg:gap-4
-                  lg:rounded-[16px]
-                  lg:p-5
+                    bg-white
 
-                  ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
-                `}
+                    p-4
+
+                    text-left
+
+                    transition-colors
+                    duration-200
+
+                    sm:min-h-[140px]
+                    sm:rounded-[16px]
+                    sm:p-[18px]
+
+                    lg:h-[157px]
+                    lg:min-h-[157px]
+                    lg:gap-4
+                    lg:rounded-[16px]
+                    lg:p-5
+
+                    ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
+                  `}
               >
-                {/* Icon and selection indicator */}
-                <div className="flex w-full items-start justify-between gap-4">
+                {/* Icon and selection */}
+                <div
+                  className="
+                      flex w-full
+                      items-start
+                      justify-between
+                      gap-4
+                    "
+                >
+                  {/* Mobile icon */}
+                  <Image
+                    src={mobileIcon}
+                    alt={option.iconAlt}
+                    width={22}
+                    height={22}
+                    aria-hidden="true"
+                    className="
+                        h-[22px]
+                        w-[22px]
+                        shrink-0
+                        object-contain
+
+                        lg:hidden
+                      "
+                  />
+
+                  {/* Desktop icon */}
                   <Image
                     src={option.icon}
                     alt={option.iconAlt}
                     width={24}
                     height={24}
+                    aria-hidden="true"
                     className="
-                      h-5 w-5 shrink-0
-                      object-contain
+                        hidden
 
-                      sm:h-[22px]
-                      sm:w-[22px]
-
-                      lg:h-6
-                      lg:w-6
-                    "
+                        lg:block
+                        lg:h-6
+                        lg:w-6
+                        lg:shrink-0
+                        lg:object-contain
+                      "
                   />
 
                   <SelectionCircle selected={isSelected} />
@@ -186,32 +229,42 @@ export default function PaymentMethodForm() {
                 <div className="min-w-0">
                   <h2
                     className="
-                      font-red-hat-display
-                      text-[15px] font-[550]
-                      leading-none tracking-[0]
-                      text-[#0D3B66]
+                        font-red-hat-display
 
-                      sm:text-[16px]
+                        text-[18px]
+                        font-bold
+                        leading-[22px]
+                        tracking-[0]
 
-                      lg:text-[18px]
-                    "
+                        text-[#0D3B66]
+
+                        sm:text-[18px]
+
+                        lg:text-[18px]
+                        lg:leading-none
+                      "
                   >
                     {option.label}
                   </h2>
 
                   <p
                     className="
-                      mt-2
-                      font-inter text-[11px]
-                      font-normal leading-[15px]
-                      tracking-[0] text-[#667085]
+                        mt-2
 
-                      sm:text-[12px]
-                      sm:leading-4
+                        font-inter
+                        text-[15px]
+                        font-normal
+                        leading-[20px]
+                        tracking-[0]
 
-                      lg:text-[14px]
-                      lg:leading-[18px]
-                    "
+                        text-[#667085]
+
+                        sm:text-[15px]
+                        sm:leading-[20px]
+
+                        lg:text-[14px]
+                        lg:leading-[18px]
+                      "
                   >
                     {option.description}
                   </p>
@@ -253,10 +306,17 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
     <span
       aria-hidden="true"
       className={`
-        flex h-[18px] w-[18px]
-        shrink-0 items-center justify-center
-        rounded-full border
-        transition-colors duration-200
+        flex h-[18px]
+        w-[18px]
+        shrink-0
+        items-center
+        justify-center
+
+        rounded-full
+        border
+
+        transition-colors
+        duration-200
 
         lg:h-5
         lg:w-5
@@ -268,9 +328,14 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
         aria-hidden="true"
         strokeWidth={3}
         className={`
-          h-3 w-3 shrink-0
+          h-3
+          w-3
+          shrink-0
+
           text-white
-          transition-opacity duration-150
+
+          transition-opacity
+          duration-150
 
           lg:h-[13px]
           lg:w-[13px]

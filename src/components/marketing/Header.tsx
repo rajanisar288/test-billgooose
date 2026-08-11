@@ -13,6 +13,7 @@ export default function Header() {
   const { header } = data;
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const [isCompareMenuOpen, setIsCompareMenuOpen] = useState(false);
 
   const compareMenuRef = useRef<HTMLDivElement>(null);
@@ -20,6 +21,20 @@ export default function Header() {
   const closeMenus = () => {
     setIsMobileMenuOpen(false);
     setIsCompareMenuOpen(false);
+  };
+
+  const getNavigationHref = (label: string, hasDropdown?: boolean) => {
+    const normalizedLabel = label.trim().toLowerCase();
+
+    if (hasDropdown || normalizedLabel === 'compare') {
+      return '/compare';
+    }
+
+    if (normalizedLabel.includes('guide')) {
+      return '/#guides';
+    }
+
+    return '/';
   };
 
   useEffect(() => {
@@ -47,7 +62,23 @@ export default function Header() {
   return (
     <header className="relative z-50 w-full bg-white">
       <div className="mx-auto w-full max-w-[1440px]">
-        <div className="flex min-h-[72px] items-center justify-between px-5 sm:px-8 lg:min-h-[103px] lg:px-10">
+        <div
+          className="
+            flex min-h-[72px]
+            items-center justify-between
+            px-5
+
+            sm:px-8
+
+            md:min-h-[84px]
+            md:justify-start
+            md:px-[30px]
+
+            lg:min-h-[103px]
+            lg:justify-between
+            lg:px-10
+          "
+        >
           {/* Logo */}
           <Link
             href="/"
@@ -61,15 +92,44 @@ export default function Header() {
               width={266}
               height={82}
               priority
-              className="h-auto w-[145px] object-contain sm:w-[180px] lg:h-[83px] lg:w-[266.7px]"
+              className="
+                h-auto w-[145px]
+                object-contain
+
+                sm:w-[180px]
+
+                md:w-[165px]
+
+                lg:h-[83px]
+                lg:w-[266.7px]
+              "
             />
           </Link>
 
-          {/* Desktop navigation */}
-          <div className="hidden items-center gap-3 lg:flex">
+          {/* Tablet + Desktop navigation */}
+          <div
+            className="
+    hidden items-center
+
+    md:ml-auto
+    md:flex
+    md:gap-[14px]
+
+    lg:ml-0
+    lg:gap-3
+  "
+          >
             <nav
               aria-label="Main navigation"
-              className="flex items-center rounded-full border border-[#EAECF0] bg-[#F9FAFB] p-1 shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]"
+              className="
+                flex items-center
+                rounded-full
+                border border-[#EAECF0]
+                bg-[#F9FAFB]
+                p-1
+
+                shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+              "
             >
               {header.navigation.map((item) => {
                 if (item.hasDropdown) {
@@ -82,7 +142,29 @@ export default function Header() {
                       <button
                         type="button"
                         onClick={() => setIsCompareMenuOpen((previous) => !previous)}
-                        className="flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-medium text-secondary transition-colors hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                        className="
+                          flex h-9
+                          items-center gap-1.5
+                          rounded-full
+                          px-3.5
+
+                          text-[13px] font-medium
+                          text-secondary
+
+                          transition-colors
+
+                          hover:bg-white
+                          hover:text-primary
+
+                          focus-visible:outline-none
+                          focus-visible:ring-2
+                          focus-visible:ring-primary
+                          focus-visible:ring-offset-2
+
+                          lg:h-10
+                          lg:px-4
+                          lg:text-sm
+                        "
                         aria-expanded={isCompareMenuOpen}
                         aria-haspopup="menu"
                       >
@@ -91,9 +173,12 @@ export default function Header() {
                         <ChevronDown
                           size={15}
                           strokeWidth={2}
-                          className={`transition-transform duration-200 ${
-                            isCompareMenuOpen ? 'rotate-180' : ''
-                          }`}
+                          className={`
+                            transition-transform
+                            duration-200
+
+                            ${isCompareMenuOpen ? 'rotate-180' : ''}
+                          `}
                           aria-hidden="true"
                         />
                       </button>
@@ -101,13 +186,31 @@ export default function Header() {
                       {isCompareMenuOpen && (
                         <div
                           role="menu"
-                          className="absolute right-0 top-[calc(100%+12px)] w-56 overflow-hidden rounded-2xl border border-slate-100 bg-white p-2 shadow-xl"
+                          className="
+                            absolute right-0
+                            top-[calc(100%+12px)]
+                            w-56 overflow-hidden
+                            rounded-2xl
+                            border border-slate-100
+                            bg-white p-2
+                            shadow-xl
+                          "
                         >
                           <Link
-                            href={item.href}
+                            href="/compare"
                             role="menuitem"
                             onClick={closeMenus}
-                            className="block rounded-xl px-4 py-2.5 text-sm font-semibold text-secondary transition-colors hover:bg-primary/10 hover:text-primary"
+                            className="
+                              block rounded-xl
+                              px-4 py-2.5
+                              text-sm font-semibold
+                              text-secondary
+
+                              transition-colors
+
+                              hover:bg-primary/10
+                              hover:text-primary
+                            "
                           >
                             View all comparisons
                           </Link>
@@ -115,10 +218,20 @@ export default function Header() {
                           {header.compareMenu.map((menuItem) => (
                             <Link
                               key={menuItem.id}
-                              href={menuItem.href}
+                              href="/compare"
                               role="menuitem"
                               onClick={closeMenus}
-                              className="block rounded-xl px-4 py-2.5 text-sm font-medium text-secondary transition-colors hover:bg-primary/10 hover:text-primary"
+                              className="
+                                  block rounded-xl
+                                  px-4 py-2.5
+                                  text-sm font-medium
+                                  text-secondary
+
+                                  transition-colors
+
+                                  hover:bg-primary/10
+                                  hover:text-primary
+                                "
                             >
                               {menuItem.label}
                             </Link>
@@ -132,9 +245,31 @@ export default function Header() {
                 return (
                   <Link
                     key={item.id}
-                    href={item.href}
+                    href={getNavigationHref(item.label, item.hasDropdown)}
                     onClick={closeMenus}
-                    className="flex h-10 items-center rounded-full px-4 text-sm font-medium text-secondary transition-colors hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    className="
+                      flex h-9
+                      items-center
+                      rounded-full
+                      px-3.5
+
+                      text-[13px] font-medium
+                      text-secondary
+
+                      transition-colors
+
+                      hover:bg-white
+                      hover:text-primary
+
+                      focus-visible:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-primary
+                      focus-visible:ring-offset-2
+
+                      lg:h-10
+                      lg:px-4
+                      lg:text-sm
+                    "
                   >
                     {item.label}
                   </Link>
@@ -142,59 +277,122 @@ export default function Header() {
               })}
             </nav>
 
-            {/* Desktop sign-in pill */}
+            {/* Sign In */}
             <Link
-              href={header.account.href}
+              href="/"
               aria-label={header.account.label}
               onClick={closeMenus}
               className="
-    inline-flex h-[50px] items-center gap-[10px]
-    rounded-[100px]
-    border border-[#EAECF0]
-    bg-[#F9FAFB]
-    py-[7px] pl-5 pr-[7px]
-    shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                inline-flex h-[40px]
+                shrink-0 items-center
+                gap-[7px]
+                rounded-[100px]
 
-    font-red-hat-display
-    text-[16px] font-bold
-    leading-6 text-[#355E87]
+                border border-[#EAECF0]
+                bg-[#F9FAFB]
 
-    transition-colors
+                py-[5px]
+                pl-[14px]
+                pr-[5px]
 
-    hover:bg-white
-    hover:text-[#00897B]
+                font-red-hat-display
+                text-[13px] font-bold
+                leading-5
+                text-[#355E87]
 
-    focus-visible:outline-none
-    focus-visible:ring-2
-    focus-visible:ring-[#00897B]
-    focus-visible:ring-offset-2
-  "
+                shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                transition-colors
+
+                hover:bg-white
+                hover:text-[#00897B]
+
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[#00897B]
+                focus-visible:ring-offset-2
+
+                lg:h-[50px]
+                lg:gap-[10px]
+                lg:py-[7px]
+                lg:pl-5
+                lg:pr-[7px]
+                lg:text-[16px]
+                lg:leading-6
+              "
             >
               <span className="whitespace-nowrap">Sign In</span>
 
               <span
                 className="
-      flex h-9 w-9 shrink-0
-      items-center justify-center
-      rounded-full bg-[#00897B]
-      text-white
-    "
+                  flex h-[30px] w-[30px]
+                  shrink-0 items-center
+                  justify-center
+                  rounded-full
+                  bg-[#00897B]
+                  text-white
+
+                  lg:h-9
+                  lg:w-9
+                "
               >
                 <UserRound
-                  size={19}
+                  size={15}
                   strokeWidth={2}
                   aria-hidden="true"
+                  className="
+                    lg:h-[19px]
+                    lg:w-[19px]
+                  "
                 />
               </span>
             </Link>
           </div>
 
-          {/* Mobile menu and account pill */}
-          <div className="flex h-[44px] w-[78px] items-center gap-[5px] rounded-[100px] border border-[#EAECF0] bg-[#F9FAFB] py-[9px] pl-3 pr-[6px] shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] min-[390px]:h-[50px] min-[390px]:w-[87px] min-[390px]:gap-[6px] min-[390px]:py-3 min-[390px]:pl-[14px] min-[390px]:pr-[7px] lg:hidden">
+          {/* Mobile menu + account */}
+          <div
+            className="
+              flex h-[44px] w-[78px]
+              items-center gap-[5px]
+              rounded-[100px]
+
+              border border-[#EAECF0]
+              bg-[#F9FAFB]
+
+              py-[9px] pl-3 pr-[6px]
+
+              shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+              min-[390px]:h-[50px]
+              min-[390px]:w-[87px]
+              min-[390px]:gap-[6px]
+              min-[390px]:py-3
+              min-[390px]:pl-[14px]
+              min-[390px]:pr-[7px]
+
+              md:hidden
+            "
+          >
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((previousState) => !previousState)}
-              className="flex h-5 w-5 shrink-0 items-center justify-center text-secondary transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-[390px]:h-6 min-[390px]:w-6"
+              className="
+                flex h-5 w-5 shrink-0
+                items-center justify-center
+                text-secondary
+
+                transition-colors
+
+                hover:text-primary
+
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-primary
+                focus-visible:ring-offset-2
+
+                min-[390px]:h-6
+                min-[390px]:w-6
+              "
               aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-navigation"
@@ -203,29 +401,56 @@ export default function Header() {
                 <X
                   size={16}
                   strokeWidth={2}
-                  className="min-[390px]:h-[18px] min-[390px]:w-[18px]"
+                  className="
+                    min-[390px]:h-[18px]
+                    min-[390px]:w-[18px]
+                  "
                   aria-hidden="true"
                 />
               ) : (
                 <Menu
                   size={16}
                   strokeWidth={2}
-                  className="min-[390px]:h-[18px] min-[390px]:w-[18px]"
+                  className="
+                    min-[390px]:h-[18px]
+                    min-[390px]:w-[18px]
+                  "
                   aria-hidden="true"
                 />
               )}
             </button>
 
             <Link
-              href={header.account.href}
+              href="/"
               aria-label={header.account.label}
               onClick={closeMenus}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00796D] text-white transition-colors hover:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-[390px]:h-9 min-[390px]:w-9"
+              className="
+                flex h-8 w-8 shrink-0
+                items-center justify-center
+                rounded-full
+                bg-[#00796D]
+                text-white
+
+                transition-colors
+
+                hover:bg-primary
+
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-primary
+                focus-visible:ring-offset-2
+
+                min-[390px]:h-9
+                min-[390px]:w-9
+              "
             >
               <UserRound
                 size={15}
                 strokeWidth={2}
-                className="min-[390px]:h-[17px] min-[390px]:w-[17px]"
+                className="
+                  min-[390px]:h-[17px]
+                  min-[390px]:w-[17px]
+                "
                 aria-hidden="true"
               />
             </Link>
@@ -235,9 +460,14 @@ export default function Header() {
         {/* Mobile navigation */}
         <div
           id="mobile-navigation"
-          className={`overflow-hidden transition-all duration-300 lg:hidden ${
-            isMobileMenuOpen ? 'max-h-[650px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={`
+            overflow-hidden
+            transition-all duration-300
+
+            md:hidden
+
+            ${isMobileMenuOpen ? 'max-h-[650px] opacity-100' : 'max-h-0 opacity-0'}
+          `}
         >
           <nav
             aria-label="Mobile navigation"
@@ -249,9 +479,20 @@ export default function Header() {
                   <div key={item.id}>
                     <div className="flex items-center">
                       <Link
-                        href={item.href}
+                        href="/compare"
                         onClick={closeMenus}
-                        className="flex-1 rounded-l-xl px-4 py-3 text-left text-sm font-semibold text-secondary transition-colors hover:bg-slate-50 hover:text-primary"
+                        className="
+                          flex-1 rounded-l-xl
+                          px-4 py-3
+                          text-left
+                          text-sm font-semibold
+                          text-secondary
+
+                          transition-colors
+
+                          hover:bg-slate-50
+                          hover:text-primary
+                        "
                       >
                         {item.label}
                       </Link>
@@ -259,7 +500,18 @@ export default function Header() {
                       <button
                         type="button"
                         onClick={() => setIsCompareMenuOpen((previous) => !previous)}
-                        className="flex items-center justify-center rounded-r-xl px-4 py-3 text-secondary transition-colors hover:bg-slate-50 hover:text-primary"
+                        className="
+                          flex items-center
+                          justify-center
+                          rounded-r-xl
+                          px-4 py-3
+                          text-secondary
+
+                          transition-colors
+
+                          hover:bg-slate-50
+                          hover:text-primary
+                        "
                         aria-label="Open Compare menu"
                         aria-expanded={isCompareMenuOpen}
                       >
@@ -267,9 +519,12 @@ export default function Header() {
                           <ChevronDown
                             size={12}
                             strokeWidth={2.5}
-                            className={`transition-transform duration-200 ${
-                              isCompareMenuOpen ? 'rotate-180' : ''
-                            }`}
+                            className={`
+                              transition-transform
+                              duration-200
+
+                              ${isCompareMenuOpen ? 'rotate-180' : ''}
+                            `}
                             aria-hidden="true"
                           />
                         </span>
@@ -277,16 +532,28 @@ export default function Header() {
                     </div>
 
                     <div
-                      className={`grid transition-all duration-300 ${
-                        isCompareMenuOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                      }`}
+                      className={`
+                        grid transition-all duration-300
+
+                        ${isCompareMenuOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}
+                      `}
                     >
                       <div className="overflow-hidden">
                         <div className="ml-4 space-y-1 border-l-2 border-primary/20 py-2 pl-3">
                           <Link
-                            href={item.href}
+                            href="/compare"
                             onClick={closeMenus}
-                            className="block rounded-lg px-4 py-2.5 text-sm font-semibold text-secondary transition-colors hover:bg-primary/10 hover:text-primary"
+                            className="
+                              block rounded-lg
+                              px-4 py-2.5
+                              text-sm font-semibold
+                              text-secondary
+
+                              transition-colors
+
+                              hover:bg-primary/10
+                              hover:text-primary
+                            "
                           >
                             View all comparisons
                           </Link>
@@ -294,9 +561,19 @@ export default function Header() {
                           {header.compareMenu.map((menuItem) => (
                             <Link
                               key={menuItem.id}
-                              href={menuItem.href}
+                              href="/compare"
                               onClick={closeMenus}
-                              className="block rounded-lg px-4 py-2.5 text-sm text-secondary transition-colors hover:bg-primary/10 hover:text-primary"
+                              className="
+                                  block rounded-lg
+                                  px-4 py-2.5
+                                  text-sm
+                                  text-secondary
+
+                                  transition-colors
+
+                                  hover:bg-primary/10
+                                  hover:text-primary
+                                "
                             >
                               {menuItem.label}
                             </Link>
@@ -311,9 +588,19 @@ export default function Header() {
               return (
                 <Link
                   key={item.id}
-                  href={item.href}
+                  href={getNavigationHref(item.label, item.hasDropdown)}
                   onClick={closeMenus}
-                  className="block rounded-xl px-4 py-3 text-sm font-semibold text-secondary transition-colors hover:bg-slate-50 hover:text-primary"
+                  className="
+                    block rounded-xl
+                    px-4 py-3
+                    text-sm font-semibold
+                    text-secondary
+
+                    transition-colors
+
+                    hover:bg-slate-50
+                    hover:text-primary
+                  "
                 >
                   {item.label}
                 </Link>
@@ -321,9 +608,21 @@ export default function Header() {
             })}
 
             <Link
-              href={header.account.href}
+              href="/"
               onClick={closeMenus}
-              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#00796D]"
+              className="
+                mt-4 flex items-center
+                justify-center gap-2
+                rounded-full
+                bg-primary
+                px-5 py-3
+                text-sm font-semibold
+                text-white
+
+                transition-colors
+
+                hover:bg-[#00796D]
+              "
             >
               <UserRound
                 size={17}

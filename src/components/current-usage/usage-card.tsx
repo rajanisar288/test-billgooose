@@ -21,16 +21,56 @@ export default function UsageCard({
   buttonLabel,
   icon,
   iconAlt,
-  borderColor,
 }: UsageCardProps) {
+  const isGas = title.toLowerCase().includes('gas');
+
+  const cardBackground = isGas
+    ? `
+      linear-gradient(
+        180deg,
+        rgba(220, 104, 3, 0.2) -150.63%,
+        rgba(220, 104, 3, 0) 100%
+      ) padding-box,
+      linear-gradient(
+        0deg,
+        #FFFFFF,
+        #FFFFFF
+      ) padding-box,
+      linear-gradient(
+        180deg,
+        #DC6803 -91.56%,
+        rgba(220, 104, 3, 0) 162.3%
+      ) border-box
+    `
+    : `
+      linear-gradient(
+        180deg,
+        rgba(4, 92, 158, 0.2) -150.63%,
+        rgba(4, 92, 158, 0) 100%
+      ) padding-box,
+      linear-gradient(
+        0deg,
+        #FFFFFF,
+        #FFFFFF
+      ) padding-box,
+      linear-gradient(
+        180deg,
+        #105089 -91.56%,
+        rgba(16, 80, 137, 0) 162.3%
+      ) border-box
+    `;
+
   return (
     <section
-      style={{ borderColor }}
+      style={{
+        background: cardBackground,
+        border: '1px solid transparent',
+      }}
       className="
         flex min-h-[194px]
         w-full flex-col
         rounded-[16px]
-        border bg-white p-4
+        p-4
 
         sm:min-h-[204px]
         sm:p-5
@@ -42,6 +82,7 @@ export default function UsageCard({
         lg:p-5
       "
     >
+      {/* Header */}
       <div className="flex items-start gap-3">
         <Image
           src={icon}
@@ -50,7 +91,8 @@ export default function UsageCard({
           height={40}
           aria-hidden={!iconAlt}
           className="
-            h-9 w-9 shrink-0
+            h-9 w-9
+            shrink-0
             object-contain
 
             sm:h-10
@@ -62,8 +104,10 @@ export default function UsageCard({
           <h2
             className="
               font-red-hat-display
-              text-[14px] font-extrabold
-              leading-none text-[#101828]
+              text-[14px]
+              font-extrabold
+              leading-none
+              text-[#101828]
 
               sm:text-[15px]
 
@@ -75,10 +119,14 @@ export default function UsageCard({
 
           <p
             className="
-              mt-1.5 truncate
+              mt-1.5
+              truncate
+
               font-red-hat-display
-              text-[11px] font-medium
-              leading-none text-[#667085]
+              text-[11px]
+              font-medium
+              leading-none
+              text-[#667085]
 
               sm:text-[12px]
 
@@ -90,10 +138,13 @@ export default function UsageCard({
         </div>
       </div>
 
+      {/* Usage / Price */}
       <div
         className="
-          mt-4 flex items-end
-          justify-between gap-3
+          mt-4
+          flex items-end
+          justify-between
+          gap-3
 
           lg:mt-[14px]
         "
@@ -102,8 +153,13 @@ export default function UsageCard({
           <span
             className="
               font-red-hat-display
-              text-[27px] font-[800]
-              leading-9 text-[#0C3354]
+              text-[32px]
+              font-[800]
+              leading-[38px]
+              text-[#0C3354]
+
+              sm:text-[32px]
+              sm:leading-[38px]
 
               lg:text-[32px]
               lg:leading-[38px]
@@ -115,8 +171,10 @@ export default function UsageCard({
           <span
             className="
               font-red-hat-display
-              text-[12px] font-medium
-              leading-5 text-[#667085]
+              text-[12px]
+              font-medium
+              leading-5
+              text-[#667085]
 
               lg:text-[16px]
               lg:leading-6
@@ -129,9 +187,14 @@ export default function UsageCard({
         <span
           className="
             shrink-0
+
             font-red-hat-display
-            text-[14px] font-medium
-            leading-5 text-[#667085]
+            text-[20px]
+            font-medium
+            leading-[30px]
+            text-[#667085]
+
+            sm:text-[20px]
 
             lg:text-[20px]
             lg:leading-[30px]
@@ -141,20 +204,30 @@ export default function UsageCard({
         </span>
       </div>
 
+      {/* Button */}
       <button
         type="button"
         className="
-          mt-auto inline-flex h-11
-          w-full shrink-0
-          items-center justify-center
+          mt-auto
+          inline-flex h-11
+          w-full
+          shrink-0
+          items-center
+          justify-center
+
           whitespace-nowrap
           rounded-[100px]
+
           border border-[#D0D5DD]
-          bg-white px-4
+          bg-white
+
+          px-4
 
           font-red-hat-display
-          text-[13px] font-extrabold
-          leading-6 text-[#0C3354]
+          text-[16px]
+          font-bold
+          leading-6
+          text-[#0C3354]
 
           transition-colors
 
@@ -165,6 +238,7 @@ export default function UsageCard({
           lg:max-w-full
           lg:px-6
           lg:text-[16px]
+          lg:font-extrabold
           lg:leading-[26px]
         "
       >

@@ -42,15 +42,20 @@ export default function ResultPlans() {
     <>
       <section
         className="
-    mx-auto w-full
+    mx-auto
+    w-full
     max-w-[1096px]
-    px-4 pb-2
+
+    px-4
+    pb-[10px]
 
     sm:px-6
-    sm:pb-8
+
+    md:pb-[20px]
+
+    lg:pb-[40px]
 
     xl:px-0
-    xl:pb-10
   "
       >
         <div
@@ -66,6 +71,7 @@ export default function ResultPlans() {
                 <FeaturedBroadbandCard
                   key={plan.id}
                   plan={plan}
+                  onViewDetails={handleViewDetails}
                 />
               );
             }
