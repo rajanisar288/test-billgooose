@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import { Check, Copy } from 'lucide-react';
 
@@ -12,6 +12,7 @@ import data from '@/data/content.json';
 
 import JourneyNavigation from './Journey-navigation';
 import JourneyProgress from './Journey-progress';
+import { getJourneyStepFromPathname } from './journey-routes';
 import JourneySidebar from './Journey-sidebar';
 
 type JourneyShellProps = {
@@ -20,13 +21,12 @@ type JourneyShellProps = {
 
 export default function JourneyShell({ children }: JourneyShellProps) {
   const { journey } = data;
+
   const { steps, instantAccess } = journey.sidebar;
 
-  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-  const requestedStep = Number(searchParams.get('step') ?? '1');
-
-  const currentStep = Math.min(Math.max(requestedStep, 1), steps.length);
+  const currentStep = getJourneyStepFromPathname(pathname);
 
   const [copied, setCopied] = useState(false);
 
@@ -66,7 +66,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
           overflow-hidden
         "
       >
-        {/* Mobile header */}
+        {/* Mobile + tablet header */}
         <div
           className="
             flex h-[82px]
@@ -84,14 +84,15 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             height={82}
             priority
             className="
-              h-[82px] w-[170px]
+              h-[82px]
+              w-[170px]
               object-contain
               object-center
             "
           />
         </div>
 
-        {/* Mobile magic link */}
+        {/* Mobile + tablet access link */}
         <section
           className="
             w-full shrink-0
@@ -101,7 +102,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             lg:hidden
           "
         >
-          {/* Description row */}
+          {/* Description */}
           <div
             className="
               flex h-[50px]
@@ -118,32 +119,33 @@ export default function JourneyShell({ children }: JourneyShellProps) {
               height={20}
               aria-hidden="true"
               className="
-                h-5 w-5 shrink-0
+                h-5 w-5
+                shrink-0
                 object-contain
               "
             />
 
             <p
               className="
-    font-inter
-    text-[13px]
-    font-medium
-    leading-[22px]
-    tracking-[-0.02em]
-    text-[#0C3354]
+                font-inter
+                text-[13px]
+                font-medium
+                leading-[22px]
+                tracking-[-0.02em]
+                text-[#0C3354]
 
-    md:text-[16px]
-    md:font-medium
-    md:leading-[22px]
-    md:tracking-[-0.02em]
-    md:text-[#0C3354]
-  "
+                md:text-[16px]
+                md:font-medium
+                md:leading-[22px]
+                md:tracking-[-0.02em]
+                md:text-[#0C3354]
+              "
             >
               {instantAccess.description}
             </p>
           </div>
 
-          {/* Link row */}
+          {/* Link */}
           <div
             className="
               flex h-[52px]
@@ -212,7 +214,8 @@ export default function JourneyShell({ children }: JourneyShellProps) {
                 <Check
                   aria-hidden="true"
                   className="
-                    h-[18px] w-[18px]
+                    h-[18px]
+                    w-[18px]
                     shrink-0
                   "
                   strokeWidth={2}
@@ -221,7 +224,8 @@ export default function JourneyShell({ children }: JourneyShellProps) {
                 <Copy
                   aria-hidden="true"
                   className="
-                    h-[18px] w-[18px]
+                    h-[18px]
+                    w-[18px]
                     shrink-0
                   "
                   strokeWidth={1.8}
@@ -236,11 +240,11 @@ export default function JourneyShell({ children }: JourneyShellProps) {
         {/* Scrollable content */}
         <div
           className="
-    min-h-0 flex-1
-    overflow-x-hidden
-    overflow-y-auto
-    bg-[#F9F9F9]
-  "
+            min-h-0 flex-1
+            overflow-x-hidden
+            overflow-y-auto
+            bg-[#F9F9F9]
+          "
         >
           <div
             className="
@@ -249,7 +253,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
               flex-col
             "
           >
-            {/* Desktop progress only */}
+            {/* Desktop progress */}
             <div className="hidden lg:block">
               <JourneyProgress
                 currentStep={currentStep}
@@ -259,8 +263,12 @@ export default function JourneyShell({ children }: JourneyShellProps) {
 
             <div
               className="
-                flex flex-1 justify-center
-                px-4 pb-8 pt-0
+                flex flex-1
+                justify-center
+
+                px-4
+                pb-8
+                pt-0
 
                 min-[390px]:px-5
 
@@ -274,7 +282,8 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             >
               <div
                 className="
-                  w-full max-w-[500px]
+                  w-full
+                  max-w-[500px]
                 "
               >
                 {children}

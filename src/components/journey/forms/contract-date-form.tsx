@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { CalendarDays, Check } from 'lucide-react';
 
+import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
 export default function ContractDateForm() {
@@ -20,7 +21,7 @@ export default function ContractDateForm() {
 
   const [acknowledged, setAcknowledged] = useState(acknowledgement.defaultValue);
 
-  function handleSubmit(event: FormEvent) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!contractDate || !acknowledged) {
@@ -34,12 +35,11 @@ export default function ContractDateForm() {
 
     sessionStorage.setItem(contractDetails.storageKey, JSON.stringify(contractDetailsData));
 
-    router.push('/steps?step=3');
+    router.push(JOURNEY_ROUTES[3]);
   }
 
   return (
     <div className="w-full">
-      {/* Desktop heading only */}
       <header
         className="
           hidden
@@ -89,7 +89,6 @@ export default function ContractDateForm() {
         "
         noValidate
       >
-        {/* Contract date */}
         <FormField label={fields.contractDate.label}>
           <div className="relative">
             <input
@@ -128,7 +127,8 @@ export default function ContractDateForm() {
                 input?.focus();
               }}
               className="
-                absolute right-[14px]
+                absolute
+                right-[14px]
                 top-1/2
 
                 flex h-8 w-8
@@ -161,49 +161,46 @@ export default function ContractDateForm() {
           </div>
         </FormField>
 
-        {/* Information paragraphs */}
-        {/* Information paragraphs */}
         <div className="space-y-3 lg:space-y-4">
           <p
             className="
-      font-inter
-      text-[14px]
-      font-normal
-      leading-[20px]
-      tracking-[0]
-      text-[#535862]
+              font-inter
+              text-[14px]
+              font-normal
+              leading-[20px]
+              tracking-[0]
+              text-[#535862]
 
-      sm:text-[14px]
-      sm:leading-[20px]
+              sm:text-[14px]
+              sm:leading-[20px]
 
-      lg:text-[16px]
-      lg:leading-5
-    "
+              lg:text-[16px]
+              lg:leading-5
+            "
           >
             {information.overlapText}
           </p>
 
           <p
             className="
-      font-inter
-      text-[14px]
-      font-normal
-      leading-[20px]
-      tracking-[0]
-      text-[#535862]
+              font-inter
+              text-[14px]
+              font-normal
+              leading-[20px]
+              tracking-[0]
+              text-[#535862]
 
-      sm:text-[14px]
-      sm:leading-[20px]
+              sm:text-[14px]
+              sm:leading-[20px]
 
-      lg:text-[16px]
-      lg:leading-5
-    "
+              lg:text-[16px]
+              lg:leading-5
+            "
           >
             {information.endDateText}
           </p>
         </div>
 
-        {/* Warning box */}
         <div
           className="
             flex w-full
@@ -296,7 +293,6 @@ export default function ContractDateForm() {
           </div>
         </div>
 
-        {/* Acknowledgement */}
         <CustomCheckbox
           checked={acknowledged}
           onChange={setAcknowledged}
@@ -318,7 +314,8 @@ function FormField({ label, children }: FormFieldProps) {
     <div className="block">
       <label
         className="
-          mb-1.5 block
+          mb-1.5
+          block
 
           font-inter
           text-[12px]
@@ -435,22 +432,22 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
 
       <span
         className="
-    min-w-0 flex-1
+          min-w-0 flex-1
 
-    font-inter
-    text-[14px]
-    font-normal
-    leading-[20px]
-    tracking-[0]
+          font-inter
+          text-[14px]
+          font-normal
+          leading-[20px]
+          tracking-[0]
 
-    text-[#535862]
+          text-[#535862]
 
-    sm:text-[14px]
-    sm:leading-[20px]
+          sm:text-[14px]
+          sm:leading-[20px]
 
-    lg:text-[14px]
-    lg:leading-5
-  "
+          lg:text-[14px]
+          lg:leading-5
+        "
       >
         {children}
       </span>

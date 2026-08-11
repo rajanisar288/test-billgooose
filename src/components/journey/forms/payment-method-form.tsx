@@ -44,6 +44,7 @@ export default function PaymentMethodForm() {
     sessionStorage.setItem('journeySelectedService', service);
 
     setServicesModalOpen(false);
+
     setGasWarningModalOpen(true);
   }
 
@@ -61,6 +62,7 @@ export default function PaymentMethodForm() {
 
   function openUpdateConsumptionModal() {
     setGasWarningModalOpen(false);
+
     setUpdateConsumptionModalOpen(true);
   }
 
@@ -85,7 +87,6 @@ export default function PaymentMethodForm() {
   return (
     <>
       <div className="w-full">
-        {/* Desktop heading only */}
         <header
           className="
             hidden
@@ -178,7 +179,6 @@ export default function PaymentMethodForm() {
                     ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
                   `}
               >
-                {/* Icon and selection */}
                 <div
                   className="
                       flex w-full
@@ -187,7 +187,6 @@ export default function PaymentMethodForm() {
                       gap-4
                     "
                 >
-                  {/* Mobile icon */}
                   <Image
                     src={mobileIcon}
                     alt={option.iconAlt}
@@ -204,7 +203,6 @@ export default function PaymentMethodForm() {
                       "
                   />
 
-                  {/* Desktop icon */}
                   <Image
                     src={option.icon}
                     alt={option.iconAlt}
@@ -225,7 +223,6 @@ export default function PaymentMethodForm() {
                   <SelectionCircle selected={isSelected} />
                 </div>
 
-                {/* Card content */}
                 <div className="min-w-0">
                   <h2
                     className="

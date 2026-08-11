@@ -12,8 +12,11 @@ export default function ResultPage() {
       <ResultHero />
 
       <ResultFilters />
+
       <ResultMobileActions />
+
       <ResultTabletActions />
+
       <ResultsStatus />
 
       <section
@@ -36,9 +39,7 @@ export default function ResultPage() {
         <div
           className="
             mt-5
-
             sm:mt-6
-
             xl:mt-7
           "
         >

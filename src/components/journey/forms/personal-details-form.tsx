@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 
+import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
 export default function PersonalDetailsForm() {
@@ -77,17 +78,12 @@ export default function PersonalDetailsForm() {
 
     sessionStorage.setItem(personalDetails.storageKey, JSON.stringify(personalDetailsData));
 
-    router.push('/steps?step=2');
+    router.push(JOURNEY_ROUTES[2]);
   }
 
   return (
     <div className="w-full">
-      {/* =====================================================
-          DESKTOP HEADING ONLY
-
-          Mobile + tablet heading comes from
-          JourneyMobileStepHeader.
-      ====================================================== */}
+      {/* Desktop heading */}
       <header
         className="
           hidden
@@ -134,9 +130,7 @@ export default function PersonalDetailsForm() {
         "
         noValidate
       >
-        {/* =====================================================
-            TITLE
-        ====================================================== */}
+        {/* Title */}
         <FormField label={fields.title.label}>
           <div
             ref={titleDropdownRef}
@@ -298,9 +292,7 @@ export default function PersonalDetailsForm() {
           </div>
         </FormField>
 
-        {/* =====================================================
-            FIRST / LAST NAME
-        ====================================================== */}
+        {/* First / Last */}
         <div
           className="
             grid
@@ -340,9 +332,6 @@ export default function PersonalDetailsForm() {
           </FormField>
         </div>
 
-        {/* =====================================================
-            EMAIL
-        ====================================================== */}
         <FormField label={fields.email.label}>
           <input
             type="email"
@@ -356,9 +345,6 @@ export default function PersonalDetailsForm() {
           />
         </FormField>
 
-        {/* =====================================================
-            MOBILE NUMBER
-        ====================================================== */}
         <FormField label={fields.mobileNumber.label}>
           <input
             type="tel"
@@ -372,9 +358,6 @@ export default function PersonalDetailsForm() {
           />
         </FormField>
 
-        {/* =====================================================
-            DATE OF BIRTH
-        ====================================================== */}
         <FormField label={fields.dateOfBirth.label}>
           <div className="relative w-full">
             <input
@@ -447,9 +430,6 @@ export default function PersonalDetailsForm() {
           </div>
         </FormField>
 
-        {/* =====================================================
-            TERMS
-        ====================================================== */}
         <div
           className="
             space-y-3

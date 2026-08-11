@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
 export default function HouseholdForm() {
@@ -25,24 +26,25 @@ export default function HouseholdForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (!selectedPropertyType || !selectedOccupants || !selectedBedrooms) {
+      return;
+    }
+
     const householdData = {
       propertyType: selectedPropertyType,
+
       occupants: selectedOccupants,
+
       bedrooms: selectedBedrooms,
     };
 
     sessionStorage.setItem(household.storageKey, JSON.stringify(householdData));
 
-    router.push('/steps?step=4');
+    router.push(JOURNEY_ROUTES[4]);
   }
 
   return (
     <div className="w-full">
-      {/* =====================================================
-          DESKTOP HEADING ONLY
-          Mobile + tablet heading comes from
-          JourneyMobileStepHeader
-      ====================================================== */}
       <header
         className="
           hidden
@@ -92,9 +94,7 @@ export default function HouseholdForm() {
           lg:space-y-7
         "
       >
-        {/* =====================================================
-            PROPERTY TYPE
-        ====================================================== */}
+        {/* Property type */}
         <fieldset>
           <legend className="sr-only">Select your property type</legend>
 
@@ -161,9 +161,6 @@ export default function HouseholdForm() {
                       ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
                     `}
                 >
-                  {/* =================================================
-                        MOBILE ICON ONLY
-                    ================================================== */}
                   <Image
                     src={option.icon}
                     alt={option.iconAlt}
@@ -180,9 +177,6 @@ export default function HouseholdForm() {
                       "
                   />
 
-                  {/* =================================================
-                        TABLET + DESKTOP TOP ROW
-                    ================================================== */}
                   <div
                     className="
                         hidden
@@ -217,9 +211,6 @@ export default function HouseholdForm() {
                     <SelectionCircle selected={isSelected} />
                   </div>
 
-                  {/* =================================================
-                        TEXT
-                    ================================================== */}
                   <div
                     className="
                         min-w-0
@@ -277,9 +268,6 @@ export default function HouseholdForm() {
                     </p>
                   </div>
 
-                  {/* =================================================
-                        MOBILE SELECTION CIRCLE ONLY
-                    ================================================== */}
                   <div
                     className="
                         ml-auto
@@ -296,9 +284,7 @@ export default function HouseholdForm() {
           </div>
         </fieldset>
 
-        {/* =====================================================
-            OCCUPANTS
-        ====================================================== */}
+        {/* Occupants */}
         <fieldset>
           <SectionHeading
             icon={occupants.icon}
@@ -341,9 +327,6 @@ export default function HouseholdForm() {
           </div>
         </fieldset>
 
-        {/* =====================================================
-            SEPARATOR
-        ====================================================== */}
         <div
           className="
             h-px
@@ -352,9 +335,7 @@ export default function HouseholdForm() {
           "
         />
 
-        {/* =====================================================
-            BEDROOMS
-        ====================================================== */}
+        {/* Bedrooms */}
         <fieldset>
           <SectionHeading
             icon={bedrooms.icon}
@@ -371,7 +352,6 @@ export default function HouseholdForm() {
               lg:mt-4
             "
           >
-            {/* Full-width first option */}
             <SelectorOption
               label={bedrooms.options[0].label}
               selected={selectedBedrooms === bedrooms.options[0].value}
@@ -381,7 +361,6 @@ export default function HouseholdForm() {
               fullWidth
             />
 
-            {/* Bottom two options */}
             <div
               className="
                 grid
@@ -414,10 +393,6 @@ export default function HouseholdForm() {
     </div>
   );
 }
-
-/* =========================================================
-   SECTION HEADING
-========================================================= */
 
 type SectionHeadingProps = {
   icon: string;
@@ -500,10 +475,6 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
   );
 }
 
-/* =========================================================
-   SELECTION CIRCLE
-========================================================= */
-
 type SelectionCircleProps = {
   selected: boolean;
 };
@@ -532,6 +503,7 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
       `}
     >
       <Check
+        aria-hidden="true"
         strokeWidth={3}
         className={`
           h-[13px]
@@ -553,10 +525,6 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
     </span>
   );
 }
-
-/* =========================================================
-   SELECTOR OPTION
-========================================================= */
 
 type SelectorOptionProps = {
   label: string;
