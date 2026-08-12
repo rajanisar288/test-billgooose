@@ -14,7 +14,9 @@ export default function Reviews() {
   const { reviews } = data;
 
   const [activeIndex, setActiveIndex] = useState(0);
+
   const [activeDirection, setActiveDirection] = useState<NavigationDirection>('next');
+
   const [isPaused, setIsPaused] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -37,7 +39,6 @@ export default function Reviews() {
     setActiveIndex((currentIndex) => (currentIndex + 1) % reviews.items.length);
   }, [reviews.items.length]);
 
-  // Automatically move to the next review every two seconds.
   useEffect(() => {
     if (isPaused) {
       return;
@@ -52,7 +53,6 @@ export default function Reviews() {
     };
   }, [handleNext, isPaused]);
 
-  // Keyboard navigation while the reviews section is focused.
   const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'ArrowLeft') {
       event.preventDefault();
@@ -113,23 +113,8 @@ export default function Reviews() {
         <div className="mx-auto mt-4 max-w-[850px] text-center min-[390px]:mt-5">
           <h2 className="font-red-hat-display text-[27px] font-[645] leading-[33px] tracking-[0] text-secondary min-[360px]:text-[28px] min-[360px]:leading-[34px] min-[390px]:text-[30px] min-[390px]:leading-[36px] sm:text-[38px] lg:text-[44px] lg:font-bold lg:leading-[52px]">
             <span className="block sm:inline">{reviews.heading.before}</span>{' '}
-            {/* Mobile rectangular highlight */}
-            <span className="mt-1 inline-flex rotate-[0.46deg] items-center justify-center rounded-[5px] bg-[#00897B] px-[5px] font-red-hat-display text-[27px] font-[645] leading-[31px] tracking-[0] text-white shadow-[0px_1.5px_0px_0px_#0D3B66] min-[360px]:text-[28px] min-[360px]:leading-[32px] min-[390px]:rounded-[6.28px] min-[390px]:text-[30px] min-[390px]:leading-[36px] lg:hidden">
-              {reviews.heading.highlighted}
-            </span>
-            {/* Desktop SVG underline */}
-            <span className="relative hidden isolate font-[645] lg:inline-block">
-              <Image
-                src={reviews.heading.underlineImage}
-                alt=""
-                width={260}
-                height={28}
-                aria-hidden="true"
-                className="pointer-events-none absolute -bottom-[3px] left-1/2 z-0 h-[18px] w-[108%] -translate-x-1/2 object-fill"
-              />
-
-              <span className="relative z-10">{reviews.heading.highlighted}</span>
-            </span>
+            {/* Plain Household text - no box / no SVG */}
+            <span className="font-[645] text-secondary">{reviews.heading.highlighted}</span>
           </h2>
 
           <p className="mx-auto mt-4 max-w-[320px] font-red-hat-display text-[12px] font-[467] leading-[16px] tracking-[0] text-secondary min-[360px]:max-w-[340px] min-[360px]:text-[13px] min-[390px]:max-w-[380px] min-[390px]:text-[14px] min-[390px]:leading-[100%] lg:max-w-none lg:text-[18px] lg:leading-[1.5]">
@@ -253,7 +238,9 @@ function ReviewCard({ review, starIcon, quoteIcon, desktop = false }: ReviewCard
       {/* Stars and quote icon */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-1">
-          {Array.from({ length: 5 }).map((_, index) => (
+          {Array.from({
+            length: 5,
+          }).map((_, index) => (
             <Image
               key={index}
               src={starIcon}

@@ -1,4 +1,5 @@
 import Footer2 from '@/components/marketing/Footer2';
+import ResultDesktopActions from '@/components/result/result-desktop-actions';
 import ResultFilters from '@/components/result/result-filters';
 import ResultHero from '@/components/result/result-hero';
 import ResultMobileActions from '@/components/result/result-mobile-actions';
@@ -16,6 +17,8 @@ export default function ResultPage() {
       <ResultMobileActions />
 
       <ResultTabletActions />
+
+      <ResultDesktopActions />
 
       <ResultsStatus />
 
