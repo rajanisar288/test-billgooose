@@ -1,4 +1,12 @@
+'use client';
+
+import { useState } from 'react';
+
 import Image from 'next/image';
+
+import UpdateConsumptionModal, {
+  type ConsumptionFormValues,
+} from '@/components/journey/modal/update-consumption-modal';
 
 type UsageCardProps = {
   title: string;
@@ -10,6 +18,12 @@ type UsageCardProps = {
   icon: string;
   iconAlt: string;
   borderColor: string;
+
+  /**
+   * Keeps the existing behavior for buttons such as
+   * "Compare energy prices".
+   */
+  onButtonClick?: () => void;
 };
 
 export default function UsageCard({
@@ -21,155 +35,279 @@ export default function UsageCard({
   buttonLabel,
   icon,
   iconAlt,
-  borderColor,
+  onButtonClick,
 }: UsageCardProps) {
+  const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
+
+  const isGas = title.toLowerCase().includes('gas');
+
+  const isUpdateConsumptionButton = buttonLabel.toLowerCase().includes('update');
+
+  const cardBackground = isGas
+    ? `
+      linear-gradient(
+        180deg,
+        rgba(220, 104, 3, 0.2) -150.63%,
+        rgba(220, 104, 3, 0) 100%
+      ) padding-box,
+      linear-gradient(
+        0deg,
+        #FFFFFF,
+        #FFFFFF
+      ) padding-box,
+      linear-gradient(
+        180deg,
+        #DC6803 -91.56%,
+        rgba(220, 104, 3, 0) 162.3%
+      ) border-box
+    `
+    : `
+      linear-gradient(
+        180deg,
+        rgba(4, 92, 158, 0.2) -150.63%,
+        rgba(4, 92, 158, 0) 100%
+      ) padding-box,
+      linear-gradient(
+        0deg,
+        #FFFFFF,
+        #FFFFFF
+      ) padding-box,
+      linear-gradient(
+        180deg,
+        #105089 -91.56%,
+        rgba(16, 80, 137, 0) 162.3%
+      ) border-box
+    `;
+
+  const handleButtonClick = () => {
+    /**
+     * Gas/Electricity "Update consumption" button:
+     * open the existing UpdateConsumptionModal.
+     */
+    if (isUpdateConsumptionButton) {
+      setIsUpdateConsumptionOpen(true);
+
+      return;
+    }
+
+    /**
+     * IMPORTANT:
+     * Do not change existing behavior for
+     * "Compare energy prices" or any other button.
+     */
+    onButtonClick?.();
+  };
+
+  const handleCloseUpdateConsumption = () => {
+    setIsUpdateConsumptionOpen(false);
+  };
+
+  const handleConsumptionSubmit = (values: ConsumptionFormValues) => {
+    /**
+     * Store the newly entered consumption details.
+     *
+     * We DO NOT navigate anywhere here because the
+     * user is already on the Current Usage/Summary page.
+     */
+    sessionStorage.setItem('journeyConsumptionDetails', JSON.stringify(values));
+
+    setIsUpdateConsumptionOpen(false);
+  };
+
   return (
-    <section
-      style={{ borderColor }}
-      className="
-        flex min-h-[194px]
-        w-full flex-col
-        rounded-[16px]
-        border bg-white p-4
-
-        sm:min-h-[204px]
-        sm:p-5
-
-        lg:h-[212px]
-        lg:min-h-[212px]
-        lg:w-[424px]
-        lg:max-w-full
-        lg:p-5
-      "
-    >
-      <div className="flex items-start gap-3">
-        <Image
-          src={icon}
-          alt={iconAlt}
-          width={40}
-          height={40}
-          aria-hidden={!iconAlt}
-          className="
-            h-9 w-9 shrink-0
-            object-contain
-
-            sm:h-10
-            sm:w-10
-          "
-        />
-
-        <div className="min-w-0 flex-1">
-          <h2
-            className="
-              font-red-hat-display
-              text-[14px] font-extrabold
-              leading-none text-[#101828]
-
-              sm:text-[15px]
-
-              lg:text-[16px]
-            "
-          >
-            {title}
-          </h2>
-
-          <p
-            className="
-              mt-1.5 truncate
-              font-red-hat-display
-              text-[11px] font-medium
-              leading-none text-[#667085]
-
-              sm:text-[12px]
-
-              lg:text-[14px]
-            "
-          >
-            {address}
-          </p>
-        </div>
-      </div>
-
-      <div
+    <>
+      <section
+        style={{
+          background: cardBackground,
+          border: '1px solid transparent',
+        }}
         className="
-          mt-4 flex items-end
-          justify-between gap-3
+          flex min-h-[194px]
+          w-full flex-col
+          rounded-[16px]
+          p-4
 
-          lg:mt-[14px]
+          sm:min-h-[204px]
+          sm:p-5
+
+          lg:h-[212px]
+          lg:min-h-[212px]
+          lg:w-[424px]
+          lg:max-w-full
+          lg:p-5
         "
       >
-        <div className="flex items-baseline gap-1">
-          <span
+        {/* Header */}
+        <div className="flex items-start gap-3">
+          <Image
+            src={icon}
+            alt={iconAlt}
+            width={40}
+            height={40}
+            aria-hidden={!iconAlt}
             className="
-              font-red-hat-display
-              text-[27px] font-[800]
-              leading-9 text-[#0C3354]
+              h-9 w-9
+              shrink-0
+              object-contain
 
-              lg:text-[32px]
-              lg:leading-[38px]
+              sm:h-10
+              sm:w-10
             "
-          >
-            {usage}
-          </span>
+          />
 
-          <span
-            className="
-              font-red-hat-display
-              text-[12px] font-medium
-              leading-5 text-[#667085]
+          <div className="min-w-0 flex-1">
+            <h2
+              className="
+                font-red-hat-display
+                text-[14px]
+                font-extrabold
+                leading-none
+                text-[#101828]
 
-              lg:text-[16px]
-              lg:leading-6
-            "
-          >
-            {unit}
-          </span>
+                sm:text-[15px]
+
+                lg:text-[16px]
+              "
+            >
+              {title}
+            </h2>
+
+            <p
+              className="
+                mt-1.5
+                truncate
+
+                font-red-hat-display
+                text-[11px]
+                font-medium
+                leading-none
+                text-[#667085]
+
+                sm:text-[12px]
+
+                lg:text-[14px]
+              "
+            >
+              {address}
+            </p>
+          </div>
         </div>
 
-        <span
+        {/* Usage / Price */}
+        <div
           className="
-            shrink-0
-            font-red-hat-display
-            text-[14px] font-medium
-            leading-5 text-[#667085]
+            mt-4
+            flex items-end
+            justify-between
+            gap-3
 
-            lg:text-[20px]
-            lg:leading-[30px]
+            lg:mt-[14px]
           "
         >
-          {price}
-        </span>
-      </div>
+          <div className="flex items-baseline gap-1">
+            <span
+              className="
+                font-red-hat-display
+                text-[32px]
+                font-[800]
+                leading-[38px]
+                text-[#0C3354]
 
-      <button
-        type="button"
-        className="
-          mt-auto inline-flex h-11
-          w-full shrink-0
-          items-center justify-center
-          whitespace-nowrap
-          rounded-[100px]
-          border border-[#D0D5DD]
-          bg-white px-4
+                sm:text-[32px]
+                sm:leading-[38px]
 
-          font-red-hat-display
-          text-[13px] font-extrabold
-          leading-6 text-[#0C3354]
+                lg:text-[32px]
+                lg:leading-[38px]
+              "
+            >
+              {usage}
+            </span>
 
-          transition-colors
+            <span
+              className="
+                font-red-hat-display
+                text-[12px]
+                font-medium
+                leading-5
+                text-[#667085]
 
-          hover:bg-[#F9FAFB]
+                lg:text-[16px]
+                lg:leading-6
+              "
+            >
+              {unit}
+            </span>
+          </div>
 
-          lg:h-[52px]
-          lg:w-[382px]
-          lg:max-w-full
-          lg:px-6
-          lg:text-[16px]
-          lg:leading-[26px]
-        "
-      >
-        {buttonLabel}
-      </button>
-    </section>
+          <span
+            className="
+              shrink-0
+
+              font-red-hat-display
+              text-[20px]
+              font-medium
+              leading-[30px]
+              text-[#667085]
+
+              sm:text-[20px]
+
+              lg:text-[20px]
+              lg:leading-[30px]
+            "
+          >
+            {price}
+          </span>
+        </div>
+
+        {/* Button */}
+        <button
+          type="button"
+          onClick={handleButtonClick}
+          className="
+            mt-auto
+            inline-flex h-11
+            w-full
+            shrink-0
+            items-center
+            justify-center
+
+            whitespace-nowrap
+            rounded-[100px]
+
+            border border-[#D0D5DD]
+            bg-white
+
+            px-4
+
+            font-red-hat-display
+            text-[16px]
+            font-bold
+            leading-6
+            text-[#0C3354]
+
+            transition-colors
+
+            hover:bg-[#F9FAFB]
+
+            lg:h-[52px]
+            lg:w-[382px]
+            lg:max-w-full
+            lg:px-6
+            lg:text-[16px]
+            lg:font-extrabold
+            lg:leading-[26px]
+          "
+        >
+          {buttonLabel}
+        </button>
+      </section>
+
+      {/* Existing Update Consumption modal */}
+      <UpdateConsumptionModal
+        isOpen={isUpdateConsumptionOpen}
+        onClose={handleCloseUpdateConsumption}
+        onSubmit={handleConsumptionSubmit}
+      />
+    </>
   );
 }

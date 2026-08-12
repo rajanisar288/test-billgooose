@@ -48,34 +48,70 @@ export default function ResultHeader() {
   return (
     <header
       className="
-        relative z-50 w-full
-        border-b border-[#EAECF01A]
+        relative z-50
+        w-full
+
+        border-b-[0.71px]
+        border-[#EAECF01A]
         bg-[#0B2B43]
       "
     >
       <div className="mx-auto w-full max-w-[1440px]">
         <div
           className="
-            flex min-h-[72px]
-            items-center justify-between
-            px-4
+            flex h-[98px]
+            items-center
+            justify-between
+            px-5
 
-            min-[390px]:px-5
+            sm:px-6
 
-            sm:min-h-[84px]
-            sm:px-8
-
+            lg:h-auto
             lg:min-h-[104px]
             lg:px-10
 
             xl:min-h-[133px]
           "
         >
-          {/* Logo */}
+          {/* MOBILE LOGO */}
           <Link
             href="/"
             onClick={closeMenus}
-            className="relative block shrink-0"
+            aria-label="Go to BillGoose homepage"
+            className="
+              relative block
+              h-[53px]
+              w-[167px]
+              shrink-0
+
+              lg:hidden
+            "
+          >
+            <Image
+              src="/images/logo-white.png"
+              alt={header.logo.alt}
+              width={167}
+              height={53}
+              priority
+              className="
+                h-[53px]
+                w-[167px]
+                object-contain
+                object-left
+              "
+            />
+          </Link>
+
+          {/* DESKTOP RESULT LOGO */}
+          <Link
+            href="/"
+            onClick={closeMenus}
+            className="
+              relative hidden
+              shrink-0
+
+              lg:block
+            "
             aria-label="Go to BillGoose homepage"
           >
             <Image
@@ -85,12 +121,7 @@ export default function ResultHeader() {
               height={83}
               priority
               className="
-                h-auto w-[142px]
                 object-contain
-
-                min-[390px]:w-[155px]
-
-                sm:w-[185px]
 
                 lg:w-[220px]
 
@@ -100,14 +131,27 @@ export default function ResultHeader() {
             />
           </Link>
 
-          {/* Desktop navigation */}
-          <div className="hidden items-center gap-3 lg:flex xl:gap-4">
+          {/* DESKTOP NAVIGATION */}
+          <div
+            className="
+              hidden
+              items-center
+              gap-3
+
+              lg:flex
+
+              xl:gap-4
+            "
+          >
             <nav
               aria-label="Main navigation"
               className="
-                flex h-[46px] items-center
+                flex h-[46px]
+                items-center
+
                 rounded-[100px]
-                bg-white/10 p-1
+                bg-white/10
+                p-1
 
                 xl:h-[50px]
               "
@@ -126,13 +170,18 @@ export default function ResultHeader() {
                           setIsCompareMenuOpen((previous) => !previous);
                         }}
                         className="
-                          flex h-[38px] items-center
-                          gap-1.5 rounded-full
+                          flex h-[38px]
+                          items-center
+                          gap-1.5
+
+                          rounded-full
                           px-3
 
                           font-red-hat-display
-                          text-[14px] font-medium
-                          leading-5 text-white
+                          text-[14px]
+                          font-medium
+                          leading-5
+                          text-white
 
                           transition-colors
 
@@ -159,7 +208,8 @@ export default function ResultHeader() {
                           size={15}
                           strokeWidth={2}
                           className={`
-                            transition-transform duration-200
+                            transition-transform
+                            duration-200
 
                             ${isCompareMenuOpen ? 'rotate-180' : ''}
                           `}
@@ -172,10 +222,17 @@ export default function ResultHeader() {
                           className="
                             absolute right-0
                             top-[calc(100%+12px)]
-                            w-56 overflow-hidden
+                            w-56
+                            overflow-hidden
+
                             rounded-2xl
-                            border border-[#EAECF0]
-                            bg-white p-2
+
+                            border
+                            border-[#EAECF0]
+
+                            bg-white
+                            p-2
+
                             shadow-xl
                           "
                         >
@@ -184,11 +241,14 @@ export default function ResultHeader() {
                             role="menuitem"
                             onClick={closeMenus}
                             className="
-                              block rounded-xl
-                              px-4 py-2.5
+                              block
+                              rounded-xl
+                              px-4
+                              py-2.5
 
                               font-red-hat-display
-                              text-sm font-medium
+                              text-sm
+                              font-medium
                               text-[#0C3354]
 
                               transition-colors
@@ -207,18 +267,21 @@ export default function ResultHeader() {
                               role="menuitem"
                               onClick={closeMenus}
                               className="
-                                block rounded-xl
-                                px-4 py-2.5
+                                  block
+                                  rounded-xl
+                                  px-4
+                                  py-2.5
 
-                                font-red-hat-display
-                                text-sm font-medium
-                                text-[#0C3354]
+                                  font-red-hat-display
+                                  text-sm
+                                  font-medium
+                                  text-[#0C3354]
 
-                                transition-colors
+                                  transition-colors
 
-                                hover:bg-[#E6F4F2]
-                                hover:text-[#00897B]
-                              "
+                                  hover:bg-[#E6F4F2]
+                                  hover:text-[#00897B]
+                                "
                             >
                               {menuItem.label}
                             </Link>
@@ -235,12 +298,17 @@ export default function ResultHeader() {
                     href={item.href}
                     onClick={closeMenus}
                     className="
-                      flex h-[38px] items-center
-                      rounded-full px-3
+                      flex h-[38px]
+                      items-center
+
+                      rounded-full
+                      px-3
 
                       font-red-hat-display
-                      text-[14px] font-medium
-                      leading-5 text-white
+                      text-[14px]
+                      font-medium
+                      leading-5
+                      text-white
 
                       transition-colors
 
@@ -264,24 +332,35 @@ export default function ResultHeader() {
               })}
             </nav>
 
-            {/* Desktop sign-in */}
+            {/* DESKTOP SIGN IN */}
             <Link
               href={header.account.href}
               aria-label="Sign In"
               onClick={closeMenus}
               className="
                 inline-flex h-[46px]
-                items-center gap-2
+                items-center
+                gap-2
+
                 rounded-[100px]
-                border border-[#EAECF0]
+
+                border
+                border-[#EAECF0]
+
                 bg-transparent
-                py-[6px] pl-4 pr-[6px]
+
+                py-[6px]
+                pl-4
+                pr-[6px]
 
                 font-red-hat-display
-                text-[14px] font-medium
-                leading-5 text-white
+                text-[14px]
+                font-medium
+                leading-5
+                text-white
 
                 shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
                 transition-colors
 
                 hover:bg-white/10
@@ -305,9 +384,15 @@ export default function ResultHeader() {
 
               <span
                 className="
-                  flex h-8 w-8 shrink-0
-                  items-center justify-center
-                  rounded-full bg-[#00897B]
+                  flex h-8
+                  w-8
+                  shrink-0
+                  items-center
+                  justify-center
+
+                  rounded-full
+                  bg-[#00897B]
+
                   text-white
 
                   xl:h-9
@@ -328,110 +413,74 @@ export default function ResultHeader() {
             </Link>
           </div>
 
-          {/* Mobile account/menu pill */}
-          <div
+          {/* MOBILE HAMBURGER */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsMobileMenuOpen((previous) => !previous);
+            }}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="result-mobile-navigation"
+            style={{
+              backgroundColor: 'rgba(249, 250, 251, 0.10)',
+            }}
             className="
-              flex h-[42px] w-[76px]
-              items-center gap-1
-              rounded-[100px]
-              border border-[#EAECF0]
-              bg-white/10
-              py-2 pl-3 pr-[5px]
+              flex h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
 
-              shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+              rounded-[10px]
 
-              min-[390px]:h-[46px]
-              min-[390px]:w-[82px]
-              min-[390px]:gap-[5px]
-              min-[390px]:pl-[13px]
-              min-[390px]:pr-[6px]
+              text-white
+
+              transition-colors
+
+              hover:bg-white/15
+
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-white
+              focus-visible:ring-offset-2
+              focus-visible:ring-offset-[#0B2B43]
 
               lg:hidden
             "
           >
-            <button
-              type="button"
-              onClick={() => {
-                setIsMobileMenuOpen((previous) => !previous);
-              }}
-              className="
-                flex h-5 w-5 shrink-0
-                items-center justify-center
-                text-white
-
-                transition-colors
-
-                hover:text-[#00BC7D]
-
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-white
-                focus-visible:ring-offset-2
-                focus-visible:ring-offset-[#0B2B43]
-              "
-              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="result-mobile-navigation"
-            >
-              {isMobileMenuOpen ? (
-                <X
-                  aria-hidden="true"
-                  className="h-4 w-4"
-                  strokeWidth={2}
-                />
-              ) : (
-                <Menu
-                  aria-hidden="true"
-                  className="h-4 w-4"
-                  strokeWidth={2}
-                />
-              )}
-            </button>
-
-            <Link
-              href={header.account.href}
-              aria-label="Sign In"
-              onClick={closeMenus}
-              className="
-                flex h-8 w-8 shrink-0
-                items-center justify-center
-                rounded-full bg-[#00897B]
-                text-white
-
-                transition-colors
-
-                hover:bg-[#00796D]
-
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-white
-                focus-visible:ring-offset-2
-                focus-visible:ring-offset-[#0B2B43]
-
-                min-[390px]:h-9
-                min-[390px]:w-9
-              "
-            >
-              <UserRound
+            {isMobileMenuOpen ? (
+              <X
                 aria-hidden="true"
                 className="
-                  h-[15px] w-[15px]
-
-                  min-[390px]:h-[17px]
-                  min-[390px]:w-[17px]
+                  h-6 w-6
+                  text-white
                 "
                 strokeWidth={2}
               />
-            </Link>
-          </div>
+            ) : (
+              <Menu
+                aria-hidden="true"
+                className="
+                  h-6 w-6
+                  text-white
+                "
+                strokeWidth={2}
+              />
+            )}
+          </button>
         </div>
 
-        {/* Mobile navigation */}
+        {/* MOBILE MENU */}
         <div
           id="result-mobile-navigation"
           className={`
             overflow-hidden
-            transition-all duration-300
+            bg-white
+
+            transition-all
+            duration-300
+
             lg:hidden
 
             ${isMobileMenuOpen ? 'max-h-[650px] opacity-100' : 'max-h-0 opacity-0'}
@@ -441,12 +490,14 @@ export default function ResultHeader() {
             aria-label="Mobile navigation"
             className="
               space-y-2
-              border-t border-[#EAECF01A]
-              px-4 py-4
 
-              min-[390px]:px-5
+              border-t
+              border-[#EAECF0]
 
-              sm:px-8
+              px-5
+              py-4
+
+              sm:px-6
               sm:py-5
             "
           >
@@ -459,16 +510,22 @@ export default function ResultHeader() {
                         href={item.href}
                         onClick={closeMenus}
                         className="
-                          flex-1 rounded-l-xl
-                          px-4 py-3
+                          flex-1
+
+                          rounded-l-xl
+
+                          px-4
+                          py-3
 
                           font-red-hat-display
-                          text-left text-sm
-                          font-medium text-white
+                          text-left
+                          text-[14px]
+                          font-semibold
+                          text-[#0D3B66]
 
                           transition-colors
 
-                          hover:bg-white/10
+                          hover:bg-[#F9FAFB]
                         "
                       >
                         {item.label}
@@ -479,23 +536,32 @@ export default function ResultHeader() {
                         onClick={() => {
                           setIsCompareMenuOpen((previous) => !previous);
                         }}
+                        aria-label="Open Compare menu"
+                        aria-expanded={isCompareMenuOpen}
                         className="
-                          flex items-center justify-center
-                          rounded-r-xl px-4 py-3
-                          text-white
+                          flex
+                          items-center
+                          justify-center
+
+                          rounded-r-xl
+
+                          px-4
+                          py-3
+
+                          text-[#0D3B66]
 
                           transition-colors
 
-                          hover:bg-white/10
+                          hover:bg-[#F9FAFB]
                         "
-                        aria-label="Open Compare menu"
-                        aria-expanded={isCompareMenuOpen}
                       >
                         <ChevronDown
                           aria-hidden="true"
                           className={`
                             h-4 w-4
-                            transition-transform duration-200
+
+                            transition-transform
+                            duration-200
 
                             ${isCompareMenuOpen ? 'rotate-180' : ''}
                           `}
@@ -506,7 +572,9 @@ export default function ResultHeader() {
 
                     <div
                       className={`
-                        grid transition-all duration-300
+                        grid
+                        transition-all
+                        duration-300
 
                         ${isCompareMenuOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}
                       `}
@@ -514,23 +582,34 @@ export default function ResultHeader() {
                       <div className="overflow-hidden">
                         <div
                           className="
-                            ml-4 space-y-1
-                            border-l-2 border-[#00897B]
-                            py-2 pl-3
+                            ml-4
+                            space-y-1
+
+                            border-l-2
+                            border-[#00897B]
+
+                            py-2
+                            pl-3
                           "
                         >
                           <Link
                             href={item.href}
                             onClick={closeMenus}
                             className="
-                              block rounded-lg
-                              px-4 py-2.5
-                              text-sm font-medium
-                              text-white
+                              block
+                              rounded-lg
+                              px-4
+                              py-2.5
+
+                              font-red-hat-display
+                              text-[14px]
+                              font-medium
+                              text-[#0D3B66]
 
                               transition-colors
 
-                              hover:bg-white/10
+                              hover:bg-[#E6F4F2]
+                              hover:text-[#00897B]
                             "
                           >
                             View all comparisons
@@ -542,15 +621,21 @@ export default function ResultHeader() {
                               href={menuItem.href}
                               onClick={closeMenus}
                               className="
-                                block rounded-lg
-                                px-4 py-2.5
-                                text-sm font-medium
-                                text-white
+                                  block
+                                  rounded-lg
+                                  px-4
+                                  py-2.5
 
-                                transition-colors
+                                  font-red-hat-display
+                                  text-[14px]
+                                  font-medium
+                                  text-[#0D3B66]
 
-                                hover:bg-white/10
-                              "
+                                  transition-colors
+
+                                  hover:bg-[#E6F4F2]
+                                  hover:text-[#00897B]
+                                "
                             >
                               {menuItem.label}
                             </Link>
@@ -568,16 +653,20 @@ export default function ResultHeader() {
                   href={item.href}
                   onClick={closeMenus}
                   className="
-                    block rounded-xl
-                    px-4 py-3
+                    block
+                    rounded-xl
+
+                    px-4
+                    py-3
 
                     font-red-hat-display
-                    text-sm font-medium
-                    text-white
+                    text-[14px]
+                    font-semibold
+                    text-[#0D3B66]
 
                     transition-colors
 
-                    hover:bg-white/10
+                    hover:bg-[#F9FAFB]
                   "
                 >
                   {item.label}
@@ -589,13 +678,21 @@ export default function ResultHeader() {
               href={header.account.href}
               onClick={closeMenus}
               className="
-                mt-4 flex items-center
-                justify-center gap-2
-                rounded-full bg-[#00897B]
-                px-5 py-3
+                mt-4
+                flex
+                items-center
+                justify-center
+
+                rounded-full
+
+                bg-[#00897B]
+
+                px-5
+                py-3
 
                 font-red-hat-display
-                text-sm font-medium
+                text-[14px]
+                font-semibold
                 text-white
 
                 transition-colors
@@ -603,11 +700,6 @@ export default function ResultHeader() {
                 hover:bg-[#00796D]
               "
             >
-              <UserRound
-                aria-hidden="true"
-                className="h-[17px] w-[17px]"
-                strokeWidth={2}
-              />
               Sign In
             </Link>
           </nav>

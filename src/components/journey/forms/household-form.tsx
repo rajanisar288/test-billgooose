@@ -7,12 +7,14 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
 export default function HouseholdForm() {
   const router = useRouter();
 
   const { household } = data.journey;
+
   const { propertyType, occupants, bedrooms } = household;
 
   const [selectedPropertyType, setSelectedPropertyType] = useState(propertyType.options[0].value);
@@ -24,33 +26,41 @@ export default function HouseholdForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (!selectedPropertyType || !selectedOccupants || !selectedBedrooms) {
+      return;
+    }
+
     const householdData = {
       propertyType: selectedPropertyType,
+
       occupants: selectedOccupants,
+
       bedrooms: selectedBedrooms,
     };
 
     sessionStorage.setItem(household.storageKey, JSON.stringify(householdData));
 
-    router.push('/steps?step=4');
+    router.push(JOURNEY_ROUTES[4]);
   }
 
   return (
     <div className="w-full">
-      {/* Heading */}
-      <header className="mb-6 sm:mb-7 lg:mb-8">
+      <header
+        className="
+          hidden
+
+          lg:mb-8
+          lg:block
+        "
+      >
         <h1
           className="
             font-red-hat-display
-            text-[30px] font-extrabold
-            leading-[38px] tracking-[0]
+            text-[40px]
+            font-extrabold
+            leading-[56px]
+            tracking-[0]
             text-[#0C3354]
-
-            sm:text-[34px]
-            sm:leading-[44px]
-
-            lg:text-[40px]
-            lg:leading-[56px]
           "
         >
           {household.heading}
@@ -59,15 +69,14 @@ export default function HouseholdForm() {
         <p
           className="
             mt-1
-            font-inter text-[14px]
-            font-normal leading-[21px]
-            tracking-[0] text-[#667085]
 
-            sm:text-[16px]
-            sm:leading-6
+            font-inter
+            text-[18px]
+            font-normal
+            leading-[25px]
+            tracking-[0]
 
-            lg:text-[18px]
-            lg:leading-[25px]
+            text-[#667085]
           "
         >
           {household.description}
@@ -77,7 +86,13 @@ export default function HouseholdForm() {
       <form
         id="journey-step-form-3"
         onSubmit={handleSubmit}
-        className="space-y-6 lg:space-y-7"
+        className="
+          space-y-6
+
+          md:space-y-7
+
+          lg:space-y-7
+        "
       >
         {/* Property type */}
         <fieldset>
@@ -85,10 +100,12 @@ export default function HouseholdForm() {
 
           <div
             className="
-              grid grid-cols-1 gap-3
+              grid
+              grid-cols-1
+              gap-4
 
-              min-[420px]:grid-cols-2
-              min-[420px]:gap-[14px]
+              md:grid-cols-2
+              md:gap-4
 
               lg:grid-cols-[243px_243px]
               lg:gap-[14px]
@@ -106,26 +123,71 @@ export default function HouseholdForm() {
                     setSelectedPropertyType(option.value);
                   }}
                   className={`
-                    relative flex min-h-[112px]
-                    w-full flex-col items-start
-                    justify-between gap-3
-                    rounded-[14px]
-                    bg-white p-4 text-left
-                    transition-colors
+                      relative
 
-                    sm:min-h-[124px]
-                    sm:rounded-[16px]
-                    sm:p-[18px]
+                      flex min-h-[78px]
+                      w-full
+                      items-center
+                      gap-4
 
-                    lg:h-[139px]
-                    lg:min-h-[139px]
-                    lg:gap-4
-                    lg:p-5
+                      rounded-[16px]
 
-                    ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
-                  `}
+                      bg-white
+
+                      px-5
+                      py-3
+
+                      text-left
+
+                      transition-colors
+
+                      md:h-[135px]
+                      md:min-h-[135px]
+                      md:flex-col
+                      md:items-start
+                      md:justify-between
+                      md:gap-3
+                      md:p-5
+
+                      lg:h-[139px]
+                      lg:min-h-[139px]
+                      lg:flex-col
+                      lg:items-start
+                      lg:justify-between
+                      lg:gap-4
+                      lg:rounded-[16px]
+                      lg:p-5
+
+                      ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
+                    `}
                 >
-                  <div className="flex w-full items-start justify-between gap-4">
+                  <Image
+                    src={option.icon}
+                    alt={option.iconAlt}
+                    width={30}
+                    height={30}
+                    aria-hidden="true"
+                    className="
+                        h-[30px]
+                        w-[30px]
+                        shrink-0
+                        object-contain
+
+                        md:hidden
+                      "
+                  />
+
+                  <div
+                    className="
+                        hidden
+
+                        md:flex
+                        md:w-full
+                        md:items-start
+                        md:justify-between
+                        md:gap-4
+                      "
+                  >
                     <Image
                       src={option.icon}
                       alt={option.iconAlt}
@@ -133,51 +195,88 @@ export default function HouseholdForm() {
                       height={24}
                       aria-hidden="true"
                       className="
-                        h-5 w-5 shrink-0
-                        object-contain
+                          h-6
+                          w-6
+                          shrink-0
+                          object-contain
 
-                        sm:h-[22px]
-                        sm:w-[22px]
+                          md:h-[22px]
+                          md:w-[22px]
 
-                        lg:h-6
-                        lg:w-6
-                      "
+                          lg:h-6
+                          lg:w-6
+                        "
                     />
 
                     <SelectionCircle selected={isSelected} />
                   </div>
 
-                  <div className="min-w-0">
+                  <div
+                    className="
+                        min-w-0
+                        flex-1
+
+                        md:flex-none
+
+                        lg:flex-none
+                      "
+                  >
                     <p
                       className="
-                        font-inter text-[15px]
-                       leading-5 font-[550] font-bold
-                        tracking-[0] text-[#344054]
+                          font-inter
+                          text-[20px]
+                          font-bold
+                          leading-[24px]
+                          tracking-[0]
 
-                        sm:text-[16px]
+                          text-[#0C3354]
 
-                        lg:text-[18px]
-                      "
+                          md:text-[16px]
+                          md:leading-[20px]
+                          md:text-[#344054]
+
+                          lg:text-[18px]
+                          lg:leading-5
+                          lg:text-[#344054]
+                        "
                     >
                       {option.label}
                     </p>
 
                     <p
                       className="
-                        mt-1.5 font-inter
-                        text-[11px] font-normal
-                        leading-[15px]
-                        tracking-[0] text-[#667085]
+                          mt-1
 
-                        sm:text-[12px]
-                        sm:leading-4
+                          font-inter
+                          text-[16px]
+                          font-normal
+                          leading-[22px]
+                          tracking-[0]
 
-                        lg:text-[14px]
-                        lg:leading-[14px]
-                      "
+                          text-[#667085]
+
+                          md:mt-1
+                          md:text-[13px]
+                          md:leading-[18px]
+
+                          lg:mt-1.5
+                          lg:text-[14px]
+                          lg:leading-[14px]
+                        "
                     >
                       {option.description}
                     </p>
+                  </div>
+
+                  <div
+                    className="
+                        ml-auto
+                        shrink-0
+
+                        md:hidden
+                      "
+                  >
+                    <SelectionCircle selected={isSelected} />
                   </div>
                 </button>
               );
@@ -196,12 +295,19 @@ export default function HouseholdForm() {
 
           <div
             className="
-              mt-3 grid grid-cols-1 gap-3
+              mt-3
+
+              grid
+              grid-cols-1
+              gap-3
 
               min-[390px]:grid-cols-3
               min-[390px]:gap-2
 
               sm:gap-3
+
+              md:grid-cols-3
+              md:gap-3
 
               lg:mt-4
               lg:grid-cols-[157.33px_157.33px_157.33px]
@@ -221,8 +327,13 @@ export default function HouseholdForm() {
           </div>
         </fieldset>
 
-        {/* Separator */}
-        <div className="h-px w-full bg-[#D5D7DA]" />
+        <div
+          className="
+            h-px
+            w-full
+            bg-[#D5D7DA]
+          "
+        />
 
         {/* Bedrooms */}
         <fieldset>
@@ -233,8 +344,14 @@ export default function HouseholdForm() {
             description={bedrooms.description}
           />
 
-          <div className="mt-3 space-y-3 lg:mt-4">
-            {/* Full-width first option */}
+          <div
+            className="
+              mt-3
+              space-y-3
+
+              lg:mt-4
+            "
+          >
             <SelectorOption
               label={bedrooms.options[0].label}
               selected={selectedBedrooms === bedrooms.options[0].value}
@@ -244,13 +361,17 @@ export default function HouseholdForm() {
               fullWidth
             />
 
-            {/* Bottom two options */}
             <div
               className="
-                grid grid-cols-1 gap-3
+                grid
+                grid-cols-1
+                gap-3
 
                 min-[390px]:grid-cols-2
                 min-[390px]:gap-[14px]
+
+                md:grid-cols-2
+                md:gap-[14px]
 
                 lg:grid-cols-[243px_243px]
               "
@@ -283,7 +404,13 @@ type SectionHeadingProps = {
 function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingProps) {
   return (
     <div>
-      <div className="flex items-center gap-2">
+      <div
+        className="
+          flex
+          items-center
+          gap-2
+        "
+      >
         <Image
           src={icon}
           alt={iconAlt}
@@ -291,8 +418,13 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
           height={15}
           aria-hidden="true"
           className="
-            h-[14px] w-[14px]
-            shrink-0 object-contain
+            h-[14px]
+            w-[14px]
+            shrink-0
+            object-contain
+
+            md:h-[15px]
+            md:w-[15px]
 
             lg:h-[15px]
             lg:w-[15px]
@@ -301,13 +433,18 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
 
         <h2
           className="
-            font-inter text-[14px]
-            font-[500] font-bold leading-5
-            tracking-[0] text-[#344054]
+            font-inter
+            text-[18px]
+            font-bold
+            leading-6
+            tracking-[0]
+            text-[#344054]
 
-            sm:text-[16px]
+            md:text-[16px]
+            md:leading-[22px]
 
             lg:text-[18px]
+            lg:leading-6
           "
         >
           {heading}
@@ -316,13 +453,17 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
 
       <p
         className="
-          mt-1 font-inter
-          text-[11px] font-normal
-          leading-[15px] tracking-[0]
+          mt-1
+
+          font-inter
+          text-[14px]
+          font-normal
+          leading-[20px]
+          tracking-[0]
           text-[#667085]
 
-          sm:text-[12px]
-          sm:leading-4
+          md:text-[13px]
+          md:leading-[18px]
 
           lg:text-[14px]
           lg:leading-[14px]
@@ -343,9 +484,17 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
     <span
       aria-hidden="true"
       className={`
-        flex h-[18px] w-[18px]
-        shrink-0 items-center justify-center
-        rounded-full border
+        flex h-[22px]
+        w-[22px]
+        shrink-0
+        items-center
+        justify-center
+
+        rounded-full
+        border
+
+        md:h-5
+        md:w-5
 
         lg:h-5
         lg:w-5
@@ -354,10 +503,18 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
       `}
     >
       <Check
+        aria-hidden="true"
         strokeWidth={3}
         className={`
-          h-3 w-3 text-white
+          h-[13px]
+          w-[13px]
+
+          text-white
+
           transition-opacity
+
+          md:h-[12px]
+          md:w-[12px]
 
           lg:h-[13px]
           lg:w-[13px]
@@ -383,16 +540,31 @@ function SelectorOption({ label, selected, onClick, fullWidth = false }: Selecto
       aria-pressed={selected}
       onClick={onClick}
       className={`
-        flex h-[52px] w-full
-        items-center justify-between
-        gap-3 rounded-[14px]
-        border bg-white
-        px-4 text-left
+        flex h-[52px]
+        w-full
+        items-center
+        justify-between
+        gap-3
+
+        rounded-[14px]
+
+        border
+
+        bg-white
+
+        px-4
+
+        text-left
+
         transition-colors
 
         sm:h-[56px]
         sm:rounded-[16px]
         sm:px-[18px]
+
+        md:h-[54px]
+        md:rounded-[14px]
+        md:px-4
 
         lg:h-[61px]
         lg:gap-4
@@ -407,12 +579,18 @@ function SelectorOption({ label, selected, onClick, fullWidth = false }: Selecto
       <span
         className="
           min-w-0
+
           font-red-hat-display
-          text-[13px] font-[550] font-bold
-          leading-none tracking-[0]
+          text-[13px]
+          font-bold
+          leading-none
+          tracking-[0]
+
           text-[#0D3B66]
 
           sm:text-[14px]
+
+          md:text-[14px]
 
           lg:text-[16px]
         "

@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation';
 
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 
+import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
 export default function PersonalDetailsForm() {
   const router = useRouter();
 
   const { personalDetails } = data.journey;
+
   const { fields, terms } = personalDetails;
 
   const [title, setTitle] = useState(fields.title.defaultValue);
@@ -23,7 +25,9 @@ export default function PersonalDetailsForm() {
   const [lastName, setLastName] = useState(fields.lastName.defaultValue);
 
   const [email, setEmail] = useState('');
+
   const [mobileNumber, setMobileNumber] = useState('');
+
   const [dateOfBirth, setDateOfBirth] = useState('');
 
   const [acceptedTerms, setAcceptedTerms] = useState(terms.acceptedTermsDefault);
@@ -74,25 +78,28 @@ export default function PersonalDetailsForm() {
 
     sessionStorage.setItem(personalDetails.storageKey, JSON.stringify(personalDetailsData));
 
-    router.push('/steps?step=2');
+    router.push(JOURNEY_ROUTES[2]);
   }
 
   return (
     <div className="w-full">
-      {/* Heading */}
-      <header className="mb-6 sm:mb-7 lg:mb-8">
+      {/* Desktop heading */}
+      <header
+        className="
+          hidden
+
+          lg:mb-8
+          lg:block
+        "
+      >
         <h1
           className="
             font-red-hat-display
-            text-[30px] font-extrabold
-            leading-[38px] tracking-[0]
+            text-[40px]
+            font-extrabold
+            leading-[56px]
+            tracking-[0]
             text-[#0C3354]
-
-            sm:text-[34px]
-            sm:leading-[44px]
-
-            lg:text-[40px]
-            lg:leading-[56px]
           "
         >
           {personalDetails.heading}
@@ -101,15 +108,13 @@ export default function PersonalDetailsForm() {
         <p
           className="
             mt-1
-            font-inter text-[14px] font-normal
-            leading-[21px] tracking-[0]
+
+            font-inter
+            text-[18px]
+            font-normal
+            leading-[25px]
+            tracking-[0]
             text-[#667085]
-
-            sm:text-[16px]
-            sm:leading-6
-
-            lg:text-[18px]
-            lg:leading-[25px]
           "
         >
           {personalDetails.description}
@@ -119,14 +124,17 @@ export default function PersonalDetailsForm() {
       <form
         id="journey-step-form-1"
         onSubmit={handleSubmit}
-        className="space-y-4"
+        className="
+          w-full
+          space-y-4
+        "
         noValidate
       >
-        {/* Title dropdown */}
+        {/* Title */}
         <FormField label={fields.title.label}>
           <div
             ref={titleDropdownRef}
-            className="relative"
+            className="relative w-full"
           >
             <button
               type="button"
@@ -136,19 +144,33 @@ export default function PersonalDetailsForm() {
                 setTitleDropdownOpen((currentValue) => !currentValue);
               }}
               className={`
-                flex h-11 w-full
-                items-center justify-between
-                gap-2 rounded-[100px]
-                border bg-white
-                px-4 py-3
+                flex h-11
+                w-full
+                items-center
+                justify-between
+                gap-2
+
+                rounded-[100px]
+
+                border
+
+                bg-white
+
+                px-4
+                py-3
+
                 text-left
 
-                font-inter text-[13px]
-                font-normal leading-5
+                font-inter
+                text-[13px]
+                font-normal
+                leading-5
                 text-[#344054]
 
                 shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
                 outline-none
+
                 transition
 
                 sm:h-12
@@ -170,9 +192,13 @@ export default function PersonalDetailsForm() {
               <ChevronDown
                 aria-hidden="true"
                 className={`
-                  h-5 w-5 shrink-0
+                  h-5
+                  w-5
+                  shrink-0
                   text-[#354052]
-                  transition-transform duration-200
+
+                  transition-transform
+                  duration-200
 
                   ${titleDropdownOpen ? 'rotate-180' : ''}
                 `}
@@ -185,11 +211,21 @@ export default function PersonalDetailsForm() {
                 role="listbox"
                 aria-label={fields.title.label}
                 className="
-                  absolute left-0 top-[calc(100%+8px)]
-                  z-50 w-full
+                  absolute
+                  left-0
+                  top-[calc(100%+8px)]
+                  z-50
+
+                  w-full
+
                   overflow-hidden
+
                   rounded-[20px]
-                  bg-white p-[5px]
+
+                  bg-white
+
+                  p-[5px]
+
                   shadow-[0px_2px_4px_0px_rgba(84,84,84,0.15),0px_7px_7px_0px_rgba(84,84,84,0.13),0px_15px_9px_0px_rgba(84,84,84,0.08),0px_27px_11px_0px_rgba(84,84,84,0.02)]
                 "
               >
@@ -204,32 +240,47 @@ export default function PersonalDetailsForm() {
                       aria-selected={isSelected}
                       onClick={() => {
                         setTitle(option.value);
+
                         setTitleDropdownOpen(false);
                       }}
                       className={`
-                        flex min-h-9 w-full
-                        items-center justify-between
-                        rounded-[30px]
-                        px-3 py-2
-                        text-left
+                          flex min-h-9
+                          w-full
+                          items-center
+                          justify-between
 
-                        font-inter text-[13px]
-                        leading-5 text-[#344054]
-                        transition-colors
+                          rounded-[30px]
 
-                        hover:bg-[#F5F5F5]
+                          px-3
+                          py-2
 
-                        sm:text-[14px]
+                          text-left
 
-                        ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
-                      `}
+                          font-inter
+                          text-[13px]
+                          leading-5
+                          text-[#344054]
+
+                          transition-colors
+
+                          hover:bg-[#F5F5F5]
+
+                          sm:text-[14px]
+
+                          ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
+                        `}
                     >
                       <span>{option.label}</span>
 
                       {isSelected && (
                         <Check
                           aria-hidden="true"
-                          className="h-4 w-4 shrink-0 text-[#00897B]"
+                          className="
+                              h-4
+                              w-4
+                              shrink-0
+                              text-[#00897B]
+                            "
                           strokeWidth={2}
                         />
                       )}
@@ -241,10 +292,12 @@ export default function PersonalDetailsForm() {
           </div>
         </FormField>
 
-        {/* First and last name */}
+        {/* First / Last */}
         <div
           className="
-            grid grid-cols-1 gap-4
+            grid
+            grid-cols-1
+            gap-4
 
             sm:grid-cols-2
             sm:gap-[18px]
@@ -279,7 +332,6 @@ export default function PersonalDetailsForm() {
           </FormField>
         </div>
 
-        {/* Email */}
         <FormField label={fields.email.label}>
           <input
             type="email"
@@ -293,7 +345,6 @@ export default function PersonalDetailsForm() {
           />
         </FormField>
 
-        {/* Mobile */}
         <FormField label={fields.mobileNumber.label}>
           <input
             type="tel"
@@ -307,9 +358,8 @@ export default function PersonalDetailsForm() {
           />
         </FormField>
 
-        {/* Date of birth */}
         <FormField label={fields.dateOfBirth.label}>
-          <div className="relative">
+          <div className="relative w-full">
             <input
               id="date-of-birth"
               type="date"
@@ -319,16 +369,19 @@ export default function PersonalDetailsForm() {
               }}
               autoComplete="bday"
               className={`
-        ${inputClasses}
-        pr-11 lg:pr-[50px]
+                ${inputClasses}
 
-        [&::-webkit-calendar-picker-indicator]:absolute
-        [&::-webkit-calendar-picker-indicator]:right-[18px]
-        [&::-webkit-calendar-picker-indicator]:h-[18px]
-        [&::-webkit-calendar-picker-indicator]:w-[18px]
-        [&::-webkit-calendar-picker-indicator]:cursor-pointer
-        [&::-webkit-calendar-picker-indicator]:opacity-0
-      `}
+                pr-11
+
+                lg:pr-[50px]
+
+                [&::-webkit-calendar-picker-indicator]:absolute
+                [&::-webkit-calendar-picker-indicator]:right-[18px]
+                [&::-webkit-calendar-picker-indicator]:h-[18px]
+                [&::-webkit-calendar-picker-indicator]:w-[18px]
+                [&::-webkit-calendar-picker-indicator]:cursor-pointer
+                [&::-webkit-calendar-picker-indicator]:opacity-0
+              `}
             />
 
             <button
@@ -341,34 +394,48 @@ export default function PersonalDetailsForm() {
                 input?.focus();
               }}
               className="
-        absolute right-[14px] top-1/2
-        flex h-8 w-8 -translate-y-1/2
-        items-center justify-center
-        rounded-full
-        text-[#667085]
+                absolute
+                right-[14px]
+                top-1/2
 
-        hover:bg-[#F2F4F7]
+                flex h-8
+                w-8
+                -translate-y-1/2
+                items-center
+                justify-center
 
-        focus-visible:outline-none
-        focus-visible:ring-4
-        focus-visible:ring-[#EEFFFB]
-      "
+                rounded-full
+
+                text-[#667085]
+
+                hover:bg-[#F2F4F7]
+
+                focus-visible:outline-none
+                focus-visible:ring-4
+                focus-visible:ring-[#EEFFFB]
+              "
             >
               <CalendarDays
                 aria-hidden="true"
                 className="
-          h-4 w-4
+                  h-4
+                  w-4
 
-          lg:h-[18px]
-          lg:w-[18px]
-        "
+                  lg:h-[18px]
+                  lg:w-[18px]
+                "
                 strokeWidth={1.6}
               />
             </button>
           </div>
         </FormField>
-        {/* Terms */}
-        <div className="space-y-3 pt-1">
+
+        <div
+          className="
+            space-y-3
+            pt-1
+          "
+        >
           <CustomCheckbox
             checked={acceptedTerms}
             onChange={setAcceptedTerms}
@@ -395,12 +462,16 @@ type FormFieldProps = {
 
 function FormField({ label, children }: FormFieldProps) {
   return (
-    <div className="block">
+    <div className="block w-full">
       <label
         className="
-          mb-1.5 block
-          font-inter text-[11px]
-          font-medium leading-4
+          mb-1.5
+          block
+
+          font-inter
+          text-[11px]
+          font-medium
+          leading-4
           text-[#344054]
 
           sm:text-[12px]
@@ -428,13 +499,27 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
   return (
     <label
       className="
-        flex w-full cursor-pointer
-        items-start gap-2.5
+        flex w-full
+        cursor-pointer
+        items-start
+        gap-2.5
 
         lg:gap-3
       "
     >
-      <span className="relative mt-[2px] h-4 w-4 shrink-0 lg:h-[18px] lg:w-[18px]">
+      <span
+        className="
+          relative
+          mt-[2px]
+
+          h-4
+          w-4
+          shrink-0
+
+          lg:h-[18px]
+          lg:w-[18px]
+        "
+      >
         <input
           type="checkbox"
           checked={checked}
@@ -442,9 +527,16 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
             onChange(event.target.checked);
           }}
           className="
-            absolute inset-0 z-10
-            h-full w-full cursor-pointer
-            appearance-none opacity-0
+            absolute
+            inset-0
+            z-10
+
+            h-full
+            w-full
+
+            cursor-pointer
+            appearance-none
+            opacity-0
           "
         />
 
@@ -452,11 +544,22 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
           aria-hidden="true"
           className={`
             pointer-events-none
-            flex h-full w-full
-            items-center justify-center
-            overflow-hidden rounded-[4px]
-            border leading-none
-            transition-colors duration-150
+
+            flex h-full
+            w-full
+            items-center
+            justify-center
+
+            overflow-hidden
+
+            rounded-[4px]
+
+            border
+
+            leading-none
+
+            transition-colors
+            duration-150
 
             ${checked ? 'border-[#00897B] bg-[#00897B]' : 'border-[#D0D5DD] bg-white'}
           `}
@@ -465,9 +568,13 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
             aria-hidden="true"
             strokeWidth={3}
             className={`
-              h-3 w-3 shrink-0
+              h-3
+              w-3
+              shrink-0
               text-white
-              transition-opacity duration-150
+
+              transition-opacity
+              duration-150
 
               lg:h-[14px]
               lg:w-[14px]
@@ -480,13 +587,21 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
 
       <span
         className="
-          min-w-0 flex-1
-          font-inter text-[11px]
-          font-normal leading-[16px]
-          tracking-[0] text-[#535862]
+          min-w-0
+          flex-1
+
+          font-inter
+          text-[11px]
+          font-normal
+          leading-[16px]
+          tracking-[0]
+          text-[#535862]
 
           sm:text-[12px]
           sm:leading-[18px]
+
+          md:text-[14px]
+          md:leading-[20px]
 
           lg:max-w-[464px]
           lg:text-[14px]
@@ -500,20 +615,30 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
 }
 
 const inputClasses = `
-  h-11 w-full
+  h-11
+  w-full
+
   rounded-[100px]
-  border border-[#D0D5DD]
+
+  border
+  border-[#D0D5DD]
+
   bg-white
-  px-4 py-3
+
+  px-4
+  py-3
 
   font-inter
   text-[13px]
   font-normal
   leading-5
+
   text-[#101828]
 
   shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
   outline-none
+
   transition
 
   placeholder:text-[#667085]

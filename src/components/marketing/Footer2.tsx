@@ -6,112 +6,332 @@ export default function Footer2() {
   const { footer2 } = data;
 
   return (
-    <footer className="w-full bg-[#F9F9F9]">
+    <footer
+      className="
+    w-full
+    border-t
+    border-[#EAECF0]
+    bg-[#F9F9F9]
+
+    lg:border-t-0
+  "
+    >
       <div
         className="
-          mx-auto flex w-full max-w-[1440px]
-          flex-col gap-4
-          border-t border-[#E5E5E5]
-          px-5 py-6
+          mx-auto
+          w-full
+          max-w-[1440px]
+
+          px-5
+          pb-7
+          pt-6
 
           min-[390px]:px-6
 
-          md:flex-row
-          md:items-center
-          md:justify-between
-          md:gap-8
           md:px-8
+          md:pb-8
+          md:pt-6
 
-          lg:h-[96px]
-          lg:px-[60px]
-          lg:pb-[40px]
-          lg:pt-[32px]
+          lg:px-10
+          lg:pb-[18px]
+          lg:pt-0
+
+          xl:px-[60px]
         "
       >
-        {/* Copyright */}
-        <p
+        {/* =====================================================
+            MOBILE ONLY
+        ====================================================== */}
+        <div
           className="
-            font-red-hat-display
-            text-[12px] font-[467]
-            leading-[18px] tracking-[0]
-            text-black
+            flex
+            flex-col
+            items-center
 
-            min-[390px]:text-[13px]
-
-            md:whitespace-nowrap
-
-            lg:text-[16px]
-            lg:leading-[10px]
+            md:hidden
           "
         >
-          {footer2.copyright}
-        </p>
+          {/* Copyright */}
+          <p
+            className="
+              text-center
 
-        {/* Legal links */}
-        <nav
-          aria-label={footer2.navigationAriaLabel}
-          className="
-            flex flex-wrap items-center
-            gap-x-3 gap-y-2
+              font-red-hat-display
+              text-[16px]
+              font-[467]
+              leading-[24px]
+              tracking-[0]
+              text-black
+            "
+          >
+            {footer2.copyright}
+          </p>
 
-            md:justify-end
+          {/* Legal links */}
+          <nav
+            aria-label={footer2.navigationAriaLabel}
+            className="
+              mt-8
 
-            lg:gap-x-4
-          "
-        >
-          {footer2.links.map((link, index) => (
-            <div
-              key={link.id}
-              className="flex items-center gap-3 lg:gap-4"
-            >
-              <Link
-                href={link.href}
+              flex
+              w-full
+              flex-wrap
+              items-center
+              justify-center
+
+              gap-x-[18px]
+              gap-y-2
+            "
+          >
+            {footer2.links.map((link, index) => (
+              <div
+                key={link.id}
                 className="
-                  font-red-hat-display
-                  text-[12px] font-[550]
-                  leading-5 tracking-[0]
-                  text-black underline
-                  decoration-[0.8px]
-                  underline-offset-[2px]
-
-                  transition-opacity
-                  duration-200
-                  hover:opacity-70
-
-                  focus-visible:rounded-sm
-                  focus-visible:outline-none
-                  focus-visible:ring-2
-                  focus-visible:ring-[#00897B]
-                  focus-visible:ring-offset-2
-
-                  min-[390px]:text-[13px]
-
-                  lg:text-[16px]
-                  lg:leading-6
-                  lg:decoration-[0.8px]
-                  lg:underline-offset-[3px]
+                  flex
+                  items-center
+                  gap-[18px]
                 "
               >
-                {link.label}
-              </Link>
-
-              {index < footer2.links.length - 1 && (
-                <span
-                  aria-hidden="true"
+                <Link
+                  href={link.href}
                   className="
-                    font-red-hat-display
-                    text-[11px] font-[467]
-                    leading-none text-black
+                    whitespace-nowrap
 
-                    lg:text-[12px]
+                    font-red-hat-display
+                    text-[16px]
+                    font-[550]
+                    leading-[24px]
+                    tracking-[0]
+                    text-black
+
+                    underline
+                    decoration-[0.8px]
+                    underline-offset-[3px]
+
+                    transition-opacity
+
+                    hover:opacity-70
                   "
                 >
-                  ·
-                </span>
-              )}
-            </div>
-          ))}
-        </nav>
+                  {link.label}
+                </Link>
+
+                {index < footer2.links.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="
+                      text-[15px]
+                      font-[550]
+                      leading-[24px]
+                      text-black
+                    "
+                  >
+                    •
+                  </span>
+                )}
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* =====================================================
+            TABLET ONLY
+        ====================================================== */}
+        <div
+          className="
+            hidden
+
+            md:flex
+            md:flex-row
+            md:items-center
+            md:justify-between
+            md:gap-4
+
+            lg:hidden
+          "
+        >
+          {/* Copyright */}
+          <p
+            className="
+              shrink-0
+
+              font-red-hat-display
+              text-[16px]
+              font-[467]
+              leading-[20px]
+              tracking-[0]
+              text-black
+            "
+          >
+            {footer2.copyright}
+          </p>
+
+          {/* Legal links */}
+          <nav
+            aria-label={footer2.navigationAriaLabel}
+            className="
+              flex
+              flex-wrap
+              items-center
+              justify-end
+              gap-x-3
+              gap-y-2
+            "
+          >
+            {footer2.links.map((link, index) => (
+              <div
+                key={link.id}
+                className="
+                  flex
+                  items-center
+                  gap-3
+                "
+              >
+                <Link
+                  href={link.href}
+                  className="
+                    whitespace-nowrap
+
+                    font-red-hat-display
+                    text-[16px]
+                    font-[550]
+                    leading-[24px]
+                    tracking-[0]
+                    text-black
+
+                    underline
+                    decoration-[0.8px]
+                    underline-offset-[2px]
+
+                    transition-opacity
+
+                    hover:opacity-70
+                  "
+                >
+                  {link.label}
+                </Link>
+
+                {index < footer2.links.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="
+                      text-[16px]
+                      font-[550]
+                      leading-[24px]
+                      text-black
+                    "
+                  >
+                    •
+                  </span>
+                )}
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        {/* =====================================================
+            DESKTOP ONLY
+        ====================================================== */}
+        <div className="hidden lg:block">
+          {/* Top divider */}
+          <div
+            aria-hidden="true"
+            className="
+              h-px
+              w-full
+              bg-[#E9EAEB]
+            "
+          />
+
+          <div
+            className="
+              flex
+              min-h-[61px]
+              w-full
+              items-center
+              justify-between
+              gap-8
+            "
+          >
+            {/* Copyright - LEFT */}
+            <p
+              className="
+                shrink-0
+
+                font-red-hat-display
+                text-[16px]
+                font-[467]
+                leading-[10px]
+                tracking-[0]
+                text-black
+              "
+            >
+              {footer2.copyright}
+            </p>
+
+            {/* Links - RIGHT */}
+            <nav
+              aria-label={footer2.navigationAriaLabel}
+              className="
+                ml-auto
+                flex
+                shrink-0
+                items-center
+                justify-end
+                gap-[14px]
+              "
+            >
+              {footer2.links.map((link, index) => (
+                <div
+                  key={link.id}
+                  className="
+                    flex
+                    items-center
+                    gap-[14px]
+                  "
+                >
+                  <Link
+                    href={link.href}
+                    className="
+                      whitespace-nowrap
+
+                      font-red-hat-display
+                      text-[16px]
+                      font-[550]
+                      leading-[24px]
+                      tracking-[0]
+                      text-black
+
+                      underline
+                      decoration-[0.8px]
+                      underline-offset-[2px]
+
+                      transition-opacity
+
+                      hover:opacity-70
+                    "
+                  >
+                    {link.label}
+                  </Link>
+
+                  {index < footer2.links.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="
+                        text-[16px]
+                        font-[550]
+                        leading-[24px]
+                        text-black
+                      "
+                    >
+                      •
+                    </span>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
+        </div>
       </div>
     </footer>
   );

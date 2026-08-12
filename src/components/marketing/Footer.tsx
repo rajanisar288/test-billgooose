@@ -18,14 +18,30 @@ export default function Footer() {
     setOpenColumnId((currentColumnId) => (currentColumnId === columnId ? null : columnId));
   };
 
+  const getFooterHref = (columnHeading: string) => {
+    const normalizedHeading = columnHeading.trim().toLowerCase();
+
+    if (normalizedHeading.includes('compare')) {
+      return '/compare';
+    }
+
+    if (normalizedHeading.includes('guide')) {
+      return '/#guides';
+    }
+
+    return '/';
+  };
+
   return (
-    <footer className="w-full bg-[#F9FAFB]">
+    <footer className="w-full bg-white">
       {/* Mobile footer */}
-      <div className="mx-auto flex min-h-[480px] w-full max-w-[440px] flex-col px-3 py-5 min-[360px]:min-h-[505px] min-[360px]:px-4 min-[390px]:min-h-[532px] min-[390px]:px-5 lg:hidden">
+      <div className="flex min-h-[600px] w-full flex-col px-5 pb-8 pt-8 sm:px-8 lg:hidden">
         {/* Mobile accordion links */}
-        <div className="flex flex-col">
+        <div>
           {footer.columns.map((column) => {
             const isOpen = openColumnId === column.id;
+
+            const columnHref = getFooterHref(column.heading);
 
             return (
               <div key={column.id}>
@@ -62,7 +78,7 @@ export default function Footer() {
                       {column.links.map((link) => (
                         <Link
                           key={link.id}
-                          href={link.href}
+                          href={columnHref}
                           className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[12px] font-[467] leading-[18px] tracking-[0] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-[360px]:text-[13px] min-[360px]:leading-[19px] min-[390px]:text-[14px] min-[390px]:leading-5"
                         >
                           <span>{link.label}</span>
@@ -85,7 +101,7 @@ export default function Footer() {
         {/* Mobile footer bottom */}
         <div className="mt-auto border-t border-[#EAECF0] pt-6 min-[360px]:pt-7 min-[390px]:pt-[30px]">
           <Link
-            href={footer.logo.href}
+            href="/"
             aria-label={footer.logo.ariaLabel}
             className="relative mx-auto block h-[25px] w-[126px] min-[360px]:h-[27px] min-[360px]:w-[136px] min-[390px]:h-7 min-[390px]:w-[142px]"
           >
@@ -108,34 +124,38 @@ export default function Footer() {
       <div className="mx-auto hidden min-h-[480px] w-full max-w-[1440px] flex-col px-20 pb-12 pt-16 lg:flex">
         {/* Footer links */}
         <div className="grid grid-cols-4 gap-16">
-          {footer.columns.map((column) => (
-            <div key={column.id}>
-              <h2 className="font-red-hat-display text-[14px] font-medium leading-[1.4] text-[#667085]">
-                {column.heading}
-              </h2>
+          {footer.columns.map((column) => {
+            const columnHref = getFooterHref(column.heading);
 
-              <nav
-                className="mt-5 flex flex-col gap-4"
-                aria-label={`${column.heading} footer links`}
-              >
-                {column.links.map((link) => (
-                  <Link
-                    key={link.id}
-                    href={link.href}
-                    className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[16px] font-semibold leading-[1.3] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                  >
-                    <span>{link.label}</span>
+            return (
+              <div key={column.id}>
+                <h2 className="font-red-hat-display text-[14px] font-medium leading-[1.4] text-[#667085]">
+                  {column.heading}
+                </h2>
 
-                    {link.badge && (
-                      <span className="inline-flex min-h-[20px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[11px] font-bold leading-none text-primary">
-                        {link.badge}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-          ))}
+                <nav
+                  className="mt-5 flex flex-col gap-4"
+                  aria-label={`${column.heading} footer links`}
+                >
+                  {column.links.map((link) => (
+                    <Link
+                      key={link.id}
+                      href={columnHref}
+                      className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[16px] font-semibold leading-[1.3] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    >
+                      <span>{link.label}</span>
+
+                      {link.badge && (
+                        <span className="inline-flex min-h-[20px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[11px] font-bold leading-none text-primary">
+                          {link.badge}
+                        </span>
+                      )}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+            );
+          })}
         </div>
 
         <div className="flex-1" />
@@ -143,7 +163,7 @@ export default function Footer() {
         {/* Desktop footer bottom */}
         <div className="mx-auto flex min-h-[66px] w-full max-w-[1280px] items-end justify-between gap-8 border-t border-[#EAECF0] px-8 pt-5">
           <Link
-            href={footer.logo.href}
+            href="/"
             aria-label={footer.logo.ariaLabel}
             className="relative block h-11 w-[141px] shrink-0"
           >
