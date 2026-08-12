@@ -58,44 +58,149 @@ export default function Hero() {
             {/* Background gradient */}
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#EEFFFB_0%,rgba(238,255,251,0)_100.01%)]" />
 
-            <div className="relative min-h-[690px] sm:min-h-[760px] lg:grid lg:min-h-[610px] lg:grid-cols-[53%_47%]">
+            <div
+              className="
+                relative
+                min-h-[690px]
+
+                sm:min-h-[760px]
+
+                md:min-h-[780px]
+
+                lg:grid
+                lg:min-h-[610px]
+                lg:grid-cols-[53%_47%]
+              "
+            >
               {/* Left content */}
-              <div className="relative z-20 px-[11px] pb-0 pt-[9px] sm:px-7 sm:pt-8 lg:flex lg:items-center lg:px-12 lg:py-16 xl:px-16">
-                <div className="w-full max-w-[720px]">
+              <div
+                className="
+                  relative z-20
+                  px-[11px]
+                  pb-0
+                  pt-[9px]
+
+                  sm:px-7
+                  sm:pt-8
+
+                  md:px-9
+                  md:pt-9
+
+                  lg:flex
+                  lg:items-center
+                  lg:px-12
+                  lg:py-16
+
+                  xl:px-16
+                "
+              >
+                <div
+                  className="
+                    w-full
+                    max-w-[720px]
+
+                    md:max-w-none
+
+                    lg:max-w-[720px]
+                  "
+                >
                   {/* Heading */}
-                  <h1 className="w-full font-red-hat-display text-[38px] font-[645] leading-[41.88px] tracking-[0] text-secondary lg:text-[60px] lg:font-bold lg:leading-[75.69px] xl:text-[68px]">
-                    <span className="block lg:whitespace-nowrap">{hero.heading.firstLine}</span>
+                  <h1
+                    className="
+                      w-full
 
-                    <span className="block lg:whitespace-nowrap">{hero.heading.secondLine}</span>
+                      font-red-hat-display
+                      text-[38px]
+                      font-[645]
+                      leading-[41.88px]
+                      tracking-[0]
+                      text-secondary
 
-                    <span className="flex flex-wrap items-baseline gap-x-[0.12em] lg:flex-nowrap lg:gap-x-[0.22em]">
+                      md:max-w-none
+                      md:text-[52px]
+                      md:leading-[58px]
+
+                      lg:text-[60px]
+                      lg:font-bold
+                      lg:leading-[75.69px]
+
+                      xl:text-[68px]
+                    "
+                  >
+                    <span
+                      className="
+                        block
+
+                        md:whitespace-nowrap
+
+                        lg:whitespace-nowrap
+                      "
+                    >
+                      {hero.heading.firstLine}
+                    </span>
+
+                    <span
+                      className="
+                        block
+
+                        md:whitespace-nowrap
+
+                        lg:whitespace-nowrap
+                      "
+                    >
+                      {hero.heading.secondLine}
+                    </span>
+
+                    <span
+                      className="
+                        flex flex-wrap
+                        items-baseline
+                        gap-x-[0.12em]
+
+                        md:flex-nowrap
+                        md:gap-x-[0.16em]
+
+                        lg:flex-nowrap
+                        lg:gap-x-[0.22em]
+                      "
+                    >
                       <span>{hero.heading.thirdLineStart}</span>
 
-                      {/* Mobile Goose highlight */}
-                      <span className="inline-flex h-[34.82px] w-[121.7px] rotate-[0.46deg] items-center justify-center rounded-[6.28px] bg-[#00897B] font-red-hat-display text-[38px] font-[645] leading-[41.88px] tracking-[0] text-white shadow-[0px_1.66px_0px_0px_#0D3B66] lg:hidden">
-                        {hero.heading.highlightedWord}
-                      </span>
-
-                      {/* Desktop Goose underline */}
-                      <span className="relative hidden isolate lg:inline-block">
-                        <Image
-                          src={hero.heading.underlineImage}
-                          alt=""
-                          width={220}
-                          height={24}
-                          aria-hidden="true"
-                          className="pointer-events-none absolute -bottom-[2px] left-1/2 z-0 h-[22px] w-[108%] -translate-x-1/2 object-fill"
-                        />
-
-                        <span className="relative z-10">{hero.heading.highlightedWord}</span>
-                      </span>
+                      <span>{hero.heading.highlightedWord}</span>
 
                       <span>{hero.heading.thirdLineEnd}</span>
                     </span>
                   </h1>
 
                   {/* Description */}
-                  <p className="mt-[13px] max-w-[330px] font-red-hat-display text-[12px] font-[467] leading-[14px] tracking-[0] text-secondary sm:mt-4 sm:max-w-[520px] sm:text-[14px] sm:leading-[1.4] lg:mt-6 lg:max-w-[625px] lg:font-inter lg:text-[16px] lg:leading-[1.45]">
+                  <p
+                    className="
+                      mt-[13px]
+                      max-w-[330px]
+
+                      font-red-hat-display
+                      text-[12px]
+                      font-[467]
+                      leading-[14px]
+                      tracking-[0]
+                      text-secondary
+
+                      sm:mt-4
+                      sm:max-w-[520px]
+                      sm:text-[14px]
+                      sm:leading-[1.4]
+
+                      md:max-w-[600px]
+                      md:text-[15px]
+                      md:leading-[22px]
+
+                      lg:mt-6
+                      lg:max-w-[625px]
+                      lg:font-inter
+                      lg:text-[16px]
+                      lg:leading-[1.45]
+                    "
+                  >
                     {hero.description}
                   </p>
 
@@ -183,14 +288,38 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Mobile hero image */}
-              <div className="pointer-events-none absolute left-1/2 top-[175px] z-10 h-[430px] w-[405px] max-w-none -translate-x-1/2 sm:top-[205px] sm:h-[480px] sm:w-[460px] lg:hidden">
+              {/* Mobile + tablet hero image */}
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  left-1/2
+                  top-[175px]
+                  z-10
+
+                  h-[430px]
+                  w-[405px]
+                  max-w-none
+
+                  -translate-x-1/2
+
+                  sm:top-[205px]
+                  sm:h-[480px]
+                  sm:w-[460px]
+
+                  md:top-[255px]
+                  md:h-[500px]
+                  md:w-[530px]
+
+                  lg:hidden
+                "
+              >
                 <Image
                   src={hero.mobileImage.src}
                   alt={hero.mobileImage.alt}
                   fill
                   priority
-                  sizes="(max-width: 1023px) 500px, 0px"
+                  sizes="(max-width: 1023px) 530px, 0px"
                   className="object-contain object-top-right"
                 />
               </div>
@@ -209,11 +338,37 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Mobile postcode form */}
+              {/* Mobile + tablet postcode form */}
               <form
                 onSubmit={handleSubmit}
                 noValidate
-                className="absolute bottom-[27px] left-[10px] right-[10px] z-30 rounded-[22px] border border-[#EAECF0] bg-white px-[7px] pb-[14px] pt-[7px] shadow-[0px_10px_30px_rgba(8,60,92,0.10)] sm:bottom-10 sm:left-4 sm:right-4 sm:p-4 lg:hidden"
+                className="
+                  absolute
+                  bottom-[27px]
+                  left-[10px]
+                  right-[10px]
+                  z-30
+
+                  rounded-[22px]
+                  border border-[#EAECF0]
+                  bg-white
+
+                  px-[7px]
+                  pb-[14px]
+                  pt-[7px]
+
+                  shadow-[0px_10px_30px_rgba(8,60,92,0.10)]
+
+                  sm:bottom-10
+                  sm:left-4
+                  sm:right-4
+                  sm:p-4
+
+                  md:left-8
+                  md:right-8
+
+                  lg:hidden
+                "
               >
                 <div
                   className={`flex h-[44px] items-center rounded-full border bg-white transition-colors ${
@@ -295,39 +450,50 @@ export default function Hero() {
             </div>
           </div>
         </div>
+
         {/* Trust and providers */}
         <div className="relative">
-          {/* Horizontal divider */}
           <div className="absolute left-0 right-0 top-[17px] h-px bg-[#EAECF0] lg:top-[24px]" />
 
-          {/* Trust text holder */}
           <div className="relative z-10 flex justify-center lg:justify-start">
             <div
               className="
-      flex h-[30px] w-full max-w-[320px] items-center justify-center
-      rounded-[33px] border border-[#0C111D1A] bg-white px-2 py-1
+                flex h-[30px] w-full max-w-[320px]
+                items-center justify-center
 
-      min-[360px]:max-w-[350px]
+                rounded-[33px]
+                border border-[#0C111D1A]
+                bg-white
 
-      min-[390px]:h-[34px]
-      min-[390px]:w-[404px]
-      min-[390px]:max-w-full
-      min-[390px]:gap-[10px]
-      min-[390px]:px-4
-      min-[390px]:py-1
-    "
+                px-2 py-1
+
+                min-[360px]:max-w-[350px]
+
+                min-[390px]:h-[34px]
+                min-[390px]:w-[404px]
+                min-[390px]:max-w-full
+                min-[390px]:gap-[10px]
+                min-[390px]:px-4
+                min-[390px]:py-1
+              "
             >
               <p
                 className="
-        m-0 whitespace-nowrap font-red-hat-display
-        text-[10px] font-[467] leading-[22px]
-        tracking-[0] text-secondary
+                  m-0
+                  whitespace-nowrap
 
-        min-[360px]:text-[11px]
+                  font-red-hat-display
+                  text-[10px]
+                  font-[467]
+                  leading-[22px]
+                  tracking-[0]
+                  text-secondary
 
-        min-[390px]:text-[13px]
-        min-[390px]:leading-[26px]
-      "
+                  min-[360px]:text-[11px]
+
+                  min-[390px]:text-[13px]
+                  min-[390px]:leading-[26px]
+                "
               >
                 {hero.trust.startText}{' '}
                 <span className="font-[645] text-secondary">{hero.trust.highlightedText}</span>{' '}
@@ -341,10 +507,10 @@ export default function Hero() {
               </p>
             </div>
           </div>
-          {/* Mobile continuous provider carousel */}
+
+          {/* Mobile + tablet provider carousel */}
           <div className="provider-carousel mt-[18px] overflow-hidden lg:hidden">
             <div className="provider-carousel-track flex w-max items-center">
-              {/* First provider set */}
               <div className="flex shrink-0 items-center gap-3 pr-3">
                 {hero.providers.map((provider) => (
                   <div
@@ -364,7 +530,6 @@ export default function Hero() {
                 ))}
               </div>
 
-              {/* Duplicate set for continuous looping */}
               <div
                 aria-hidden="true"
                 className="flex shrink-0 items-center gap-3 pr-3"
@@ -389,7 +554,7 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Desktop static provider logos */}
+          {/* Desktop provider logos */}
           <div className="mt-5 hidden grid-cols-7 items-center gap-5 lg:grid">
             {hero.providers.map((provider) => (
               <div
@@ -406,7 +571,7 @@ export default function Hero() {
               </div>
             ))}
           </div>
-        </div>{' '}
+        </div>
       </div>
     </section>
   );
