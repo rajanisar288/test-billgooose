@@ -969,7 +969,7 @@
           "label": "Monthly direct debit",
           "description": "Your monthly payment will be gently deducted from your card automatically.",
           "value": "monthly-direct-debit",
-          "icon": "/images/household-icon.png",
+          "icon": "/images/step-4-1.png",
           "iconAlt": ""
         },
         {
@@ -977,7 +977,7 @@
           "label": "Pre Payment",
           "description": "Your monthly payment will be securely deducted from your account on the agreed date.",
           "value": "pre-payment",
-          "icon": "/images/flat-icon.png",
+          "icon": "/images/step-4-2.png",
           "iconAlt": ""
         }
       ]
