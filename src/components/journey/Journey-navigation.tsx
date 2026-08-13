@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 import data from '@/data/content.json';
 
@@ -23,7 +23,11 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
   };
 
   const continueLabel =
-    currentStep === totalSteps ? navigation.completeButton : navigation.continueButton;
+    currentStep === 2
+      ? 'Acknowledge & Continue'
+      : currentStep === totalSteps
+        ? navigation.completeButton
+        : navigation.continueButton;
 
   return (
     <footer
@@ -68,7 +72,7 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
             h-[44px]
             items-center
             justify-center
-            gap-2
+            gap-1
 
             rounded-full
 
@@ -80,7 +84,7 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
             px-5
 
             font-red-hat-display
-            text-[14px]
+            text-[16px]
             font-bold
             leading-5
             text-[#344054]
@@ -95,13 +99,19 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
             sm:px-6
           "
         >
-          <ArrowLeft
+          <span
             aria-hidden="true"
             className="
-              h-4 w-4
-              shrink-0
-            "
-            strokeWidth={2}
+    mr-1
+    h-[8px]
+    w-[8px]
+    shrink-0
+    rotate-45
+
+    border-b-[2px]
+    border-l-[2px]
+    border-[#344054]
+  "
           />
 
           {navigation.backButton}
@@ -129,8 +139,9 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
             px-6
 
             font-red-hat-display
-            text-[14px]
+            text-[16px]
             font-bold
+            font-[800]
             leading-5
             text-white
 
@@ -149,10 +160,12 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
           <ArrowRight
             aria-hidden="true"
             className="
-              h-4 w-4
-              shrink-0
-            "
-            strokeWidth={2}
+    h-4
+    w-4
+    shrink-0
+    text-white
+  "
+            strokeWidth={3}
           />
         </button>
       </div>

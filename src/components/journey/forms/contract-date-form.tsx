@@ -330,7 +330,7 @@ function FormField({ label, children }: FormFieldProps) {
 
           lg:mb-2
           lg:text-[14px]
-          lg:leading-5
+          lg:leading-6
         "
       >
         {label}

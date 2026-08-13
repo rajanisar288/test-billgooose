@@ -95,23 +95,23 @@ export default function Footer2() {
                 <Link
                   href={link.href}
                   className="
-                    whitespace-nowrap
+    whitespace-nowrap
 
-                    font-red-hat-display
-                    text-[16px]
-                    font-[550]
-                    leading-[24px]
-                    tracking-[0]
-                    text-black
+    font-red-hat-display
+    text-[16px]
+    font-extrabold
+    leading-[24px]
+    tracking-[0]
+    text-black
 
-                    underline
-                    decoration-[0.8px]
-                    underline-offset-[3px]
+    underline
+    decoration-[2px]
+    underline-offset-[3px]
 
-                    transition-opacity
+    transition-opacity
 
-                    hover:opacity-70
-                  "
+    hover:opacity-70
+  "
                 >
                   {link.label}
                 </Link>
@@ -153,15 +153,15 @@ export default function Footer2() {
           {/* Copyright */}
           <p
             className="
-              shrink-0
+    shrink-0
 
-              font-red-hat-display
-              text-[16px]
-              font-[467]
-              leading-[20px]
-              tracking-[0]
-              text-black
-            "
+    font-red-hat-display
+    text-[16px]
+    font-bold
+    leading-[10px]
+    tracking-[0]
+    text-black
+  "
           >
             {footer2.copyright}
           </p>

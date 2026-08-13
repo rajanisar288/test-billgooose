@@ -144,48 +144,48 @@ export default function PersonalDetailsForm() {
                 setTitleDropdownOpen((currentValue) => !currentValue);
               }}
               className={`
-                flex h-11
-                w-full
-                items-center
-                justify-between
-                gap-2
+    flex h-11
+    w-full
+    items-center
+    justify-between
+    gap-2
 
-                rounded-[100px]
+    rounded-[100px]
 
-                border
+    border
 
-                bg-white
+    bg-white
 
-                px-4
-                py-3
+    px-4
+    py-3
 
-                text-left
+    text-left
 
-                font-inter
-                text-[13px]
-                font-normal
-                leading-5
-                text-[#344054]
+    font-inter
+    text-[13px]
+    font-medium
+    leading-5
+    text-[#101828]
 
-                shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+    shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
-                outline-none
+    outline-none
 
-                transition
+    transition
 
-                sm:h-12
-                sm:px-[18px]
-                sm:py-[13px]
-                sm:text-[14px]
+    sm:h-12
+    sm:px-[18px]
+    sm:py-[13px]
+    sm:text-[14px]
 
-                lg:h-[52px]
-                lg:px-[18px]
-                lg:py-[14px]
-                lg:text-[16px]
-                lg:leading-6
+    lg:h-[52px]
+    lg:px-[18px]
+    lg:py-[14px]
+    lg:text-[16px]
+    lg:leading-6
 
-                ${titleDropdownOpen ? 'border-black ring-4 ring-[#EEFFFB]' : 'border-[#D0D5DD]'}
-              `}
+    ${titleDropdownOpen ? 'border-black ring-4 ring-[#EEFFFB]' : 'border-[#D0D5DD]'}
+  `}
             >
               <span>{title}</span>
 
@@ -244,31 +244,32 @@ export default function PersonalDetailsForm() {
                         setTitleDropdownOpen(false);
                       }}
                       className={`
-                          flex min-h-9
-                          w-full
-                          items-center
-                          justify-between
+  flex min-h-9
+  w-full
+  items-center
+  justify-between
 
-                          rounded-[30px]
+  rounded-[30px]
 
-                          px-3
-                          py-2
+  px-3
+  py-2
 
-                          text-left
+  text-left
 
-                          font-inter
-                          text-[13px]
-                          leading-5
-                          text-[#344054]
+  font-inter
+  text-[13px]
+  font-medium
+  leading-5
+  text-[#101828]
 
-                          transition-colors
+  transition-colors
 
-                          hover:bg-[#F5F5F5]
+  hover:bg-[#F5F5F5]
 
-                          sm:text-[14px]
+  sm:text-[14px]
 
-                          ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
-                        `}
+  ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
+`}
                     >
                       <span>{option.label}</span>
 
@@ -592,7 +593,7 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
 
           font-inter
           text-[11px]
-          font-normal
+          font-medium
           leading-[16px]
           tracking-[0]
           text-[#535862]
@@ -630,7 +631,7 @@ const inputClasses = `
 
   font-inter
   text-[13px]
-  font-normal
+  font-medium
   leading-5
 
   text-[#101828]
