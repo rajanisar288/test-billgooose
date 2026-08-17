@@ -141,30 +141,32 @@ export default function LowerHero() {
             />
           </div>
 
-          {/* TABLET ARTWORK ONLY */}
+          {/* =====================================================
+              TABLET ARTWORK ONLY
+          ====================================================== */}
           <div
             className="
-    pointer-events-none
-    absolute
-    z-0
+              pointer-events-none
+              absolute
+              z-0
 
-    hidden
+              hidden
 
-    md:block
-    lg:hidden
+              md:block
+              lg:hidden
 
-    md:h-[94%]
-    md:w-[54%]
+              md:h-[94%]
+              md:w-[54%]
 
-    md:right-[-62px]
-    md:top-[55%]
-    md:-translate-y-1/2
+              md:right-[-62px]
+              md:top-[55%]
+              md:-translate-y-1/2
 
-    min-[900px]:h-[96%]
-    min-[900px]:w-[56%]
-    min-[900px]:right-[-34px]
-    min-[900px]:top-[55%]
-  "
+              min-[900px]:h-[96%]
+              min-[900px]:w-[56%]
+              min-[900px]:right-[-34px]
+              min-[900px]:top-[55%]
+            "
           >
             <Image
               src={lowerHero.backgroundImage.src}
@@ -173,11 +175,12 @@ export default function LowerHero() {
               priority
               sizes="(min-width: 768px) and (max-width: 1023px) 56vw, 0px"
               className="
-      object-contain
-      object-center
-    "
+                object-contain
+                object-center
+              "
             />
           </div>
+
           {/* =====================================================
               DESKTOP ARTWORK
           ====================================================== */}
@@ -288,10 +291,61 @@ export default function LowerHero() {
                   />
                 </div>
 
-                <div className="-mr-px h-[44px] w-[108px] shrink-0 rounded-[100px] bg-[linear-gradient(77.21deg,#2E69A4_-1.53%,#01ACA7_136.17%)] p-[2px] min-[360px]:h-[47px] min-[360px]:w-[118px] min-[390px]:h-[50px] min-[390px]:w-[132px]">
+                {/* Animated mobile button */}
+                <div
+                  className="
+                    hero-animated-border
+
+                    -mr-px
+                    h-[44px]
+                    w-[108px]
+                    shrink-0
+
+                    rounded-[100px]
+
+                    p-[3px]
+
+                    min-[360px]:h-[47px]
+                    min-[360px]:w-[118px]
+
+                    min-[390px]:h-[50px]
+                    min-[390px]:w-[132px]
+                  "
+                >
                   <button
                     type="submit"
-                    className="flex h-full w-full items-center justify-center whitespace-nowrap rounded-[100px] bg-secondary px-2 font-red-hat-display text-[8px] font-semibold text-white transition-colors hover:bg-[#124A7E] min-[360px]:text-[9px] min-[390px]:px-3 min-[390px]:text-[10px]"
+                    className="
+                      relative
+                      z-10
+
+                      flex
+                      h-full
+                      w-full
+                      items-center
+                      justify-center
+
+                      whitespace-nowrap
+
+                      rounded-[100px]
+
+                      bg-secondary
+
+                      px-2
+
+                      font-red-hat-display
+                      text-[8px]
+                      font-semibold
+                      text-white
+
+                      transition-colors
+
+                      hover:bg-[#124A7E]
+
+                      min-[360px]:text-[9px]
+
+                      min-[390px]:px-3
+                      min-[390px]:text-[10px]
+                    "
                   >
                     {lowerHero.button.label}
                   </button>
@@ -445,8 +499,11 @@ export default function LowerHero() {
                   />
                 </div>
 
+                {/* Animated tablet button */}
                 <div
                   className="
+                    hero-animated-border
+
                     -mr-[2px]
 
                     h-[52px]
@@ -454,8 +511,6 @@ export default function LowerHero() {
                     shrink-0
 
                     rounded-[100px]
-
-                    bg-[linear-gradient(77.21deg,#2E69A4_-1.53%,#01ACA7_136.17%)]
 
                     p-[3px]
 
@@ -465,6 +520,9 @@ export default function LowerHero() {
                   <button
                     type="submit"
                     className="
+                      relative
+                      z-10
+
                       flex
                       h-full
                       w-full
@@ -566,10 +624,58 @@ export default function LowerHero() {
                   />
                 </div>
 
-                <div className="-mr-[3px] h-16 w-[187px] shrink-0 rounded-[100px] bg-[linear-gradient(77.21deg,#2E69A4_-1.53%,#01ACA7_136.17%)] p-[3px]">
+                {/* Animated desktop / laptop button */}
+                <div
+                  className="
+                    hero-animated-border
+
+                    -mr-[3px]
+
+                    h-16
+                    w-[187px]
+                    shrink-0
+
+                    rounded-[100px]
+
+                    p-[3px]
+                  "
+                >
                   <button
                     type="submit"
-                    className="flex h-full w-full items-center justify-center rounded-[100px] bg-secondary px-6 py-[11px] font-red-hat-display text-[16px] font-semibold text-white transition-colors hover:bg-[#124A7E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-secondary"
+                    className="
+                      relative
+                      z-10
+
+                      flex
+                      h-full
+                      w-full
+                      items-center
+                      justify-center
+
+                      whitespace-nowrap
+
+                      rounded-[100px]
+
+                      bg-secondary
+
+                      px-6
+                      py-[11px]
+
+                      font-red-hat-display
+                      text-[16px]
+                      font-semibold
+                      text-white
+
+                      transition-colors
+
+                      hover:bg-[#124A7E]
+
+                      focus-visible:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-white
+                      focus-visible:ring-offset-2
+                      focus-visible:ring-offset-secondary
+                    "
                   >
                     {lowerHero.button.label}
                   </button>

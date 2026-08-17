@@ -248,13 +248,63 @@ export default function Hero() {
                         />
                       </div>
 
-                      <div className="-mr-[7px] h-[64px] w-[187px] shrink-0 rounded-[100px] bg-[linear-gradient(77.21deg,#2E69A4_-1.53%,#01ACA7_136.17%)] p-[3px]">
-                        <button
-                          type="submit"
-                          className="flex h-full w-full items-center justify-center rounded-[100px] bg-secondary px-6 py-[11px] font-red-hat-display text-[16px] font-semibold text-white transition-colors hover:bg-[#124A7E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      {/* Animated desktop button border */}
+                      <div
+                        className="
+    -mr-[7px]
+    h-[64px]
+    w-[187px]
+    shrink-0
+  "
+                      >
+                        <div
+                          className="
+      hero-animated-border
+
+      h-full
+      w-full
+
+      rounded-[100px]
+
+      p-[3px]
+    "
                         >
-                          {hero.button.label}
-                        </button>
+                          <button
+                            type="submit"
+                            className="
+        relative
+        z-10
+
+        flex
+        h-full
+        w-full
+        items-center
+        justify-center
+
+        whitespace-nowrap
+
+        rounded-[100px]
+
+        bg-secondary
+
+        px-5
+        py-[11px]
+
+        font-red-hat-display
+        text-[16px]
+        font-semibold
+        text-white
+
+        transition-colors
+
+        hover:bg-[#124A7E]
+
+        focus-visible:outline-none
+      "
+                          >
+                            {hero.button.label}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -328,16 +378,16 @@ export default function Hero() {
               <div className="relative hidden min-h-[610px] lg:block">
                 <div
                   className="
-      absolute
-      inset-0
+                    absolute
+                    inset-0
 
-      lg:left-[2%]
-      lg:right-[-14%]
-      lg:translate-y-10
+                    lg:left-[2%]
+                    lg:right-[-14%]
+                    lg:translate-y-10
 
-      xl:left-[5%]
-      xl:right-[-28%]
-    "
+                    xl:left-[5%]
+                    xl:right-[-28%]
+                  "
                 >
                   <Image
                     src={hero.image.src}
@@ -418,15 +468,70 @@ export default function Hero() {
                     />
                   </div>
 
+                  {/* Animated mobile + tablet button border */}
                   <div className="-mr-px h-[44px] w-[128px] shrink-0 min-[390px]:w-[132px]">
                     <div className="relative h-full w-full">
-                      <div className="absolute inset-y-0 right-0 w-[144px] rounded-full bg-[linear-gradient(77.21deg,#2E69A4_-1.53%,#01ACA7_136.17%)] p-[2px] min-[390px]:w-[152px]">
-                        <button
-                          type="submit"
-                          className="flex h-full w-full items-center justify-center whitespace-nowrap rounded-full bg-secondary px-3 font-red-hat-display text-[10px] font-semibold text-white transition-colors hover:bg-[#124A7E] min-[390px]:text-[11px]"
+                      <div
+                        className="
+        absolute
+        inset-y-0
+        right-0
+
+        w-[144px]
+
+        min-[390px]:w-[152px]
+      "
+                      >
+                        <div
+                          className="
+          hero-animated-border
+
+          h-full
+          w-full
+
+          rounded-full
+
+          p-[3px]
+        "
                         >
-                          {hero.button.label}
-                        </button>
+                          <button
+                            type="submit"
+                            className="
+            relative
+            z-10
+
+            flex
+            h-full
+            w-full
+            items-center
+            justify-center
+
+            whitespace-nowrap
+
+            rounded-full
+
+            bg-secondary
+
+            px-2
+
+            font-red-hat-display
+            text-[10px]
+            font-semibold
+            text-white
+
+            transition-colors
+
+            hover:bg-[#124A7E]
+
+            min-[390px]:px-3
+            min-[390px]:text-[11px]
+
+            sm:text-[12px]
+          "
+                          >
+                            {hero.button.label}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

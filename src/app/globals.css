@@ -684,3 +684,38 @@
     transform: translateX(-50%);
   }
 }
+@property --hero-border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes hero-border-rotate {
+  from {
+    --hero-border-angle: 0deg;
+  }
+
+  to {
+    --hero-border-angle: 360deg;
+  }
+}
+
+.hero-animated-border {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  background: conic-gradient(
+    from var(--hero-border-angle),
+    #2e69a4 0deg,
+    #2e69a4 55deg,
+    #01aca7 100deg,
+    #18e6d1 145deg,
+    #01aca7 190deg,
+    #2e69a4 245deg,
+    #4e8fd1 300deg,
+    #2e69a4 360deg
+  );
+
+  animation: hero-border-rotate 4s linear infinite;
+}
