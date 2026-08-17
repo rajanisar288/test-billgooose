@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import Header from '@/components/marketing/Header';
+import LiveChatWidget from '@/components/marketing/LiveChatWidget';
 import Seo from '@/components/shared/seo';
 import { generateMarketingMetadata } from '@/lib/seo/metadata';
 import { generateOrganizationStructuredData } from '@/lib/seo/structured-data';
@@ -22,6 +23,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
     <Seo structuredData={structuredData}>
       <Header />
       {children}
+      <LiveChatWidget />
       {/* footer import  */}
     </Seo>
   );

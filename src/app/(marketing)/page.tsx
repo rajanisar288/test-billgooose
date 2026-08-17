@@ -5,8 +5,6 @@ import Hero from '@/components/marketing/Hero';
 import HowItWorks from '@/components/marketing/HowItWorks';
 import LowerHero from '@/components/marketing/LowerHero';
 import Newsletter from '@/components/marketing/NewsLetter';
-import Reviews from '@/components/marketing/Reviews';
-import Trust from '@/components/marketing/Trust';
 import WhyBillGoose from '@/components/marketing/WhyBillGoose';
 import { generateMarketingMetadata } from '@/lib/seo/metadata';
 
@@ -24,8 +22,8 @@ export default function HomePage() {
       <WhyBillGoose />
       <HowItWorks />
       <Guides />
-      <Reviews />
-      <Trust />
+      {/* <Reviews />
+      <Trust /> */}
       <LowerHero />
       <Newsletter />
       <Footer />

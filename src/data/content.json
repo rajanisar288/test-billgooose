@@ -30,32 +30,56 @@
       {
         "id": 1,
         "label": "Energy",
-        "href": "/compare/energy"
+        "description": "Fast Switching, Fixed & Variable Tariffs",
+        "href": "/compare/energy",
+        "icon": "/images/energy-icon.png",
+        "iconAlt": "Energy",
+        "status": "available"
       },
       {
         "id": 2,
         "label": "Broadband",
-        "href": "/compare/broadband"
+        "description": "Fast Fiber Deals From Top UK Providers",
+        "href": "/compare/broadband",
+        "icon": "/images/broadband.png",
+        "iconAlt": "Broadband",
+        "status": "available"
       },
       {
         "id": 3,
         "label": "Mobile",
-        "href": "/compare/mobile"
+        "description": "Latest SIM-Only And Contract Deals",
+        "href": "/compare/mobile",
+        "icon": "/images/mobile-icon.png",
+        "iconAlt": "Mobile",
+        "status": "available"
       },
       {
         "id": 4,
-        "label": "Insurance",
-        "href": "/compare/insurance"
+        "label": "Credit Card",
+        "description": "",
+        "href": "/compare/credit-cards",
+        "icon": "/images/credit-cards.png",
+        "iconAlt": "Credit Card",
+        "status": "coming-soon"
       },
       {
         "id": 5,
-        "label": "Credit Cards",
-        "href": "/compare/credit-cards"
+        "label": "Insurance",
+        "description": "",
+        "href": "/compare/insurance",
+        "icon": "/images/insurance.png",
+        "iconAlt": "Insurance",
+        "status": "coming-soon"
       },
       {
         "id": 6,
-        "label": "Loans",
-        "href": "/compare/loans"
+        "label": "Loan",
+        "description": "",
+        "href": "/compare/loans",
+        "icon": "/images/loans.png",
+        "iconAlt": "Loan",
+        "status": "coming-soon"
       }
     ],
     "account": {
@@ -73,6 +97,35 @@
       "underlineImage": "/images/underline-svg.png"
     },
     "description": "Save money across Energy, Broadband, Mobile, Insurance, Credit Cards and Loans with trusted UK price comparisons.",
+    "serviceTabs": {
+      "defaultValue": "energy",
+      "items": [
+        {
+          "id": "energy",
+          "label": "Energy",
+          "value": "energy",
+          "icon": "/images/hero-energy.png",
+          "activeIcon": "/images/hero-energy-white.png",
+          "iconAlt": "Energy"
+        },
+        {
+          "id": "broadband",
+          "label": "Broadband",
+          "value": "broadband",
+          "icon": "/images/hero-broadband.png",
+          "activeIcon": "/images/hero-broadband-white.png",
+          "iconAlt": "Broadband"
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "value": "mobile",
+          "icon": "/images/hero-mobile.png",
+          "activeIcon": "/images/hero-mobile-white.png",
+          "iconAlt": "Mobile"
+        }
+      ]
+    },
     "postcode": {
       "label": "Enter your postcode",
       "placeholder": "Enter your postcode",
