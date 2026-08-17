@@ -101,8 +101,15 @@ export default function Guides() {
             </div>
           </div>
 
-          {/* Mobile automatic slider */}
-          <div className="mt-7 overflow-hidden lg:hidden">
+          {/* Mobile + tablet + 1024 laptop automatic slider */}
+          <div
+            className="
+              mt-7
+              overflow-hidden
+
+              min-[1100px]:hidden
+            "
+          >
             <div
               ref={sliderRef}
               onMouseEnter={() => {
@@ -117,10 +124,19 @@ export default function Guides() {
               onTouchEnd={() => {
                 isPausedRef.current = false;
               }}
-              className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="
+                flex
+                gap-4
+                overflow-x-auto
+                pb-4
+
+                [scrollbar-width:none]
+
+                [&::-webkit-scrollbar]:hidden
+              "
             >
               {/* First card set */}
-              <div className="flex shrink-0 gap-4 pl-4 min-[360px]:pl-5">
+              <div className="flex shrink-0 gap-4 pl-4 min-[360px]:pl-5 lg:pl-0">
                 {guides.items.map((guide) => (
                   <MobileGuideCard
                     key={`primary-${guide.id}`}
@@ -132,7 +148,7 @@ export default function Guides() {
               {/* Duplicate set for continuous looping */}
               <div
                 aria-hidden="true"
-                className="flex shrink-0 gap-4 pr-4 min-[360px]:pr-5"
+                className="flex shrink-0 gap-4 pr-4 min-[360px]:pr-5 lg:pr-0"
               >
                 {guides.items.map((guide) => (
                   <MobileGuideCard
@@ -145,8 +161,21 @@ export default function Guides() {
             </div>
           </div>
 
-          {/* Desktop guide cards */}
-          <div className="mt-10 hidden grid-cols-1 justify-items-center gap-5 lg:grid lg:grid-cols-3 xl:grid-cols-4">
+          {/* Desktop guide cards - 1100px+ only */}
+          <div
+            className="
+              mt-10
+              hidden
+              grid-cols-1
+              justify-items-center
+              gap-5
+
+              min-[1100px]:grid
+              min-[1100px]:grid-cols-3
+
+              xl:grid-cols-4
+            "
+          >
             {guides.items.map((guide) => (
               <DesktopGuideCard
                 key={guide.id}
@@ -180,7 +209,32 @@ function MobileGuideCard({ guide, duplicate = false }: MobileGuideCardProps) {
   return (
     <article
       aria-hidden={duplicate || undefined}
-      className="flex h-[338px] w-[260px] shrink-0 flex-col overflow-hidden rounded-[22px] border border-[#EAECF0] border-t-[#DFE6EBB2] bg-white shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)] min-[360px]:h-[356px] min-[360px]:w-[274px] min-[360px]:rounded-[25px] min-[390px]:h-[374.25px] min-[390px]:w-[289px] min-[390px]:rounded-[28px]"
+      className="
+        flex
+        h-[338px]
+        w-[260px]
+        shrink-0
+        flex-col
+        overflow-hidden
+
+        rounded-[22px]
+
+        border
+        border-[#EAECF0]
+        border-t-[#DFE6EBB2]
+
+        bg-white
+
+        shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+
+        min-[360px]:h-[356px]
+        min-[360px]:w-[274px]
+        min-[360px]:rounded-[25px]
+
+        min-[390px]:h-[374.25px]
+        min-[390px]:w-[289px]
+        min-[390px]:rounded-[28px]
+      "
     >
       {/* Guide image */}
       <div className="relative h-[188px] w-full shrink-0 overflow-hidden min-[360px]:h-[202px] min-[390px]:h-[215.25px]">

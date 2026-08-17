@@ -13,12 +13,17 @@ import data from '@/data/content.json';
 const UK_POSTCODE_REGEX =
   /^(GIR\s?0AA|(?:(?:[A-PR-UWYZ][0-9][0-9A-HJKSTUW]?)|(?:[A-PR-UWYZ][A-HK-Y][0-9][0-9ABEHMNPRV-Y]?))\s?[0-9][ABD-HJLNP-UW-Z]{2})$/i;
 
+type ServiceType = 'energy' | 'broadband' | 'mobile';
+
 export default function Hero() {
   const router = useRouter();
   const { hero } = data;
 
   const [postcode, setPostcode] = useState('');
   const [postcodeError, setPostcodeError] = useState('');
+  const [selectedService, setSelectedService] = useState<ServiceType>(
+    hero.serviceTabs.defaultValue as ServiceType,
+  );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -37,6 +42,7 @@ export default function Hero() {
 
     setPostcodeError('');
 
+    // Existing compare flow preserved.
     router.push(`/compare?postcode=${encodeURIComponent(formattedPostcode)}`);
   };
 
@@ -47,6 +53,10 @@ export default function Hero() {
       setPostcodeError('');
     }
   };
+
+  const displayedBenefits = hero.benefits.filter(
+    (benefit) => benefit.id === 1 || benefit.id === 2 || benefit.id === 4,
+  );
 
   return (
     <section className="w-full bg-white px-3 pb-6 pt-3 sm:px-5 lg:px-8 lg:pb-8 lg:pt-5">
@@ -72,7 +82,9 @@ export default function Hero() {
                 lg:grid-cols-[53%_47%]
               "
             >
-              {/* Left content */}
+              {/* =====================================================
+                  LEFT CONTENT
+              ====================================================== */}
               <div
                 className="
                   relative z-20
@@ -127,47 +139,25 @@ export default function Hero() {
                       xl:text-[68px]
                     "
                   >
-                    <span
-                      className="
-                        block
+                    <span className="block md:whitespace-nowrap">{hero.heading.firstLine}</span>
 
-                        md:whitespace-nowrap
-
-                        lg:whitespace-nowrap
-                      "
-                    >
-                      {hero.heading.firstLine}
-                    </span>
+                    <span className="block md:whitespace-nowrap">{hero.heading.secondLine}</span>
 
                     <span
                       className="
-                        block
-
-                        md:whitespace-nowrap
-
-                        lg:whitespace-nowrap
-                      "
-                    >
-                      {hero.heading.secondLine}
-                    </span>
-
-                    <span
-                      className="
-                        flex flex-wrap
+                        flex
+                        flex-wrap
                         items-baseline
                         gap-x-[0.12em]
 
                         md:flex-nowrap
                         md:gap-x-[0.16em]
 
-                        lg:flex-nowrap
                         lg:gap-x-[0.22em]
                       "
                     >
                       <span>{hero.heading.thirdLineStart}</span>
-
                       <span>{hero.heading.highlightedWord}</span>
-
                       <span>{hero.heading.thirdLineEnd}</span>
                     </span>
                   </h1>
@@ -204,91 +194,192 @@ export default function Hero() {
                     {hero.description}
                   </p>
 
-                  {/* Desktop postcode form */}
-                  <form
-                    onSubmit={handleSubmit}
-                    noValidate
-                    className="mt-9 hidden max-w-[610px] rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_18px_42px_rgba(8,60,92,0.08)] sm:p-5 lg:block"
+                  {/* =================================================
+                      DESKTOP / LAPTOP POSTCODE CARD
+                  ================================================== */}
+                  <div
+                    className="
+                      mt-9
+                      hidden
+                      max-w-[610px]
+
+                      rounded-[27px]
+
+                      bg-[linear-gradient(180deg,rgba(0,168,149,0.5)_0%,rgba(0,168,149,0)_100%)]
+
+                      p-px
+
+                      shadow-[0px_19px_42px_0px_#B0B0B01A,0px_77px_77px_0px_#B0B0B017,0px_174px_104px_0px_#B0B0B00D,0px_309px_123px_0px_#B0B0B003,0px_482px_135px_0px_#B0B0B000]
+
+                      lg:block
+                    "
                   >
-                    <div
-                      className={`flex h-[64px] items-center gap-3 rounded-full border bg-white p-1.5 transition-colors ${
-                        postcodeError
-                          ? 'border-red-400'
-                          : 'border-slate-200 focus-within:border-primary'
-                      }`}
+                    <form
+                      onSubmit={handleSubmit}
+                      noValidate
+                      className="
+                        overflow-hidden
+                        rounded-[26px]
+                        bg-white
+
+                        px-5
+                        pb-5
+                      "
                     >
-                      <div className="flex min-w-0 flex-1 items-center gap-3 px-3">
-                        <MapPin
-                          size={17}
-                          strokeWidth={1.8}
-                          className="shrink-0 text-secondary"
-                          aria-hidden="true"
-                        />
+                      {/* Tabs */}
+                      <ServiceTabs
+                        selectedService={selectedService}
+                        onChange={setSelectedService}
+                      />
 
-                        <label
-                          htmlFor="hero-postcode-desktop"
-                          className="sr-only"
-                        >
-                          {hero.postcode.label}
-                        </label>
-
-                        <input
-                          id="hero-postcode-desktop"
-                          name="postcode"
-                          type="text"
-                          value={postcode}
-                          onChange={(event) => handlePostcodeChange(event.target.value)}
-                          placeholder={hero.postcode.placeholder}
-                          autoComplete="postal-code"
-                          aria-invalid={Boolean(postcodeError)}
-                          aria-describedby={
-                            postcodeError ? 'hero-postcode-desktop-error' : undefined
-                          }
-                          className="h-11 min-w-0 flex-1 bg-transparent font-inter text-[14px] text-secondary outline-none placeholder:text-[#04242D]"
-                        />
-                      </div>
-
-                      <div className="-mr-[7px] h-[64px] w-[187px] shrink-0 rounded-[100px] bg-[linear-gradient(77.21deg,#2E69A4_-1.53%,#01ACA7_136.17%)] p-[3px]">
-                        <button
-                          type="submit"
-                          className="flex h-full w-full items-center justify-center rounded-[100px] bg-secondary px-6 py-[11px] font-red-hat-display text-[16px] font-semibold text-white transition-colors hover:bg-[#124A7E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                        >
-                          {hero.button.label}
-                        </button>
-                      </div>
-                    </div>
-
-                    {postcodeError && (
-                      <p
-                        id="hero-postcode-desktop-error"
-                        className="mt-2 px-3 font-inter text-[13px] text-red-600"
+                      {/* Input + CTA */}
+                      <div
+                        className={`mt-[22px] flex h-[64px] items-center gap-3 rounded-full border bg-white p-1.5 transition-colors ${
+                          postcodeError
+                            ? 'border-red-400'
+                            : 'border-[#D0D5DD] focus-within:border-primary'
+                        }`}
                       >
-                        {postcodeError}
-                      </p>
-                    )}
-
-                    <div className="mt-5 grid grid-cols-[repeat(2,minmax(0,0.4fr))] gap-x-2 gap-y-3 px-2">
-                      {hero.benefits.map((benefit) => (
-                        <div
-                          key={benefit.id}
-                          className="flex items-center gap-2 font-inter text-[14px] text-[467] text-secondary"
-                        >
-                          <Check
-                            size={15}
-                            strokeWidth={2.5}
-                            className="shrink-0 text-[#1BA261]"
+                        <div className="flex min-w-0 flex-1 items-center gap-3 px-3">
+                          <MapPin
+                            size={17}
+                            strokeWidth={1.8}
+                            className="shrink-0 text-secondary"
                             aria-hidden="true"
                           />
 
-                          <span>{benefit.label}</span>
+                          <label
+                            htmlFor="hero-postcode-desktop"
+                            className="sr-only"
+                          >
+                            {hero.postcode.label}
+                          </label>
+
+                          <input
+                            id="hero-postcode-desktop"
+                            name="postcode"
+                            type="text"
+                            value={postcode}
+                            onChange={(event) => handlePostcodeChange(event.target.value)}
+                            placeholder={hero.postcode.placeholder}
+                            autoComplete="postal-code"
+                            aria-invalid={Boolean(postcodeError)}
+                            aria-describedby={
+                              postcodeError ? 'hero-postcode-desktop-error' : undefined
+                            }
+                            className="
+                              h-11
+                              min-w-0
+                              flex-1
+                              bg-transparent
+
+                              font-inter
+                              text-[14px]
+                              text-secondary
+
+                              outline-none
+
+                              placeholder:text-[#04242D]
+                            "
+                          />
                         </div>
-                      ))}
-                    </div>
-                  </form>
+
+                        {/* Animated desktop button */}
+                        <div className="-mr-[7px] h-[64px] w-[187px] shrink-0">
+                          <div className="hero-animated-border h-full w-full rounded-[100px] p-[3px]">
+                            <button
+                              type="submit"
+                              className="
+                                relative
+                                z-10
+
+                                flex
+                                h-full
+                                w-full
+                                items-center
+                                justify-center
+
+                                whitespace-nowrap
+
+                                rounded-[100px]
+
+                                bg-secondary
+
+                                px-5
+                                py-[11px]
+
+                                font-red-hat-display
+                                text-[16px]
+                                font-semibold
+                                text-white
+
+                                transition-colors
+
+                                hover:bg-[#124A7E]
+
+                                focus-visible:outline-none
+                              "
+                            >
+                              {hero.button.label}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {postcodeError && (
+                        <p
+                          id="hero-postcode-desktop-error"
+                          className="mt-2 px-3 font-inter text-[13px] text-red-600"
+                        >
+                          {postcodeError}
+                        </p>
+                      )}
+
+                      {/* Benefits */}
+                      <div
+                        className="
+                          mt-5
+
+                          flex
+                          items-center
+                          justify-between
+
+                          px-2
+                        "
+                      >
+                        {displayedBenefits.map((benefit) => (
+                          <div
+                            key={benefit.id}
+                            className="
+                              flex
+                              items-center
+                              gap-2
+
+                              font-inter
+                              text-[14px]
+                              font-[467]
+                              text-secondary
+                            "
+                          >
+                            <Check
+                              size={15}
+                              strokeWidth={2.5}
+                              className="shrink-0 text-[#1BA261]"
+                              aria-hidden="true"
+                            />
+
+                            <span className="whitespace-nowrap">{benefit.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </form>
+                  </div>
                 </div>
               </div>
 
-              {/* Mobile + tablet hero image */}
+              {/* =====================================================
+                  MOBILE + TABLET HERO IMAGE
+              ====================================================== */}
               <div
                 className="
                   pointer-events-none
@@ -324,20 +415,22 @@ export default function Hero() {
                 />
               </div>
 
-              {/* Desktop hero image */}
+              {/* =====================================================
+                  DESKTOP HERO IMAGE
+              ====================================================== */}
               <div className="relative hidden min-h-[610px] lg:block">
                 <div
                   className="
-      absolute
-      inset-0
+                    absolute
+                    inset-0
 
-      lg:left-[2%]
-      lg:right-[-14%]
-      lg:translate-y-10
+                    lg:left-[2%]
+                    lg:right-[-14%]
+                    lg:translate-y-10
 
-      xl:left-[5%]
-      xl:right-[-28%]
-    "
+                    xl:left-[5%]
+                    xl:right-[-28%]
+                  "
                 >
                   <Image
                     src={hero.image.src}
@@ -350,10 +443,10 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Mobile + tablet postcode form */}
-              <form
-                onSubmit={handleSubmit}
-                noValidate
+              {/* =====================================================
+                  MOBILE + TABLET POSTCODE CARD
+              ====================================================== */}
+              <div
                 className="
                   absolute
                   bottom-[27px]
@@ -361,20 +454,17 @@ export default function Hero() {
                   right-[10px]
                   z-30
 
-                  rounded-[22px]
-                  border border-[#EAECF0]
-                  bg-white
+                  rounded-[23px]
 
-                  px-[7px]
-                  pb-[14px]
-                  pt-[7px]
+                  bg-[linear-gradient(180deg,rgba(0,168,149,0.5)_0%,rgba(0,168,149,0)_100%)]
 
-                  shadow-[0px_10px_30px_rgba(8,60,92,0.10)]
+                  p-px
+
+                  shadow-[0px_19px_42px_0px_#B0B0B01A,0px_77px_77px_0px_#B0B0B017,0px_174px_104px_0px_#B0B0B00D,0px_309px_123px_0px_#B0B0B003,0px_482px_135px_0px_#B0B0B000]
 
                   sm:bottom-10
                   sm:left-4
                   sm:right-4
-                  sm:p-4
 
                   md:left-8
                   md:right-8
@@ -382,88 +472,205 @@ export default function Hero() {
                   lg:hidden
                 "
               >
-                <div
-                  className={`flex h-[44px] items-center rounded-full border bg-white transition-colors ${
-                    postcodeError
-                      ? 'border-red-400'
-                      : 'border-[#D0D5DD] focus-within:border-primary'
-                  }`}
+                <form
+                  onSubmit={handleSubmit}
+                  noValidate
+                  className="
+                    overflow-hidden
+                    rounded-[22px]
+                    bg-white
+
+                    px-[7px]
+                    pb-[14px]
+
+                    sm:px-4
+                    sm:pb-4
+                  "
                 >
-                  <div className="flex min-w-0 flex-1 items-center gap-2 px-3">
-                    <MapPin
-                      size={15}
-                      strokeWidth={1.8}
-                      className="shrink-0 text-secondary"
-                      aria-hidden="true"
-                    />
+                  {/* Mobile/tablet tabs */}
+                  <ServiceTabs
+                    selectedService={selectedService}
+                    onChange={setSelectedService}
+                    compact
+                  />
 
-                    <label
-                      htmlFor="hero-postcode-mobile"
-                      className="sr-only"
-                    >
-                      {hero.postcode.label}
-                    </label>
-
-                    <input
-                      id="hero-postcode-mobile"
-                      name="postcode"
-                      type="text"
-                      value={postcode}
-                      onChange={(event) => handlePostcodeChange(event.target.value)}
-                      placeholder={hero.postcode.placeholder}
-                      autoComplete="postal-code"
-                      aria-invalid={Boolean(postcodeError)}
-                      aria-describedby={postcodeError ? 'hero-postcode-mobile-error' : undefined}
-                      className="h-full min-w-0 flex-1 bg-transparent font-inter text-[10px] text-secondary outline-none placeholder:text-[#475467] min-[390px]:text-[11px]"
-                    />
-                  </div>
-
-                  <div className="-mr-px h-[44px] w-[128px] shrink-0 min-[390px]:w-[132px]">
-                    <div className="relative h-full w-full">
-                      <div className="absolute inset-y-0 right-0 w-[144px] rounded-full bg-[linear-gradient(77.21deg,#2E69A4_-1.53%,#01ACA7_136.17%)] p-[2px] min-[390px]:w-[152px]">
-                        <button
-                          type="submit"
-                          className="flex h-full w-full items-center justify-center whitespace-nowrap rounded-full bg-secondary px-3 font-red-hat-display text-[10px] font-semibold text-white transition-colors hover:bg-[#124A7E] min-[390px]:text-[11px]"
-                        >
-                          {hero.button.label}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {postcodeError && (
-                  <p
-                    id="hero-postcode-mobile-error"
-                    className="mt-1.5 px-2 font-inter text-[9px] text-red-600"
+                  {/* Input */}
+                  <div
+                    className={`mt-3 flex h-[44px] items-center rounded-full border bg-white transition-colors ${
+                      postcodeError
+                        ? 'border-red-400'
+                        : 'border-[#D0D5DD] focus-within:border-primary'
+                    }`}
                   >
-                    {postcodeError}
-                  </p>
-                )}
-
-                <div className="mt-[14px] grid grid-cols-2 gap-x-3 gap-y-[10px] px-2">
-                  {hero.benefits.map((benefit) => (
-                    <div
-                      key={benefit.id}
-                      className="flex items-center gap-[5px] font-inter text-[8px] text-secondary min-[390px]:text-[9px]"
-                    >
-                      <Check
-                        size={11}
-                        strokeWidth={2.5}
-                        className="shrink-0 text-primary"
+                    <div className="flex min-w-0 flex-1 items-center gap-2 px-3">
+                      <MapPin
+                        size={15}
+                        strokeWidth={1.8}
+                        className="shrink-0 text-secondary"
                         aria-hidden="true"
                       />
 
-                      <span>{benefit.label}</span>
+                      <label
+                        htmlFor="hero-postcode-mobile"
+                        className="sr-only"
+                      >
+                        {hero.postcode.label}
+                      </label>
+
+                      <input
+                        id="hero-postcode-mobile"
+                        name="postcode"
+                        type="text"
+                        value={postcode}
+                        onChange={(event) => handlePostcodeChange(event.target.value)}
+                        placeholder={hero.postcode.placeholder}
+                        autoComplete="postal-code"
+                        aria-invalid={Boolean(postcodeError)}
+                        aria-describedby={postcodeError ? 'hero-postcode-mobile-error' : undefined}
+                        className="
+                          h-full
+                          min-w-0
+                          flex-1
+                          bg-transparent
+
+                          font-inter
+                          text-[10px]
+                          text-secondary
+
+                          outline-none
+
+                          placeholder:text-[#475467]
+
+                          min-[390px]:text-[11px]
+
+                          sm:text-[12px]
+                        "
+                      />
                     </div>
-                  ))}
-                </div>
-              </form>
+
+                    {/* Animated mobile/tablet button */}
+                    <div className="-mr-px h-[44px] w-[128px] shrink-0 min-[390px]:w-[132px] sm:w-[160px]">
+                      <div className="relative h-full w-full">
+                        <div
+                          className="
+                            absolute
+                            inset-y-0
+                            right-0
+
+                            w-[144px]
+
+                            min-[390px]:w-[152px]
+
+                            sm:w-[175px]
+                          "
+                        >
+                          <div className="hero-animated-border h-full w-full rounded-full p-[3px]">
+                            <button
+                              type="submit"
+                              className="
+                                relative
+                                z-10
+
+                                flex
+                                h-full
+                                w-full
+                                items-center
+                                justify-center
+
+                                whitespace-nowrap
+
+                                rounded-full
+
+                                bg-secondary
+
+                                px-2
+
+                                font-red-hat-display
+                                text-[10px]
+                                font-semibold
+                                text-white
+
+                                transition-colors
+
+                                hover:bg-[#124A7E]
+
+                                min-[390px]:px-3
+                                min-[390px]:text-[11px]
+
+                                sm:text-[13px]
+                              "
+                            >
+                              {hero.button.label}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {postcodeError && (
+                    <p
+                      id="hero-postcode-mobile-error"
+                      className="mt-1.5 px-2 font-inter text-[9px] text-red-600"
+                    >
+                      {postcodeError}
+                    </p>
+                  )}
+
+                  {/* Benefits */}
+                  <div
+                    className="
+                      mt-[14px]
+
+                      grid
+                      grid-cols-3
+                      gap-x-1
+
+                      px-1
+
+                      sm:flex
+                      sm:items-center
+                      sm:justify-between
+                    "
+                  >
+                    {displayedBenefits.map((benefit) => (
+                      <div
+                        key={benefit.id}
+                        className="
+                          flex
+                          min-w-0
+                          items-center
+                          gap-[4px]
+
+                          font-inter
+                          text-[7px]
+                          text-secondary
+
+                          min-[390px]:text-[8px]
+
+                          sm:text-[11px]
+                        "
+                      >
+                        <Check
+                          size={11}
+                          strokeWidth={2.5}
+                          className="shrink-0 text-primary"
+                          aria-hidden="true"
+                        />
+
+                        <span className="whitespace-nowrap">{benefit.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Trust and providers */}
+        {/* =====================================================
+            TRUST + PROVIDERS
+        ====================================================== */}
         <div className="relative">
           <div className="absolute left-0 right-0 top-[17px] h-px bg-[#EAECF0] lg:top-[24px]" />
 
@@ -586,5 +793,148 @@ export default function Hero() {
         </div>
       </div>
     </section>
+  );
+}
+
+type ServiceTabsProps = {
+  selectedService: ServiceType;
+  onChange: (service: ServiceType) => void;
+  compact?: boolean;
+};
+
+function ServiceTabs({ selectedService, onChange, compact = false }: ServiceTabsProps) {
+  const { serviceTabs } = data.hero;
+
+  return (
+    <div
+      className={`
+        flex
+        w-full
+        items-start
+
+        ${
+          compact
+            ? `
+              h-[28px]
+
+              min-[390px]:h-[30px]
+
+              sm:h-[32px]
+            `
+            : `
+              h-[34px]
+            `
+        }
+      `}
+    >
+      {serviceTabs.items.map((service) => {
+        const isActive = selectedService === service.value;
+
+        return (
+          <button
+            key={service.id}
+            type="button"
+            aria-pressed={isActive}
+            onClick={() => {
+              onChange(service.value as ServiceType);
+            }}
+            className={`
+              inline-flex
+              shrink-0
+              items-center
+              justify-center
+
+              whitespace-nowrap
+
+              font-red-hat-display
+              font-semibold
+
+              transition-all
+              duration-200
+
+              ${
+                compact
+                  ? `
+                    h-[28px]
+                    gap-[3px]
+
+                    px-[7px]
+
+                    text-[9px]
+
+                    min-[390px]:h-[30px]
+                    min-[390px]:gap-1
+                    min-[390px]:px-[9px]
+                    min-[390px]:text-[10px]
+
+                    sm:h-[32px]
+                    sm:px-[11px]
+                    sm:text-[11px]
+                  `
+                  : `
+                    h-[34px]
+
+                    gap-1
+
+                    px-[12px]
+
+                    text-[14px]
+                  `
+              }
+
+              ${
+                isActive
+                  ? `
+                    rounded-bl-[12px]
+                    rounded-br-[12px]
+
+                    bg-[#00897B]
+
+                    text-white
+                  `
+                  : `
+                    bg-transparent
+
+                    text-[#475467]
+
+                    hover:bg-[#F9FAFB]
+                  `
+              }
+            `}
+          >
+            <Image
+              src={isActive ? service.activeIcon : service.icon}
+              alt={service.iconAlt}
+              width={68}
+              height={68}
+              className={`
+                shrink-0
+                object-contain
+
+                ${
+                  compact
+                    ? `
+                      h-[10px]
+                      w-[10px]
+
+                      min-[390px]:h-[11px]
+                      min-[390px]:w-[11px]
+
+                      sm:h-[13px]
+                      sm:w-[13px]
+                    `
+                    : `
+                      h-[14px]
+                      w-[14px]
+                    `
+                }
+              `}
+            />
+
+            <span>{service.label}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
