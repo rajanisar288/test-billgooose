@@ -472,7 +472,7 @@
     "heading": "Easily compare household bills",
     "description": "Quickly compare your household bills to find the best deals and save money effortlessly.",
     "backgroundImage": {
-      "src": "/images/lower-hero-frame.png",
+      "src": "/images/lower-hero.png",
       "alt": "BillGoose household comparison banner"
     },
     "mobileBackgroundImage": {
@@ -1066,10 +1066,10 @@
       "backButton": "Back",
       "liveMeterText": "Live meter data",
       "updatedText": "Updated just now",
-      "mprnLabel": "MPRN:",
-      "mprnValue": "102 8876 5432 108",
       "mpanLabel": "MPAN:",
-      "mpanValue": "492 3046 7980"
+      "mpanValue": "492 3046 7980",
+      "mprnLabel": "MPRN:",
+      "mprnValue": "102 8876 5432 108"
     },
     "header": {
       "heading": "Your Current Usage",
@@ -1448,7 +1448,7 @@
           "rating": "4.3",
           "contract": "12 month contract",
           "features": ["Price locked for 12 months", "24/7 chat support"],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£284.90",
           "pricePeriod": "/mo",
           "saving": "Save £580/yr",
@@ -1477,7 +1477,7 @@
             "Symmetrical upload speed",
             "Wi-Fi 6 router included"
           ],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£25",
           "pricePeriod": "/mo",
           "saving": "Save £240/yr",
@@ -1493,7 +1493,7 @@
           "rating": "4.3",
           "contract": "12 month contract",
           "features": ["Longest price lock available", "Exit fee applies before term end"],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£249.99",
           "pricePeriod": "/mo",
           "saving": "Save £590/yr",
@@ -1514,7 +1514,7 @@
             "Price locked for 12 months",
             "Smart meter included"
           ],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£259.55",
           "pricePeriod": "/mo",
           "saving": "Save £580/yr",
@@ -1535,7 +1535,7 @@
             "Green energy sourced",
             "Free smart meter upgrade"
           ],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£271.10",
           "pricePeriod": "/mo",
           "saving": "Save £580/yr",
@@ -1552,7 +1552,7 @@
           "rating": "4.3",
           "contract": "12 month contract",
           "features": ["Same price every month", "No usage surprises", "Smart meter included"],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£353.30",
           "pricePeriod": "/mo",
           "saving": "Save £580/yr",
@@ -1569,7 +1569,7 @@
           "rating": "4.3",
           "contract": "12 month contract",
           "features": ["100% renewable sourced", "Cancel anytime"],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
           "saving": "Save £590/yr",
@@ -1586,7 +1586,7 @@
           "rating": "4.3",
           "contract": "12 month contract",
           "features": ["100% renewable sourced", "Cancel anytime"],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
           "saving": "Save £580/yr",
@@ -1603,7 +1603,7 @@
           "rating": "4.3",
           "contract": "12 month contract",
           "features": ["100% renewable sourced", "Cancel anytime"],
-          "priceLabel": "Price",
+          "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
           "saving": "Save £580/yr",

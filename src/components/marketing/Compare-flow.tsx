@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { ArrowLeft, ArrowRight, Check, ChevronDown, CircleHelp } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, CircleHelp } from 'lucide-react';
 
 import data from '@/data/content.json';
 
@@ -140,15 +140,15 @@ export default function CompareFlow() {
             className="
               inline-flex h-10 w-fit
               items-center justify-center
-              gap-[5px]
+              gap-[1px]
               rounded-full
               bg-white
 
               py-2 pl-2 pr-[14px]
 
               font-inter
-              text-[13px] font-medium
-              text-secondary
+              text-[16px] font-medium
+              text-[#0D3B66]
 
               shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
@@ -165,14 +165,24 @@ export default function CompareFlow() {
 
               lg:w-[172px]
               lg:justify-start
-              lg:text-[14px]
+              lg:text-[15px]
+              lg:font-[500]
             "
           >
             <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-              <ArrowLeft
-                size={16}
-                strokeWidth={1.8}
+              <span
                 aria-hidden="true"
+                className="
+    h-[10px]
+    w-[10px]
+    shrink-0
+
+    rotate-45
+
+    border-b-2
+    border-l-2
+    border-[#00897B]
+  "
               />
             </span>
 
@@ -221,6 +231,7 @@ export default function CompareFlow() {
                 lg:whitespace-normal
                 lg:text-[50px]
                 lg:font-[645]
+                lg:font-extrabold
                 lg:leading-[56px]
               "
             >
@@ -275,6 +286,7 @@ export default function CompareFlow() {
                 lg:max-w-[510px]
                 lg:text-[18px]
                 lg:font-normal
+                lg:font-[400]
                 lg:leading-[25px]
               "
             >
@@ -306,6 +318,7 @@ export default function CompareFlow() {
                   font-inter
                   text-[13px]
                   font-medium
+                  font-[500]
                   leading-5
                   tracking-[0]
 
@@ -433,6 +446,7 @@ export default function CompareFlow() {
                   font-inter
                   text-[13px]
                   font-medium
+                  font-[500]
                   leading-5
                   tracking-[0]
 
@@ -499,7 +513,7 @@ export default function CompareFlow() {
                 >
                   <span
                     className={`min-w-0 truncate ${
-                      selectedAddress ? 'text-[#344054]' : 'text-[#667085]'
+                      selectedAddress ? 'text-[#000000]' : 'text-[#667085]'
                     }`}
                   >
                     {selectedAddress || compareFlow.form.address.placeholder}
@@ -638,7 +652,8 @@ export default function CompareFlow() {
 
                   font-inter
                   text-[13px]
-                  font-normal
+                  font-regular
+                  font-[500]
                   leading-5
                   tracking-[0]
 

@@ -326,7 +326,19 @@ export default function Hero() {
 
               {/* Desktop hero image */}
               <div className="relative hidden min-h-[610px] lg:block">
-                <div className="absolute inset-0 -left-[10%] -right-[7%] translate-y-10">
+                <div
+                  className="
+      absolute
+      inset-0
+
+      lg:left-[2%]
+      lg:right-[-14%]
+      lg:translate-y-10
+
+      xl:left-[5%]
+      xl:right-[-28%]
+    "
+                >
                   <Image
                     src={hero.image.src}
                     alt={hero.image.alt}
