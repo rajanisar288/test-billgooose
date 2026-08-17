@@ -1083,7 +1083,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   shrink-0
                   items-center
                   justify-center
-                  gap-2
+                  gap-1
 
                   whitespace-nowrap
                   rounded-full
@@ -1115,14 +1115,15 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 <ChevronRight
                   aria-hidden="true"
                   className="
-                    h-5 w-2
-                    shrink-0
-                    text-[#0D3B66]
+    h-[18px]
+    w-[18px]
+    shrink-0
+    text-[#0D3B66]
 
-                    xl:h-[15px]
-                    xl:w-[15px]
-                  "
-                  strokeWidth={2}
+    xl:h-[18px]
+    xl:w-[18px]
+  "
+                  strokeWidth={3}
                 />
               </button>
 

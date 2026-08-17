@@ -380,11 +380,22 @@ function ResultFilterSelect({
 
         <ChevronDown
           aria-hidden="true"
-          className="
-            h-[10px]
-            w-[10px]
-            shrink-0
-          "
+          className={`
+    h-[16px]
+    w-[16px]
+    shrink-0
+
+    text-[#344054]
+
+    transition-transform
+    duration-200
+
+    xl:h-[18px]
+    xl:w-[18px]
+
+    ${isOpen ? 'rotate-180' : ''}
+  `}
+          strokeWidth={2.5}
         />
       </button>
 

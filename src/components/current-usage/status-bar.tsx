@@ -100,38 +100,38 @@ export default function StatusBar() {
           </span>
         </div>
 
-        {/* MPRN / MPAN - desktop only */}
+        {/* MPAN / MPRN - desktop only */}
         <div
           className="
-            hidden shrink-0
-            items-center gap-2
+    hidden shrink-0
+    items-center gap-2
 
-            font-red-hat-display
-            text-[10px] font-bold
-            leading-4
+    font-red-hat-display
+    text-[10px] font-bold
+    leading-4
 
-            lg:flex
-            lg:text-[12px]
-          "
+    lg:flex
+    lg:text-[12px]
+  "
         >
-          <span className="text-[#99A1AF]">{statusBar.mprnLabel}</span>
+          <span className="text-[#99A1AF]">{statusBar.mpanLabel}</span>
 
-          <span className="text-[#4A5565]">{statusBar.mprnValue}</span>
+          <span className="text-[#4A5565]">{statusBar.mpanValue}</span>
 
           <span
             aria-hidden="true"
             className="
-              text-[18px] font-bold
-              leading-4
-              text-[#99A1AF]
-            "
+      text-[18px] font-bold
+      leading-4
+      text-[#99A1AF]
+    "
           >
             ·
           </span>
 
-          <span className="text-[#99A1AF]">{statusBar.mpanLabel}</span>
+          <span className="text-[#99A1AF]">{statusBar.mprnLabel}</span>
 
-          <span className="text-[#4A5565]">{statusBar.mpanValue}</span>
+          <span className="text-[#4A5565]">{statusBar.mprnValue}</span>
         </div>
       </div>
     </section>

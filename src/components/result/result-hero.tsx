@@ -41,42 +41,41 @@ export default function ResultHero() {
           alt={hero.mascot.alt}
           width={368}
           height={510}
-          priority
           className="
-            pointer-events-none
-            absolute
+  pointer-events-none
+  absolute
 
-            bottom-[-20px]
-            left-[-42px]
+  bottom-[-20px]
+  left-[-42px]
 
-            h-[282px]
-            w-[204px]
+  h-[282px]
+  w-[204px]
 
-            object-contain
-            object-bottom
+  object-contain
+  object-bottom
 
-            min-[390px]:bottom-[-22px]
-            min-[390px]:left-[-38px]
+  min-[390px]:bottom-[-22px]
+  min-[390px]:left-[-38px]
 
-            sm:bottom-[-24px]
-            sm:left-[-30px]
+  sm:bottom-[-24px]
+  sm:left-[-30px]
 
-            md:bottom-[-30px]
-            md:left-[-18px]
-            md:h-[365px]
-            md:w-[264px]
+  md:bottom-[-30px]
+  md:left-[-18px]
+  md:h-[365px]
+  md:w-[264px]
 
-            lg:bottom-[-55px]
-            lg:left-[20px]
-            lg:h-auto
-            lg:w-[340px]
+  lg:bottom-[-20px]
+  lg:left-[20px]
+  lg:h-auto
+  lg:w-[340px]
 
-            xl:bottom-auto
-            xl:left-[39px]
-            xl:top-1
-            xl:h-[510px]
-            xl:w-[368px]
-          "
+  xl:bottom-auto
+  xl:left-[6px]
+  xl:top-[-55px]
+  xl:h-[510px]
+  xl:w-[368px]
+"
         />
 
         {/* Heading + service icons */}
