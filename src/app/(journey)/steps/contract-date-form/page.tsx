@@ -1,21 +1,50 @@
-import ContractDateForm from '@/components/journey/forms/contract-date-form';
-import JourneyMobileStepHeader from '@/components/journey/forms/journey-mobile-step-header';
+'use client';
+
+import { useState } from 'react';
+
 import data from '@/data/content.json';
 
+import ContractDateForm from '../../../../components/journey/forms/contract-date-form';
+import JourneyMobileStepHeader from '../../../../components/journey/forms/journey-mobile-step-header';
+
+type JourneyService = 'energy' | 'broadband';
+
 export default function ContractDatePage() {
-  const steps = data.journey.sidebar.steps;
+  const { journey } = data;
 
-  const currentStep = 2;
+  const [service] = useState<JourneyService>(() => {
+    if (typeof window === 'undefined') {
+      return 'energy';
+    }
 
-  const currentStepData = steps[currentStep - 1];
+    try {
+      const stored = sessionStorage.getItem('compareFlowDetails');
+
+      if (!stored) {
+        return 'energy';
+      }
+
+      const parsed = JSON.parse(stored) as {
+        service?: string;
+      };
+
+      return parsed.service === 'broadband' ? 'broadband' : 'energy';
+    } catch {
+      return 'energy';
+    }
+  });
+
+  const steps = service === 'broadband' ? journey.sidebar.broadbandSteps : journey.sidebar.steps;
+
+  const step = steps[1];
 
   return (
     <>
       <JourneyMobileStepHeader
-        currentStep={currentStep}
+        currentStep={2}
         totalSteps={steps.length}
-        heading={currentStepData.title}
-        description="Please confirm when you’d like your new energy contract to begin."
+        heading={step.title}
+        description={step.description}
       />
 
       <ContractDateForm />

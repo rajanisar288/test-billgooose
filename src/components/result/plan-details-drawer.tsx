@@ -13,13 +13,19 @@ type PlanDetailsDrawerProps = {
   plan: StandardPlan | null;
   isOpen: boolean;
   onClose: () => void;
+  onSelectPlan: (plan: StandardPlan) => void;
 };
 
 type DrawerTab = 'details' | 'comparison' | 'supplier';
 
 const STAR_COUNT = 5;
 
-export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetailsDrawerProps) {
+export default function PlanDetailsDrawer({
+  plan,
+  isOpen,
+  onClose,
+  onSelectPlan,
+}: PlanDetailsDrawerProps) {
   const { plans, planDetailsDrawer } = data.resultPage;
 
   const defaultTab = planDetailsDrawer.tabs.defaultValue as DrawerTab;
@@ -28,6 +34,7 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
 
   const handleClose = useCallback(() => {
     setActiveTab(defaultTab);
+
     onClose();
   }, [defaultTab, onClose]);
 
@@ -83,8 +90,12 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
   return (
     <div
       className={`
-        fixed inset-0 z-[100]
-        transition-visibility duration-300
+        fixed
+        inset-0
+        z-[100]
+
+        transition-visibility
+        duration-300
 
         ${isOpen ? 'visible' : 'invisible pointer-events-none'}
       `}
@@ -96,9 +107,13 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
         aria-label={planDetailsDrawer.closeButtonLabel}
         onClick={handleClose}
         className={`
-          absolute inset-0
+          absolute
+          inset-0
+
           bg-black/35
-          transition-opacity duration-300
+
+          transition-opacity
+          duration-300
 
           ${isOpen ? 'opacity-100' : 'opacity-0'}
         `}
@@ -110,12 +125,24 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
         aria-modal="true"
         aria-labelledby="plan-details-title"
         className={`
-          absolute right-0 top-0
-          flex h-dvh w-full
-          flex-col overflow-hidden
+          absolute
+          right-0
+          top-0
+
+          flex
+          h-dvh
+          w-full
+
+          flex-col
+
+          overflow-hidden
+
           bg-white
+
           shadow-[-16px_0px_40px_rgba(16,24,40,0.16)]
-          transition-transform duration-300
+
+          transition-transform
+          duration-300
 
           sm:w-[min(92vw,783px)]
           sm:rounded-l-[16px]
@@ -125,13 +152,19 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
       >
-        {/* Drawer heading */}
+        {/* Heading */}
         <header
           className="
-            flex min-h-[56px]
-            shrink-0 items-center
+            flex
+            min-h-[56px]
+            shrink-0
+
+            items-center
             justify-between
-            border-b border-[#EAECF0]
+
+            border-b
+            border-[#EAECF0]
+
             px-4
 
             sm:min-h-[72px]
@@ -141,8 +174,12 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
           <h2
             id="plan-details-title"
             className="
-              font-inter text-[15px]
-              font-bold leading-5
+              font-inter
+
+              text-[15px]
+              font-bold
+              leading-5
+
               text-[#181D27]
 
               sm:text-[16px]
@@ -156,10 +193,18 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
             onClick={handleClose}
             aria-label={planDetailsDrawer.closeButtonLabel}
             className="
-              flex h-9 w-9
-              shrink-0 items-center
-              justify-center rounded-full
+              flex
+              h-9
+              w-9
+              shrink-0
+
+              items-center
+              justify-center
+
+              rounded-full
+
               text-[#717680]
+
               transition-colors
 
               hover:bg-[#F2F4F7]
@@ -173,7 +218,8 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
             <X
               aria-hidden="true"
               className="
-                h-4 w-4
+                h-4
+                w-4
 
                 sm:h-5
                 sm:w-5
@@ -183,12 +229,20 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
           </button>
         </header>
 
-        {/* Scrollable content */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {/* Selected provider */}
+        {/* Scrollable */}
+        <div
+          className="
+            min-h-0
+            flex-1
+
+            overflow-y-auto
+          "
+        >
+          {/* Plan */}
           <section
             className="
-              px-4 py-4
+              px-4
+              py-4
 
               sm:px-5
               sm:py-5
@@ -196,17 +250,23 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
           >
             <div
               className="
-                flex flex-col gap-4
+                flex
+                flex-col
+                gap-4
 
                 min-[480px]:flex-row
                 min-[480px]:items-start
                 min-[480px]:justify-between
               "
             >
+              {/* Provider */}
               <div
                 className="
-                  flex min-w-0
-                  items-start gap-3
+                  flex
+                  min-w-0
+
+                  items-start
+                  gap-3
 
                   sm:gap-5
                 "
@@ -217,8 +277,11 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                   width={72}
                   height={72}
                   className="
-                    h-[56px] w-[56px]
-                    shrink-0 object-contain
+                    h-[56px]
+                    w-[56px]
+                    shrink-0
+
+                    object-contain
 
                     sm:h-[72px]
                     sm:w-[72px]
@@ -229,8 +292,11 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                   <h3
                     className="
                       font-red-hat-display
-                      text-[18px] font-extrabold
+
+                      text-[18px]
+                      font-extrabold
                       leading-[22px]
+
                       text-[#101828]
 
                       sm:text-[20px]
@@ -243,9 +309,13 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                   <p
                     className="
                       mt-1
+
                       font-red-hat-display
-                      text-[13px] font-medium
+
+                      text-[13px]
+                      font-medium
                       leading-[18px]
+
                       text-[#667085]
 
                       sm:text-[15px]
@@ -257,14 +327,21 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
 
                   <div
                     className="
-                      mt-2 flex flex-wrap
-                      items-center gap-x-2
+                      mt-2
+
+                      flex
+                      flex-wrap
+                      items-center
+
+                      gap-x-2
                       gap-y-1
                     "
                   >
                     <div
                       className="
-                        flex items-center gap-[2px]
+                        flex
+                        items-center
+                        gap-[2px]
 
                         sm:gap-[3px]
                       "
@@ -281,12 +358,15 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                           height={16}
                           aria-hidden="true"
                           className="
-                            h-[13px] w-[13px]
-                            shrink-0 object-contain
+                              h-[13px]
+                              w-[13px]
+                              shrink-0
 
-                            sm:h-4
-                            sm:w-4
-                          "
+                              object-contain
+
+                              sm:h-4
+                              sm:w-4
+                            "
                         />
                       ))}
                     </div>
@@ -294,8 +374,12 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                     <span
                       className="
                         font-red-hat-display
-                        text-[13px] font-bold
-                        leading-5 text-[#101828]
+
+                        text-[13px]
+                        font-bold
+                        leading-5
+
+                        text-[#101828]
 
                         sm:text-[14px]
                         sm:leading-6
@@ -308,8 +392,12 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                       aria-hidden="true"
                       className="
                         font-red-hat-display
-                        text-[15px] font-bold
-                        leading-5 text-[#98A2B3]
+
+                        text-[15px]
+                        font-bold
+                        leading-5
+
+                        text-[#98A2B3]
 
                         sm:text-[16px]
                         sm:leading-6
@@ -321,8 +409,12 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                     <span
                       className="
                         font-red-hat-display
-                        text-[13px] font-bold
-                        leading-5 text-[#667085]
+
+                        text-[13px]
+                        font-bold
+                        leading-5
+
+                        text-[#667085]
 
                         sm:text-[14px]
                         sm:leading-6
@@ -334,9 +426,11 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                 </div>
               </div>
 
+              {/* Price */}
               <div
                 className="
-                  shrink-0 text-left
+                  shrink-0
+                  text-left
 
                   min-[480px]:text-right
                 "
@@ -344,9 +438,13 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                 <p
                   className="
                     font-red-hat-display
-                    text-[10px] font-extrabold
-                    uppercase leading-4
+
+                    text-[10px]
+                    font-extrabold
+                    uppercase
+                    leading-4
                     tracking-[0.55px]
+
                     text-[#667085]
 
                     sm:text-[11px]
@@ -357,7 +455,8 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
 
                 <div
                   className="
-                    flex items-baseline
+                    flex
+                    items-baseline
                     gap-0.5
 
                     min-[480px]:justify-end
@@ -366,8 +465,12 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                   <span
                     className="
                       font-red-hat-display
-                      text-[23px] font-extrabold
-                      leading-7 text-black
+
+                      text-[23px]
+                      font-extrabold
+                      leading-7
+
+                      text-black
 
                       sm:text-[26px]
                       sm:leading-8
@@ -379,7 +482,10 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                   <span
                     className="
                       font-red-hat-display
-                      text-[12px] font-medium
+
+                      text-[12px]
+                      font-medium
+
                       text-[#667085]
 
                       sm:text-[13px]
@@ -391,13 +497,25 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
 
                 <span
                   className="
-                    mt-1 inline-flex
-                    items-center gap-1
-                    rounded-full bg-[#ECFDF3]
-                    px-[7px] py-0.5
+                    mt-1
+
+                    inline-flex
+
+                    items-center
+                    gap-1
+
+                    rounded-full
+
+                    bg-[#ECFDF3]
+
+                    px-[7px]
+                    py-0.5
 
                     font-red-hat-display
-                    text-[10.5px] font-extrabold
+
+                    text-[10.5px]
+                    font-extrabold
+
                     text-[#027A48]
 
                     sm:text-[11.5px]
@@ -410,7 +528,10 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                     height={12}
                     aria-hidden="true"
                     className="
-                      h-3 w-3 shrink-0
+                      h-3
+                      w-3
+                      shrink-0
+
                       object-contain
                     "
                   />
@@ -423,7 +544,10 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
             {/* Cost cards */}
             <div
               className="
-                mt-5 grid grid-cols-1
+                mt-5
+
+                grid
+                grid-cols-1
                 gap-3
 
                 sm:grid-cols-2
@@ -444,14 +568,23 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
             </div>
           </section>
 
-          {/* Drawer tabs */}
+          {/* Tabs */}
           <div
             className="
-              flex min-h-[45px]
-              items-end gap-6
+              flex
+              min-h-[45px]
+
+              items-end
+              gap-6
+
               overflow-x-auto
-              border-b border-[#EAECF0]
-              bg-white px-4
+
+              border-b
+              border-[#EAECF0]
+
+              bg-white
+
+              px-4
 
               sm:gap-8
               sm:px-5
@@ -468,12 +601,20 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
                     setActiveTab(tab.value as DrawerTab);
                   }}
                   className={`
-                      flex h-[45px]
-                      shrink-0 items-center
-                      border-b-2 px-0
+                      flex
+                      h-[45px]
+                      shrink-0
+
+                      items-center
+
+                      border-b-2
+
+                      px-0
 
                       font-red-hat-display
-                      text-[14px] leading-7
+
+                      text-[14px]
+                      leading-7
 
                       transition-colors
 
@@ -492,11 +633,13 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
             })}
           </div>
 
-          {/* Active tab content */}
+          {/* Content */}
           <div
             className="
               bg-[#F8F9FA]
-              px-4 py-5
+
+              px-4
+              py-5
 
               sm:px-5
               sm:py-6
@@ -511,9 +654,14 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
             <h3
               className="
                 mt-5
+
                 font-red-hat-display
-                text-[16px] font-bold
-                leading-6 text-[#101828]
+
+                text-[16px]
+                font-bold
+                leading-6
+
+                text-[#101828]
 
                 sm:text-[18px]
               "
@@ -523,14 +671,25 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
           </div>
         </div>
 
-        {/* Footer */}
+        {/* =====================================================
+            FOOTER
+        ====================================================== */}
         <footer
           className="
-            flex min-h-[76px]
-            shrink-0 items-center
-            justify-end gap-2
-            border-t border-[#EAECF0]
-            bg-white p-4
+            flex
+            min-h-[76px]
+            shrink-0
+
+            items-center
+            justify-end
+            gap-2
+
+            border-t
+            border-[#EAECF0]
+
+            bg-white
+
+            p-4
 
             sm:px-[18px]
             sm:py-[18px]
@@ -538,21 +697,42 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
         >
           <button
             type="button"
-            className="
-              inline-flex h-10
-              w-full items-center
-              justify-center gap-2
-              whitespace-nowrap
-              rounded-full
-              border border-[#00897B]
-              bg-[#00897B]
-              px-4 py-2.5
+            onClick={() => {
+              handleClose();
 
-              font-inter text-[14px]
-              font-bold leading-5
+              onSelectPlan(plan);
+            }}
+            className="
+              inline-flex
+              h-10
+              w-full
+
+              items-center
+              justify-center
+              gap-2
+
+              whitespace-nowrap
+
+              rounded-full
+
+              border
+              border-[#00897B]
+
+              bg-[#00897B]
+
+              px-4
+              py-2.5
+
+              font-inter
+
+              text-[14px]
+              font-bold
+              leading-5
+
               text-white
 
               shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)]
+
               transition-colors
 
               hover:border-[#00796D]
@@ -573,6 +753,10 @@ export default function PlanDetailsDrawer({ plan, isOpen, onClose }: PlanDetails
   );
 }
 
+/* =========================================================
+   COST CARD
+========================================================= */
+
 type CostSummaryProps = {
   label: string;
   value: string;
@@ -583,11 +767,18 @@ function CostSummary({ label, value, variant }: CostSummaryProps) {
   return (
     <div
       className={`
-        flex min-h-[92px]
-        flex-col items-center
-        justify-center gap-1.5
+        flex
+        min-h-[92px]
+
+        flex-col
+        items-center
+        justify-center
+        gap-1.5
+
         rounded-[8px]
-        px-3 py-[14px]
+
+        px-3
+        py-[14px]
 
         sm:h-[103px]
         sm:gap-3
@@ -597,10 +788,15 @@ function CostSummary({ label, value, variant }: CostSummaryProps) {
     >
       <p
         className="
+          text-center
+
           font-red-hat-display
-          text-[14px] font-medium
+
+          text-[14px]
+          font-medium
           leading-[150%]
-          text-center text-[#1D2939]
+
+          text-[#1D2939]
 
           sm:text-[16px]
         "
@@ -610,10 +806,15 @@ function CostSummary({ label, value, variant }: CostSummaryProps) {
 
       <p
         className="
+          text-center
+
           font-red-hat-display
-          text-[28px] font-extrabold
+
+          text-[28px]
+          font-extrabold
           leading-[130%]
-          text-center text-[#101828]
+
+          text-[#101828]
 
           sm:text-[34px]
           sm:leading-[150%]
@@ -624,6 +825,10 @@ function CostSummary({ label, value, variant }: CostSummaryProps) {
     </div>
   );
 }
+
+/* =========================================================
+   DETAILS TABLE
+========================================================= */
 
 function DetailsTable() {
   const { details } = data.resultPage.planDetailsDrawer;
@@ -642,6 +847,10 @@ function DetailsTable() {
     />
   );
 }
+
+/* =========================================================
+   COMPARISON
+========================================================= */
 
 type ComparisonTableProps = {
   plan: StandardPlan;
@@ -678,6 +887,10 @@ function ComparisonTable({ plan }: ComparisonTableProps) {
   );
 }
 
+/* =========================================================
+   SUPPLIER
+========================================================= */
+
 type SupplierTableProps = {
   plan: StandardPlan;
 };
@@ -702,6 +915,10 @@ function SupplierTable({ plan }: SupplierTableProps) {
     />
   );
 }
+
+/* =========================================================
+   GENERIC TABLE
+========================================================= */
 
 type TableRow = {
   id: string;
@@ -728,23 +945,42 @@ function ThreeColumnTable({
   return (
     <div
       className="
-        overflow-hidden rounded-[8px]
-        border border-[#EAECF0]
-        bg-white p-3
+        overflow-hidden
+
+        rounded-[8px]
+
+        border
+        border-[#EAECF0]
+
+        bg-white
+
+        p-3
 
         sm:p-5
       "
     >
       <div
         className={`
-          grid min-h-[36px]
-          items-center rounded-full
-          border border-[#E4E7EC]
+          grid
+          min-h-[36px]
+
+          items-center
+
+          rounded-full
+
+          border
+          border-[#E4E7EC]
+
           bg-[#F9FAFB]
+
           px-3
 
-          font-inter text-[11px]
-          font-medium leading-4
+          font-inter
+
+          text-[11px]
+          font-medium
+          leading-4
+
           text-[#101828]
 
           sm:text-[13px]
@@ -768,12 +1004,21 @@ function ThreeColumnTable({
           <div
             key={row.id}
             className={`
-              grid min-h-[46px]
-              items-center gap-3
-              border-b border-[#EAECF0]
-              px-3 py-2
+              grid
+              min-h-[46px]
 
-              font-inter text-[11px]
+              items-center
+              gap-3
+
+              border-b
+              border-[#EAECF0]
+
+              px-3
+              py-2
+
+              font-inter
+
+              text-[11px]
               leading-5
 
               last:border-b-0
@@ -790,28 +1035,34 @@ function ThreeColumnTable({
           >
             <span
               className="
-    font-inter
-    text-[12px] font-normal
-    leading-[120%]
-    tracking-[0]
-    text-[#475467]
+                font-inter
 
-    sm:text-[13px]
-  "
+                text-[12px]
+                font-normal
+                leading-[120%]
+                tracking-[0]
+
+                text-[#475467]
+
+                sm:text-[13px]
+              "
             >
               {row.label}
             </span>
 
             <span
               className="
-    font-inter
-    text-[12px] font-normal
-    leading-[120%]
-    tracking-[0]
-    text-black
+                font-inter
 
-    sm:text-[13px]
-  "
+                text-[12px]
+                font-normal
+                leading-[120%]
+                tracking-[0]
+
+                text-black
+
+                sm:text-[13px]
+              "
             >
               {row.second}
             </span>
@@ -819,14 +1070,17 @@ function ThreeColumnTable({
             {!hideThirdColumn && (
               <span
                 className="
-      font-inter
-      text-[12px] font-normal
-      leading-[120%]
-      tracking-[0]
-      text-black
+                  font-inter
 
-      sm:text-[13px]
-    "
+                  text-[12px]
+                  font-normal
+                  leading-[120%]
+                  tracking-[0]
+
+                  text-black
+
+                  sm:text-[13px]
+                "
               >
                 {row.third}
               </span>

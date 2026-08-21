@@ -8,22 +8,29 @@ import data from '@/data/content.json';
 
 import { getPreviousJourneyRoute } from './journey-routes';
 
+type JourneyService = 'energy' | 'broadband';
+
 type JourneyNavigationProps = {
   currentStep: number;
   totalSteps: number;
+  service: JourneyService;
 };
 
-export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNavigationProps) {
+export default function JourneyNavigation({
+  currentStep,
+  totalSteps,
+  service,
+}: JourneyNavigationProps) {
   const router = useRouter();
 
   const { navigation } = data.journey;
 
   const handleBack = () => {
-    router.push(getPreviousJourneyRoute(currentStep));
+    router.push(getPreviousJourneyRoute(currentStep, service));
   };
 
   const continueLabel =
-    currentStep === 2
+    service === 'energy' && currentStep === 2
       ? 'Acknowledge & Continue'
       : currentStep === totalSteps
         ? navigation.completeButton
@@ -102,16 +109,18 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
           <span
             aria-hidden="true"
             className="
-    mr-1
-    h-[8px]
-    w-[8px]
-    shrink-0
-    rotate-45
+              mr-1
 
-    border-b-[2px]
-    border-l-[2px]
-    border-[#344054]
-  "
+              h-[8px]
+              w-[8px]
+              shrink-0
+
+              rotate-45
+
+              border-b-[2px]
+              border-l-[2px]
+              border-[#344054]
+            "
           />
 
           {navigation.backButton}
@@ -140,7 +149,6 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
 
             font-red-hat-display
             text-[16px]
-            font-bold
             font-[800]
             leading-5
             text-white
@@ -160,11 +168,12 @@ export default function JourneyNavigation({ currentStep, totalSteps }: JourneyNa
           <ArrowRight
             aria-hidden="true"
             className="
-    h-4
-    w-4
-    shrink-0
-    text-white
-  "
+              h-4
+              w-4
+              shrink-0
+
+              text-white
+            "
             strokeWidth={3}
           />
         </button>

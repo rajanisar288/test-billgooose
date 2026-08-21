@@ -14,9 +14,7 @@ export default function JourneyMobileStepHeader({
   const radius = 26;
 
   const circumference = 2 * Math.PI * radius;
-
   const progress = currentStep / totalSteps;
-
   const strokeDashoffset = circumference * (1 - progress);
 
   return (
@@ -35,7 +33,6 @@ export default function JourneyMobileStepHeader({
         lg:hidden
       "
     >
-      {/* Heading */}
       <div className="min-w-0 flex-1">
         <h1
           className="
@@ -73,7 +70,7 @@ export default function JourneyMobileStepHeader({
         </p>
       </div>
 
-      {/* Step ring */}
+      {/* Keep this circle */}
       <div
         className="
           relative
@@ -90,14 +87,11 @@ export default function JourneyMobileStepHeader({
           className="
             absolute
             inset-0
-
             h-16
             w-16
-
             -rotate-90
           "
         >
-          {/* Background ring */}
           <circle
             cx="32"
             cy="32"
@@ -107,7 +101,6 @@ export default function JourneyMobileStepHeader({
             strokeWidth="6"
           />
 
-          {/* Progress */}
           <circle
             cx="32"
             cy="32"
@@ -124,9 +117,7 @@ export default function JourneyMobileStepHeader({
         <span
           className="
             relative z-10
-
             whitespace-nowrap
-
             font-inter
             text-[12px]
             font-extrabold

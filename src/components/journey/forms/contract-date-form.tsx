@@ -1,6 +1,6 @@
 'use client';
 
-import { type FormEvent, type ReactNode, useState } from 'react';
+import { type FormEvent, type ReactNode, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -10,20 +10,99 @@ import { CalendarDays, Check } from 'lucide-react';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
+type JourneyService = 'energy' | 'broadband';
+
+/* =========================================================
+   JOURNEY SERVICE
+========================================================= */
+
+function getJourneyServiceSnapshot(): JourneyService {
+  try {
+    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
+
+    if (!storedCompareFlow) {
+      return 'energy';
+    }
+
+    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
+      service?: string;
+    };
+
+    return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
+  } catch {
+    return 'energy';
+  }
+}
+
+function getJourneyServiceServerSnapshot(): JourneyService {
+  return 'energy';
+}
+
+function subscribeToJourneyService(callback: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === 'compareFlowDetails') {
+      callback();
+    }
+  };
+
+  window.addEventListener('storage', handleStorage);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+  };
+}
+
 export default function ContractDateForm() {
   const router = useRouter();
 
-  const { contractDetails } = data.journey;
+  const { contractDetails, broadbandProvider } = data.journey;
 
   const { fields, information, warning, acknowledgement } = contractDetails;
 
+  const service = useSyncExternalStore(
+    subscribeToJourneyService,
+    getJourneyServiceSnapshot,
+    getJourneyServiceServerSnapshot,
+  );
+
+  /*
+   * ENERGY
+   */
   const [contractDate, setContractDate] = useState('');
 
   const [acknowledged, setAcknowledged] = useState(acknowledgement.defaultValue);
 
+  /*
+   * BROADBAND
+   */
+  const [selectedProvider, setSelectedProvider] = useState(broadbandProvider.defaultValue);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    /*
+     * BROADBAND
+     */
+    if (service === 'broadband') {
+      if (!selectedProvider) {
+        return;
+      }
+
+      sessionStorage.setItem(
+        broadbandProvider.storageKey,
+        JSON.stringify({
+          provider: selectedProvider,
+        }),
+      );
+
+      router.push(JOURNEY_ROUTES[3]);
+
+      return;
+    }
+
+    /*
+     * ENERGY
+     */
     if (!contractDate || !acknowledged) {
       return;
     }
@@ -38,16 +117,29 @@ export default function ContractDateForm() {
     router.push(JOURNEY_ROUTES[3]);
   }
 
+  /*
+   * =========================================================
+   * BROADBAND STEP 2
+   * =========================================================
+   */
+  if (service === 'broadband') {
+    return (
+      <BroadbandProviderForm
+        selectedProvider={selectedProvider}
+        onSelectProvider={setSelectedProvider}
+        onSubmit={handleSubmit}
+      />
+    );
+  }
+
+  /*
+   * =========================================================
+   * ENERGY STEP 2
+   * =========================================================
+   */
   return (
     <div className="w-full">
-      <header
-        className="
-          hidden
-
-          lg:mb-8
-          lg:block
-        "
-      >
+      <header className="hidden lg:mb-8 lg:block">
         <h1
           className="
             font-red-hat-display
@@ -82,11 +174,7 @@ export default function ContractDateForm() {
       <form
         id="journey-step-form-2"
         onSubmit={handleSubmit}
-        className="
-          space-y-5
-
-          lg:space-y-6
-        "
+        className="space-y-5 lg:space-y-6"
         noValidate
       >
         <FormField label={fields.contractDate.label}>
@@ -131,8 +219,12 @@ export default function ContractDateForm() {
                 right-[14px]
                 top-1/2
 
-                flex h-8 w-8
+                flex
+                h-8
+                w-8
+
                 -translate-y-1/2
+
                 items-center
                 justify-center
 
@@ -150,7 +242,8 @@ export default function ContractDateForm() {
               <CalendarDays
                 aria-hidden="true"
                 className="
-                  h-4 w-4
+                  h-4
+                  w-4
 
                   lg:h-[18px]
                   lg:w-[18px]
@@ -171,9 +264,6 @@ export default function ContractDateForm() {
               tracking-[0]
               text-[#535862]
 
-              sm:text-[14px]
-              sm:leading-[20px]
-
               lg:text-[16px]
               lg:leading-5
             "
@@ -190,9 +280,6 @@ export default function ContractDateForm() {
               tracking-[0]
               text-[#535862]
 
-              sm:text-[14px]
-              sm:leading-[20px]
-
               lg:text-[16px]
               lg:leading-5
             "
@@ -203,13 +290,15 @@ export default function ContractDateForm() {
 
         <div
           className="
-            flex w-full
+            flex
+            w-full
             items-start
             gap-2.5
 
             rounded-[10px]
 
-            border border-[#FEC84B]
+            border
+            border-[#FEC84B]
 
             bg-[#FFFCF5]
 
@@ -220,9 +309,6 @@ export default function ContractDateForm() {
             sm:p-4
 
             lg:min-h-[136px]
-            lg:gap-3
-            lg:rounded-[12px]
-            lg:p-4
           "
         >
           <Image
@@ -240,9 +326,6 @@ export default function ContractDateForm() {
 
               object-contain
 
-              sm:h-[16px]
-              sm:w-[18px]
-
               lg:h-[17px]
               lg:w-[19px]
             "
@@ -255,12 +338,7 @@ export default function ContractDateForm() {
                 text-[12px]
                 font-bold
                 leading-[18px]
-                tracking-[0]
-
                 text-[#B54708]
-
-                sm:text-[13px]
-                sm:leading-[19px]
 
                 lg:text-[14px]
                 lg:leading-5
@@ -277,12 +355,7 @@ export default function ContractDateForm() {
                 text-[12px]
                 font-normal
                 leading-[18px]
-                tracking-[0]
-
                 text-[#B54708]
-
-                sm:text-[13px]
-                sm:leading-[19px]
 
                 lg:text-[15px]
                 lg:leading-5
@@ -304,6 +377,247 @@ export default function ContractDateForm() {
   );
 }
 
+/* =========================================================
+   BROADBAND PROVIDER FORM
+========================================================= */
+
+type BroadbandProviderFormProps = {
+  selectedProvider: string;
+  onSelectProvider: (provider: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+};
+
+function BroadbandProviderForm({
+  selectedProvider,
+  onSelectProvider,
+  onSubmit,
+}: BroadbandProviderFormProps) {
+  const { broadbandProvider } = data.journey;
+
+  return (
+    <div className="w-full">
+      <header className="hidden lg:mb-7 lg:block">
+        <h1
+          className="
+            font-red-hat-display
+            text-[40px]
+            font-extrabold
+            leading-[56px]
+            tracking-[0]
+
+            text-[#0C3354]
+          "
+        >
+          {broadbandProvider.heading}
+        </h1>
+
+        <p
+          className="
+            mt-1
+
+            font-inter
+            text-[16px]
+            font-normal
+            leading-[22px]
+
+            text-[#667085]
+          "
+        >
+          {broadbandProvider.description}
+        </p>
+      </header>
+
+      <form
+        id="journey-step-form-2"
+        onSubmit={onSubmit}
+        noValidate
+      >
+        <div
+          className="
+            grid
+            grid-cols-1
+            gap-2.5
+
+            min-[390px]:gap-3
+
+            sm:grid-cols-2
+            sm:gap-3
+
+            lg:grid-cols-2
+            lg:gap-x-4
+            lg:gap-y-3
+          "
+        >
+          {broadbandProvider.providers.map((provider) => {
+            const isSelected = selectedProvider === provider.value;
+
+            return (
+              <button
+                key={provider.id}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => {
+                  onSelectProvider(provider.value);
+                }}
+                className={`
+                  flex
+                  w-full
+                  items-center
+                  justify-between
+
+                  rounded-[12px]
+
+                  border
+
+                  bg-white
+
+                  px-3
+                  py-2.5
+
+                  text-left
+
+                  shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                  transition-all
+                  duration-200
+
+                  min-[390px]:rounded-[14px]
+
+                  sm:min-h-[55px]
+                  sm:px-4
+
+                  lg:h-[61px]
+                  lg:w-[243px]
+                  lg:rounded-[16px]
+                  lg:px-5
+                  lg:py-5
+
+                  ${
+                    isSelected
+                      ? `
+                        border-[#00897B]
+                        bg-[#E6F4F2]
+                      `
+                      : `
+                        border-[#D0D5DD]
+
+                        hover:border-[#73BEB7]
+                        hover:bg-[#F9FAFB]
+                      `
+                  }
+                `}
+              >
+                <span
+                  className="
+                    flex
+                    min-w-0
+                    items-center
+                    gap-2.5
+
+                    lg:gap-4
+                  "
+                >
+                  <Image
+                    src={provider.icon}
+                    alt={provider.iconAlt}
+                    width={60}
+                    height={60}
+                    className="
+                      h-[24px]
+                      w-[24px]
+                      shrink-0
+
+                      object-contain
+
+                      sm:h-[26px]
+                      sm:w-[26px]
+
+                      lg:h-[30px]
+                      lg:w-[30px]
+                    "
+                  />
+
+                  <span
+                    className="
+                      truncate
+
+                      font-inter
+                      text-[12px]
+                      font-medium
+                      leading-[18px]
+
+                      text-[#0C3354]
+
+                      sm:text-[13px]
+
+                      lg:text-[14px]
+                      lg:leading-5
+                    "
+                  >
+                    {provider.label}
+                  </span>
+                </span>
+
+                <span
+                  className={`
+                    flex
+                    h-[18px]
+                    w-[18px]
+                    shrink-0
+                    items-center
+                    justify-center
+
+                    rounded-full
+
+                    border
+
+                    transition-colors
+
+                    lg:h-5
+                    lg:w-5
+
+                    ${
+                      isSelected
+                        ? `
+                          border-[#00897B]
+                          bg-[#00897B]
+                        `
+                        : `
+                          border-[#D0D5DD]
+                          bg-white
+                        `
+                    }
+                  `}
+                >
+                  {isSelected && (
+                    <Check
+                      aria-hidden="true"
+                      className="
+                        h-[11px]
+                        w-[11px]
+
+                        text-white
+
+                        lg:h-3
+                        lg:w-3
+                      "
+                      strokeWidth={3}
+                    />
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* =========================================================
+   ENERGY HELPERS
+========================================================= */
+
 type FormFieldProps = {
   label: string;
   children: ReactNode;
@@ -321,12 +635,10 @@ function FormField({ label, children }: FormFieldProps) {
           text-[12px]
           font-medium
           leading-[18px]
-          tracking-[0]
 
           text-[#344054]
 
           sm:text-[13px]
-          sm:leading-[19px]
 
           lg:mb-2
           lg:text-[14px]
@@ -351,7 +663,8 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
   return (
     <label
       className="
-        flex w-full
+        flex
+        w-full
         cursor-pointer
         items-start
         gap-2.5
@@ -361,8 +674,11 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
     >
       <span
         className="
-          relative mt-[2px]
-          h-4 w-4
+          relative
+          mt-[2px]
+
+          h-4
+          w-4
           shrink-0
 
           lg:h-[18px]
@@ -376,10 +692,13 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
             onChange(event.target.checked);
           }}
           className="
-            absolute inset-0
+            absolute
+            inset-0
             z-10
 
-            h-full w-full
+            h-full
+            w-full
+
             cursor-pointer
             appearance-none
             opacity-0
@@ -391,7 +710,9 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
           className={`
             pointer-events-none
 
-            flex h-full w-full
+            flex
+            h-full
+            w-full
             items-center
             justify-center
 
@@ -400,8 +721,6 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
             rounded-[4px]
 
             border
-
-            leading-none
 
             transition-colors
             duration-150
@@ -412,7 +731,8 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
           <Check
             aria-hidden="true"
             className={`
-              h-3 w-3
+              h-3
+              w-3
               shrink-0
 
               text-white
@@ -432,18 +752,15 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
 
       <span
         className="
-          min-w-0 flex-1
+          min-w-0
+          flex-1
 
           font-inter
           text-[14px]
           font-normal
           leading-[20px]
-          tracking-[0]
 
           text-[#535862]
-
-          sm:text-[14px]
-          sm:leading-[20px]
 
           lg:text-[14px]
           lg:leading-5
@@ -456,11 +773,13 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
 }
 
 const inputClasses = `
-  h-11 w-full
+  h-11
+  w-full
 
   rounded-[100px]
 
-  border border-[#D0D5DD]
+  border
+  border-[#D0D5DD]
 
   bg-white
 
