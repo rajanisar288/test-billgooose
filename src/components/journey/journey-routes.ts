@@ -7,6 +7,8 @@ export const JOURNEY_ROUTES = {
 
 export type JourneyStep = keyof typeof JOURNEY_ROUTES;
 
+export type JourneyService = 'energy' | 'broadband';
+
 export const TOTAL_JOURNEY_STEPS = 4;
 
 export function getJourneyRoute(step: number): string {
@@ -21,9 +23,12 @@ export function getJourneyRoute(step: number): string {
   return JOURNEY_ROUTES[step as JourneyStep];
 }
 
-export function getPreviousJourneyRoute(currentStep: number): string {
+export function getPreviousJourneyRoute(
+  currentStep: number,
+  service: JourneyService = 'energy',
+): string {
   if (currentStep <= 1) {
-    return '/compare';
+    return `/compare?service=${service}`;
   }
 
   return getJourneyRoute(currentStep - 1);

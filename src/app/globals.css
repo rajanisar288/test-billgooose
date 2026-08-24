@@ -719,3 +719,15 @@
 
   animation: hero-border-rotate 4s linear infinite;
 }
+[data-site-mode='PRODUCTION'] input,
+[data-site-mode='PRODUCTION'] select,
+[data-site-mode='PRODUCTION'] textarea {
+  pointer-events: none;
+}
+
+[data-site-mode='PRODUCTION'] a,
+[data-site-mode='PRODUCTION'] button,
+[data-site-mode='PRODUCTION'] [role='button'],
+[data-site-mode='PRODUCTION'] [role='link'] {
+  cursor: default !important;
+}

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+import BroadbandSwitchModal from '@/components/result/broadband-switch-modal';
 import FeaturedBroadbandCard from '@/components/result/featured-broadband-card';
 import PlanCard from '@/components/result/plan-card';
 import PlanDetailsDrawer from '@/components/result/plan-details-drawer';
@@ -25,12 +26,17 @@ export default function ResultPlans() {
 
   const planItems = plans.items as ResultPlan[];
 
+  /* =========================================================
+     DETAILS DRAWER
+  ========================================================= */
+
   const [selectedPlan, setSelectedPlan] = useState<StandardPlan | null>(null);
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const handleViewDetails = (plan: StandardPlan) => {
     setSelectedPlan(plan);
+
     setIsDetailsOpen(true);
   };
 
@@ -38,29 +44,80 @@ export default function ResultPlans() {
     setIsDetailsOpen(false);
   };
 
+  /* =========================================================
+     BEFORE YOU SWITCH MODAL
+  ========================================================= */
+
+  const [switchModalPlan, setSwitchModalPlan] = useState<StandardPlan | null>(null);
+
+  const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false);
+
+  const handleSelectPlan = (plan: StandardPlan) => {
+    setSwitchModalPlan(plan);
+
+    setIsSwitchModalOpen(true);
+  };
+
+  const handleCloseSwitchModal = () => {
+    setIsSwitchModalOpen(false);
+  };
+
+  /*
+   * Temporary recommendations.
+   *
+   * Right now we take any 3 standard plans
+   * except the clicked plan.
+   *
+   * Later you can replace this with actual
+   * broadband results from the broadband API.
+   */
+  const recommendedPlans = useMemo(() => {
+    if (!switchModalPlan) {
+      return [];
+    }
+
+    /*
+     * Always show the featured broadband plan first.
+     */
+    const featuredPlan = planItems.find(isFeaturedBroadbandPlan);
+
+    /*
+     * Then take 2 standard plans,
+     * excluding the selected energy plan.
+     */
+    const standardRecommendations = planItems
+      .filter(isStandardPlan)
+      .filter((plan) => plan.id !== switchModalPlan.id)
+      .slice(0, 2);
+
+    return [...(featuredPlan ? [featuredPlan] : []), ...standardRecommendations];
+  }, [planItems, switchModalPlan]);
+
   return (
     <>
       <section
         className="
-    mx-auto
-    w-full
-    max-w-[1096px]
+          mx-auto
+          w-full
+          max-w-[1096px]
 
-    px-4
-    pb-[10px]
+          px-4
+          pb-[10px]
 
-    sm:px-6
+          sm:px-6
 
-    md:pb-[20px]
+          md:pb-[20px]
 
-    lg:pb-[40px]
+          lg:pb-[40px]
 
-    xl:px-0
-  "
+          xl:px-0
+        "
       >
         <div
           className="
-            flex flex-col gap-4
+            flex
+            flex-col
+            gap-4
 
             sm:gap-5
           "
@@ -82,6 +139,7 @@ export default function ResultPlans() {
                   key={plan.id}
                   plan={plan}
                   onViewDetails={handleViewDetails}
+                  onSelectPlan={handleSelectPlan}
                 />
               );
             }
@@ -91,10 +149,20 @@ export default function ResultPlans() {
         </div>
       </section>
 
+      {/* Existing details drawer */}
       <PlanDetailsDrawer
         plan={selectedPlan}
         isOpen={isDetailsOpen}
         onClose={handleCloseDetails}
+        onSelectPlan={handleSelectPlan}
+      />
+
+      {/* New broadband recommendation modal */}
+      <BroadbandSwitchModal
+        isOpen={isSwitchModalOpen}
+        selectedPlan={switchModalPlan}
+        recommendedPlans={recommendedPlans}
+        onClose={handleCloseSwitchModal}
       />
     </>
   );

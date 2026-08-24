@@ -13,7 +13,7 @@ import data from '@/data/content.json';
 const UK_POSTCODE_REGEX =
   /^(GIR\s?0AA|(?:(?:[A-PR-UWYZ][0-9][0-9A-HJKSTUW]?)|(?:[A-PR-UWYZ][A-HK-Y][0-9][0-9ABEHMNPRV-Y]?))\s?[0-9][ABD-HJLNP-UW-Z]{2})$/i;
 
-type ServiceType = 'energy' | 'broadband' | 'mobile';
+type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only';
 
 export default function Hero() {
   const router = useRouter();
@@ -42,8 +42,9 @@ export default function Hero() {
 
     setPostcodeError('');
 
-    // Existing compare flow preserved.
-    router.push(`/compare?postcode=${encodeURIComponent(formattedPostcode)}`);
+    router.push(
+      `/compare?service=${selectedService}&postcode=${encodeURIComponent(formattedPostcode)}`,
+    );
   };
 
   const handlePostcodeChange = (value: string) => {
@@ -226,7 +227,7 @@ export default function Hero() {
                         pb-5
                       "
                     >
-                      {/* Tabs */}
+                      {/* Desktop service tabs */}
                       <ServiceTabs
                         selectedService={selectedService}
                         onChange={setSelectedService}
@@ -234,7 +235,7 @@ export default function Hero() {
 
                       {/* Input + CTA */}
                       <div
-                        className={`mt-[22px] flex h-[64px] items-center gap-3 rounded-full border bg-white p-1.5 transition-colors ${
+                        className={`mt-[20px] flex h-[64px] items-center gap-3 rounded-full border bg-white p-1.5 transition-colors ${
                           postcodeError
                             ? 'border-red-400'
                             : 'border-[#D0D5DD] focus-within:border-primary'
@@ -487,7 +488,7 @@ export default function Hero() {
                     sm:pb-4
                   "
                 >
-                  {/* Mobile/tablet tabs */}
+                  {/* Mobile/tablet service tabs */}
                   <ServiceTabs
                     selectedService={selectedService}
                     onChange={setSelectedService}
@@ -810,19 +811,27 @@ function ServiceTabs({ selectedService, onChange, compact = false }: ServiceTabs
       className={`
         flex
         w-full
-        items-start
-
+        items-center
+         pt-[15px]
         ${
           compact
             ? `
-              h-[28px]
+              h-[32px]
+              gap-[1px]
 
-              min-[390px]:h-[30px]
+              min-[360px]:gap-[2px]
 
-              sm:h-[32px]
+              min-[390px]:h-[34px]
+              min-[390px]:gap-[3px]
+
+              sm:h-[36px]
+              sm:gap-1
             `
             : `
-              h-[34px]
+              h-[44px]
+              gap-1
+
+              lg:gap-[6px]
             `
         }
       `}
@@ -846,8 +855,10 @@ function ServiceTabs({ selectedService, onChange, compact = false }: ServiceTabs
 
               whitespace-nowrap
 
+              rounded-full
+
               font-red-hat-display
-              font-semibold
+              font-[550]
 
               transition-all
               duration-200
@@ -855,49 +866,56 @@ function ServiceTabs({ selectedService, onChange, compact = false }: ServiceTabs
               ${
                 compact
                   ? `
-                    h-[28px]
+                    h-[26px]
                     gap-[3px]
 
-                    px-[7px]
+                    px-[5px]
 
-                    text-[9px]
+                    text-[7.5px]
+                    leading-[12px]
 
-                    min-[390px]:h-[30px]
-                    min-[390px]:gap-1
-                    min-[390px]:px-[9px]
-                    min-[390px]:text-[10px]
+                    min-[360px]:h-[27px]
+                    min-[360px]:px-[6px]
+                    min-[360px]:text-[8px]
+
+                    min-[390px]:h-[29px]
+                    min-[390px]:gap-[4px]
+                    min-[390px]:px-[8px]
+                    min-[390px]:text-[9px]
 
                     sm:h-[32px]
-                    sm:px-[11px]
+                    sm:px-[10px]
                     sm:text-[11px]
                   `
                   : `
-                    h-[34px]
+                    h-[36px]
 
-                    gap-1
+                    gap-[6px]
 
-                    px-[12px]
+                    px-[14px]
 
                     text-[14px]
+                    leading-5
+
+                    lg:h-[38px]
+                    lg:px-[16px]
+                    lg:text-[14px]
+                    lg:leading-6
                   `
               }
 
               ${
                 isActive
                   ? `
-                    rounded-bl-[12px]
-                    rounded-br-[12px]
-
                     bg-[#00897B]
-
                     text-white
                   `
                   : `
                     bg-transparent
-
                     text-[#475467]
 
                     hover:bg-[#F9FAFB]
+                    hover:text-[#344054]
                   `
               }
             `}
@@ -914,8 +932,11 @@ function ServiceTabs({ selectedService, onChange, compact = false }: ServiceTabs
                 ${
                   compact
                     ? `
-                      h-[10px]
-                      w-[10px]
+                      h-[9px]
+                      w-[9px]
+
+                      min-[360px]:h-[10px]
+                      min-[360px]:w-[10px]
 
                       min-[390px]:h-[11px]
                       min-[390px]:w-[11px]
@@ -924,8 +945,11 @@ function ServiceTabs({ selectedService, onChange, compact = false }: ServiceTabs
                       sm:w-[13px]
                     `
                     : `
-                      h-[14px]
-                      w-[14px]
+                      h-[15px]
+                      w-[15px]
+
+                      lg:h-[17px]
+                      lg:w-[17px]
                     `
                 }
               `}
