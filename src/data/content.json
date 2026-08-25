@@ -31,7 +31,7 @@
         "id": 1,
         "label": "Energy",
         "description": "Fast Switching, Fixed & Variable Tariffs",
-        "href": "/compare/energy",
+        "href": "/compare?service=energy",
         "icon": "/images/energy-icon.png",
         "iconAlt": "Energy",
         "status": "available"
@@ -40,7 +40,7 @@
         "id": 2,
         "label": "Broadband",
         "description": "Fast Fiber Deals From Top UK Providers",
-        "href": "/compare/broadband",
+        "href": "/compare?service=broadband",
         "icon": "/images/broadband.png",
         "iconAlt": "Broadband",
         "status": "available"
@@ -83,8 +83,8 @@
       }
     ],
     "account": {
-      "label": "My account",
-      "href": "/account"
+      "label": "Sign in",
+      "href": "/sign-in"
     }
   },
   "hero": {
@@ -123,6 +123,14 @@
           "icon": "/images/hero-mobile.png",
           "activeIcon": "/images/hero-mobile-white.png",
           "iconAlt": "Mobile"
+        },
+        {
+          "id": "sim-only",
+          "label": "SIM only",
+          "value": "sim-only",
+          "icon": "/images/sim-gray-icon.png",
+          "activeIcon": "/images/sim-white-icon.png",
+          "iconAlt": "SIM only"
         }
       ]
     },
@@ -248,7 +256,7 @@
         "description": "Fast fibre deals from top UK providers",
         "icon": "/images/broadband.png",
         "linkText": "Compare Now",
-        "href": "/compare"
+        "href": "/compare?service=broadband"
       },
       {
         "id": "mobile",
@@ -524,6 +532,43 @@
   "lowerHero": {
     "heading": "Easily compare household bills",
     "description": "Quickly compare your household bills to find the best deals and save money effortlessly.",
+    "serviceTabs": {
+      "defaultValue": "energy",
+      "items": [
+        {
+          "id": "energy",
+          "label": "Energy",
+          "value": "energy",
+          "icon": "/images/hero-energy.png",
+          "activeIcon": "/images/hero-energy-white.png",
+          "iconAlt": "Energy"
+        },
+        {
+          "id": "broadband",
+          "label": "Broadband",
+          "value": "broadband",
+          "icon": "/images/hero-broadband.png",
+          "activeIcon": "/images/hero-broadband-white.png",
+          "iconAlt": "Broadband"
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "value": "mobile",
+          "icon": "/images/hero-mobile.png",
+          "activeIcon": "/images/hero-mobile-white.png",
+          "iconAlt": "Mobile"
+        },
+        {
+          "id": "sim-only",
+          "label": "SIM only",
+          "value": "sim-only",
+          "icon": "/images/sim-gray-icon.png",
+          "activeIcon": "/images/sim-white-icon.png",
+          "iconAlt": "SIM only"
+        }
+      ]
+    },
     "backgroundImage": {
       "src": "/images/lower-hero.png",
       "alt": "BillGoose household comparison banner"
@@ -686,11 +731,31 @@
       "label": "Back to website",
       "href": "/"
     },
-    "heading": {
-      "firstLine": "Activate extra services",
-      "secondLine": "for bigger discounts"
+    "defaultService": "energy",
+    "services": {
+      "energy": {
+        "heading": {
+          "firstLine": "Activate extra services",
+          "secondLine": "for bigger discounts"
+        },
+        "description": "It's easy to save on your household bills when you get it together: add energy, broadband, mobile and insurance to one great value account today.",
+        "image": {
+          "src": "/images/compare-flow-img.png",
+          "alt": "BillGoose mascot surrounded by household service icons"
+        }
+      },
+      "broadband": {
+        "heading": {
+          "firstLine": "Activate extra services",
+          "secondLine": "for bigger discounts"
+        },
+        "description": "It's easy to save on your household bills when you get it together: add energy, broadband, mobile and insurance to one great value account today.",
+        "image": {
+          "src": "/images/broadband-compare-flow.png",
+          "alt": "Family using broadband services at home"
+        }
+      }
     },
-    "description": "It's easy to save on your household bills when you get it together: add energy, broadband, mobile and insurance to one great value account today.",
     "form": {
       "postcode": {
         "label": "Postal code",
@@ -700,7 +765,7 @@
       },
       "address": {
         "label": "Your address",
-        "placeholder": "19 Masons Way, Wallyford Musselburgh EH21 8BF",
+        "placeholder": "Select your address",
         "manualText": "Enter address manually",
         "options": [
           {
@@ -721,45 +786,104 @@
           }
         ]
       },
-      "occupancy": {
-        "label": "Are you a renter or homeowner?",
-        "defaultValue": "homeowner",
-        "options": [
-          {
-            "id": "rental",
-            "label": "Rental",
-            "value": "rental"
-          },
-          {
-            "id": "homeowner",
-            "label": "Homeowner",
-            "value": "homeowner"
-          }
-        ]
+      "energy": {
+        "occupancy": {
+          "label": "Are you a renter or homeowner?",
+          "defaultValue": "homeowner",
+          "options": [
+            {
+              "id": "rental",
+              "label": "Rental",
+              "value": "rental"
+            },
+            {
+              "id": "homeowner",
+              "label": "Homeowner",
+              "value": "homeowner"
+            }
+          ]
+        },
+        "propertyStatus": {
+          "label": "Are you already in the property?",
+          "defaultValue": "yes",
+          "options": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "value": "yes"
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "value": "no"
+            }
+          ]
+        }
       },
-      "propertyStatus": {
-        "label": "Are you already in the property?",
-        "defaultValue": "yes",
-        "options": [
-          {
-            "id": "yes",
-            "label": "Yes",
-            "value": "yes"
-          },
-          {
-            "id": "no",
-            "label": "No",
-            "value": "no"
-          }
-        ]
+      "broadband": {
+        "currentProvider": {
+          "label": "Select your current provider",
+          "placeholder": "Select",
+          "defaultValue": "",
+          "options": [
+            {
+              "id": "bt",
+              "label": "BT",
+              "value": "bt"
+            },
+            {
+              "id": "sky",
+              "label": "Sky",
+              "value": "sky"
+            },
+            {
+              "id": "virgin-media",
+              "label": "Virgin Media",
+              "value": "virgin-media"
+            },
+            {
+              "id": "talktalk",
+              "label": "TalkTalk",
+              "value": "talktalk"
+            },
+            {
+              "id": "plusnet",
+              "label": "Plusnet",
+              "value": "plusnet"
+            },
+            {
+              "id": "vodafone",
+              "label": "Vodafone",
+              "value": "vodafone"
+            },
+            {
+              "id": "other",
+              "label": "Other",
+              "value": "other"
+            }
+          ]
+        },
+        "contractStatus": {
+          "label": "Are you still in contract?",
+          "helperText": "Select No if you're not sure",
+          "defaultValue": "yes",
+          "options": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "value": "yes"
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "value": "no"
+            }
+          ]
+        }
       },
       "continueButton": {
         "label": "Continue"
       }
-    },
-    "image": {
-      "src": "/images/compare-flow-img.png",
-      "alt": "BillGoose mascot surrounded by household service icons"
     }
   },
   "footer2": {
@@ -812,7 +936,7 @@
         },
         {
           "number": 2,
-          "title": "Contract Details",
+          "title": "Contract Date",
           "description": "Select your contract start date"
         },
         {
@@ -822,8 +946,35 @@
         },
         {
           "number": 4,
+          "title": "Electric vehicle",
+          "description": "Do you own an electric vehicle (EV)?"
+        },
+        {
+          "number": 5,
           "title": "Payment Method Type",
           "description": "Select how you’d like to pay"
+        }
+      ],
+      "broadbandSteps": [
+        {
+          "number": 1,
+          "title": "Personal Details",
+          "description": "Tell us about your details"
+        },
+        {
+          "number": 2,
+          "title": "Select Your Provider",
+          "description": "Select your current provider"
+        },
+        {
+          "number": 3,
+          "title": "Broadband Speed",
+          "description": "Select the broadband speed suits you"
+        },
+        {
+          "number": 4,
+          "title": "Contract length",
+          "description": "Select preferred contract length"
         }
       ],
       "instantAccess": {
@@ -938,6 +1089,98 @@
         "text": "I acknowledge and understand that I am waiving my rights when cancelling my contract during the cooling off period."
       }
     },
+    "broadbandProvider": {
+      "heading": "Select Your Provider",
+      "description": "Select your current broadband provider",
+      "storageKey": "journeyBroadbandProvider",
+      "defaultValue": "bt",
+      "providers": [
+        {
+          "id": "bt",
+          "label": "BT",
+          "value": "bt",
+          "icon": "/images/provider-1-icon.png",
+          "iconAlt": "BT"
+        },
+        {
+          "id": "ee",
+          "label": "EE",
+          "value": "ee",
+          "icon": "/images/provider-2-icon.png",
+          "iconAlt": "EE"
+        },
+        {
+          "id": "plusnet",
+          "label": "Plusnet",
+          "value": "plusnet",
+          "icon": "/images/provider-3-icon.png",
+          "iconAlt": "Plusnet"
+        },
+        {
+          "id": "sky",
+          "label": "Sky",
+          "value": "sky",
+          "icon": "/images/provider-4-icon.png",
+          "iconAlt": "Sky"
+        },
+        {
+          "id": "talktalk",
+          "label": "TalkTalk",
+          "value": "talktalk",
+          "icon": "/images/provider-5-icon.png",
+          "iconAlt": "TalkTalk"
+        },
+        {
+          "id": "virgin-media",
+          "label": "Virgin Media",
+          "value": "virgin-media",
+          "icon": "/images/provider-6-icon.png",
+          "iconAlt": "Virgin Media"
+        },
+        {
+          "id": "vodafone",
+          "label": "Vodafone",
+          "value": "vodafone",
+          "icon": "/images/provider-7-icon.png",
+          "iconAlt": "Vodafone"
+        },
+        {
+          "id": "4th-utility",
+          "label": "4th Utility",
+          "value": "4th-utility",
+          "icon": "/images/provider-8-icon.png",
+          "iconAlt": "4th Utility"
+        },
+        {
+          "id": "befibre",
+          "label": "BeFibre",
+          "value": "befibre",
+          "icon": "/images/provider-9-icon.png",
+          "iconAlt": "BeFibre"
+        },
+        {
+          "id": "brsk",
+          "label": "Brsk",
+          "value": "brsk",
+          "icon": "/images/provider-10-icon.png",
+          "iconAlt": "Brsk"
+        },
+        {
+          "id": "community-fibre",
+          "label": "Community Fibre",
+          "value": "community-fibre",
+          "icon": "/images/provider-11-icon.png",
+          "iconAlt": "Community Fibre"
+        },
+        {
+          "id": "cuckoo",
+          "label": "Cuckoo",
+          "value": "cuckoo",
+          "icon": "/images/provider-12-icon.png",
+          "iconAlt": "Cuckoo"
+        }
+      ]
+    },
     "household": {
       "heading": "Household",
       "description": "Tell us about house type and household size.",
@@ -1009,6 +1252,129 @@
             "value": "4+"
           }
         ]
+      }
+    },
+    "electricVehicle": {
+      "heading": "Do you own an electric vehicle (EV)?",
+      "description": "Select \"No\" if your vehicle is hybrid",
+      "storageKey": "journeyElectricVehicle",
+      "defaultValue": "yes",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "value": "yes"
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "value": "no"
+        },
+        {
+          "id": "considering",
+          "label": "No, but I'm considering one",
+          "value": "considering"
+        }
+      ]
+    },
+    "broadbandSpeed": {
+      "heading": "Broadband Speed",
+      "description": "Select the broadband speed suits you",
+      "storageKey": "journeyBroadbandSpeed",
+      "defaultValue": "basic",
+      "options": [
+        {
+          "id": "basic",
+          "label": "Up to 50Mbps (Basic)",
+          "value": "basic"
+        },
+        {
+          "id": "standard",
+          "label": "50–100Mbps (Standard)",
+          "value": "standard"
+        },
+        {
+          "id": "superfast",
+          "label": "100–500Mbps (Superfast)",
+          "value": "superfast"
+        },
+        {
+          "id": "ultrafast",
+          "label": "500Mbps+ (Ultrafast)",
+          "value": "ultrafast"
+        }
+      ]
+    },
+    "broadbandContractLength": {
+      "heading": "Contract length",
+      "description": "Select preferred contract length",
+      "storageKey": "journeyBroadbandContractLength",
+      "defaultValue": "monthly",
+      "options": [
+        {
+          "id": "monthly",
+          "label": "Monthly (no contract)",
+          "value": "monthly"
+        },
+        {
+          "id": "12-months",
+          "label": "12 months",
+          "value": "12-months"
+        },
+        {
+          "id": "18-months",
+          "label": "18 months",
+          "value": "18-months"
+        },
+        {
+          "id": "24-months",
+          "label": "24 months",
+          "value": "24-months"
+        }
+      ]
+    },
+    "reviewDetails": {
+      "heading": "Review your details",
+      "description": "Please check everything below before setting up your payment. You can edit any section.",
+      "sections": {
+        "personalDetails": {
+          "title": "Personal details"
+        },
+        "household": {
+          "title": "Household"
+        },
+        "paymentMethod": {
+          "title": "Payment method type"
+        },
+        "contractDates": {
+          "title": "Contract dates"
+        },
+        "provider": {
+          "title": "Select Your Provider"
+        },
+        "broadbandSpeed": {
+          "title": "Broadband Speed"
+        },
+        "contractLength": {
+          "title": "Contract length"
+        }
+      },
+      "selectedPlan": {
+        "heading": "Selected Plan",
+        "selectedLabel": "Selected"
+      },
+      "summary": {
+        "heading": "Summary",
+        "estimatedPriceLabel": "ESTIMATED PRICE",
+        "totalLabel": "Your total monthly Direct Debit",
+        "annualSavingLabel": "annual saving",
+        "confirmButton": "Confirm & Set Up Payment",
+        "confirmationNotice": "By continuing, you confirm that all details above are correct and you authorise BillGoose to set up a Direct Debit on your behalf. You have a 14-day right to cancel. Prices are estimates; final amounts confirmed by Octopus Energy before your first payment."
+      },
+      "editModal": {
+        "saveButton": "Save changes",
+        "cancelButton": "Cancel",
+        "closeLabel": "Close edit details"
       }
     },
     "paymentMethod": {

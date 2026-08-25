@@ -1,6 +1,9 @@
 import { Red_Hat_Display } from 'next/font/google';
 
+import ShowcaseGuard from '../components/showcase/showcase-guard';
+
 import type { Metadata } from 'next';
+
 import './globals.css';
 
 const redHatDisplay = Red_Hat_Display({
@@ -30,7 +33,7 @@ export default function RootLayout({
         className={`${redHatDisplay.variable} min-h-full flex flex-col`}
         suppressHydrationWarning
       >
-        {children}
+        <ShowcaseGuard>{children}</ShowcaseGuard>
       </body>
     </html>
   );

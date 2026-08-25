@@ -1,21 +1,73 @@
 'use client';
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
-import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { getNextJourneyRoute } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
+
+type JourneyService = 'energy' | 'broadband';
+
+/* =========================================================
+   JOURNEY SERVICE
+========================================================= */
+
+function getJourneyServiceSnapshot(): JourneyService {
+  try {
+    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
+
+    if (!storedCompareFlow) {
+      return 'energy';
+    }
+
+    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
+      service?: string;
+    };
+
+    return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
+  } catch {
+    return 'energy';
+  }
+}
+
+function getJourneyServiceServerSnapshot(): JourneyService {
+  return 'energy';
+}
+
+function subscribeToJourneyService(callback: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === 'compareFlowDetails') {
+      callback();
+    }
+  };
+
+  window.addEventListener('storage', handleStorage);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+  };
+}
 
 export default function HouseholdForm() {
   const router = useRouter();
 
-  const { household } = data.journey;
+  const { household, broadbandSpeed } = data.journey;
 
   const { propertyType, occupants, bedrooms } = household;
+
+  const service = useSyncExternalStore(
+    subscribeToJourneyService,
+    getJourneyServiceSnapshot,
+    getJourneyServiceServerSnapshot,
+  );
+
+  /* =========================================================
+     ENERGY STATE
+  ========================================================= */
 
   const [selectedPropertyType, setSelectedPropertyType] = useState(propertyType.options[0].value);
 
@@ -23,8 +75,49 @@ export default function HouseholdForm() {
 
   const [selectedBedrooms, setSelectedBedrooms] = useState(bedrooms.defaultValue);
 
+  /* =========================================================
+     BROADBAND STATE
+  ========================================================= */
+
+  const [selectedBroadbandSpeed, setSelectedBroadbandSpeed] = useState(broadbandSpeed.defaultValue);
+
+  /* =========================================================
+     SUBMIT
+  ========================================================= */
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    /* =======================================================
+       BROADBAND
+
+       Step 3 Broadband Speed
+       → Step 4 Contract Length
+    ======================================================== */
+
+    if (service === 'broadband') {
+      if (!selectedBroadbandSpeed) {
+        return;
+      }
+
+      sessionStorage.setItem(
+        broadbandSpeed.storageKey,
+        JSON.stringify({
+          broadbandSpeed: selectedBroadbandSpeed,
+        }),
+      );
+
+      router.push(getNextJourneyRoute(3, 'broadband'));
+
+      return;
+    }
+
+    /* =======================================================
+       ENERGY
+
+       Step 3 Household
+       → Step 4 Electric Vehicle
+    ======================================================== */
 
     if (!selectedPropertyType || !selectedOccupants || !selectedBedrooms) {
       return;
@@ -32,19 +125,188 @@ export default function HouseholdForm() {
 
     const householdData = {
       propertyType: selectedPropertyType,
-
       occupants: selectedOccupants,
-
       bedrooms: selectedBedrooms,
     };
 
     sessionStorage.setItem(household.storageKey, JSON.stringify(householdData));
 
-    router.push(JOURNEY_ROUTES[4]);
+    router.push(getNextJourneyRoute(3, 'energy'));
   }
+
+  /* =========================================================
+     BROADBAND STEP 3
+  ========================================================= */
+
+  if (service === 'broadband') {
+    return (
+      <div className="w-full">
+        {/* Desktop heading only */}
+        <header
+          className="
+            hidden
+
+            lg:mb-7
+            lg:block
+          "
+        >
+          <h1
+            className="
+              font-red-hat-display
+              text-[40px]
+              font-extrabold
+              leading-[56px]
+              tracking-[0]
+
+              text-[#0C3354]
+            "
+          >
+            {broadbandSpeed.heading}
+          </h1>
+
+          <p
+            className="
+              mt-1
+
+              font-inter
+              text-[16px]
+              font-normal
+              leading-[22px]
+              tracking-[0]
+
+              text-[#667085]
+            "
+          >
+            {broadbandSpeed.description}
+          </p>
+        </header>
+
+        <form
+          id="journey-step-form-3"
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          <fieldset>
+            <legend className="sr-only">{broadbandSpeed.heading}</legend>
+
+            <div
+              className="
+                flex
+                w-full
+                flex-col
+
+                gap-3
+
+                sm:gap-3
+
+                md:gap-3
+
+                lg:gap-[14px]
+              "
+            >
+              {broadbandSpeed.options.map((option) => {
+                const isSelected = selectedBroadbandSpeed === option.value;
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      setSelectedBroadbandSpeed(option.value);
+                    }}
+                    className={`
+                      flex
+                      h-[52px]
+                      w-full
+
+                      items-center
+                      justify-between
+
+                      gap-3
+
+                      rounded-[14px]
+
+                      border
+
+                      bg-white
+
+                      px-4
+
+                      text-left
+
+                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                      transition-colors
+                      duration-200
+
+                      sm:h-[56px]
+                      sm:rounded-[16px]
+                      sm:px-[18px]
+
+                      md:h-[56px]
+                      md:px-5
+
+                      lg:h-[61px]
+                      lg:w-[500px]
+                      lg:rounded-[16px]
+                      lg:px-5
+
+                      ${
+                        isSelected
+                          ? `
+                            border-[#00897B]
+                          `
+                          : `
+                            border-[#D0D5DD]
+
+                            hover:border-[#73BEB7]
+                            hover:bg-[#F9FAFB]
+                          `
+                      }
+                    `}
+                  >
+                    <span
+                      className="
+                        min-w-0
+
+                        font-inter
+                        text-[13px]
+                        font-medium
+                        leading-[18px]
+
+                        text-[#0C3354]
+
+                        sm:text-[14px]
+                        sm:leading-5
+
+                        md:text-[14px]
+
+                        lg:text-[14px]
+                        lg:leading-5
+                      "
+                    >
+                      {option.label}
+                    </span>
+
+                    <SelectionCircle selected={isSelected} />
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    );
+  }
+
+  /* =========================================================
+     ENERGY — HOUSEHOLD FORM
+  ========================================================= */
 
   return (
     <div className="w-full">
+      {/* Desktop heading only */}
       <header
         className="
           hidden
@@ -60,6 +322,7 @@ export default function HouseholdForm() {
             font-extrabold
             leading-[56px]
             tracking-[0]
+
             text-[#0C3354]
           "
         >
@@ -94,7 +357,9 @@ export default function HouseholdForm() {
           lg:space-y-7
         "
       >
-        {/* Property type */}
+        {/* =====================================================
+            PROPERTY TYPE
+        ====================================================== */}
         <fieldset>
           <legend className="sr-only">Select your property type</legend>
 
@@ -123,44 +388,47 @@ export default function HouseholdForm() {
                     setSelectedPropertyType(option.value);
                   }}
                   className={`
-                      relative
+                    relative
 
-                      flex min-h-[78px]
-                      w-full
-                      items-center
-                      gap-4
+                    flex
+                    min-h-[78px]
+                    w-full
 
-                      rounded-[16px]
+                    items-center
+                    gap-4
 
-                      bg-white
+                    rounded-[16px]
 
-                      px-5
-                      py-3
+                    bg-white
 
-                      text-left
+                    px-5
+                    py-3
 
-                      transition-colors
+                    text-left
 
-                      md:h-[135px]
-                      md:min-h-[135px]
-                      md:flex-col
-                      md:items-start
-                      md:justify-between
-                      md:gap-3
-                      md:p-5
+                    transition-colors
 
-                      lg:h-[139px]
-                      lg:min-h-[139px]
-                      lg:flex-col
-                      lg:items-start
-                      lg:justify-between
-                      lg:gap-4
-                      lg:rounded-[16px]
-                      lg:p-5
+                    md:h-[135px]
+                    md:min-h-[135px]
+                    md:flex-col
+                    md:items-start
+                    md:justify-between
+                    md:gap-3
+                    md:p-5
 
-                      ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
-                    `}
+                    lg:h-[139px]
+                    lg:min-h-[139px]
+                    lg:flex-col
+                    lg:items-start
+                    lg:justify-between
+                    lg:gap-4
+                    lg:rounded-[16px]
+                    lg:p-5
+
+                    ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
+                  `}
                 >
+                  {/* Mobile icon */}
                   <Image
                     src={option.icon}
                     alt={option.iconAlt}
@@ -168,25 +436,27 @@ export default function HouseholdForm() {
                     height={30}
                     aria-hidden="true"
                     className="
-                        h-[30px]
-                        w-[30px]
-                        shrink-0
-                        object-contain
+                      h-[30px]
+                      w-[30px]
+                      shrink-0
 
-                        md:hidden
-                      "
+                      object-contain
+
+                      md:hidden
+                    "
                   />
 
+                  {/* Tablet + desktop top */}
                   <div
                     className="
-                        hidden
+                      hidden
 
-                        md:flex
-                        md:w-full
-                        md:items-start
-                        md:justify-between
-                        md:gap-4
-                      "
+                      md:flex
+                      md:w-full
+                      md:items-start
+                      md:justify-between
+                      md:gap-4
+                    "
                   >
                     <Image
                       src={option.icon}
@@ -195,17 +465,18 @@ export default function HouseholdForm() {
                       height={24}
                       aria-hidden="true"
                       className="
-                          h-6
-                          w-6
-                          shrink-0
-                          object-contain
+                        h-6
+                        w-6
+                        shrink-0
 
-                          md:h-[22px]
-                          md:w-[22px]
+                        object-contain
 
-                          lg:h-6
-                          lg:w-6
-                        "
+                        md:h-[22px]
+                        md:w-[22px]
+
+                        lg:h-6
+                        lg:w-6
+                      "
                     />
 
                     <SelectionCircle selected={isSelected} />
@@ -213,69 +484,63 @@ export default function HouseholdForm() {
 
                   <div
                     className="
-                        min-w-0
-                        flex-1
+                      min-w-0
+                      flex-1
 
-                        md:flex-none
+                      md:flex-none
 
-                        lg:flex-none
-                      "
+                      lg:flex-none
+                    "
                   >
                     <p
                       className="
-                          font-inter
-                          text-[20px]
-                          font-bold
-                          leading-[24px]
-                          tracking-[0]
+                        font-inter
+                        text-[20px]
+                        font-bold
+                        leading-[24px]
+                        tracking-[0]
 
-                          text-[#0C3354]
+                        text-[#0C3354]
 
-                          md:text-[16px]
-                          md:leading-[20px]
-                          md:text-[#344054]
+                        md:text-[16px]
+                        md:leading-[20px]
+                        md:text-[#344054]
 
-                          lg:text-[18px]
-                          lg:leading-5
-                          lg:text-[#344054]
-                        "
+                        lg:text-[18px]
+                        lg:leading-5
+                        lg:text-[#344054]
+                      "
                     >
                       {option.label}
                     </p>
 
                     <p
                       className="
-                          mt-1
+                        mt-1
 
-                          font-inter
-                          text-[16px]
-                          font-normal
-                          leading-[22px]
-                          tracking-[0]
+                        font-inter
+                        text-[16px]
+                        font-normal
+                        leading-[22px]
+                        tracking-[0]
 
-                          text-[#667085]
+                        text-[#667085]
 
-                          md:mt-1
-                          md:text-[13px]
-                          md:leading-[18px]
+                        md:mt-1
+                        md:text-[13px]
+                        md:leading-[18px]
 
-                          lg:mt-1.5
-                          lg:text-[14px]
-                          lg:leading-[14px]
-                        "
+                        lg:mt-1.5
+                        lg:text-[14px]
+                        lg:leading-[14px]
+                      "
                     >
                       {option.description}
                     </p>
                   </div>
 
-                  <div
-                    className="
-                        ml-auto
-                        shrink-0
-
-                        md:hidden
-                      "
-                  >
+                  {/* Mobile selection */}
+                  <div className="ml-auto shrink-0 md:hidden">
                     <SelectionCircle selected={isSelected} />
                   </div>
                 </button>
@@ -284,7 +549,9 @@ export default function HouseholdForm() {
           </div>
         </fieldset>
 
-        {/* Occupants */}
+        {/* =====================================================
+            OCCUPANTS
+        ====================================================== */}
         <fieldset>
           <SectionHeading
             icon={occupants.icon}
@@ -327,15 +594,11 @@ export default function HouseholdForm() {
           </div>
         </fieldset>
 
-        <div
-          className="
-            h-px
-            w-full
-            bg-[#D5D7DA]
-          "
-        />
+        <div className="h-px w-full bg-[#D5D7DA]" />
 
-        {/* Bedrooms */}
+        {/* =====================================================
+            BEDROOMS
+        ====================================================== */}
         <fieldset>
           <SectionHeading
             icon={bedrooms.icon}
@@ -344,14 +607,7 @@ export default function HouseholdForm() {
             description={bedrooms.description}
           />
 
-          <div
-            className="
-              mt-3
-              space-y-3
-
-              lg:mt-4
-            "
-          >
+          <div className="mt-3 space-y-3 lg:mt-4">
             <SelectorOption
               label={bedrooms.options[0].label}
               selected={selectedBedrooms === bedrooms.options[0].value}
@@ -394,6 +650,10 @@ export default function HouseholdForm() {
   );
 }
 
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
 type SectionHeadingProps = {
   icon: string;
   iconAlt: string;
@@ -404,13 +664,7 @@ type SectionHeadingProps = {
 function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingProps) {
   return (
     <div>
-      <div
-        className="
-          flex
-          items-center
-          gap-2
-        "
-      >
+      <div className="flex items-center gap-2">
         <Image
           src={icon}
           alt={iconAlt}
@@ -421,6 +675,7 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
             h-[14px]
             w-[14px]
             shrink-0
+
             object-contain
 
             md:h-[15px]
@@ -438,6 +693,7 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
             font-bold
             leading-6
             tracking-[0]
+
             text-[#344054]
 
             md:text-[16px]
@@ -460,6 +716,7 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
           font-normal
           leading-[20px]
           tracking-[0]
+
           text-[#667085]
 
           md:text-[13px]
@@ -475,6 +732,10 @@ function SectionHeading({ icon, iconAlt, heading, description }: SectionHeadingP
   );
 }
 
+/* =========================================================
+   SELECTION CIRCLE
+========================================================= */
+
 type SelectionCircleProps = {
   selected: boolean;
 };
@@ -484,13 +745,16 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
     <span
       aria-hidden="true"
       className={`
-        flex h-[22px]
+        flex
+        h-[22px]
         w-[22px]
         shrink-0
+
         items-center
         justify-center
 
         rounded-full
+
         border
 
         md:h-5
@@ -526,6 +790,10 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
   );
 }
 
+/* =========================================================
+   ENERGY SELECTOR OPTION
+========================================================= */
+
 type SelectorOptionProps = {
   label: string;
   selected: boolean;
@@ -540,10 +808,13 @@ function SelectorOption({ label, selected, onClick, fullWidth = false }: Selecto
       aria-pressed={selected}
       onClick={onClick}
       className={`
-        flex h-[52px]
+        flex
+        h-[52px]
         w-full
+
         items-center
         justify-between
+
         gap-3
 
         rounded-[14px]

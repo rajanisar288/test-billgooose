@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -19,18 +19,182 @@ type JourneyShellProps = {
   children: ReactNode;
 };
 
+export type JourneyService = 'energy' | 'broadband';
+
+/* =========================================================
+   JOURNEY SERVICE
+========================================================= */
+
+function getJourneyServiceSnapshot(): JourneyService {
+  try {
+    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
+
+    if (!storedCompareFlow) {
+      return 'energy';
+    }
+
+    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
+      service?: string;
+    };
+
+    return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
+  } catch {
+    return 'energy';
+  }
+}
+
+function getJourneyServiceServerSnapshot(): JourneyService {
+  return 'energy';
+}
+
+function subscribeToJourneyService(callback: () => void) {
+  function handleStorage(event: StorageEvent) {
+    if (event.key === 'compareFlowDetails') {
+      callback();
+    }
+  }
+
+  function handleJourneyServiceChanged() {
+    callback();
+  }
+
+  window.addEventListener('storage', handleStorage);
+
+  window.addEventListener('billgoose-journey-service-changed', handleJourneyServiceChanged);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+
+    window.removeEventListener('billgoose-journey-service-changed', handleJourneyServiceChanged);
+  };
+}
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+function isUserSignedIn(): boolean {
+  try {
+    const storedUser = sessionStorage.getItem('billgooseSignedInUser');
+
+    if (!storedUser) {
+      return false;
+    }
+
+    const parsedUser = JSON.parse(storedUser) as {
+      signedIn?: boolean;
+    };
+
+    return parsedUser.signedIn === true;
+  } catch {
+    return false;
+  }
+}
+
+/* =========================================================
+   COMPONENT
+========================================================= */
+
 export default function JourneyShell({ children }: JourneyShellProps) {
   const { journey } = data;
 
-  const { steps, instantAccess } = journey.sidebar;
+  const { sidebar } = journey;
+  const { instantAccess } = sidebar;
 
   const pathname = usePathname();
 
-  const currentStep = getJourneyStepFromPathname(pathname);
+  const service = useSyncExternalStore(
+    subscribeToJourneyService,
+    getJourneyServiceSnapshot,
+    getJourneyServiceServerSnapshot,
+  );
+
+  /*
+   * IMPORTANT:
+   *
+   * Energy:
+   * payment-details-form = step 5
+   *
+   * Broadband:
+   * payment-details-form = step 4
+   *
+   * That is why service is passed into
+   * getJourneyStepFromPathname().
+   */
+  const currentStep = getJourneyStepFromPathname(pathname, service);
 
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = async () => {
+  /*
+   * Energy = 5
+   * Broadband = 4
+   */
+  const steps = service === 'broadband' ? sidebar.broadbandSteps : sidebar.steps;
+
+  /* =========================================================
+     SAVE INCOMPLETE JOURNEY PROGRESS
+
+     Only save tracking when the user is signed in.
+  ========================================================= */
+
+  useEffect(() => {
+    if (!pathname.startsWith('/steps/')) {
+      return;
+    }
+
+    if (!isUserSignedIn()) {
+      return;
+    }
+
+    const totalSteps = steps.length;
+
+    /*
+     * Reaching a form does NOT mean that
+     * form has been completed yet.
+     *
+     * Therefore currentStep - 1.
+     */
+    const completedSteps = Math.max(0, currentStep - 1);
+
+    const progress = Math.round((completedSteps / totalSteps) * 100);
+
+    const currentStepData = steps[currentStep - 1];
+
+    try {
+      sessionStorage.setItem(
+        'billgooseJourneyProgress',
+        JSON.stringify({
+          service,
+          currentStep,
+          totalSteps,
+          completedSteps,
+          progress,
+
+          /*
+           * This is the exact route Continue
+           * will use from My Info.
+           */
+          route: pathname,
+
+          stepTitle: currentStepData?.title ?? '',
+
+          stepDescription: currentStepData?.description ?? '',
+
+          updatedAt: new Date().toISOString(),
+        }),
+      );
+
+      window.dispatchEvent(new Event('billgoose-journey-progress-changed'));
+    } catch {
+      // Ignore storage failure.
+    }
+  }, [currentStep, pathname, service, steps]);
+
+  /* =========================================================
+     COPY
+  ========================================================= */
+
+  async function handleCopy() {
     try {
       await navigator.clipboard.writeText(instantAccess.url);
 
@@ -42,18 +206,29 @@ export default function JourneyShell({ children }: JourneyShellProps) {
     } catch {
       setCopied(false);
     }
-  };
+  }
 
   return (
     <main
       className="
-        fixed inset-0
-        flex min-h-0 w-full
+        fixed
+        inset-0
+
+        flex
+        min-h-0
+        w-full
+
         overflow-hidden
+
         bg-white
       "
     >
-      {/* Desktop sidebar */}
+      {/* =====================================================
+          DESKTOP SIDEBAR
+
+          Energy gets 5 items.
+          Broadband gets 4.
+      ====================================================== */}
       <JourneySidebar
         currentStep={currentStep}
         steps={steps}
@@ -61,17 +236,29 @@ export default function JourneyShell({ children }: JourneyShellProps) {
 
       <section
         className="
-          flex h-full min-w-0
-          flex-1 flex-col
+          flex
+          h-full
+
+          min-w-0
+          flex-1
+          flex-col
+
           overflow-hidden
         "
       >
-        {/* Mobile + tablet header */}
+        {/* =================================================
+            MOBILE + TABLET HEADER
+        ================================================== */}
         <div
           className="
-            flex h-[82px]
-            w-full shrink-0
-            items-center justify-start
+            flex
+            h-[82px]
+            w-full
+
+            shrink-0
+            items-center
+            justify-start
+
             bg-[#082A49]
 
             lg:hidden
@@ -86,17 +273,24 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             className="
               h-[82px]
               w-[170px]
+
               object-contain
               object-center
             "
           />
         </div>
 
-        {/* Mobile + tablet access link */}
+        {/* =================================================
+            MOBILE + TABLET ACCESS
+        ================================================== */}
         <section
           className="
-            w-full shrink-0
-            border-b border-[#E9EAEB]
+            w-full
+            shrink-0
+
+            border-b
+            border-[#E9EAEB]
+
             bg-white
 
             lg:hidden
@@ -105,8 +299,12 @@ export default function JourneyShell({ children }: JourneyShellProps) {
           {/* Description */}
           <div
             className="
-              flex h-[50px]
-              items-center gap-2
+              flex
+              h-[50px]
+
+              items-center
+              gap-2
+
               px-4
 
               min-[390px]:px-5
@@ -119,7 +317,9 @@ export default function JourneyShell({ children }: JourneyShellProps) {
               height={20}
               aria-hidden="true"
               className="
-                h-5 w-5
+                h-5
+                w-5
+
                 shrink-0
                 object-contain
               "
@@ -128,17 +328,16 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             <p
               className="
                 font-inter
+
                 text-[13px]
                 font-medium
                 leading-[22px]
                 tracking-[-0.02em]
+
                 text-[#0C3354]
 
                 md:text-[16px]
-                md:font-medium
                 md:leading-[22px]
-                md:tracking-[-0.02em]
-                md:text-[#0C3354]
               "
             >
               {instantAccess.description}
@@ -148,16 +347,24 @@ export default function JourneyShell({ children }: JourneyShellProps) {
           {/* Link */}
           <div
             className="
-              flex h-[52px]
+              flex
+              h-[52px]
               w-full
-              border-t border-[#E9EAEB]
+
+              border-t
+              border-[#E9EAEB]
+
               bg-white
             "
           >
             <div
               className="
-                flex min-w-0 flex-1
+                flex
+                min-w-0
+                flex-1
+
                 items-center
+
                 px-4
 
                 min-[390px]:px-5
@@ -166,11 +373,12 @@ export default function JourneyShell({ children }: JourneyShellProps) {
               <span
                 className="
                   truncate
+
                   font-inter
                   text-[14px]
                   font-normal
                   leading-6
-                  tracking-[0]
+
                   text-[#535862]
                 "
               >
@@ -182,12 +390,19 @@ export default function JourneyShell({ children }: JourneyShellProps) {
               type="button"
               onClick={handleCopy}
               className="
-                inline-flex h-[52px]
-                w-[96px] shrink-0
-                items-center justify-center
+                inline-flex
+                h-[52px]
+                w-[96px]
+
+                shrink-0
+                items-center
+                justify-center
+
                 gap-2
 
-                border-l border-[#EAECF0]
+                border-l
+                border-[#EAECF0]
+
                 bg-white
 
                 px-[18px]
@@ -197,7 +412,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
                 text-[14px]
                 font-semibold
                 leading-6
-                tracking-[0]
+
                 text-[#0D3B66]
 
                 transition-colors
@@ -237,23 +452,38 @@ export default function JourneyShell({ children }: JourneyShellProps) {
           </div>
         </section>
 
-        {/* Scrollable content */}
+        {/* =================================================
+            SCROLLABLE CONTENT
+        ================================================== */}
         <div
           className="
-            min-h-0 flex-1
+            min-h-0
+            flex-1
+
             overflow-x-hidden
             overflow-y-auto
+
             bg-[#F9F9F9]
           "
         >
           <div
             className="
-              mx-auto flex min-h-full
-              w-full max-w-[1120px]
+              mx-auto
+
+              flex
+              min-h-full
+              w-full
+              max-w-[1120px]
+
               flex-col
             "
           >
-            {/* Desktop progress */}
+            {/* ===============================================
+                DESKTOP PROGRESS
+
+                ENERGY    = 5 bars
+                BROADBAND = 4 bars
+            ================================================ */}
             <div className="hidden lg:block">
               <JourneyProgress
                 currentStep={currentStep}
@@ -261,9 +491,13 @@ export default function JourneyShell({ children }: JourneyShellProps) {
               />
             </div>
 
+            {/* ===============================================
+                FORM CONTENT
+            ================================================ */}
             <div
               className="
-                flex flex-1
+                flex
+                flex-1
                 justify-center
 
                 px-4
@@ -292,10 +526,21 @@ export default function JourneyShell({ children }: JourneyShellProps) {
           </div>
         </div>
 
-        {/* Bottom navigation */}
+        {/* =================================================
+            BOTTOM NAVIGATION
+
+            Energy:
+            currentStep 1-5
+            totalSteps 5
+
+            Broadband:
+            currentStep 1-4
+            totalSteps 4
+        ================================================== */}
         <JourneyNavigation
           currentStep={currentStep}
           totalSteps={steps.length}
+          service={service}
         />
       </section>
     </main>

@@ -13,12 +13,18 @@ import data from '@/data/content.json';
 const UK_POSTCODE_REGEX =
   /^(GIR\s?0AA|(?:(?:[A-PR-UWYZ][0-9][0-9A-HJKSTUW]?)|(?:[A-PR-UWYZ][A-HK-Y][0-9][0-9ABEHMNPRV-Y]?))\s?[0-9][ABD-HJLNP-UW-Z]{2})$/i;
 
+type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only';
+
 export default function LowerHero() {
   const router = useRouter();
   const { lowerHero } = data;
 
   const [postcode, setPostcode] = useState('');
   const [postcodeError, setPostcodeError] = useState('');
+
+  const [selectedService, setSelectedService] = useState<ServiceType>(
+    lowerHero.serviceTabs.defaultValue as ServiceType,
+  );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -37,7 +43,9 @@ export default function LowerHero() {
 
     setPostcodeError('');
 
-    router.push(`/compare?postcode=${encodeURIComponent(formattedPostcode)}`);
+    router.push(
+      `/compare?service=${selectedService}&postcode=${encodeURIComponent(formattedPostcode)}`,
+    );
   };
 
   const handlePostcodeChange = (value: string) => {
@@ -250,10 +258,28 @@ export default function LowerHero() {
               {lowerHero.description}
             </p>
 
+            {/* Mobile service tabs */}
+            <div className="mt-4">
+              <LowerHeroServiceTabs
+                selectedService={selectedService}
+                onChange={setSelectedService}
+                compact
+              />
+            </div>
+
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="relative mt-4 w-full max-w-[300px] min-[360px]:max-w-[326px] min-[390px]:max-w-[348px]"
+              className="
+                relative
+                mt-4
+                w-full
+                max-w-[300px]
+
+                min-[360px]:max-w-[326px]
+
+                min-[390px]:max-w-[348px]
+              "
             >
               <div
                 className={`flex h-[44px] w-full items-center rounded-[100px] border bg-white pl-[11px] transition-colors min-[360px]:h-[47px] min-[360px]:pl-3 min-[390px]:h-[50px] min-[390px]:pl-[14px] ${
@@ -425,12 +451,21 @@ export default function LowerHero() {
               {lowerHero.description}
             </p>
 
+            {/* Tablet service tabs */}
+            <div className="mt-4">
+              <LowerHeroServiceTabs
+                selectedService={selectedService}
+                onChange={setSelectedService}
+                tablet
+              />
+            </div>
+
             <form
               onSubmit={handleSubmit}
               noValidate
               className="
                 relative
-                mt-5
+                mt-4
 
                 w-[350px]
 
@@ -583,10 +618,18 @@ export default function LowerHero() {
               {lowerHero.description}
             </p>
 
+            {/* Desktop/laptop tabs */}
+            <div className="mt-5">
+              <LowerHeroServiceTabs
+                selectedService={selectedService}
+                onChange={setSelectedService}
+              />
+            </div>
+
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="relative mt-8 w-[453px]"
+              className="relative mt-5 w-[453px]"
             >
               <div
                 className={`flex h-16 w-full items-center rounded-full border-[3px] bg-white transition-colors ${
@@ -695,5 +738,182 @@ export default function LowerHero() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* =========================================================
+   LOWER HERO SERVICE TABS
+========================================================= */
+
+type LowerHeroServiceTabsProps = {
+  selectedService: ServiceType;
+  onChange: (service: ServiceType) => void;
+  compact?: boolean;
+  tablet?: boolean;
+};
+
+function LowerHeroServiceTabs({
+  selectedService,
+  onChange,
+  compact = false,
+  tablet = false,
+}: LowerHeroServiceTabsProps) {
+  const { serviceTabs } = data.lowerHero;
+
+  return (
+    <div
+      className={`
+        flex
+        w-full
+        items-center
+
+        ${
+          compact
+            ? `
+              gap-[1px]
+            `
+            : tablet
+              ? `
+                gap-[4px]
+              `
+              : `
+                gap-[5px]
+              `
+        }
+      `}
+    >
+      {serviceTabs.items.map((service) => {
+        const isActive = selectedService === service.value;
+
+        return (
+          <button
+            key={service.id}
+            type="button"
+            aria-pressed={isActive}
+            onClick={() => {
+              onChange(service.value as ServiceType);
+            }}
+            className={`
+              inline-flex
+              shrink-0
+              items-center
+              justify-center
+
+              whitespace-nowrap
+
+              rounded-full
+
+              font-red-hat-display
+              font-[550]
+
+              transition-all
+              duration-200
+
+              ${
+                compact
+                  ? `
+                    h-[27px]
+
+                    gap-[3px]
+
+                    px-[6px]
+
+                    text-[7.5px]
+                    leading-[12px]
+
+                    min-[360px]:h-[29px]
+                    min-[360px]:px-[7px]
+                    min-[360px]:text-[8px]
+
+                    min-[390px]:h-[31px]
+                    min-[390px]:gap-[3px]
+                    min-[390px]:px-[8px]
+                    min-[390px]:text-[9px]
+                  `
+                  : tablet
+                    ? `
+                      h-[32px]
+
+                      gap-[4px]
+
+                      px-[9px]
+
+                      text-[10px]
+                      leading-[16px]
+
+                      min-[900px]:h-[34px]
+                      min-[900px]:px-[10px]
+                      min-[900px]:text-[11px]
+                    `
+                    : `
+                      h-[38px]
+
+                      gap-[5px]
+
+                      px-[14px]
+
+                      text-[14px]
+                      leading-5
+                    `
+              }
+
+              ${
+                isActive
+                  ? `
+                    bg-[#00897B]
+                    text-white
+                  `
+                  : `
+                    bg-transparent
+                    text-[#D0D5DD]
+
+                    hover:bg-white/10
+                    hover:text-white
+                  `
+              }
+            `}
+          >
+            <Image
+              src={isActive ? service.activeIcon : service.icon}
+              alt={service.iconAlt}
+              width={68}
+              height={68}
+              className={`
+                shrink-0
+                object-contain
+
+                ${
+                  compact
+                    ? `
+                      h-[9px]
+                      w-[9px]
+
+                      min-[360px]:h-[10px]
+                      min-[360px]:w-[10px]
+
+                      min-[390px]:h-[11px]
+                      min-[390px]:w-[11px]
+                    `
+                    : tablet
+                      ? `
+                        h-[12px]
+                        w-[12px]
+
+                        min-[900px]:h-[13px]
+                        min-[900px]:w-[13px]
+                      `
+                      : `
+                        h-[17px]
+                        w-[17px]
+                      `
+                }
+              `}
+            />
+
+            <span>{service.label}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }

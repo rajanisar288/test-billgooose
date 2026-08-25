@@ -8,27 +8,40 @@ import data from '@/data/content.json';
 type PlanCardProps = {
   plan: StandardPlan;
   onViewDetails: (plan: StandardPlan) => void;
+  onSelectPlan: (plan: StandardPlan) => void;
 };
 
 const STAR_COUNT = 5;
 
-export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
+export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCardProps) {
   const { plans } = data.resultPage;
 
   const isViewDeal = plan.type === 'view-deal';
+
+  const handlePrimaryAction = () => {
+    if (isViewDeal) {
+      return;
+    }
+
+    onSelectPlan(plan);
+  };
 
   return (
     <>
       {/* =====================================================
           MOBILE CARD ONLY
-          UNCHANGED
       ====================================================== */}
       <article
         className="
           w-full
+
           rounded-[16px]
-          border border-[#EAECF0]
+
+          border
+          border-[#EAECF0]
+
           bg-white
+
           p-3
 
           shadow-[0px_1px_3px_rgba(16,24,40,0.04)]
@@ -44,9 +57,12 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             width={74}
             height={74}
             className="
-              h-[74px] w-[74px]
+              h-[74px]
+              w-[74px]
               shrink-0
+
               rounded-[9px]
+
               object-contain
             "
           />
@@ -55,9 +71,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             <h3
               className="
                 truncate
+
                 font-red-hat-display
-                text-[18px] font-extrabold
+
+                text-[18px]
+                font-extrabold
                 leading-[22px]
+
                 text-[#101828]
               "
             >
@@ -68,28 +88,36 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               className="
                 mt-[1px]
                 truncate
+
                 font-red-hat-display
-                text-[14px] font-medium
+
+                text-[14px]
+                font-medium
                 leading-[19px]
+
                 text-[#667085]
               "
             >
               {plan.description}
             </p>
 
-            {/* Stars + rating + contract */}
+            {/* Rating */}
             <div
               className="
                 mt-1
-                flex flex-wrap
+
+                flex
+                flex-wrap
                 items-center
+
                 gap-x-[5px]
                 gap-y-1
               "
             >
               <div
                 className="
-                  flex shrink-0
+                  flex
+                  shrink-0
                   items-center
                   gap-[1px]
                 "
@@ -106,8 +134,10 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                     height={14}
                     aria-hidden="true"
                     className="
-                      h-[14px] w-[14px]
+                      h-[14px]
+                      w-[14px]
                       shrink-0
+
                       object-contain
                     "
                   />
@@ -117,8 +147,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   font-red-hat-display
-                  text-[14px] font-bold
+
+                  text-[14px]
+                  font-bold
                   leading-[20px]
+
                   text-[#101828]
                 "
               >
@@ -131,6 +164,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   text-[14px]
                   font-bold
                   leading-none
+
                   text-[#98A2B3]
                 "
               >
@@ -140,9 +174,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   whitespace-nowrap
+
                   font-red-hat-display
-                  text-[14px] font-medium
+
+                  text-[14px]
+                  font-medium
                   leading-[20px]
+
                   text-[#667085]
                 "
               >
@@ -154,19 +192,26 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             <span
               className="
                 mt-1
-                inline-flex min-h-[20px]
+
+                inline-flex
+                min-h-[20px]
+
                 items-center
                 gap-1
 
                 rounded-full
+
                 bg-[#ECFDF3]
 
                 px-[6px]
                 py-[1px]
 
                 font-red-hat-display
-                text-[12px] font-bold
+
+                text-[12px]
+                font-bold
                 leading-[18px]
+
                 text-[#027A48]
               "
             >
@@ -177,8 +222,10 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 height={13}
                 aria-hidden="true"
                 className="
-                  h-[13px] w-[13px]
+                  h-[13px]
+                  w-[13px]
                   shrink-0
+
                   object-contain
                 "
               />
@@ -196,21 +243,29 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
           }}
           className="
             mt-3
-            flex h-[35px]
+
+            flex
+            h-[35px]
             w-full
+
             items-center
             justify-between
 
             rounded-[7px]
 
-            border border-[#EAECF0]
+            border
+            border-[#EAECF0]
+
             bg-white
 
             px-2
 
             font-red-hat-display
-            text-[13px] font-bold
+
+            text-[13px]
+            font-bold
             leading-[19px]
+
             text-[#101828]
 
             shadow-[0px_1px_2px_rgba(16,24,40,0.03)]
@@ -225,26 +280,33 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
           <ChevronDown
             aria-hidden="true"
             className="
-              h-[15px] w-[15px]
+              h-[15px]
+              w-[15px]
               shrink-0
+
               text-[#667085]
             "
             strokeWidth={1.8}
           />
         </button>
 
-        {/* Price + CTA */}
+        {/* Price */}
         <div
           className="
             mt-3
-            flex min-h-[68px]
+
+            flex
+            min-h-[68px]
+
             items-center
             justify-between
             gap-3
 
             rounded-[10px]
 
-            border border-[#EAECF0]
+            border
+            border-[#EAECF0]
+
             bg-[#F9FAFB]
 
             px-3
@@ -255,10 +317,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             <p
               className="
                 font-red-hat-display
-                text-[10px] font-extrabold
+
+                text-[10px]
+                font-extrabold
                 uppercase
                 leading-[14px]
                 tracking-[0.5px]
+
                 text-[#667085]
               "
             >
@@ -269,9 +334,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   block
+
                   font-red-hat-display
-                  text-[20px] font-extrabold
+
+                  text-[20px]
+                  font-extrabold
                   leading-[22px]
+
                   text-[#101828]
                 "
               >
@@ -281,9 +350,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   block
+
                   font-red-hat-display
-                  text-[12px] font-medium
+
+                  text-[12px]
+                  font-medium
                   leading-[14px]
+
                   text-[#667085]
                 "
               >
@@ -294,22 +367,29 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
 
           <button
             type="button"
+            onClick={handlePrimaryAction}
             className={`
-              inline-flex h-[42px]
+              inline-flex
+              h-[42px]
               min-w-[155px]
               shrink-0
+
               items-center
               justify-center
               gap-2
 
               whitespace-nowrap
+
               rounded-full
 
               px-4
 
               font-red-hat-display
-              text-[14px] font-bold
+
+              text-[14px]
+              font-bold
               leading-[20px]
+
               text-white
 
               shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
@@ -319,13 +399,17 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               ${
                 isViewDeal
                   ? `
-                    border border-[#0D3B66]
+                    border
+                    border-[#0D3B66]
+
                     bg-[#0D3B66]
 
                     hover:bg-[#082F4F]
                   `
                   : `
-                    border border-[#00897B]
+                    border
+                    border-[#00897B]
+
                     bg-[#00897B]
 
                     hover:bg-[#00796D]
@@ -343,8 +427,10 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 height={12}
                 aria-hidden="true"
                 className="
-                  h-3 w-3
+                  h-3
+                  w-3
                   shrink-0
+
                   object-contain
                 "
               />
@@ -354,8 +440,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
       </article>
 
       {/* =====================================================
-          TABLET CARD ONLY
-          SCREENSHOT LAYOUT
+          TABLET CARD
       ====================================================== */}
       <article
         className="
@@ -377,7 +462,6 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
           lg:hidden
         "
       >
-        {/* Provider top row */}
         <div
           className="
             flex
@@ -405,41 +489,43 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             className="
               min-w-0
               flex-1
+
               pt-[1px]
             "
           >
-            {/* Provider */}
             <h3
               className="
                 truncate
 
                 font-red-hat-display
+
                 text-[20px]
                 font-extrabold
                 leading-[24px]
+
                 text-[#101828]
               "
             >
               {plan.provider}
             </h3>
 
-            {/* Description */}
             <p
               className="
                 mt-[1px]
                 truncate
 
                 font-red-hat-display
+
                 text-[15px]
                 font-medium
                 leading-[20px]
+
                 text-[#667085]
               "
             >
               {plan.description}
             </p>
 
-            {/* Rating row */}
             <div
               className="
                 mt-[3px]
@@ -447,6 +533,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 flex
                 flex-wrap
                 items-center
+
                 gap-x-[5px]
                 gap-y-1
               "
@@ -456,6 +543,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   flex
                   shrink-0
                   items-center
+
                   gap-[1px]
                 "
                 aria-label="5-star rating"
@@ -474,6 +562,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                       h-[15px]
                       w-[15px]
                       shrink-0
+
                       object-contain
                     "
                   />
@@ -483,9 +572,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   font-red-hat-display
+
                   text-[15px]
                   font-bold
                   leading-5
+
                   text-[#101828]
                 "
               >
@@ -498,6 +589,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   text-[15px]
                   font-bold
                   leading-none
+
                   text-[#98A2B3]
                 "
               >
@@ -509,9 +601,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   whitespace-nowrap
 
                   font-red-hat-display
+
                   text-[15px]
                   font-medium
                   leading-5
+
                   text-[#667085]
                 "
               >
@@ -519,13 +613,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               </span>
             </div>
 
-            {/* Saving */}
             <span
               className="
                 mt-[5px]
 
                 inline-flex
                 min-h-[21px]
+
                 items-center
                 gap-1
 
@@ -537,9 +631,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 py-[1px]
 
                 font-red-hat-display
+
                 text-[12px]
                 font-bold
                 leading-[18px]
+
                 text-[#027A48]
               "
             >
@@ -553,6 +649,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   h-[13px]
                   w-[13px]
                   shrink-0
+
                   object-contain
                 "
               />
@@ -562,7 +659,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
           </div>
         </div>
 
-        {/* Full width View Details */}
+        {/* View details */}
         <button
           type="button"
           onClick={() => {
@@ -574,6 +671,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             flex
             h-[35px]
             w-full
+
             items-center
             justify-between
 
@@ -587,9 +685,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             px-[9px]
 
             font-red-hat-display
+
             text-[13px]
             font-bold
             leading-[19px]
+
             text-[#101828]
 
             shadow-[0px_1px_2px_rgba(16,24,40,0.03)]
@@ -607,19 +707,21 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               h-[15px]
               w-[15px]
               shrink-0
+
               text-[#667085]
             "
             strokeWidth={1.8}
           />
         </button>
 
-        {/* Price + CTA row */}
+        {/* Price row */}
         <div
           className="
             mt-[13px]
 
             flex
             min-h-[66px]
+
             items-center
             justify-between
             gap-4
@@ -635,16 +737,17 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             py-[9px]
           "
         >
-          {/* Price */}
           <div className="min-w-0">
             <p
               className="
                 font-red-hat-display
+
                 text-[10px]
                 font-extrabold
                 uppercase
                 leading-[14px]
                 tracking-[0.5px]
+
                 text-[#667085]
               "
             >
@@ -663,9 +766,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   font-red-hat-display
+
                   text-[20px]
                   font-extrabold
                   leading-[22px]
+
                   text-[#101828]
                 "
               >
@@ -675,9 +780,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   font-red-hat-display
+
                   text-[12px]
                   font-medium
                   leading-[14px]
+
                   text-[#667085]
                 "
               >
@@ -686,14 +793,15 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
             </div>
           </div>
 
-          {/* CTA */}
           <button
             type="button"
+            onClick={handlePrimaryAction}
             className={`
               inline-flex
               h-[42px]
               min-w-[175px]
               shrink-0
+
               items-center
               justify-center
               gap-2
@@ -705,9 +813,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               px-5
 
               font-red-hat-display
+
               text-[14px]
               font-bold
               leading-5
+
               text-white
 
               shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
@@ -717,13 +827,17 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               ${
                 isViewDeal
                   ? `
-                    border border-[#0D3B66]
+                    border
+                    border-[#0D3B66]
+
                     bg-[#0D3B66]
 
                     hover:bg-[#082F4F]
                   `
                   : `
-                    border border-[#00897B]
+                    border
+                    border-[#00897B]
+
                     bg-[#00897B]
 
                     hover:bg-[#00796D]
@@ -744,6 +858,7 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   h-3
                   w-3
                   shrink-0
+
                   object-contain
                 "
               />
@@ -753,15 +868,20 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
       </article>
 
       {/* =====================================================
-          DESKTOP CARD ONLY
-          YOUR EXISTING DESKTOP CARD
+          DESKTOP CARD
       ====================================================== */}
       <article
         className="
-          hidden w-full
+          hidden
+          w-full
+
           rounded-[16px]
-          border border-[#EAECF0]
+
+          border
+          border-[#EAECF0]
+
           bg-white
+
           p-5
 
           lg:block
@@ -774,9 +894,12 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
       >
         <div
           className="
-            flex flex-row
+            flex
+            flex-row
+
             items-start
             justify-between
+
             gap-5
 
             xl:h-full
@@ -786,8 +909,12 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
           {/* Left */}
           <div
             className="
-              flex min-w-0 flex-1
-              items-start gap-4
+              flex
+              min-w-0
+              flex-1
+
+              items-start
+              gap-4
 
               xl:gap-5
             "
@@ -798,8 +925,10 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               width={72}
               height={72}
               className="
-                h-16 w-16
+                h-16
+                w-16
                 shrink-0
+
                 object-contain
 
                 xl:h-[72px]
@@ -811,8 +940,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <h3
                 className="
                   font-red-hat-display
-                  text-[18px] font-extrabold
+
+                  text-[18px]
+                  font-extrabold
                   leading-[21px]
+
                   text-[#101828]
 
                   xl:text-[20px]
@@ -825,9 +957,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <p
                 className="
                   mt-1
+
                   font-red-hat-display
-                  text-[14px] font-medium
+
+                  text-[14px]
+                  font-medium
                   leading-[18px]
+
                   text-[#667085]
 
                   xl:text-[15px]
@@ -840,15 +976,20 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <div
                 className="
                   mt-2
-                  flex flex-wrap
+
+                  flex
+                  flex-wrap
                   items-center
+
                   gap-x-2
                   gap-y-1
                 "
               >
                 <div
                   className="
-                    flex shrink-0
+                    flex
+                    shrink-0
+
                     items-center
                     gap-[2px]
 
@@ -867,8 +1008,10 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                       height={16}
                       aria-hidden="true"
                       className="
-                        h-[14px] w-[14px]
+                        h-[14px]
+                        w-[14px]
                         shrink-0
+
                         object-contain
 
                         xl:h-4
@@ -881,8 +1024,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 <span
                   className="
                     font-red-hat-display
-                    text-[13px] font-bold
+
+                    text-[13px]
+                    font-bold
                     leading-5
+
                     text-[#101828]
 
                     xl:text-[14px]
@@ -896,8 +1042,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   aria-hidden="true"
                   className="
                     font-red-hat-display
-                    text-[15px] font-bold
+
+                    text-[15px]
+                    font-bold
                     leading-5
+
                     text-[#98A2B3]
 
                     xl:text-[16px]
@@ -910,8 +1059,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 <span
                   className="
                     font-red-hat-display
-                    text-[13px] font-bold
+
+                    text-[13px]
+                    font-bold
                     leading-5
+
                     text-[#667085]
 
                     xl:text-[14px]
@@ -925,25 +1077,36 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <div
                 className="
                   mt-2
-                  flex flex-wrap
-                  items-center gap-1.5
+
+                  flex
+                  flex-wrap
+
+                  items-center
+                  gap-1.5
                 "
               >
                 {plan.features.map((feature) => (
                   <span
                     key={feature}
                     className="
-                      inline-flex min-h-[20px]
+                      inline-flex
+                      min-h-[20px]
+
                       items-center
 
                       rounded-[4px]
+
                       bg-[#EAF2F8]
 
-                      px-2 py-0.5
+                      px-2
+                      py-0.5
 
                       font-red-hat-display
-                      text-[11px] font-extrabold
+
+                      text-[11px]
+                      font-extrabold
                       leading-4
+
                       text-[#105089]
 
                       xl:min-h-[21.25px]
@@ -962,9 +1125,12 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
           {/* Right */}
           <div
             className="
-              flex w-auto
+              flex
+              w-auto
               min-w-[238px]
+
               flex-col
+
               items-end
               gap-3
 
@@ -976,10 +1142,13 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <p
                 className="
                   font-red-hat-display
-                  text-[10px] font-extrabold
+
+                  text-[10px]
+                  font-extrabold
                   uppercase
                   leading-4
                   tracking-[0.55px]
+
                   text-[#667085]
 
                   xl:text-[11px]
@@ -992,16 +1161,22 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <div
                 className="
                   mt-0.5
-                  flex items-baseline
+
+                  flex
+                  items-baseline
                   justify-end
+
                   gap-0.5
                 "
               >
                 <span
                   className="
                     font-red-hat-display
-                    text-[20px] font-extrabold
+
+                    text-[20px]
+                    font-extrabold
                     leading-6
+
                     text-black
 
                     xl:text-[22px]
@@ -1014,8 +1189,11 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 <span
                   className="
                     font-red-hat-display
-                    text-[12px] font-medium
+
+                    text-[12px]
+                    font-medium
                     leading-[14px]
+
                     text-[#667085]
 
                     xl:text-[13px]
@@ -1029,19 +1207,26 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
               <span
                 className="
                   mt-1
-                  inline-flex min-h-[21px]
-                  items-center gap-1
+
+                  inline-flex
+                  min-h-[21px]
+
+                  items-center
+                  gap-1
 
                   rounded-full
+
                   bg-[#ECFDF3]
 
                   px-[7px]
                   py-0.5
 
                   font-red-hat-display
+
                   text-[10.5px]
                   font-extrabold
                   leading-[17px]
+
                   text-[#027A48]
 
                   xl:text-[11.5px]
@@ -1055,8 +1240,10 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                   height={12}
                   aria-hidden="true"
                   className="
-                    h-3 w-3
+                    h-3
+                    w-3
                     shrink-0
+
                     object-contain
                   "
                 />
@@ -1067,36 +1254,46 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
 
             <div
               className="
-                flex w-auto
+                flex
+                w-auto
+
                 justify-end
                 gap-2
               "
             >
+              {/* View details */}
               <button
                 type="button"
                 onClick={() => {
                   onViewDetails(plan);
                 }}
                 className="
-                  inline-flex h-10
+                  inline-flex
+                  h-10
                   min-w-[124px]
                   shrink-0
+
                   items-center
                   justify-center
                   gap-1
 
                   whitespace-nowrap
+
                   rounded-full
 
-                  border border-[#D0D5DD]
+                  border
+                  border-[#D0D5DD]
+
                   bg-white
 
                   px-[14px]
 
                   font-red-hat-display
+
                   text-[13px]
                   font-extrabold
                   leading-5
+
                   text-[#344054]
 
                   shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
@@ -1115,36 +1312,41 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                 <ChevronRight
                   aria-hidden="true"
                   className="
-    h-[18px]
-    w-[18px]
-    shrink-0
-    text-[#0D3B66]
+                    h-[18px]
+                    w-[18px]
+                    shrink-0
 
-    xl:h-[18px]
-    xl:w-[18px]
-  "
+                    text-[#0D3B66]
+                  "
                   strokeWidth={3}
                 />
               </button>
 
+              {/* Primary CTA */}
               <button
                 type="button"
+                onClick={handlePrimaryAction}
                 className={`
-                  inline-flex h-10
+                  inline-flex
+                  h-10
                   shrink-0
+
                   items-center
                   justify-center
                   gap-2
 
                   whitespace-nowrap
+
                   rounded-full
 
                   px-[14px]
 
                   font-red-hat-display
+
                   text-[13px]
                   font-extrabold
                   leading-5
+
                   text-white
 
                   shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
@@ -1159,7 +1361,9 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                       ? `
                         min-w-[112px]
 
-                        border border-[#0D3B66]
+                        border
+                        border-[#0D3B66]
+
                         bg-[#0D3B66]
 
                         hover:bg-[#082F4F]
@@ -1169,7 +1373,9 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                       : `
                         min-w-[102px]
 
-                        border border-[#00897B]
+                        border
+                        border-[#00897B]
+
                         bg-[#00897B]
 
                         hover:bg-[#00796D]
@@ -1189,8 +1395,10 @@ export default function PlanCard({ plan, onViewDetails }: PlanCardProps) {
                     height={12}
                     aria-hidden="true"
                     className="
-                      h-3 w-3
+                      h-3
+                      w-3
                       shrink-0
+
                       object-contain
                     "
                   />

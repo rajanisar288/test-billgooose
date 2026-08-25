@@ -7,10 +7,34 @@ import data from '@/data/content.json';
 
 const NEWSLETTER_IMAGE = '/images/compare-mail.png';
 
+/* =========================================================
+   SIM ONLY
+========================================================= */
+
+const SIM_ONLY_ITEM = {
+  id: 'sim-only',
+  title: 'SIM Only',
+  description: 'Latest SIM-only plans and contract offers',
+  icon: '/images/sim-icon.png',
+  href: '/compare?service=sim',
+  linkText: 'Compare Now',
+};
+
 export default function Compare() {
   const { compare, newsletter } = data;
 
-  const activeItems = compare.items.slice(0, 3);
+  /*
+   * Existing active services:
+   * Energy, Broadband, Mobile
+   *
+   * Add SIM Only as the fourth active service.
+   */
+  const activeItems = [...compare.items.slice(0, 3), SIM_ONLY_ITEM];
+
+  /*
+   * Existing coming-soon services stay:
+   * Credit Card, Insurance, Loans
+   */
   const comingSoonItems = compare.items.slice(3, 6);
 
   return (
@@ -170,9 +194,10 @@ export default function Compare() {
             sm:grid-cols-2
 
             md:mt-10
+            md:gap-4
 
             lg:mt-12
-            lg:grid-cols-3
+            lg:grid-cols-4
             lg:gap-5
           "
         >
@@ -181,8 +206,9 @@ export default function Compare() {
               key={item.id}
               className="
                 flex
-                min-h-[176px]
+                min-h-[168px]
                 w-full
+                min-w-0
                 flex-col
 
                 rounded-[20px]
@@ -197,18 +223,24 @@ export default function Compare() {
 
                 shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
 
-                md:min-h-[190px]
+                sm:min-h-[174px]
+
+                md:min-h-[182px]
                 md:rounded-[24px]
                 md:p-5
 
-                lg:h-[208px]
-                lg:min-h-[208px]
-                lg:max-w-[392px]
-                lg:rounded-[28px]
+                lg:h-[184px]
+                lg:min-h-[184px]
+                lg:rounded-[24px]
                 lg:p-0
+
+                xl:h-[190px]
+                xl:min-h-[190px]
               "
             >
-              {/* Main card content */}
+              {/* =================================================
+                  CARD CONTENT
+              ================================================== */}
               <div
                 className="
                   flex
@@ -216,12 +248,18 @@ export default function Compare() {
                   items-center
                   gap-4
 
-                  lg:gap-5
-                  lg:px-5
-                  lg:py-[18px]
+                  lg:gap-3
+                  lg:px-4
+                  lg:py-4
+
+                  xl:gap-4
+                  xl:px-[18px]
+                  xl:py-[18px]
                 "
               >
-                {/* Image */}
+                {/* ===============================================
+                    IMAGE
+                ================================================ */}
                 <div
                   className="
                     flex
@@ -238,35 +276,44 @@ export default function Compare() {
 
                     bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
 
-                    md:h-[86px]
-                    md:w-[86px]
+                    md:h-[78px]
+                    md:w-[78px]
                     md:rounded-[18px]
 
-                    lg:h-[104px]
-                    lg:w-[104px]
-                    lg:rounded-[22px]
+                    lg:h-[60px]
+                    lg:w-[60px]
+                    lg:rounded-[14px]
+
+                    xl:h-[68px]
+                    xl:w-[68px]
+                    xl:rounded-[16px]
                   "
                 >
                   <Image
                     src={item.icon}
                     alt=""
-                    width={86}
-                    height={86}
+                    width={64}
+                    height={64}
                     className="
                       h-[58px]
                       w-[58px]
                       object-contain
 
-                      md:h-[70px]
-                      md:w-[70px]
+                      md:h-[64px]
+                      md:w-[64px]
 
-                      lg:h-[86px]
-                      lg:w-[86px]
+                      lg:h-[48px]
+                      lg:w-[48px]
+
+                      xl:h-[56px]
+                      xl:w-[56px]
                     "
                   />
                 </div>
 
-                {/* Text */}
+                {/* ===============================================
+                    TEXT
+                ================================================ */}
                 <div className="min-w-0 flex-1">
                   <h3
                     className="
@@ -279,9 +326,12 @@ export default function Compare() {
 
                       md:text-[18px]
 
-                      lg:text-[20px]
+                      lg:text-[16px]
                       lg:font-extrabold
-                      lg:leading-[25px]
+                      lg:leading-[22px]
+
+                      xl:text-[18px]
+                      xl:leading-[24px]
                     "
                   >
                     {item.title}
@@ -303,10 +353,14 @@ export default function Compare() {
                       md:text-[13px]
                       md:leading-[18px]
 
-                      lg:mt-2
+                      lg:mt-1
+                      lg:max-w-none
                       lg:font-inter
-                      lg:text-[14px]
-                      lg:leading-[20px]
+                      lg:text-[11px]
+                      lg:leading-[16px]
+
+                      xl:text-[12px]
+                      xl:leading-[17px]
                     "
                   >
                     {item.description}
@@ -314,22 +368,26 @@ export default function Compare() {
                 </div>
               </div>
 
-              {/* Divider + CTA */}
+              {/* =================================================
+                  DIVIDER + CTA
+              ================================================== */}
               <div
                 className="
-    flex
-    items-center
-    justify-center
+                  flex
+                  items-center
+                  justify-center
 
-    border-t
-    border-[#F2F4F7]
+                  border-t
+                  border-[#F2F4F7]
 
-    px-4
-    py-3
+                  px-4
+                  py-3
 
-    lg:px-5
-    lg:py-[13px]
-  "
+                  lg:px-4
+                  lg:py-[11px]
+
+                  xl:py-3
+                "
               >
                 <Link
                   href={item.href}
@@ -357,7 +415,9 @@ export default function Compare() {
 
                     md:text-[13px]
 
-                    lg:text-[14px]
+                    lg:text-[11px]
+
+                    xl:text-[12px]
                   "
                 >
                   <span>{item.linkText}</span>
@@ -368,8 +428,11 @@ export default function Compare() {
                       h-[15px]
                       w-[15px]
 
-                      lg:h-[17px]
-                      lg:w-[17px]
+                      lg:h-[14px]
+                      lg:w-[14px]
+
+                      xl:h-[15px]
+                      xl:w-[15px]
                     "
                     strokeWidth={2}
                   />
@@ -432,7 +495,9 @@ export default function Compare() {
               lg:pt-[42px]
             "
           >
-            {/* Coming soon connector / title */}
+            {/* ===============================================
+                COMING SOON CONNECTOR / TITLE
+            ================================================ */}
             <div
               className="
                 absolute
@@ -507,7 +572,9 @@ export default function Compare() {
               />
             </div>
 
-            {/* Coming soon items */}
+            {/* ===============================================
+                COMING SOON ITEMS
+            ================================================ */}
             <div
               className="
                 grid
@@ -628,7 +695,9 @@ export default function Compare() {
               lg:py-5
             "
           >
-            {/* Decorative corner */}
+            {/* ===============================================
+                DECORATIVE CORNER
+            ================================================ */}
             <div
               aria-hidden="true"
               className="
@@ -650,7 +719,9 @@ export default function Compare() {
               "
             />
 
-            {/* Mailbox image */}
+            {/* ===============================================
+                MAILBOX IMAGE
+            ================================================ */}
             <div
               className="
                 pointer-events-none
@@ -681,7 +752,9 @@ export default function Compare() {
               />
             </div>
 
-            {/* Copy */}
+            {/* ===============================================
+                COPY
+            ================================================ */}
             <div
               className="
                 relative
@@ -737,7 +810,9 @@ export default function Compare() {
               </p>
             </div>
 
-            {/* Email form */}
+            {/* ===============================================
+                EMAIL FORM
+            ================================================ */}
             <form
               className="
                 absolute
