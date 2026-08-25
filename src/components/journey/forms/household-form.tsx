@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
-import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { getNextJourneyRoute } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
 type JourneyService = 'energy' | 'broadband';
@@ -65,35 +65,36 @@ export default function HouseholdForm() {
     getJourneyServiceServerSnapshot,
   );
 
-  /*
-   * =========================================================
-   * ENERGY STATE
-   * =========================================================
-   */
+  /* =========================================================
+     ENERGY STATE
+  ========================================================= */
+
   const [selectedPropertyType, setSelectedPropertyType] = useState(propertyType.options[0].value);
 
   const [selectedOccupants, setSelectedOccupants] = useState(occupants.defaultValue);
 
   const [selectedBedrooms, setSelectedBedrooms] = useState(bedrooms.defaultValue);
 
-  /*
-   * =========================================================
-   * BROADBAND STATE
-   * =========================================================
-   */
+  /* =========================================================
+     BROADBAND STATE
+  ========================================================= */
+
   const [selectedBroadbandSpeed, setSelectedBroadbandSpeed] = useState(broadbandSpeed.defaultValue);
 
-  /*
-   * =========================================================
-   * SUBMIT
-   * =========================================================
-   */
+  /* =========================================================
+     SUBMIT
+  ========================================================= */
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    /*
-     * Broadband
-     */
+    /* =======================================================
+       BROADBAND
+
+       Step 3 Broadband Speed
+       → Step 4 Contract Length
+    ======================================================== */
+
     if (service === 'broadband') {
       if (!selectedBroadbandSpeed) {
         return;
@@ -106,14 +107,18 @@ export default function HouseholdForm() {
         }),
       );
 
-      router.push(JOURNEY_ROUTES[4]);
+      router.push(getNextJourneyRoute(3, 'broadband'));
 
       return;
     }
 
-    /*
-     * Energy
-     */
+    /* =======================================================
+       ENERGY
+
+       Step 3 Household
+       → Step 4 Electric Vehicle
+    ======================================================== */
+
     if (!selectedPropertyType || !selectedOccupants || !selectedBedrooms) {
       return;
     }
@@ -126,14 +131,13 @@ export default function HouseholdForm() {
 
     sessionStorage.setItem(household.storageKey, JSON.stringify(householdData));
 
-    router.push(JOURNEY_ROUTES[4]);
+    router.push(getNextJourneyRoute(3, 'energy'));
   }
 
-  /*
-   * =========================================================
-   * BROADBAND STEP 3
-   * =========================================================
-   */
+  /* =========================================================
+     BROADBAND STEP 3
+  ========================================================= */
+
   if (service === 'broadband') {
     return (
       <div className="w-full">
@@ -296,11 +300,10 @@ export default function HouseholdForm() {
     );
   }
 
-  /*
-   * =========================================================
-   * ENERGY — EXISTING HOUSEHOLD FORM
-   * =========================================================
-   */
+  /* =========================================================
+     ENERGY — HOUSEHOLD FORM
+  ========================================================= */
+
   return (
     <div className="w-full">
       {/* Desktop heading only */}
@@ -319,6 +322,7 @@ export default function HouseholdForm() {
             font-extrabold
             leading-[56px]
             tracking-[0]
+
             text-[#0C3354]
           "
         >

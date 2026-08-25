@@ -207,9 +207,9 @@ export default function PaymentMethodForm() {
         </header>
 
         <form
-          id="journey-step-form-4"
+          id={service === 'broadband' ? 'journey-step-form-4' : 'journey-step-form-5'}
           onSubmit={handleSubmit}
-          noValidate
+          className="space-y-3 sm:space-y-4"
         >
           <fieldset>
             <legend className="sr-only">{broadbandContractLength.heading}</legend>

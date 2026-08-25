@@ -1,53 +1,182 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { ChevronDown, ChevronRight, Menu, UserRound, X } from 'lucide-react';
+import { ChevronDown, LogOut, Menu, Settings, UserRound, X } from 'lucide-react';
 
-import data from '../../data/content.json';
+import data from '@/data/content.json';
+
+type SignedInUser = {
+  email?: string;
+  signedIn?: boolean;
+};
+
+/* =========================================================
+   AUTH SNAPSHOT
+========================================================= */
+
+function getAuthSnapshot(): string {
+  try {
+    return sessionStorage.getItem('billgooseSignedInUser') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function getAuthServerSnapshot(): string {
+  return '';
+}
+
+function subscribeToAuth(callback: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === 'billgooseSignedInUser') {
+      callback();
+    }
+  };
+
+  const handleAuthChanged = () => {
+    callback();
+  };
+
+  window.addEventListener('storage', handleStorage);
+
+  window.addEventListener('billgoose-auth-changed', handleAuthChanged);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+
+    window.removeEventListener('billgoose-auth-changed', handleAuthChanged);
+  };
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
 
 export default function Header() {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const { header } = data;
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCompareMenuOpen, setIsCompareMenuOpen] = useState(false);
+  const [isMobileNavigationOpen, setIsMobileNavigationOpen] = useState(false);
 
-  const compareMenuRef = useRef<HTMLDivElement>(null);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
 
-  const availableServices = header.compareMenu.filter((service) => service.status === 'available');
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
-  const comingSoonServices = header.compareMenu.filter(
-    (service) => service.status === 'coming-soon',
+  const compareRef = useRef<HTMLDivElement>(null);
+
+  const desktopAccountRef = useRef<HTMLDivElement>(null);
+
+  const mobileAccountRef = useRef<HTMLDivElement>(null);
+
+  const authSnapshot = useSyncExternalStore(
+    subscribeToAuth,
+    getAuthSnapshot,
+    getAuthServerSnapshot,
   );
 
-  const closeMenus = () => {
-    setIsMobileMenuOpen(false);
-    setIsCompareMenuOpen(false);
-  };
+  let signedInUser: SignedInUser | null = null;
 
-  const getNavigationHref = (label: string, href: string, hasDropdown?: boolean) => {
-    const normalizedLabel = label.trim().toLowerCase();
+  if (authSnapshot) {
+    try {
+      signedInUser = JSON.parse(authSnapshot) as SignedInUser;
+    } catch {
+      signedInUser = null;
+    }
+  }
 
-    if (hasDropdown || normalizedLabel === 'compare') {
-      return '/compare';
+  const isSignedIn = signedInUser?.signedIn === true;
+
+  const userEmail = signedInUser?.email ?? '';
+
+  /*
+   * Only My Info uses the dark navbar.
+   */
+  const isMyInfoPage = pathname === '/my-info' || pathname.startsWith('/my-info/');
+
+  /* =========================================================
+     CLOSE MENUS
+  ========================================================= */
+
+  function closeMenus() {
+    setIsMobileNavigationOpen(false);
+    setIsCompareOpen(false);
+    setIsAccountOpen(false);
+  }
+
+  /* =========================================================
+     SIGN IN
+  ========================================================= */
+
+  function handleSignInClick() {
+    try {
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+
+      if (window.location.pathname !== '/sign-in') {
+        sessionStorage.setItem('billgooseSignInReturnTo', currentPath);
+      }
+    } catch {
+      // Ignore storage failure.
     }
 
-    if (normalizedLabel.includes('guide')) {
-      return '/#guides';
+    closeMenus();
+  }
+
+  /* =========================================================
+     ACCOUNT
+  ========================================================= */
+
+  function toggleAccountMenu() {
+    setIsAccountOpen((current) => !current);
+
+    setIsCompareOpen(false);
+    setIsMobileNavigationOpen(false);
+  }
+
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
+
+  function handleLogout() {
+    try {
+      sessionStorage.removeItem('billgooseSignedInUser');
+    } catch {
+      // Ignore storage failure.
     }
 
-    return href || '/';
-  };
+    window.dispatchEvent(new Event('billgoose-auth-changed'));
+
+    closeMenus();
+
+    router.push('/');
+  }
+
+  /* =========================================================
+     OUTSIDE CLICK
+  ========================================================= */
 
   useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (compareMenuRef.current && !compareMenuRef.current.contains(event.target as Node)) {
-        setIsCompareMenuOpen(false);
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+
+      if (compareRef.current && !compareRef.current.contains(target)) {
+        setIsCompareOpen(false);
       }
-    };
+
+      const clickedDesktopAccount = desktopAccountRef.current?.contains(target);
+
+      const clickedMobileAccount = mobileAccountRef.current?.contains(target);
+
+      if (!clickedDesktopAccount && !clickedMobileAccount) {
+        setIsAccountOpen(false);
+      }
+    }
 
     document.addEventListener('mousedown', handleOutsideClick);
 
@@ -56,464 +185,240 @@ export default function Header() {
     };
   }, []);
 
+  /* =========================================================
+     MOBILE BODY SCROLL
+  ========================================================= */
+
   useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    if (!isMobileNavigationOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = 'hidden';
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileNavigationOpen]);
 
   return (
-    <header className="relative z-50 w-full bg-white">
+    <header
+      className={`
+        relative
+        z-50
+        w-full
+
+        ${isMyInfoPage ? 'bg-[#0B2B43]' : 'bg-white'}
+      `}
+    >
       <div className="mx-auto w-full max-w-[1440px]">
         <div
           className="
-            flex min-h-[72px]
-            items-center justify-between
+            flex
+            min-h-[72px]
+
+            items-center
+            justify-between
+
             px-5
 
             sm:px-8
 
-            md:min-h-[84px]
-            md:justify-start
-            md:px-[30px]
-
             lg:min-h-[103px]
-            lg:justify-between
             lg:px-10
           "
         >
-          {/* =====================================================
+          {/* =================================================
               LOGO
-          ====================================================== */}
+          ================================================== */}
           <Link
             href="/"
             onClick={closeMenus}
-            className="relative block shrink-0"
             aria-label="Go to BillGoose homepage"
+            className="
+              inline-flex
+              shrink-0
+            "
           >
             <Image
-              src={header.logo.src}
+              src={isMyInfoPage ? '/images/logo-white.png' : header.logo.src}
               alt={header.logo.alt}
-              width={header.logo.width}
-              height={header.logo.height}
+              width={266}
+              height={82}
               priority
               className="
                 h-auto
                 w-[145px]
+
                 object-contain
 
                 sm:w-[180px]
 
-                md:w-[165px]
-
-                lg:h-[83px]
-                lg:w-[266.7px]
+                lg:w-[266px]
               "
             />
           </Link>
 
-          {/* =====================================================
-              TABLET + DESKTOP NAVIGATION
-          ====================================================== */}
+          {/* =================================================
+              DESKTOP
+          ================================================== */}
           <div
             className="
               hidden
               items-center
+              gap-3
 
-              md:ml-auto
-              md:flex
-              md:gap-[14px]
-
-              lg:ml-0
-              lg:gap-3
+              lg:flex
             "
           >
+            {/* ===============================================
+                MAIN NAVIGATION
+            ================================================ */}
             <nav
               aria-label="Main navigation"
-              className="
+              className={`
                 flex
                 items-center
 
                 rounded-full
 
                 border
-                border-[#EAECF0]
-
-                bg-[#F9FAFB]
 
                 p-1
 
                 shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-              "
+
+                ${
+                  isMyInfoPage
+                    ? `
+                      border-white/10
+                      bg-white/10
+                    `
+                    : `
+                      border-[#EAECF0]
+                      bg-[#F9FAFB]
+                    `
+                }
+              `}
             >
               {header.navigation.map((item) => {
+                const navigationText = isMyInfoPage ? 'text-white' : 'text-[#355E87]';
+
                 if (item.hasDropdown) {
                   return (
                     <div
                       key={item.id}
-                      ref={compareMenuRef}
+                      ref={compareRef}
                       className="relative"
                     >
-                      {/* Compare trigger */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setIsCompareMenuOpen((previous) => !previous);
-                        }}
-                        aria-expanded={isCompareMenuOpen}
+                        aria-expanded={isCompareOpen}
                         aria-haspopup="menu"
+                        onClick={() => {
+                          setIsCompareOpen((current) => !current);
+
+                          setIsAccountOpen(false);
+                        }}
                         className={`
-                          flex
-                          h-9
-                          items-center
-                          gap-1.5
+                            flex
+                            h-10
 
-                          rounded-full
+                            items-center
+                            gap-1
 
-                          border
+                            rounded-full
 
-                          px-3.5
+                            px-4
 
-                          font-red-hat-display
-                          text-[13px]
-                          font-medium
-                          text-secondary
+                            font-inter
+                            text-[14px]
+                            font-medium
 
-                          transition-all
-                          duration-200
+                            transition-colors
 
-                          hover:bg-white
+                            ${navigationText}
 
-                          focus-visible:outline-none
-                          focus-visible:ring-2
-                          focus-visible:ring-[#00897B]
-                          focus-visible:ring-offset-2
-
-                          lg:h-10
-                          lg:px-4
-                          lg:text-[14px]
-
-                          ${
-                            isCompareMenuOpen
-                              ? `
-                                border-[#73BEB7]
-                                bg-white
-                              `
-                              : `
-                                border-transparent
-                                bg-transparent
-                              `
-                          }
-                        `}
+                            ${
+                              isMyInfoPage
+                                ? 'hover:bg-white/10'
+                                : 'hover:bg-white hover:text-[#00897B]'
+                            }
+                          `}
                       >
                         <span>{item.label}</span>
 
                         <ChevronDown
                           aria-hidden="true"
                           className={`
-                            h-[15px]
-                            w-[15px]
-                            shrink-0
+                              h-4
+                              w-4
 
-                            transition-transform
-                            duration-200
+                              transition-transform
+                              duration-200
 
-                            ${isCompareMenuOpen ? 'rotate-180' : ''}
-                          `}
+                              ${isCompareOpen ? 'rotate-180' : ''}
+                            `}
                           strokeWidth={2}
                         />
                       </button>
 
-                      {/* =================================================
-                          TABLET + DESKTOP COMPARE DROPDOWN
-                      ================================================== */}
-                      {isCompareMenuOpen && (
+                      {isCompareOpen && (
                         <div
                           role="menu"
                           className="
-                            absolute
-                            right-0
-                            top-[calc(100%+12px)]
-                            z-[80]
+                              absolute
+                              right-0
+                              top-[calc(100%+10px)]
+                              z-[100]
 
-                            w-[310px]
+                              w-[220px]
 
-                            overflow-hidden
+                              overflow-hidden
 
-                            rounded-[18px]
+                              rounded-[12px]
 
-                            border
-                            border-[#EAECF0]
+                              border
+                              border-[#EAECF0]
 
-                            bg-white
+                              bg-white
 
-                            p-[10px]
+                              p-2
 
-                            shadow-[0px_16px_40px_rgba(15,30,60,0.14),0px_2px_6px_rgba(15,30,60,0.06)]
-
-                            lg:w-[338px]
-                            lg:rounded-[20px]
-                            lg:p-3
-                          "
+                              shadow-[0px_12px_30px_rgba(16,24,40,0.16)]
+                            "
                         >
-                          {/* Available services */}
-                          <div className="space-y-1">
-                            {availableServices.map((service) => (
-                              <Link
-                                key={service.id}
-                                href={service.href}
-                                role="menuitem"
-                                onClick={closeMenus}
-                                className="
-                                  group
+                          {header.compareMenu.map((menuItem) => (
+                            <Link
+                              key={menuItem.id}
+                              href={menuItem.href}
+                              role="menuitem"
+                              onClick={closeMenus}
+                              className="
+                                    block
 
-                                  flex
-                                  min-h-[74px]
-                                  w-full
-                                  items-center
+                                    rounded-[8px]
 
-                                  gap-3
-
-                                  rounded-[12px]
-
-                                  px-2
-                                  py-[5px]
-
-                                  transition-all
-                                  duration-200
-
-                                  hover:bg-[linear-gradient(0deg,rgba(0,137,123,0.08),rgba(0,137,123,0.08)),linear-gradient(0deg,rgba(255,255,255,0.92),rgba(255,255,255,0.92))]
-
-                                  lg:min-h-[84px]
-                                  lg:gap-[14px]
-                                  lg:px-[6px]
-                                  lg:py-[7px]
-                                "
-                              >
-                                {/* Service artwork */}
-                                <span
-                                  className="
-                                    flex
-                                    h-[58px]
-                                    w-[58px]
-                                    shrink-0
-                                    items-center
-                                    justify-center
-
-                                    overflow-hidden
-
-                                    rounded-[10px]
-
-                                    bg-white
-
-                                    shadow-[0px_1px_4px_rgba(16,24,40,0.08)]
-
-                                    lg:h-[70px]
-                                    lg:w-[70px]
-                                    lg:rounded-[11px]
-                                  "
-                                >
-                                  <Image
-                                    src={service.icon}
-                                    alt={service.iconAlt}
-                                    width={70}
-                                    height={70}
-                                    className="
-                                      h-full
-                                      w-full
-                                      object-contain
-                                    "
-                                  />
-                                </span>
-
-                                {/* Text */}
-                                <span className="min-w-0 flex-1">
-                                  <span
-                                    className="
-                                      block
-
-                                      font-red-hat-display
-                                      text-[15px]
-                                      font-bold
-                                      leading-5
-                                      text-[#101828]
-
-                                      lg:text-[16px]
-                                      lg:leading-6
-                                    "
-                                  >
-                                    {service.label}
-                                  </span>
-
-                                  {service.description && (
-                                    <span
-                                      className="
-                                        mt-[1px]
-                                        block
-
-                                        max-w-[185px]
-
-                                        font-red-hat-display
-                                        text-[12px]
-                                        font-[467]
-                                        leading-[16px]
-                                        text-[#667085]
-
-                                        lg:max-w-[205px]
-                                        lg:text-[13px]
-                                        lg:leading-[17px]
-                                      "
-                                    >
-                                      {service.description}
-                                    </span>
-                                  )}
-                                </span>
-
-                                {/* Right arrow */}
-                                <ChevronRight
-                                  aria-hidden="true"
-                                  className="
-                                    h-4
-                                    w-4
-                                    shrink-0
-
-                                    text-[#D0D5DD]
-
-                                    transition-colors
-                                    duration-200
-
-                                    group-hover:text-[#101828]
-
-                                    lg:h-[18px]
-                                    lg:w-[18px]
-                                  "
-                                  strokeWidth={2.3}
-                                />
-                              </Link>
-                            ))}
-                          </div>
-
-                          {/* Coming Soon */}
-                          {comingSoonServices.length > 0 && (
-                            <>
-                              <div
-                                className="
-                                  relative
-
-                                  my-3
-
-                                  flex
-                                  items-center
-                                  justify-center
-                                "
-                              >
-                                <div
-                                  aria-hidden="true"
-                                  className="
-                                    absolute
-                                    left-2
-                                    right-2
-                                    top-1/2
-
-                                    h-px
-
-                                    -translate-y-1/2
-
-                                    bg-[#EAECF0]
-                                  "
-                                />
-
-                                <span
-                                  className="
-                                    relative
-                                    z-10
-
-                                    rounded-full
-
-                                    border
-                                    border-[#D1E9FF]
-
-                                    bg-[#EFF8FF]
-
-                                    px-2.5
-                                    py-[2px]
+                                    px-3
+                                    py-2.5
 
                                     font-inter
-                                    text-[10px]
+                                    text-[13px]
                                     font-medium
-                                    leading-[14px]
-                                    text-[#1570EF]
+
+                                    text-[#344054]
+
+                                    transition-colors
+
+                                    hover:bg-[#F9FAFB]
+                                    hover:text-[#00897B]
                                   "
-                                >
-                                  Coming Soon
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-3 gap-2">
-                                {comingSoonServices.map((service) => (
-                                  <div
-                                    key={service.id}
-                                    className="
-                                      flex
-                                      min-w-0
-                                      flex-col
-                                      items-center
-                                      justify-center
-
-                                      rounded-[8px]
-
-                                      border
-                                      border-[#EAECF0]
-
-                                      bg-white
-
-                                      px-1
-                                      pb-2
-                                      pt-1.5
-
-                                      shadow-[0px_1px_2px_rgba(16,24,40,0.04)]
-                                    "
-                                  >
-                                    <Image
-                                      src={service.icon}
-                                      alt={service.iconAlt}
-                                      width={42}
-                                      height={42}
-                                      className="
-                                        h-[42px]
-                                        w-[42px]
-                                        object-contain
-                                      "
-                                    />
-
-                                    <span
-                                      className="
-                                        mt-1
-
-                                        max-w-full
-
-                                        truncate
-
-                                        text-center
-
-                                        font-red-hat-display
-                                        text-[10px]
-                                        font-medium
-                                        leading-[14px]
-                                        text-[#101828]
-
-                                        lg:text-[11px]
-                                      "
-                                    >
-                                      {service.label}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </>
-                          )}
+                            >
+                              {menuItem.label}
+                            </Link>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -523,36 +428,30 @@ export default function Header() {
                 return (
                   <Link
                     key={item.id}
-                    href={getNavigationHref(item.label, item.href, item.hasDropdown)}
+                    href={item.href}
                     onClick={closeMenus}
-                    className="
-                      flex
-                      h-9
-                      items-center
+                    className={`
+                        flex
+                        h-10
 
-                      rounded-full
+                        items-center
 
-                      px-3.5
+                        rounded-full
 
-                      font-red-hat-display
-                      text-[13px]
-                      font-medium
-                      text-secondary
+                        px-4
 
-                      transition-colors
+                        font-inter
+                        text-[14px]
+                        font-medium
 
-                      hover:bg-white
-                      hover:text-primary
+                        transition-colors
 
-                      focus-visible:outline-none
-                      focus-visible:ring-2
-                      focus-visible:ring-primary
-                      focus-visible:ring-offset-2
+                        ${navigationText}
 
-                      lg:h-10
-                      lg:px-4
-                      lg:text-[14px]
-                    "
+                        ${
+                          isMyInfoPage ? 'hover:bg-white/10' : 'hover:bg-white hover:text-[#00897B]'
+                        }
+                      `}
                   >
                     {item.label}
                   </Link>
@@ -560,631 +459,661 @@ export default function Header() {
               })}
             </nav>
 
-            {/* =====================================================
-                SIGN IN
-            ====================================================== */}
-            <Link
-              href={header.account.href}
-              aria-label={header.account.label}
-              onClick={closeMenus}
-              className="
-                inline-flex
-                h-[40px]
-                shrink-0
-                items-center
-                gap-[7px]
+            {/* ===============================================
+                LOGGED IN
+            ================================================ */}
+            {isSignedIn ? (
+              <div
+                ref={desktopAccountRef}
+                className="relative"
+              >
+                {/* Control shown in your screenshot */}
+                <div
+                  className={`
+                    flex
+                    h-[50px]
 
-                rounded-[100px]
+                    items-center
+                    gap-[7px]
 
-                border
-                border-[#EAECF0]
+                    rounded-full
 
-                bg-[#F9FAFB]
+                    border
 
-                py-[5px]
-                pl-[14px]
-                pr-[5px]
+                    py-[6px]
+                    pl-[13px]
+                    pr-[6px]
 
-                font-red-hat-display
-                text-[13px]
-                font-bold
-                leading-5
-                text-[#355E87]
+                    shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
 
-                shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                    ${
+                      isMyInfoPage
+                        ? `
+                          border-white/30
+                          bg-transparent
+                        `
+                        : `
+                          border-[#D0D5DD]
+                          bg-white
+                        `
+                    }
+                  `}
+                >
+                  {/* Three lines */}
+                  <button
+                    type="button"
+                    onClick={toggleAccountMenu}
+                    aria-label="Open account menu"
+                    aria-expanded={isAccountOpen}
+                    className={`
+                      flex
+                      h-[27px]
+                      w-[27px]
 
-                transition-colors
+                      items-center
+                      justify-center
 
-                hover:bg-white
-                hover:text-[#00897B]
+                      transition-colors
 
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-[#00897B]
-                focus-visible:ring-offset-2
+                      ${
+                        isMyInfoPage
+                          ? 'text-white hover:text-[#8CCAC3]'
+                          : 'text-[#0D3B66] hover:text-[#00897B]'
+                      }
+                    `}
+                  >
+                    <Menu
+                      aria-hidden="true"
+                      className="
+                        h-[24px]
+                        w-[24px]
+                      "
+                      strokeWidth={2}
+                    />
+                  </button>
 
-                lg:h-[50px]
-                lg:gap-[10px]
-                lg:py-[7px]
-                lg:pl-5
-                lg:pr-[7px]
-                lg:text-[16px]
-                lg:leading-6
-              "
-            >
-              <span className="whitespace-nowrap">Sign In</span>
+                  {/* User */}
+                  <button
+                    type="button"
+                    onClick={toggleAccountMenu}
+                    aria-label="Open account menu"
+                    aria-expanded={isAccountOpen}
+                    className="
+                      flex
+                      h-9
+                      w-9
 
-              <span
+                      shrink-0
+                      items-center
+                      justify-center
+
+                      rounded-full
+
+                      bg-[#00897B]
+
+                      text-white
+
+                      transition-colors
+
+                      hover:bg-[#00796D]
+
+                      focus-visible:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-[#8CCAC3]
+                    "
+                  >
+                    <UserRound
+                      aria-hidden="true"
+                      className="
+                        h-[19px]
+                        w-[19px]
+                      "
+                      strokeWidth={2}
+                    />
+                  </button>
+                </div>
+
+                {isAccountOpen && (
+                  <AccountMenu
+                    email={userEmail}
+                    onClose={closeMenus}
+                    onLogout={handleLogout}
+                  />
+                )}
+              </div>
+            ) : (
+              /* =============================================
+                  LOGGED OUT
+              ============================================== */
+              <Link
+                href="/sign-in"
+                aria-label="Sign In"
+                onClick={handleSignInClick}
                 className="
-                  flex
-                  h-[30px]
-                  w-[30px]
-                  shrink-0
+                  inline-flex
+                  h-[50px]
+
                   items-center
-                  justify-center
+                  gap-2.5
 
                   rounded-full
 
-                  bg-[#00897B]
+                  border
+                  border-[#EAECF0]
 
-                  text-white
+                  bg-[#F9FAFB]
 
-                  lg:h-9
-                  lg:w-9
+                  py-[6px]
+                  pl-5
+                  pr-[6px]
+
+                  font-red-hat-display
+                  text-[15px]
+                  font-bold
+                  leading-6
+
+                  text-[#355E87]
+
+                  shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
+
+                  transition-colors
+
+                  hover:bg-white
+                  hover:text-[#00897B]
                 "
               >
-                <UserRound
-                  size={15}
-                  strokeWidth={2}
-                  aria-hidden="true"
+                <span>Sign In</span>
+
+                <span
                   className="
-                    lg:h-[19px]
-                    lg:w-[19px]
-                  "
-                />
-              </span>
-            </Link>
-          </div>
+                    flex
+                    h-9
+                    w-9
 
-          {/* =====================================================
-              MOBILE MENU + ACCOUNT
-          ====================================================== */}
-          <div
-            className="
-              flex
-              h-[44px]
-              w-[78px]
-              items-center
-              gap-[5px]
+                    shrink-0
+                    items-center
+                    justify-center
 
-              rounded-[100px]
+                    rounded-full
 
-              border
-              border-[#EAECF0]
+                    bg-[#00897B]
 
-              bg-[#F9FAFB]
-
-              py-[9px]
-              pl-3
-              pr-[6px]
-
-              shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-
-              min-[390px]:h-[50px]
-              min-[390px]:w-[87px]
-              min-[390px]:gap-[6px]
-              min-[390px]:py-3
-              min-[390px]:pl-[14px]
-              min-[390px]:pr-[7px]
-
-              md:hidden
-            "
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setIsMobileMenuOpen((previous) => !previous);
-              }}
-              className="
-                flex
-                h-5
-                w-5
-                shrink-0
-                items-center
-                justify-center
-
-                text-secondary
-
-                transition-colors
-
-                hover:text-primary
-
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-primary
-                focus-visible:ring-offset-2
-
-                min-[390px]:h-6
-                min-[390px]:w-6
-              "
-              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-navigation"
-            >
-              {isMobileMenuOpen ? (
-                <X
-                  size={16}
-                  strokeWidth={2}
-                  className="
-                    min-[390px]:h-[18px]
-                    min-[390px]:w-[18px]
-                  "
-                  aria-hidden="true"
-                />
-              ) : (
-                <Menu
-                  size={16}
-                  strokeWidth={2}
-                  className="
-                    min-[390px]:h-[18px]
-                    min-[390px]:w-[18px]
-                  "
-                  aria-hidden="true"
-                />
-              )}
-            </button>
-
-            <Link
-              href="/"
-              aria-label={header.account.label}
-              onClick={closeMenus}
-              className="
-    flex h-8 w-8 shrink-0
-    items-center justify-center
-    rounded-full
-    bg-[#00796D]
-    text-white
-
-    transition-colors
-
-    hover:bg-primary
-
-    focus-visible:outline-none
-    focus-visible:ring-2
-    focus-visible:ring-primary
-    focus-visible:ring-offset-2
-
-    min-[390px]:h-9
-    min-[390px]:w-9
-  "
-            >
-              <UserRound
-                size={15}
-                strokeWidth={2}
-                className="
-      min-[390px]:h-[17px]
-      min-[390px]:w-[17px]
-    "
-                aria-hidden="true"
-              />
-            </Link>
-          </div>
-        </div>
-
-        {/* =====================================================
-            MOBILE NAVIGATION
-        ====================================================== */}
-        <div
-          id="mobile-navigation"
-          className={`
-            overflow-hidden
-
-            transition-all
-            duration-300
-
-            md:hidden
-
-            ${isMobileMenuOpen ? 'max-h-[950px] opacity-100' : 'max-h-0 opacity-0'}
-          `}
-        >
-          <nav
-            aria-label="Mobile navigation"
-            className="
-              space-y-2
-
-              px-5
-              pb-5
-              pt-2
-
-              sm:px-8
-            "
-          >
-            {header.navigation.map((item) => {
-              if (item.hasDropdown) {
-                return (
-                  <div key={item.id}>
-                    {/* Mobile Compare trigger */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsCompareMenuOpen((previous) => !previous);
-                      }}
-                      aria-expanded={isCompareMenuOpen}
-                      aria-haspopup="menu"
-                      className={`
-                        flex
-                        h-10
-                        w-fit
-                        items-center
-                        gap-1.5
-
-                        rounded-full
-
-                        border
-
-                        bg-white
-
-                        px-3.5
-
-                        font-red-hat-display
-                        text-[14px]
-                        font-medium
-                        text-secondary
-
-                        transition-colors
-
-                        ${isCompareMenuOpen ? 'border-[#73BEB7]' : 'border-[#EAECF0]'}
-                      `}
-                    >
-                      <span>{item.label}</span>
-
-                      <ChevronDown
-                        aria-hidden="true"
-                        className={`
-                          h-[15px]
-                          w-[15px]
-                          shrink-0
-
-                          transition-transform
-                          duration-200
-
-                          ${isCompareMenuOpen ? 'rotate-180' : ''}
-                        `}
-                        strokeWidth={2}
-                      />
-                    </button>
-
-                    {/* Mobile dropdown */}
-                    <div
-                      className={`
-                        grid
-
-                        transition-all
-                        duration-300
-
-                        ${
-                          isCompareMenuOpen
-                            ? 'grid-rows-[1fr] opacity-100'
-                            : 'grid-rows-[0fr] opacity-0'
-                        }
-                      `}
-                    >
-                      <div className="overflow-hidden">
-                        <div
-                          className="
-                            mt-3
-
-                            rounded-[18px]
-
-                            border
-                            border-[#EAECF0]
-
-                            bg-white
-
-                            p-[10px]
-
-                            shadow-[0px_12px_30px_rgba(15,30,60,0.10)]
-                          "
-                        >
-                          {/* Available mobile services */}
-                          <div className="space-y-1">
-                            {availableServices.map((service) => (
-                              <Link
-                                key={service.id}
-                                href={service.href}
-                                onClick={closeMenus}
-                                className="
-                                  group
-
-                                  flex
-                                  min-h-[72px]
-                                  items-center
-
-                                  gap-3
-
-                                  rounded-[12px]
-
-                                  px-1.5
-                                  py-1.5
-
-                                  transition-colors
-
-                                  hover:bg-[linear-gradient(0deg,rgba(0,137,123,0.08),rgba(0,137,123,0.08)),linear-gradient(0deg,rgba(255,255,255,0.92),rgba(255,255,255,0.92))]
-                                "
-                              >
-                                <span
-                                  className="
-                                    flex
-                                    h-[58px]
-                                    w-[58px]
-                                    shrink-0
-                                    items-center
-                                    justify-center
-
-                                    overflow-hidden
-
-                                    rounded-[10px]
-
-                                    bg-white
-
-                                    shadow-[0px_1px_4px_rgba(16,24,40,0.08)]
-                                  "
-                                >
-                                  <Image
-                                    src={service.icon}
-                                    alt={service.iconAlt}
-                                    width={58}
-                                    height={58}
-                                    className="
-                                      h-full
-                                      w-full
-                                      object-contain
-                                    "
-                                  />
-                                </span>
-
-                                <span className="min-w-0 flex-1">
-                                  <span
-                                    className="
-                                      block
-
-                                      font-red-hat-display
-                                      text-[15px]
-                                      font-bold
-                                      leading-5
-                                      text-[#101828]
-                                    "
-                                  >
-                                    {service.label}
-                                  </span>
-
-                                  {service.description && (
-                                    <span
-                                      className="
-                                        mt-[1px]
-                                        block
-
-                                        max-w-[200px]
-
-                                        font-red-hat-display
-                                        text-[12px]
-                                        font-[467]
-                                        leading-4
-                                        text-[#667085]
-                                      "
-                                    >
-                                      {service.description}
-                                    </span>
-                                  )}
-                                </span>
-
-                                <ChevronRight
-                                  aria-hidden="true"
-                                  className="
-                                    h-4
-                                    w-4
-                                    shrink-0
-
-                                    text-[#D0D5DD]
-
-                                    transition-colors
-
-                                    group-hover:text-[#101828]
-                                  "
-                                  strokeWidth={2.3}
-                                />
-                              </Link>
-                            ))}
-                          </div>
-
-                          {/* Coming soon mobile */}
-                          {comingSoonServices.length > 0 && (
-                            <>
-                              <div
-                                className="
-                                  relative
-
-                                  my-3
-
-                                  flex
-                                  items-center
-                                  justify-center
-                                "
-                              >
-                                <div
-                                  aria-hidden="true"
-                                  className="
-                                    absolute
-                                    left-2
-                                    right-2
-                                    top-1/2
-
-                                    h-px
-
-                                    -translate-y-1/2
-
-                                    bg-[#EAECF0]
-                                  "
-                                />
-
-                                <span
-                                  className="
-                                    relative
-                                    z-10
-
-                                    rounded-full
-
-                                    border
-                                    border-[#D1E9FF]
-
-                                    bg-[#EFF8FF]
-
-                                    px-2.5
-                                    py-[2px]
-
-                                    font-inter
-                                    text-[10px]
-                                    font-medium
-                                    leading-[14px]
-                                    text-[#1570EF]
-                                  "
-                                >
-                                  Coming Soon
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-3 gap-2">
-                                {comingSoonServices.map((service) => (
-                                  <div
-                                    key={service.id}
-                                    className="
-                                      flex
-                                      min-w-0
-                                      flex-col
-                                      items-center
-
-                                      rounded-[8px]
-
-                                      border
-                                      border-[#EAECF0]
-
-                                      bg-white
-
-                                      px-1
-                                      pb-2
-                                      pt-1.5
-
-                                      shadow-[0px_1px_2px_rgba(16,24,40,0.04)]
-                                    "
-                                  >
-                                    <Image
-                                      src={service.icon}
-                                      alt={service.iconAlt}
-                                      width={40}
-                                      height={40}
-                                      className="
-                                        h-10
-                                        w-10
-                                        object-contain
-                                      "
-                                    />
-
-                                    <span
-                                      className="
-                                        mt-1
-
-                                        max-w-full
-
-                                        truncate
-
-                                        text-center
-
-                                        font-red-hat-display
-                                        text-[10px]
-                                        font-medium
-                                        text-[#101828]
-                                      "
-                                    >
-                                      {service.label}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.id}
-                  href={getNavigationHref(item.label, item.href, item.hasDropdown)}
-                  onClick={closeMenus}
-                  className="
-                    block
-
-                    rounded-xl
-
-                    px-4
-                    py-3
-
-                    text-sm
-                    font-semibold
-                    text-secondary
-
-                    transition-colors
-
-                    hover:bg-slate-50
-                    hover:text-primary
+                    text-white
                   "
                 >
-                  {item.label}
-                </Link>
-              );
-            })}
+                  <UserRound
+                    aria-hidden="true"
+                    className="
+                      h-[18px]
+                      w-[18px]
+                    "
+                    strokeWidth={2}
+                  />
+                </span>
+              </Link>
+            )}
+          </div>
 
-            <Link
-              href={header.account.href}
-              onClick={closeMenus}
-              className="
-                mt-4
+          {/* =================================================
+              MOBILE + TABLET
+          ================================================== */}
+          <div
+            ref={mobileAccountRef}
+            className="
+              relative
 
+              lg:hidden
+            "
+          >
+            <div
+              className={`
                 flex
+                h-[44px]
+
                 items-center
-                justify-center
-                gap-2
+                gap-[5px]
 
                 rounded-full
 
-                bg-primary
+                border
+
+                py-[6px]
+                pl-[11px]
+                pr-[5px]
+
+                shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
+
+                min-[390px]:h-[50px]
+                min-[390px]:gap-[7px]
+                min-[390px]:pl-[13px]
+                min-[390px]:pr-[6px]
+
+                ${
+                  isMyInfoPage
+                    ? `
+                      border-white/30
+                      bg-transparent
+                    `
+                    : `
+                      border-[#EAECF0]
+                      bg-[#F9FAFB]
+                    `
+                }
+              `}
+            >
+              {/* Menu button */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (isSignedIn) {
+                    toggleAccountMenu();
+                    return;
+                  }
+
+                  setIsMobileNavigationOpen((current) => !current);
+                }}
+                aria-label={isSignedIn ? 'Open account menu' : 'Open navigation menu'}
+                aria-expanded={isSignedIn ? isAccountOpen : isMobileNavigationOpen}
+                className={`
+                  flex
+                  h-6
+                  w-6
+
+                  items-center
+                  justify-center
+
+                  ${isMyInfoPage ? 'text-white' : 'text-[#0D3B66]'}
+                `}
+              >
+                {!isSignedIn && isMobileNavigationOpen ? (
+                  <X
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    strokeWidth={2}
+                  />
+                ) : (
+                  <Menu
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    strokeWidth={2}
+                  />
+                )}
+              </button>
+
+              {/* User button */}
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={toggleAccountMenu}
+                  aria-label="Open account menu"
+                  className="
+                    flex
+                    h-8
+                    w-8
+
+                    shrink-0
+                    items-center
+                    justify-center
+
+                    rounded-full
+
+                    bg-[#00897B]
+
+                    text-white
+
+                    min-[390px]:h-9
+                    min-[390px]:w-9
+                  "
+                >
+                  <UserRound
+                    aria-hidden="true"
+                    className="
+                      h-4
+                      w-4
+
+                      min-[390px]:h-[17px]
+                      min-[390px]:w-[17px]
+                    "
+                    strokeWidth={2}
+                  />
+                </button>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  onClick={handleSignInClick}
+                  aria-label="Sign in"
+                  className="
+                    flex
+                    h-8
+                    w-8
+
+                    shrink-0
+                    items-center
+                    justify-center
+
+                    rounded-full
+
+                    bg-[#00897B]
+
+                    text-white
+
+                    min-[390px]:h-9
+                    min-[390px]:w-9
+                  "
+                >
+                  <UserRound
+                    aria-hidden="true"
+                    className="
+                      h-4
+                      w-4
+
+                      min-[390px]:h-[17px]
+                      min-[390px]:w-[17px]
+                    "
+                    strokeWidth={2}
+                  />
+                </Link>
+              )}
+            </div>
+
+            {isSignedIn && isAccountOpen && (
+              <AccountMenu
+                email={userEmail}
+                onClose={closeMenus}
+                onLogout={handleLogout}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* =================================================
+            MOBILE NAVIGATION — SIGNED OUT
+        ================================================== */}
+        {!isSignedIn && (
+          <div
+            className={`
+              overflow-hidden
+
+              transition-all
+              duration-300
+
+              lg:hidden
+
+              ${isMobileNavigationOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}
+            `}
+          >
+            <nav
+              aria-label="Mobile navigation"
+              className="
+                space-y-1
 
                 px-5
-                py-3
+                pb-5
 
-                text-sm
-                font-semibold
-                text-white
-
-                transition-colors
-
-                hover:bg-[#00796D]
+                sm:px-8
               "
             >
-              <UserRound
-                size={17}
-                strokeWidth={2}
-                aria-hidden="true"
-              />
+              {header.navigation.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={closeMenus}
+                  className={`
+                      block
 
-              {header.account.label}
-            </Link>
-          </nav>
-        </div>
+                      rounded-[10px]
+
+                      px-4
+                      py-3
+
+                      font-inter
+                      text-[14px]
+                      font-medium
+
+                      ${
+                        isMyInfoPage
+                          ? 'text-white hover:bg-white/10'
+                          : 'text-[#344054] hover:bg-[#F9FAFB]'
+                      }
+                    `}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
+  );
+}
+
+/* =========================================================
+   ACCOUNT MENU
+========================================================= */
+
+type AccountMenuProps = {
+  email: string;
+  onClose: () => void;
+  onLogout: () => void;
+};
+
+function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
+  return (
+    <div
+      className="
+        absolute
+        right-0
+        top-[calc(100%+8px)]
+        z-[100]
+
+        w-[235px]
+
+        overflow-hidden
+
+        rounded-[10px]
+
+        border
+        border-[#EAECF0]
+
+        bg-white
+
+        shadow-[0px_12px_30px_rgba(16,24,40,0.16)]
+
+        min-[390px]:w-[250px]
+      "
+    >
+      {/* =====================================================
+          USER
+      ====================================================== */}
+      <div
+        className="
+          flex
+          items-center
+          gap-3
+
+          border-b
+          border-[#EAECF0]
+
+          px-3
+          py-3
+        "
+      >
+        <div
+          className="
+            flex
+            h-10
+            w-10
+
+            shrink-0
+            items-center
+            justify-center
+
+            rounded-full
+
+            bg-[#00897B]
+
+            text-white
+          "
+        >
+          <UserRound
+            aria-hidden="true"
+            className="h-5 w-5"
+            strokeWidth={2}
+          />
+        </div>
+
+        <div className="min-w-0">
+          <p
+            className="
+              font-red-hat-display
+              text-[14px]
+              font-bold
+              leading-5
+
+              text-[#101828]
+            "
+          >
+            SIGNED IN
+          </p>
+
+          <p
+            className="
+              truncate
+
+              font-inter
+              text-[11px]
+              font-normal
+              leading-4
+
+              text-[#667085]
+            "
+          >
+            {email || 'Signed in'}
+          </p>
+        </div>
+      </div>
+
+      {/* =====================================================
+          MY DEALS
+      ====================================================== */}
+      <Link
+        href="/my-info"
+        onClick={onClose}
+        className="
+          flex
+          min-h-[44px]
+
+          items-center
+          gap-2.5
+
+          border-b
+          border-[#EAECF0]
+
+          px-4
+
+          font-inter
+          text-[13px]
+          font-medium
+
+          text-[#101828]
+
+          transition-colors
+
+          hover:bg-[#F9FAFB]
+        "
+      >
+        <UserRound
+          aria-hidden="true"
+          className="
+            h-4
+            w-4
+          "
+          strokeWidth={1.8}
+        />
+
+        <span>My Deals</span>
+      </Link>
+
+      {/* =====================================================
+          SETTINGS
+      ====================================================== */}
+      <Link
+        href="/my-info"
+        onClick={onClose}
+        className="
+          flex
+          min-h-[44px]
+
+          items-center
+          gap-2.5
+
+          border-b
+          border-[#EAECF0]
+
+          px-4
+
+          font-inter
+          text-[13px]
+          font-medium
+
+          text-[#101828]
+
+          transition-colors
+
+          hover:bg-[#F9FAFB]
+        "
+      >
+        <Settings
+          aria-hidden="true"
+          className="
+            h-4
+            w-4
+          "
+          strokeWidth={1.8}
+        />
+
+        <span>Settings</span>
+      </Link>
+
+      {/* =====================================================
+          LOGOUT
+      ====================================================== */}
+      <button
+        type="button"
+        onClick={onLogout}
+        className="
+          flex
+          min-h-[44px]
+          w-full
+
+          items-center
+          gap-2.5
+
+          px-4
+
+          font-inter
+          text-[13px]
+          font-medium
+
+          text-[#F04438]
+
+          transition-colors
+
+          hover:bg-[#FEF3F2]
+        "
+      >
+        <LogOut
+          aria-hidden="true"
+          className="
+            h-4
+            w-4
+          "
+          strokeWidth={1.8}
+        />
+
+        <span>Log out</span>
+      </button>
+    </div>
   );
 }

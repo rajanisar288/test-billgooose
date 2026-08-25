@@ -83,8 +83,8 @@
       }
     ],
     "account": {
-      "label": "My account",
-      "href": "/account"
+      "label": "Sign in",
+      "href": "/sign-in"
     }
   },
   "hero": {
@@ -256,7 +256,7 @@
         "description": "Fast fibre deals from top UK providers",
         "icon": "/images/broadband.png",
         "linkText": "Compare Now",
-        "href": "/compare"
+        "href": "/compare?service=broadband"
       },
       {
         "id": "mobile",
@@ -936,7 +936,7 @@
         },
         {
           "number": 2,
-          "title": "Contract Details",
+          "title": "Contract Date",
           "description": "Select your contract start date"
         },
         {
@@ -946,6 +946,11 @@
         },
         {
           "number": 4,
+          "title": "Electric vehicle",
+          "description": "Do you own an electric vehicle (EV)?"
+        },
+        {
+          "number": 5,
           "title": "Payment Method Type",
           "description": "Select how you’d like to pay"
         }
@@ -1248,6 +1253,29 @@
           }
         ]
       }
+    },
+    "electricVehicle": {
+      "heading": "Do you own an electric vehicle (EV)?",
+      "description": "Select \"No\" if your vehicle is hybrid",
+      "storageKey": "journeyElectricVehicle",
+      "defaultValue": "yes",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "value": "yes"
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "value": "no"
+        },
+        {
+          "id": "considering",
+          "label": "No, but I'm considering one",
+          "value": "considering"
+        }
+      ]
     },
     "broadbandSpeed": {
       "heading": "Broadband Speed",
