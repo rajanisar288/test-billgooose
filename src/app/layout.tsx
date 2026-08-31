@@ -4,6 +4,9 @@ import ShowcaseGuard from '../components/showcase/showcase-guard';
 
 import type { Metadata } from 'next';
 
+import { LoadConfig } from '@/components/loadConfig';
+import ToastProvider from '@/components/ToastProvider';
+import Script from 'next/script';
 import './globals.css';
 
 const redHatDisplay = Red_Hat_Display({
@@ -33,7 +36,26 @@ export default function RootLayout({
         className={`${redHatDisplay.variable} min-h-full flex flex-col`}
         suppressHydrationWarning
       >
-        <ShowcaseGuard>{children}</ShowcaseGuard>
+        <ShowcaseGuard>
+          <ToastProvider>{children}</ToastProvider>
+          {/* {children} */}
+        </ShowcaseGuard>
+        <LoadConfig />
+        {/* <ToastProvider>{children}</ToastProvider> */}
+
+        <Script
+          id="tradedoubler-landing"
+          strategy="afterInteractive"
+        >
+          {`
+            // 👇 THIS IS WHERE THE CODE GOES
+            var td_script = document.createElement('script');
+            td_script.type = 'text/javascript';
+            td_script.async = true;
+            td_script.src = 'https://t.tradedoubler.com/register?programId=${process.env.NEXT_PUBLIC_TRADEDOUBLER_PROGRAM_ID}&domain=${process.env.NEXT_PUBLIC_DOMAIN}';
+            document.getElementsByTagName('head')[0].appendChild(td_script);
+          `}
+        </Script>
       </body>
     </html>
   );

@@ -1,22 +1,25 @@
 'use client';
-
+import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { storeJourney } from '@/constants/shared';
+import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { CustomerDetails } from '@/interfaces/shared';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useJourneyStore } from '@/store/journeyStore';
+import { CalendarDays, Check, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
-import { CalendarDays, Check, ChevronDown } from 'lucide-react';
-
-import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
-import data from '@/data/content.json';
-
 export default function PersonalDetailsForm() {
+  const { journey, setJourney } = useJourneyStore();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
 
   const { personalDetails } = data.journey;
 
   const { fields, terms } = personalDetails;
 
-  const [title, setTitle] = useState(fields.title.defaultValue);
+  const [title, setTitle] = useState<string>(fields.title.defaultValue);
 
   const [titleDropdownOpen, setTitleDropdownOpen] = useState(false);
 
@@ -65,21 +68,45 @@ export default function PersonalDetailsForm() {
       return;
     }
 
-    const personalDetailsData = {
-      title,
-      firstName,
-      lastName,
-      email,
-      mobileNumber,
-      dateOfBirth,
-      acceptedTerms,
-      marketingConsent,
+    const userDetailObject: CustomerDetails = {
+      title: title || null,
+      firstName: firstName || null,
+      surname: lastName || null,
+      emailAddress: email || null,
+      phoneNumber: mobileNumber || null,
+      dateOfBirth: dateOfBirth || null,
+      privacyConsentAccepted: acceptedTerms || false,
+      marketingConsent: marketingConsent || false,
     };
-
-    sessionStorage.setItem(personalDetails.storageKey, JSON.stringify(personalDetailsData));
-
-    router.push(JOURNEY_ROUTES[2]);
+    updateJourney(userDetailObject);
   }
+
+  const updateJourney = async (userObject: CustomerDetails) => {
+    try {
+      const journeyId = journey?.id || journey?.journeyId || localStorage.getItem(storeJourney);
+      if (!journeyId) {
+        showError('Journey ID iS required');
+        return;
+      }
+      const updatedJourney = await journeyApi.createJourney({
+        uuid: journeyId,
+        customer: userObject,
+        lastUrl: '/steps/personal-details-form/',
+      });
+
+      if (!updatedJourney?.data) {
+        throw new Error('No data received from API');
+      }
+
+      setJourney(updatedJourney.data);
+      showSuccess('🎉 Great!');
+      router.push(JOURNEY_ROUTES[2]);
+    } catch (error) {
+      console.error(' Failed to update journey:', error);
+    } finally {
+      // setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full">

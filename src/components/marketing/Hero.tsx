@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Check, MapPin } from 'lucide-react';
 
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
 
 const UK_POSTCODE_REGEX =
   /^(GIR\s?0AA|(?:(?:[A-PR-UWYZ][0-9][0-9A-HJKSTUW]?)|(?:[A-PR-UWYZ][A-HK-Y][0-9][0-9ABEHMNPRV-Y]?))\s?[0-9][ABD-HJLNP-UW-Z]{2})$/i;
@@ -16,9 +17,12 @@ const UK_POSTCODE_REGEX =
 type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only';
 
 export default function Hero() {
+  const { journey } = useJourneyStore();
   const router = useRouter();
   const { hero } = data;
+  // partnerConfigApi
 
+  console.log('journey', journey);
   const [postcode, setPostcode] = useState('');
   const [postcodeError, setPostcodeError] = useState('');
   const [selectedService, setSelectedService] = useState<ServiceType>(
