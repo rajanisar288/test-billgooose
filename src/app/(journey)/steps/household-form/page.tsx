@@ -1,53 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 import HouseholdForm from '@/components/journey/forms/household-form';
 import JourneyMobileStepHeader from '@/components/journey/forms/journey-mobile-step-header';
 import data from '@/data/content.json';
 
-type JourneyService = 'energy' | 'broadband';
+type JourneyFlow = 'energy' | 'bundle' | 'broadband';
+
+function getJourneyFlowSnapshot(): JourneyFlow {
+  try {
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    if (storedFlow === 'bundle') {
+      return 'bundle';
+    }
+
+    if (storedFlow === 'broadband') {
+      return 'broadband';
+    }
+
+    return 'energy';
+  } catch {
+    return 'energy';
+  }
+}
+
+function getJourneyFlowServerSnapshot(): JourneyFlow {
+  return 'energy';
+}
+
+function subscribeToJourneyFlow(callback: () => void) {
+  function handleStorage(event: StorageEvent) {
+    if (event.key === 'billgooseJourneyFlow' || event.key === 'compareFlowDetails') {
+      callback();
+    }
+  }
+
+  function handleJourneyChanged() {
+    callback();
+  }
+
+  window.addEventListener('storage', handleStorage);
+  window.addEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+  window.addEventListener('billgoose-journey-service-changed', handleJourneyChanged);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+    window.removeEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+    window.removeEventListener('billgoose-journey-service-changed', handleJourneyChanged);
+  };
+}
 
 export default function HouseholdPage() {
   const { sidebar } = data.journey;
 
+  const journeyFlow = useSyncExternalStore(
+    subscribeToJourneyFlow,
+    getJourneyFlowSnapshot,
+    getJourneyFlowServerSnapshot,
+  );
+
+  const steps =
+    journeyFlow === 'bundle'
+      ? sidebar.bundleSteps
+      : journeyFlow === 'broadband'
+        ? sidebar.broadbandSteps
+        : sidebar.energySteps;
+
   const currentStep = 3;
-
-  const [service] = useState<JourneyService>(() => {
-    if (typeof window === 'undefined') {
-      return 'energy';
-    }
-
-    try {
-      const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
-
-      if (!storedCompareFlow) {
-        return 'energy';
-      }
-
-      const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
-        service?: string;
-      };
-
-      return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
-    } catch {
-      return 'energy';
-    }
-  });
-
-  const steps = service === 'broadband' ? sidebar.broadbandSteps : sidebar.steps;
 
   const currentStepData = steps[currentStep - 1];
 
   return (
     <>
-      {/* Mobile + tablet heading */}
       <JourneyMobileStepHeader
         currentStep={currentStep}
         totalSteps={steps.length}
         heading={currentStepData.title}
         description={
-          service === 'broadband'
+          journeyFlow === 'broadband'
             ? currentStepData.description
             : 'Tell us about house type and household size.'
         }

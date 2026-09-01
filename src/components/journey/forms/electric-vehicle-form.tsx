@@ -25,19 +25,35 @@ export default function ElectricVehicleForm() {
 
     sessionStorage.setItem(electricVehicle.storageKey, selectedOption);
 
-    /*
-     * Energy step 4 → Energy step 5 Payment Method.
-     */
-    router.push(JOURNEY_ROUTES[5]);
+    const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    /* =====================================================
+       BUNDLE
+
+       Bundle stays exactly as before:
+       Step 4 -> Payment Method Type Step 5.
+    ====================================================== */
+
+    if (journeyFlow === 'bundle') {
+      router.push(`${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`);
+
+      return;
+    }
+
+    /* =====================================================
+       NORMAL ENERGY
+
+       Energy now has only 4 forms.
+       Step 4 -> Review Details.
+    ====================================================== */
+
+    router.push('/review-your-details?service=energy');
   }
 
   return (
     <div className="w-full">
       {/* =====================================================
           DESKTOP HEADING
-
-          Mobile/tablet heading comes from
-          JourneyMobileStepHeader in the page.
       ====================================================== */}
       <header
         className="
@@ -50,9 +66,10 @@ export default function ElectricVehicleForm() {
         <h1
           className="
             font-red-hat-display
+
             text-[40px]
             font-extrabold
-            leading-[48px]
+            leading-[56px]
             tracking-[0]
 
             text-[#0C3354]
@@ -66,9 +83,10 @@ export default function ElectricVehicleForm() {
             mt-1
 
             font-inter
-            text-[14px]
+
+            text-[18px]
             font-normal
-            leading-[20px]
+            leading-[25px]
             tracking-[0]
 
             text-[#667085]
@@ -79,72 +97,127 @@ export default function ElectricVehicleForm() {
       </header>
 
       {/* =====================================================
-          FORM
+          STEP 4 FORM
+
+          Both Energy and Bundle use form-4 here.
       ====================================================== */}
       <form
         id="journey-step-form-4"
         onSubmit={handleSubmit}
-        noValidate
+        className="
+          space-y-3
+
+          sm:space-y-4
+        "
       >
         <fieldset>
           <legend className="sr-only">{electricVehicle.heading}</legend>
 
           <div
             className="
-              grid
+              flex
               w-full
-              grid-cols-1
+              flex-col
 
               gap-3
 
-              min-[390px]:grid-cols-2
-              min-[390px]:gap-3
+              sm:gap-3
 
-              sm:gap-4
+              md:gap-3
 
-              lg:grid-cols-2
               lg:gap-[14px]
             "
           >
-            {/* =================================================
-                YES
-            ================================================== */}
-            <ElectricVehicleOption
-              label={electricVehicle.options[0].label}
-              selected={selectedOption === electricVehicle.options[0].value}
-              onClick={() => {
-                setSelectedOption(electricVehicle.options[0].value);
-              }}
-            />
+            {electricVehicle.options.map((option) => {
+              const isSelected = selectedOption === option.value;
 
-            {/* =================================================
-                NO
-            ================================================== */}
-            <ElectricVehicleOption
-              label={electricVehicle.options[1].label}
-              selected={selectedOption === electricVehicle.options[1].value}
-              onClick={() => {
-                setSelectedOption(electricVehicle.options[1].value);
-              }}
-            />
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => {
+                    setSelectedOption(option.value);
+                  }}
+                  className={`
+                      flex
+                      h-[52px]
+                      w-full
 
-            {/* =================================================
-                CONSIDERING ONE
-            ================================================== */}
-            <div
-              className="
-                min-[390px]:col-span-2
-              "
-            >
-              <ElectricVehicleOption
-                label={electricVehicle.options[2].label}
-                selected={selectedOption === electricVehicle.options[2].value}
-                onClick={() => {
-                  setSelectedOption(electricVehicle.options[2].value);
-                }}
-                fullWidth
-              />
-            </div>
+                      items-center
+                      justify-between
+
+                      gap-3
+
+                      rounded-[14px]
+
+                      border
+
+                      bg-white
+
+                      px-4
+
+                      text-left
+
+                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                      transition-colors
+                      duration-200
+
+                      sm:h-[56px]
+                      sm:rounded-[16px]
+                      sm:px-[18px]
+
+                      md:h-[56px]
+                      md:px-5
+
+                      lg:h-[61px]
+                      lg:w-[500px]
+                      lg:rounded-[16px]
+                      lg:px-5
+
+                      ${
+                        isSelected
+                          ? `
+                            border-[#00897B]
+                          `
+                          : `
+                            border-[#D0D5DD]
+
+                            hover:border-[#73BEB7]
+                            hover:bg-[#F9FAFB]
+                          `
+                      }
+                    `}
+                >
+                  <span
+                    className="
+                        min-w-0
+
+                        font-inter
+
+                        text-[13px]
+                        font-medium
+                        leading-[18px]
+
+                        text-[#0C3354]
+
+                        sm:text-[14px]
+                        sm:leading-5
+
+                        md:text-[14px]
+
+                        lg:text-[14px]
+                        lg:leading-5
+                      "
+                  >
+                    {option.label}
+                  </span>
+
+                  <SelectionCircle selected={isSelected} />
+                </button>
+              );
+            })}
           </div>
         </fieldset>
       </form>
@@ -153,111 +226,14 @@ export default function ElectricVehicleForm() {
 }
 
 /* =========================================================
-   OPTION
-========================================================= */
-
-type ElectricVehicleOptionProps = {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-  fullWidth?: boolean;
-};
-
-function ElectricVehicleOption({
-  label,
-  selected,
-  onClick,
-  fullWidth = false,
-}: ElectricVehicleOptionProps) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={`
-        flex
-        h-[52px]
-        w-full
-
-        items-center
-        justify-between
-
-        gap-3
-
-        rounded-[14px]
-
-        border
-
-        bg-white
-
-        px-4
-
-        text-left
-
-        shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-
-        transition-colors
-        duration-200
-
-        sm:h-[56px]
-        sm:rounded-[16px]
-        sm:px-[18px]
-
-        md:h-[56px]
-        md:px-5
-
-        lg:h-[61px]
-        lg:rounded-[16px]
-        lg:px-5
-
-        ${fullWidth ? 'lg:w-[500px]' : 'lg:w-[243px]'}
-
-        ${
-          selected
-            ? `
-              border-[#00897B]
-            `
-            : `
-              border-[#D0D5DD]
-
-              hover:border-[#73BEB7]
-              hover:bg-[#F9FAFB]
-            `
-        }
-      `}
-    >
-      <span
-        className="
-          min-w-0
-
-          font-inter
-          text-[13px]
-          font-medium
-          leading-[18px]
-          tracking-[0]
-
-          text-[#0C3354]
-
-          sm:text-[14px]
-          sm:leading-5
-
-          lg:text-[14px]
-          lg:leading-5
-        "
-      >
-        {label}
-      </span>
-
-      <SelectionCircle selected={selected} />
-    </button>
-  );
-}
-
-/* =========================================================
    SELECTION CIRCLE
 ========================================================= */
 
-function SelectionCircle({ selected }: { selected: boolean }) {
+type SelectionCircleProps = {
+  selected: boolean;
+};
+
+function SelectionCircle({ selected }: SelectionCircleProps) {
   return (
     <span
       aria-hidden="true"
@@ -277,8 +253,8 @@ function SelectionCircle({ selected }: { selected: boolean }) {
         transition-colors
         duration-200
 
-        sm:h-5
-        sm:w-5
+        lg:h-5
+        lg:w-5
 
         ${
           selected
@@ -297,16 +273,17 @@ function SelectionCircle({ selected }: { selected: boolean }) {
         aria-hidden="true"
         strokeWidth={3}
         className={`
-          h-[11px]
-          w-[11px]
+          h-3
+          w-3
+          shrink-0
 
           text-white
 
           transition-opacity
           duration-150
 
-          sm:h-3
-          sm:w-3
+          lg:h-[13px]
+          lg:w-[13px]
 
           ${selected ? 'opacity-100' : 'opacity-0'}
         `}
