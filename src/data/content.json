@@ -55,13 +55,13 @@
         "status": "available"
       },
       {
-        "id": 4,
-        "label": "Credit Card",
-        "description": "",
-        "href": "/compare/credit-cards",
-        "icon": "/images/credit-cards.png",
-        "iconAlt": "Credit Card",
-        "status": "coming-soon"
+        "id": "sim-only",
+        "label": "SIM only",
+        "value": "sim-only",
+        "href": "/result?service=sim-only",
+        "icon": "/images/sim-icon-gray.png",
+        "activeIcon": "/images/sim-icon-green.png",
+        "iconAlt": "SIM only"
       },
       {
         "id": 5,
@@ -74,12 +74,12 @@
       },
       {
         "id": 6,
-        "label": "Loan",
-        "description": "",
-        "href": "/compare/loans",
-        "icon": "/images/loans.png",
-        "iconAlt": "Loan",
-        "status": "coming-soon"
+        "label": "Bundle Bills",
+        "description": "Bundle your household bills and save more",
+        "href": "/compare?service=energy&flow=bundle",
+        "icon": "/images/bundle-icon.png",
+        "iconAlt": "Bundle Bills",
+        "status": "available"
       }
     ],
     "account": {
@@ -104,33 +104,49 @@
           "id": "energy",
           "label": "Energy",
           "value": "energy",
-          "icon": "/images/hero-energy.png",
-          "activeIcon": "/images/hero-energy-white.png",
+          "icon": "/images/energy-icon-gray.png",
+          "activeIcon": "/images/energy-icon-green.png",
           "iconAlt": "Energy"
         },
         {
           "id": "broadband",
           "label": "Broadband",
           "value": "broadband",
-          "icon": "/images/hero-broadband.png",
-          "activeIcon": "/images/hero-broadband-white.png",
+          "icon": "/images/broadband-icon-gray.png",
+          "activeIcon": "/images/broadband-icon-green.png",
           "iconAlt": "Broadband"
         },
         {
           "id": "mobile",
           "label": "Mobile",
           "value": "mobile",
-          "icon": "/images/hero-mobile.png",
-          "activeIcon": "/images/hero-mobile-white.png",
+          "icon": "/images/mobile-icon-gray.png",
+          "activeIcon": "/images/mobile-icon-green.png",
           "iconAlt": "Mobile"
         },
         {
           "id": "sim-only",
           "label": "SIM only",
           "value": "sim-only",
-          "icon": "/images/sim-gray-icon.png",
-          "activeIcon": "/images/sim-white-icon.png",
+          "icon": "/images/sim-icon-gray.png",
+          "activeIcon": "/images/sim-icon-green.png",
           "iconAlt": "SIM only"
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance",
+          "value": "insurance",
+          "icon": "/images/insurance-icon-gray.png",
+          "activeIcon": "/images/insurance-icon-green.png",
+          "iconAlt": "Insurance"
+        },
+        {
+          "id": "bundle-bills",
+          "label": "Bundle Bills",
+          "value": "bundle-bills",
+          "icon": "/images/bundles-icon-gray.png",
+          "activeIcon": "/images/bundles-icon-green.png",
+          "iconAlt": "Bundle Bills"
         }
       ]
     },
@@ -248,7 +264,7 @@
         "description": "Fast switching, fixed & variable tariffs",
         "icon": "/images/energy-icon.png",
         "linkText": "Compare Now",
-        "href": "/compare"
+        "href": "/compare?service=energy"
       },
       {
         "id": "broadband",
@@ -264,31 +280,43 @@
         "description": "Latest SIM-only and contract deals",
         "icon": "/images/mobile-icon.png",
         "linkText": "Compare Now",
-        "href": "/compare"
+        "href": "/compare?service=mobile"
+      },
+      {
+        "id": "sim-only",
+        "title": "SIM Only",
+        "description": "Latest SIM-only plans and contract offers",
+        "icon": "/images/sim-icon.png",
+        "linkText": "Compare Now",
+        "href": "/result?service=sim-only"
       },
       {
         "id": "insurance",
         "title": "Insurance",
-        "description": "Car, Home, Travel & Pet cover",
+        "description": "Protect what matters with trusted insurance deals.",
         "icon": "/images/insurance.png",
         "linkText": "Compare Now",
-        "href": "/compare"
+        "href": "/compare?service=insurance"
       },
       {
-        "id": "credit-cards",
-        "title": "Credit Cards",
-        "description": "0% balance transfer & rewards",
-        "icon": "/images/credit-cards.png",
+        "id": "bundle-bills",
+        "title": "Bundle my Bills",
+        "description": "All your essential services in one bundle",
+        "icon": "/images/bundles-card-icon.png",
         "linkText": "Compare Now",
-        "href": "/compare"
+        "href": "/compare?service=bundle-bills"
+      }
+    ],
+    "comingSoonItems": [
+      {
+        "id": "credit-cards",
+        "title": "Credit Card",
+        "icon": "/images/credit-cards.png"
       },
       {
         "id": "loans",
         "title": "Loans",
-        "description": "Personal loans up to £25,000",
-        "icon": "/images/loans.png",
-        "linkText": "Compare Now",
-        "href": "/compare"
+        "icon": "/images/loans.png"
       }
     ]
   },
@@ -539,33 +567,49 @@
           "id": "energy",
           "label": "Energy",
           "value": "energy",
-          "icon": "/images/hero-energy.png",
-          "activeIcon": "/images/hero-energy-white.png",
+          "icon": "/images/energy-icon-gray.png",
+          "activeIcon": "/images/energy-icon-green.png",
           "iconAlt": "Energy"
         },
         {
           "id": "broadband",
           "label": "Broadband",
           "value": "broadband",
-          "icon": "/images/hero-broadband.png",
-          "activeIcon": "/images/hero-broadband-white.png",
+          "icon": "/images/broadband-icon-gray.png",
+          "activeIcon": "/images/broadband-icon-green.png",
           "iconAlt": "Broadband"
         },
         {
           "id": "mobile",
           "label": "Mobile",
           "value": "mobile",
-          "icon": "/images/hero-mobile.png",
-          "activeIcon": "/images/hero-mobile-white.png",
+          "icon": "/images/mobile-icon-gray.png",
+          "activeIcon": "/images/mobile-icon-green.png",
           "iconAlt": "Mobile"
         },
         {
           "id": "sim-only",
           "label": "SIM only",
           "value": "sim-only",
-          "icon": "/images/sim-gray-icon.png",
-          "activeIcon": "/images/sim-white-icon.png",
+          "icon": "/images/sim-icon-gray.png",
+          "activeIcon": "/images/sim-icon-green.png",
           "iconAlt": "SIM only"
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance",
+          "value": "insurance",
+          "icon": "/images/insurance-icon-gray.png",
+          "activeIcon": "/images/insurance-icon-green.png",
+          "iconAlt": "Insurance"
+        },
+        {
+          "id": "bundle-bills",
+          "label": "Bundle Bills",
+          "value": "bundle-bills",
+          "icon": "/images/bundles-icon-gray.png",
+          "activeIcon": "/images/bundles-icon-green.png",
+          "iconAlt": "Bundle Bills"
         }
       ]
     },
@@ -760,6 +804,7 @@
       "postcode": {
         "label": "Postal code",
         "placeholder": "SW99NW",
+        "findButton": "Find address",
         "changeText": "Change postal code",
         "invalidError": "Please enter a valid UK postcode."
       },
@@ -787,35 +832,36 @@
         ]
       },
       "energy": {
-        "occupancy": {
-          "label": "Are you a renter or homeowner?",
-          "defaultValue": "homeowner",
+        "serviceType": {
+          "label": "Services",
+          "placeholder": "Select your services",
+          "defaultValue": "dual-fuel",
           "options": [
             {
-              "id": "rental",
-              "label": "Rental",
-              "value": "rental"
+              "id": "dual-fuel",
+              "label": "Gas & Electricity (Dual Fuel)",
+              "value": "dual-fuel"
             },
             {
-              "id": "homeowner",
-              "label": "Homeowner",
-              "value": "homeowner"
+              "id": "electricity-only",
+              "label": "Electricity only",
+              "value": "electricity-only"
             }
           ]
         },
-        "propertyStatus": {
-          "label": "Are you already in the property?",
-          "defaultValue": "yes",
+        "paymentMethod": {
+          "label": "Select how you'd like to pay",
+          "defaultValue": "prepayment",
           "options": [
             {
-              "id": "yes",
-              "label": "Yes",
-              "value": "yes"
+              "id": "monthly-direct-debit",
+              "label": "Monthly direct debit",
+              "value": "monthly-direct-debit"
             },
             {
-              "id": "no",
-              "label": "No",
-              "value": "no"
+              "id": "prepayment",
+              "label": "Pre Payment",
+              "value": "prepayment"
             }
           ]
         }
@@ -928,7 +974,29 @@
         "height": 70
       },
       "navigationAriaLabel": "Journey progress",
-      "steps": [
+      "energySteps": [
+        {
+          "number": 1,
+          "title": "Personal Details",
+          "description": "Tell us about your details"
+        },
+        {
+          "number": 2,
+          "title": "Contract Date",
+          "description": "Select your contract start date"
+        },
+        {
+          "number": 3,
+          "title": "Household",
+          "description": "Tell us about your household"
+        },
+        {
+          "number": 4,
+          "title": "Electric vehicle",
+          "description": "Do you own an electric vehicle (EV)?"
+        }
+      ],
+      "bundleSteps": [
         {
           "number": 1,
           "title": "Personal Details",
@@ -1649,6 +1717,223 @@
         }
       ]
     },
+    "simOnlyFilters": {
+      "heading": "Filters",
+      "applyButton": "Apply filters",
+      "resetButton": "Reset",
+      "networks": {
+        "label": "Networks",
+        "options": [
+          {
+            "id": "ee",
+            "label": "EE",
+            "value": "ee"
+          },
+          {
+            "id": "bt-mobile",
+            "label": "BT Mobile",
+            "value": "bt-mobile"
+          },
+          {
+            "id": "three",
+            "label": "Three",
+            "value": "three"
+          },
+          {
+            "id": "smarty",
+            "label": "Smarty",
+            "value": "smarty"
+          },
+          {
+            "id": "virgin-mobile",
+            "label": "Virgin Mobile",
+            "value": "virgin-mobile"
+          },
+          {
+            "id": "o2",
+            "label": "O2",
+            "value": "o2"
+          },
+          {
+            "id": "giffgaff",
+            "label": "Giffgaff",
+            "value": "giffgaff"
+          },
+          {
+            "id": "vodafone",
+            "label": "Vodafone",
+            "value": "vodafone"
+          },
+          {
+            "id": "sky-mobile",
+            "label": "Sky Mobile",
+            "value": "sky-mobile"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "monthly-cost",
+          "label": "Monthly cost",
+          "options": [
+            {
+              "id": "0-10",
+              "label": "£0 - £10",
+              "value": "0-10"
+            },
+            {
+              "id": "10-20",
+              "label": "£10 - £20",
+              "value": "10-20"
+            },
+            {
+              "id": "20-40",
+              "label": "£20 - £40",
+              "value": "20-40"
+            },
+            {
+              "id": "40-plus",
+              "label": "£40+",
+              "value": "40-plus"
+            }
+          ]
+        },
+        {
+          "id": "data",
+          "label": "Data",
+          "options": [
+            {
+              "id": "0-3gb",
+              "label": "0 - 3GB",
+              "value": "0-3gb"
+            },
+            {
+              "id": "3-10gb",
+              "label": "3 - 10GB",
+              "value": "3-10gb"
+            },
+            {
+              "id": "10-20gb",
+              "label": "10 - 20GB",
+              "value": "10-20gb"
+            },
+            {
+              "id": "20-40gb",
+              "label": "20 - 40GB",
+              "value": "20-40gb"
+            },
+            {
+              "id": "40-50gb",
+              "label": "40 - 50GB",
+              "value": "40-50gb"
+            },
+            {
+              "id": "50-100gb",
+              "label": "50 - 100GB",
+              "value": "50-100gb"
+            },
+            {
+              "id": "100gb-plus",
+              "label": "100GB+",
+              "value": "100gb-plus"
+            },
+            {
+              "id": "unlimited",
+              "label": "Unlimited",
+              "value": "unlimited"
+            }
+          ]
+        },
+        {
+          "id": "roaming-destinations",
+          "label": "Roaming destinations",
+          "options": [
+            {
+              "id": "europe",
+              "label": "Roaming in Europe",
+              "value": "europe"
+            },
+            {
+              "id": "usa",
+              "label": "USA",
+              "value": "usa"
+            },
+            {
+              "id": "india",
+              "label": "India",
+              "value": "india"
+            },
+            {
+              "id": "cyprus",
+              "label": "Cyprus",
+              "value": "cyprus"
+            },
+            {
+              "id": "malta",
+              "label": "Malta",
+              "value": "malta"
+            }
+          ]
+        },
+        {
+          "id": "contract-length",
+          "label": "Contract Length",
+          "options": [
+            {
+              "id": "no-contract",
+              "label": "No contract",
+              "value": "no-contract"
+            },
+            {
+              "id": "1-month",
+              "label": "1 month",
+              "value": "1-month"
+            },
+            {
+              "id": "12-months",
+              "label": "12 months",
+              "value": "12-months"
+            },
+            {
+              "id": "18-months",
+              "label": "18 months",
+              "value": "18-months"
+            },
+            {
+              "id": "24-months",
+              "label": "24 months",
+              "value": "24-months"
+            }
+          ]
+        },
+        {
+          "id": "other-plan-details",
+          "label": "Other plan details",
+          "options": [
+            {
+              "id": "5g-data",
+              "label": "5G data",
+              "value": "5g-data"
+            },
+            {
+              "id": "unlimited-texts",
+              "label": "Unlimited texts",
+              "value": "unlimited-texts"
+            },
+            {
+              "id": "unlimited-minutes",
+              "label": "Unlimited minutes",
+              "value": "unlimited-minutes"
+            },
+            {
+              "id": "esim",
+              "label": "eSIM compatible",
+              "value": "esim"
+            }
+          ]
+        }
+      ]
+    },
     "filters": {
       "heading": "Filters",
       "applyButton": "Apply filters",
@@ -1789,8 +2074,8 @@
     },
     "resultsStatus": {
       "heading": "Results summary",
-      "descriptionStart": "6",
-      "descriptionRest": "17 tariffs you can switch to through us, starting with the lowest monthly cost.",
+      "descriptionStart": "17",
+      "descriptionRest": " tariffs you can switch to through us, starting with the lowest monthly cost.",
       "planTabs": {
         "defaultValue": "all",
         "options": [
@@ -1851,6 +2136,206 @@
       }
     },
     "plans": {
+      "simOnlyItems": [
+        {
+          "id": "ee-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "EE",
+          "networkDescription": "Uses EE’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "EE",
+          "badges": [
+            "6 month contract",
+            "No data caps"
+          ],
+          "data": "80 GB",
+          "priceLabel": "Starting price",
+          "price": "£3.18/month",
+          "upfrontLabel": "Price after 3 month",
+          "upfrontCost": "£7.95",
+          "roamingText": "Roaming included in 50+ countries",
+          "providerUrl": "https://ee.co.uk/mobile/sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "bt-mobile-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "BT Mobile",
+          "networkDescription": "Uses EE’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "BT Mobile",
+          "badges": [
+            "12 month contract",
+            "No annual increase"
+          ],
+          "data": "70 GB",
+          "priceLabel": "Starting price",
+          "price": "£9.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£12.00",
+          "roamingText": "Roam in over 40 countries",
+          "providerUrl": "https://www.bt.com/mobile",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "three-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Three",
+          "networkDescription": "Uses Three’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Three",
+          "badges": [
+            "12 month contract",
+            "No price increases"
+          ],
+          "data": "100 GB",
+          "priceLabel": "Monthly price",
+          "price": "£5.50/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£10.00",
+          "roamingText": "Includes 5G access",
+          "providerUrl": "https://www.three.co.uk/sim",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "smarty-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Smarty",
+          "networkDescription": "Uses Three’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Smarty",
+          "badges": [
+            "No contract",
+            "Price freeze options"
+          ],
+          "data": "20 GB",
+          "priceLabel": "Monthly fee",
+          "price": "£4.50/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "Free SIM",
+          "roamingText": "Roam in EU & USA",
+          "providerUrl": "https://smarty.co.uk/all-plans",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "virgin-mobile-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Virgin Mobile",
+          "networkDescription": "Uses EE’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Virgin Mobile",
+          "badges": [
+            "1 month contract",
+            "No price hikes"
+          ],
+          "data": "60 GB",
+          "priceLabel": "Price per month",
+          "price": "£8.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£9.99",
+          "roamingText": "Global roaming available",
+          "providerUrl": "https://www.virginmedia.com/mobile",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "o2-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "O2",
+          "networkDescription": "Uses O2’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "O2",
+          "badges": [
+            "No contract",
+            "Price locked for 6 months"
+          ],
+          "data": "40 GB",
+          "priceLabel": "Intro price",
+          "price": "£4.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£5.00",
+          "roamingText": "Roam free in EU",
+          "providerUrl": "https://www.o2.co.uk/shop/sim-cards/sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "giffgaff-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Giffgaff",
+          "networkDescription": "Uses O2’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Giffgaff",
+          "badges": [
+            "No contract",
+            "Flexible plans"
+          ],
+          "data": "30 GB",
+          "priceLabel": "Monthly cost",
+          "price": "£7.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "None",
+          "roamingText": "EU roaming included",
+          "providerUrl": "https://www.giffgaff.com/sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "vodafone-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Vodafone",
+          "networkDescription": "Uses Vodafone’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Vodafone",
+          "badges": [
+            "1 month contract",
+            "No annual price increases"
+          ],
+          "data": "50 GB",
+          "priceLabel": "Starting 3 month price",
+          "price": "£3.18/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£7.95",
+          "roamingText": "Roam up to 30GB in 37 destinations",
+          "providerUrl": "https://www.vodafone.co.uk/mobile/best-sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "sky-mobile-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Sky Mobile",
+          "networkDescription": "Uses O2’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Sky Mobile",
+          "badges": [
+            "No contract",
+            "Price lock available"
+          ],
+          "data": "25 GB",
+          "priceLabel": "Starting price",
+          "price": "£5.25/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£7.50",
+          "roamingText": "EU roaming included",
+          "providerUrl": "https://www.sky.com/mobile",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        }
+      ],
       "starIcon": "/images/star.png",
       "savingIcon": "/images/percentage-icon.png",
       "viewDealIcon": "/images/view-plan-icon.png",
@@ -1860,17 +2345,21 @@
         {
           "id": "octopus-energy",
           "type": "select-plan",
+          "service": "energy",
           "provider": "Octopus Energy",
           "description": "Simple Fixed – 12 month fixed · Dual fuel",
           "logo": "/images/card-1-provider.png",
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["Price locked for 12 months", "24/7 chat support"],
+          "features": [
+            "Price locked for 12 months",
+            "24/7 chat support"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£284.90",
           "pricePeriod": "/mo",
-          "saving": "Save £580/yr",
+          "saving": "£580/yr",
           "viewDetailsButton": "View Details",
           "primaryButton": "Select Plan"
         },
@@ -1899,29 +2388,34 @@
           "priceLabel": "Estimated Price",
           "price": "£25",
           "pricePeriod": "/mo",
-          "saving": "Save £240/yr",
+          "saving": "£240/yr",
           "primaryButton": "Compare All Broadband"
         },
         {
           "id": "british-gas",
           "type": "select-plan",
+          "service": "energy",
           "provider": "British Gas",
           "description": "Fixed 24 – 24 month fixed · Dual fuel",
           "logo": "/images/card-3-provider.png",
           "logoAlt": "British Gas",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["Longest price lock available", "Exit fee applies before term end"],
+          "features": [
+            "Longest price lock available",
+            "Exit fee applies before term end"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£249.99",
           "pricePeriod": "/mo",
-          "saving": "Save £590/yr",
+          "saving": "£590/yr",
           "viewDetailsButton": "View Details",
           "primaryButton": "Select Plan"
         },
         {
           "id": "true-energy",
           "type": "select-plan",
+          "service": "energy",
           "provider": "TrueEnergy",
           "description": "Fixed Rate Tariff – 12 month fixed · Dual fuel",
           "logo": "/images/card-4-provider.png",
@@ -1936,13 +2430,14 @@
           "priceLabel": "Estimated Price",
           "price": "£259.55",
           "pricePeriod": "/mo",
-          "saving": "Save £580/yr",
+          "saving": "£580/yr",
           "viewDetailsButton": "View Details",
           "primaryButton": "Select Plan"
         },
         {
           "id": "shell-energy",
           "type": "view-deal",
+          "service": "energy",
           "provider": "Shell Energy",
           "description": "Flexible Saver – No fixed contract",
           "logo": "/images/card-5-provider.png",
@@ -1957,75 +2452,310 @@
           "priceLabel": "Estimated Price",
           "price": "£271.10",
           "pricePeriod": "/mo",
-          "saving": "Save £580/yr",
+          "saving": "£580/yr",
           "viewDetailsButton": "View Details",
           "primaryButton": "View Deal"
         },
         {
           "id": "eon",
           "type": "view-deal",
+          "service": "energy",
           "provider": "E.ON",
           "description": "Unlimited Energy – 12 month contract",
           "logo": "/images/card-6-provider.png",
           "logoAlt": "E.ON",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["Same price every month", "No usage surprises", "Smart meter included"],
+          "features": [
+            "Same price every month",
+            "No usage surprises",
+            "Smart meter included"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£353.30",
           "pricePeriod": "/mo",
-          "saving": "Save £580/yr",
+          "saving": "£580/yr",
           "viewDetailsButton": "View Details",
           "primaryButton": "View Deal"
         },
         {
           "id": "sse-energy-solutions",
           "type": "view-deal",
+          "service": "energy",
           "provider": "SSE Energy Solutions",
           "description": "Green Flex – No fixed contract",
           "logo": "/images/card-7-provider.png",
           "logoAlt": "SSE Energy Solutions",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["100% renewable sourced", "Cancel anytime"],
+          "features": [
+            "100% renewable sourced",
+            "Cancel anytime"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
-          "saving": "Save £590/yr",
+          "saving": "£590/yr",
           "viewDetailsButton": "View Details",
           "primaryButton": "View Deal"
         },
         {
-          "id": "Octopus Energy-1",
+          "id": "octopus-energy-1",
           "type": "select-plan",
+          "service": "energy",
           "provider": "Octopus Energy",
           "description": "Agile Octopus — Flexible tariff",
           "logo": "/images/card-8-9-10-provider.png",
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["100% renewable sourced", "Cancel anytime"],
+          "features": [
+            "100% renewable sourced",
+            "Cancel anytime"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
-          "saving": "Save £580/yr",
+          "saving": "£580/yr",
           "viewDetailsButton": "View Details",
           "primaryButton": "Select Plan"
         },
         {
-          "id": "Octopus Energy-2",
+          "id": "octopus-energy-2",
           "type": "select-plan",
+          "service": "energy",
           "provider": "Octopus Energy",
           "description": "Agile Octopus — Flexible tariff",
           "logo": "/images/card-8-9-10-provider.png",
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["100% renewable sourced", "Cancel anytime"],
+          "features": [
+            "100% renewable sourced",
+            "Cancel anytime"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
-          "saving": "Save £580/yr",
+          "saving": "£580/yr",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        }
+      ],
+      "broadbandItems": [
+        {
+          "id": "vodafone-full-fibre-500",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "Vodafone",
+          "description": "Full Fibre 500",
+          "logo": "/images/broadband-3.png",
+          "logoAlt": "Vodafone",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "New Vodafone customers only",
+            "No setup cost"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£25.00",
+          "pricePeriod": "/mo",
+          "saving": "£470",
+          "averageSpeed": "500Mbps",
+          "upfrontCost": "£0.00",
+          "providerUrl": "https://www.vodafone.co.uk/broadband",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "talktalk-fast-fibre-150",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "TalkTalk",
+          "description": "Fast Fibre 150",
+          "logo": "/images/broadband-5.png",
+          "logoAlt": "TalkTalk",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "No setup fees",
+            "Smart meter required"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£30.00",
+          "pricePeriod": "/mo",
+          "saving": "£360",
+          "averageSpeed": "150Mbps",
+          "upfrontCost": "£0.00",
+          "providerUrl": "https://www.talktalk.co.uk/shop/broadband",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "virgin-media-gigabit-1000",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "Virgin Media",
+          "description": "Gigabit 1000",
+          "logo": "/images/broadband-1.png",
+          "logoAlt": "Virgin Media",
+          "rating": "",
+          "contract": "12 months",
+          "features": [
+            "Free installation",
+            "Smart meter not required"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£50.00",
+          "pricePeriod": "/mo",
+          "saving": "£600",
+          "averageSpeed": "1000Mbps",
+          "upfrontCost": "£30.00",
+          "providerUrl": "https://www.virginmedia.com/broadband",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "ee-full-fibre-500",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "EE",
+          "description": "Full Fibre 500",
+          "logo": "/images/broadband-7.png",
+          "logoAlt": "EE",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "Free setup and router",
+            "Smart meter required"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£26.00",
+          "pricePeriod": "/mo",
+          "saving": "£480",
+          "averageSpeed": "500Mbps",
+          "upfrontCost": "£0.00",
+          "providerUrl": "https://ee.co.uk/broadband",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "sky-superfast-150",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "Sky Broadband",
+          "description": "Superfast 150",
+          "logo": "/images/broadband-9.png",
+          "logoAlt": "Sky Broadband",
+          "rating": "",
+          "contract": "18 months",
+          "features": [
+            "Free WiFi Hub included",
+            "Smart meter required"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£27.50",
+          "pricePeriod": "/mo",
+          "saving": "£390",
+          "averageSpeed": "150Mbps",
+          "upfrontCost": "£0.00",
+          "providerUrl": "https://www.sky.com/broadband",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "plusnet-unlimited-fibre-300",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "Plusnet",
+          "description": "Unlimited Fibre 300Mbps",
+          "logo": "/images/broadband-6.png",
+          "logoAlt": "Plusnet",
+          "rating": "",
+          "contract": "18 months",
+          "features": [
+            "Price lock guarantee",
+            "Smart meter required"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£33.33",
+          "pricePeriod": "/mo",
+          "saving": "£400",
+          "averageSpeed": "300Mbps",
+          "upfrontCost": "£10.00",
+          "providerUrl": "https://www.plus.net/broadband/",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "bt-fibre-300",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "BT",
+          "description": "Fiber 300",
+          "logo": "/images/broadband-2.png",
+          "logoAlt": "BT",
+          "rating": "",
+          "contract": "12 months",
+          "features": [
+            "Includes free router",
+            "No smart meter needed"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£35.00",
+          "pricePeriod": "/mo",
+          "saving": "£420",
+          "averageSpeed": "300Mbps",
+          "upfrontCost": "£20.00",
+          "providerUrl": "https://www.bt.com/broadband",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "befibre-m100",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "BeFibre",
+          "description": "M100 Fibre broadband",
+          "logo": "/images/broadband-4.png",
+          "logoAlt": "BeFibre",
+          "rating": "",
+          "contract": "12 months",
+          "features": [
+            "Award-winning service",
+            "No smart meter needed"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£30.00",
+          "pricePeriod": "/mo",
+          "saving": "£360",
+          "averageSpeed": "100Mbps",
+          "upfrontCost": "£15.00",
+          "providerUrl": "https://www.befibre.co.uk/",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "brsk-gig1-fibre",
+          "type": "select-plan",
+          "service": "broadband",
+          "provider": "Brsk",
+          "description": "Gig1 Fibre broadband",
+          "logo": "/images/broadband-8.png",
+          "logoAlt": "Brsk",
+          "rating": "",
+          "contract": "18 months",
+          "features": [
+            "Renewable energy powered",
+            "Smart meter recommended"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£32.50",
+          "pricePeriod": "/mo",
+          "saving": "£390",
+          "averageSpeed": "200Mbps",
+          "upfrontCost": "£0.00",
+          "providerUrl": "https://www.brsk.co.uk/",
           "viewDetailsButton": "View Details",
           "primaryButton": "Select Plan"
         }

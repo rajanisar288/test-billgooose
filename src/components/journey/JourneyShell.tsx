@@ -20,6 +20,7 @@ type JourneyShellProps = {
 };
 
 export type JourneyService = 'energy' | 'broadband';
+export type JourneyFlow = 'energy' | 'broadband' | 'bundle';
 
 /* =========================================================
    JOURNEY SERVICE
@@ -27,6 +28,16 @@ export type JourneyService = 'energy' | 'broadband';
 
 function getJourneyServiceSnapshot(): JourneyService {
   try {
+    const storedService = sessionStorage.getItem('billgooseJourneyService');
+
+    if (storedService === 'broadband') {
+      return 'broadband';
+    }
+
+    if (storedService === 'energy') {
+      return 'energy';
+    }
+
     const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
 
     if (!storedCompareFlow) {
@@ -47,25 +58,86 @@ function getJourneyServiceServerSnapshot(): JourneyService {
   return 'energy';
 }
 
-function subscribeToJourneyService(callback: () => void) {
+/* =========================================================
+   JOURNEY FLOW
+========================================================= */
+
+function getJourneyFlowSnapshot(): JourneyFlow {
+  try {
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    if (storedFlow === 'bundle') {
+      return 'bundle';
+    }
+
+    if (storedFlow === 'broadband') {
+      return 'broadband';
+    }
+
+    if (storedFlow === 'energy') {
+      return 'energy';
+    }
+
+    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
+
+    if (!storedCompareFlow) {
+      return 'energy';
+    }
+
+    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
+      service?: string;
+      flow?: string;
+    };
+
+    if (parsedCompareFlow.flow === 'bundle') {
+      return 'bundle';
+    }
+
+    if (parsedCompareFlow.service === 'broadband') {
+      return 'broadband';
+    }
+
+    return 'energy';
+  } catch {
+    return 'energy';
+  }
+}
+
+function getJourneyFlowServerSnapshot(): JourneyFlow {
+  return 'energy';
+}
+
+/* =========================================================
+   STORAGE SUBSCRIPTION
+========================================================= */
+
+function subscribeToJourneyContext(callback: () => void) {
   function handleStorage(event: StorageEvent) {
-    if (event.key === 'compareFlowDetails') {
+    if (
+      event.key === 'compareFlowDetails' ||
+      event.key === 'billgooseJourneyService' ||
+      event.key === 'billgooseJourneyFlow'
+    ) {
       callback();
     }
   }
 
-  function handleJourneyServiceChanged() {
+  function handleJourneyChanged() {
     callback();
   }
 
   window.addEventListener('storage', handleStorage);
 
-  window.addEventListener('billgoose-journey-service-changed', handleJourneyServiceChanged);
+  window.addEventListener('billgoose-journey-service-changed', handleJourneyChanged);
+
+  window.addEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
 
   return () => {
     window.removeEventListener('storage', handleStorage);
 
-    window.removeEventListener('billgoose-journey-service-changed', handleJourneyServiceChanged);
+    window.removeEventListener('billgoose-journey-service-changed', handleJourneyChanged);
+
+    window.removeEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
   };
 }
 
@@ -104,37 +176,49 @@ export default function JourneyShell({ children }: JourneyShellProps) {
   const pathname = usePathname();
 
   const service = useSyncExternalStore(
-    subscribeToJourneyService,
+    subscribeToJourneyContext,
     getJourneyServiceSnapshot,
     getJourneyServiceServerSnapshot,
   );
 
+  const journeyFlow = useSyncExternalStore(
+    subscribeToJourneyContext,
+    getJourneyFlowSnapshot,
+    getJourneyFlowServerSnapshot,
+  );
+
+  /* =========================================================
+     STEP LIST
+
+     ENERGY:
+     4 steps
+
+     BUNDLE:
+     5 steps - unchanged
+
+     BROADBAND:
+     4 steps - unchanged
+  ========================================================= */
+
+  const steps =
+    service === 'broadband'
+      ? sidebar.broadbandSteps
+      : journeyFlow === 'bundle'
+        ? sidebar.bundleSteps
+        : sidebar.energySteps;
+
   /*
-   * IMPORTANT:
+   * Bundle still uses the Energy routes underneath,
+   * including Payment Method as step 5.
    *
-   * Energy:
-   * payment-details-form = step 5
-   *
-   * Broadband:
-   * payment-details-form = step 4
-   *
-   * That is why service is passed into
-   * getJourneyStepFromPathname().
+   * Normal Energy simply never reaches step 5.
    */
   const currentStep = getJourneyStepFromPathname(pathname, service);
 
   const [copied, setCopied] = useState(false);
 
-  /*
-   * Energy = 5
-   * Broadband = 4
-   */
-  const steps = service === 'broadband' ? sidebar.broadbandSteps : sidebar.steps;
-
   /* =========================================================
      SAVE INCOMPLETE JOURNEY PROGRESS
-
-     Only save tracking when the user is signed in.
   ========================================================= */
 
   useEffect(() => {
@@ -148,32 +232,26 @@ export default function JourneyShell({ children }: JourneyShellProps) {
 
     const totalSteps = steps.length;
 
-    /*
-     * Reaching a form does NOT mean that
-     * form has been completed yet.
-     *
-     * Therefore currentStep - 1.
-     */
-    const completedSteps = Math.max(0, currentStep - 1);
+    const safeCurrentStep = Math.min(currentStep, totalSteps);
+
+    const completedSteps = Math.max(0, safeCurrentStep - 1);
 
     const progress = Math.round((completedSteps / totalSteps) * 100);
 
-    const currentStepData = steps[currentStep - 1];
+    const currentStepData = steps[safeCurrentStep - 1];
 
     try {
       sessionStorage.setItem(
         'billgooseJourneyProgress',
         JSON.stringify({
           service,
-          currentStep,
+          flow: journeyFlow,
+
+          currentStep: safeCurrentStep,
           totalSteps,
           completedSteps,
           progress,
 
-          /*
-           * This is the exact route Continue
-           * will use from My Info.
-           */
           route: pathname,
 
           stepTitle: currentStepData?.title ?? '',
@@ -188,7 +266,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
     } catch {
       // Ignore storage failure.
     }
-  }, [currentStep, pathname, service, steps]);
+  }, [currentStep, journeyFlow, pathname, service, steps]);
 
   /* =========================================================
      COPY
@@ -226,8 +304,9 @@ export default function JourneyShell({ children }: JourneyShellProps) {
       {/* =====================================================
           DESKTOP SIDEBAR
 
-          Energy gets 5 items.
-          Broadband gets 4.
+          Energy    = 4 items
+          Bundle    = 5 items
+          Broadband = 4 items
       ====================================================== */}
       <JourneySidebar
         currentStep={currentStep}
@@ -296,7 +375,6 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             lg:hidden
           "
         >
-          {/* Description */}
           <div
             className="
               flex
@@ -344,7 +422,6 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             </p>
           </div>
 
-          {/* Link */}
           <div
             className="
               flex
@@ -375,6 +452,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
                   truncate
 
                   font-inter
+
                   text-[14px]
                   font-normal
                   leading-6
@@ -395,6 +473,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
                 w-[96px]
 
                 shrink-0
+
                 items-center
                 justify-center
 
@@ -409,6 +488,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
                 py-2
 
                 font-inter
+
                 text-[14px]
                 font-semibold
                 leading-6
@@ -479,10 +559,11 @@ export default function JourneyShell({ children }: JourneyShellProps) {
             "
           >
             {/* ===============================================
-                DESKTOP PROGRESS
+                STEP TRACKER
 
-                ENERGY    = 5 bars
-                BROADBAND = 4 bars
+                Energy    = 4
+                Bundle    = 5
+                Broadband = 4
             ================================================ */}
             <div className="hidden lg:block">
               <JourneyProgress
@@ -527,15 +608,11 @@ export default function JourneyShell({ children }: JourneyShellProps) {
         </div>
 
         {/* =================================================
-            BOTTOM NAVIGATION
+            MOBILE / TABLET / BOTTOM TRACKER
 
-            Energy:
-            currentStep 1-5
-            totalSteps 5
-
-            Broadband:
-            currentStep 1-4
-            totalSteps 4
+            Energy    = 4
+            Bundle    = 5
+            Broadband = 4
         ================================================== */}
         <JourneyNavigation
           currentStep={currentStep}

@@ -1,29 +1,38 @@
+import { Suspense } from 'react';
+
 import Footer2 from '@/components/marketing/Footer2';
 import ResultDesktopActions from '@/components/result/result-desktop-actions';
 import ResultFilters from '@/components/result/result-filters';
 import ResultHero from '@/components/result/result-hero';
-import ResultMobileActions from '@/components/result/result-mobile-actions';
 import ResultPlans from '@/components/result/result-plans';
-import ResultTabletActions from '@/components/result/result-tablet-actions';
 import ResultsStatus from '@/components/result/results-status';
 
 export default function ResultPage() {
   return (
-    <main className="min-h-screen bg-[#F8F9FA]">
-      <ResultHero />
+    <Suspense fallback={<div>Loading...</div>}>
+      <main className="min-h-screen bg-[#F8F9FA]">
+        <ResultHero />
 
-      <ResultFilters />
+        {/* =====================================================
+          SAME RESULT DETAILS / SIM SUMMARY
+          NOW USED ON MOBILE + TABLET + DESKTOP
+      ====================================================== */}
+        <ResultFilters />
 
-      <ResultMobileActions />
+        {/* =====================================================
+          DESKTOP ACTIONS
 
-      <ResultTabletActions />
+          Existing desktop-only component remains untouched.
+      ====================================================== */}
+        <ResultDesktopActions />
 
-      <ResultDesktopActions />
+        {/* =====================================================
+          MOBILE + TABLET RESULTS HEADING / FILTER BUTTON
+      ====================================================== */}
+        <ResultsStatus />
 
-      <ResultsStatus />
-
-      <section
-        className="
+        <section
+          className="
           mx-auto
           w-full
           max-w-[1440px]
@@ -38,19 +47,22 @@ export default function ResultPage() {
           lg:px-10
           lg:pb-[40px]
         "
-      >
-        <div
-          className="
+        >
+          <div
+            className="
             mt-5
+
             sm:mt-6
+
             xl:mt-7
           "
-        >
-          <ResultPlans />
-        </div>
-      </section>
+          >
+            <ResultPlans />
+          </div>
+        </section>
 
-      <Footer2 />
-    </main>
+        <Footer2 />
+      </main>
+    </Suspense>
   );
 }

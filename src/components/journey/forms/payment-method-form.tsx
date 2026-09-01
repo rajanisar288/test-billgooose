@@ -52,8 +52,12 @@ function subscribeToJourneyService(callback: () => void) {
 
   window.addEventListener('storage', handleStorage);
 
+  window.addEventListener('billgoose-compare-flow-changed', callback);
+
   return () => {
     window.removeEventListener('storage', handleStorage);
+
+    window.removeEventListener('billgoose-compare-flow-changed', callback);
   };
 }
 
@@ -95,7 +99,10 @@ export default function PaymentMethodForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    /* Broadband */
+    /* =====================================================
+       BROADBAND — STEP 4
+    ====================================================== */
+
     if (service === 'broadband') {
       if (!selectedContractLength) {
         return;
@@ -108,13 +115,20 @@ export default function PaymentMethodForm() {
       return;
     }
 
-    /* Energy */
+    /* =====================================================
+       ENERGY — STEP 5
+    ====================================================== */
+
     if (!selectedPaymentMethod) {
       return;
     }
 
     sessionStorage.setItem(paymentMethod.storageKey, selectedPaymentMethod);
 
+    /*
+     * Energy does NOT go directly to result.
+     * Open the existing modal journey first.
+     */
     setServicesModalOpen(true);
   }
 
@@ -163,7 +177,18 @@ export default function PaymentMethodForm() {
 
     setUpdateConsumptionModalOpen(false);
 
-    router.push('/current-usage');
+    const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    /*
+     * Preserve Bundle Bills context.
+     */
+    if (journeyFlow === 'bundle') {
+      router.push('/current-usage?service=energy&flow=bundle');
+
+      return;
+    }
+
+    router.push('/current-usage?service=energy');
   }
 
   /* =========================================================
@@ -207,7 +232,7 @@ export default function PaymentMethodForm() {
         </header>
 
         <form
-          id={service === 'broadband' ? 'journey-step-form-4' : 'journey-step-form-5'}
+          id="journey-step-form-4"
           onSubmit={handleSubmit}
           className="space-y-3 sm:space-y-4"
         >
@@ -326,7 +351,7 @@ export default function PaymentMethodForm() {
   }
 
   /* =========================================================
-     ENERGY — EXISTING PAYMENT METHOD
+     ENERGY — STEP 5 PAYMENT METHOD
   ========================================================= */
 
   return (
@@ -340,6 +365,7 @@ export default function PaymentMethodForm() {
               font-extrabold
               leading-[56px]
               tracking-[0]
+
               text-[#0C3354]
             "
           >
@@ -363,8 +389,19 @@ export default function PaymentMethodForm() {
           </p>
         </header>
 
+        {/*
+         * IMPORTANT:
+         *
+         * Energy is STEP 5.
+         *
+         * JourneyShell/footer submits:
+         * journey-step-form-5
+         *
+         * Previously this incorrectly used:
+         * journey-step-form-4
+         */}
         <form
-          id="journey-step-form-4"
+          id="journey-step-form-5"
           onSubmit={handleSubmit}
           className="space-y-3 sm:space-y-4"
         >
@@ -385,9 +422,11 @@ export default function PaymentMethodForm() {
                   flex
                   min-h-[128px]
                   w-full
+
                   flex-col
                   items-start
                   justify-between
+
                   gap-3
 
                   rounded-[14px]
@@ -418,8 +457,10 @@ export default function PaymentMethodForm() {
                   className="
                     flex
                     w-full
+
                     items-start
                     justify-between
+
                     gap-4
                   "
                 >
@@ -433,6 +474,7 @@ export default function PaymentMethodForm() {
                       h-[22px]
                       w-[22px]
                       shrink-0
+
                       object-contain
 
                       lg:hidden
@@ -508,7 +550,10 @@ export default function PaymentMethodForm() {
         </form>
       </div>
 
-      {/* Energy only */}
+      {/* =====================================================
+          ENERGY MODALS
+      ====================================================== */}
+
       <ServicesModal
         isOpen={servicesModalOpen}
         onClose={handleCloseServicesModal}
@@ -548,10 +593,12 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
         h-[18px]
         w-[18px]
         shrink-0
+
         items-center
         justify-center
 
         rounded-full
+
         border
 
         transition-colors

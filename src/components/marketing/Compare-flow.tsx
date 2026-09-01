@@ -1,14 +1,17 @@
 'use client';
 
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { ArrowRight, Check, ChevronDown, CircleHelp } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, ChevronDown } from 'lucide-react';
 
+import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
+import { MoveStatus, type Address } from '@/interfaces/shared';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
 
 type CompareService = 'energy' | 'broadband';
 
@@ -19,36 +22,69 @@ export default function CompareFlow() {
   const searchParams = useSearchParams();
 
   const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
 
   const selectedService: CompareService = requestedService === 'broadband' ? 'broadband' : 'energy';
 
+  const isBundleFlow = requestedFlow === 'bundle';
+
   const serviceContent = compareFlow.services[selectedService];
 
-  /*
-   * Common fields
-   */
+  /* =========================================================
+     COMMON STATE
+  ========================================================= */
+
   const initialPostcode = searchParams.get('postcode')?.toUpperCase() ?? '';
 
   const [postcode, setPostcode] = useState(initialPostcode);
 
-  const [selectedAddress, setSelectedAddress] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
   const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
 
   /*
-   * Energy fields
+   * These values are still used by the existing validation /
+   * property date logic, but their controls are currently
+   * commented out.
+   *
+   * They do not need React setters while those controls
+   * remain commented.
    */
-  const [occupancyType, setOccupancyType] = useState(
-    compareFlow.form.energy.occupancy.defaultValue,
+  const occupancyType = compareFlow.form.energy.serviceType.defaultValue;
+
+  const alreadyInProperty = compareFlow.form.energy.serviceType.defaultValue as MoveStatus;
+
+  const [moveInDate, setMoveInDate] = useState('');
+
+  const [isAddressLoading, setIsAddressLoading] = useState<boolean>(false);
+
+  const [addressOptions, setAddressOptions] = useState<
+    Array<{
+      id: string;
+      label: string;
+      value: string;
+      fullAddressObject: Address;
+    }>
+  >([]);
+
+  /* =========================================================
+     ENERGY STATE
+  ========================================================= */
+
+  const [energyServiceType, setEnergyServiceType] = useState(
+    compareFlow.form.energy.serviceType.defaultValue,
   );
 
-  const [alreadyInProperty, setAlreadyInProperty] = useState(
-    compareFlow.form.energy.propertyStatus.defaultValue,
+  const [energyServiceDropdownOpen, setEnergyServiceDropdownOpen] = useState(false);
+
+  const [paymentMethod, setPaymentMethod] = useState(
+    compareFlow.form.energy.paymentMethod.defaultValue,
   );
 
-  /*
-   * Broadband fields
-   */
+  /* =========================================================
+     BROADBAND STATE
+  ========================================================= */
+
   const [currentProvider, setCurrentProvider] = useState(
     compareFlow.form.broadband.currentProvider.defaultValue,
   );
@@ -59,31 +95,82 @@ export default function CompareFlow() {
     compareFlow.form.broadband.contractStatus.defaultValue,
   );
 
+  /* =========================================================
+     REFS
+  ========================================================= */
+
   const addressDropdownRef = useRef<HTMLDivElement>(null);
 
   const providerDropdownRef = useRef<HTMLDivElement>(null);
+
+  const energyServiceDropdownRef = useRef<HTMLDivElement>(null);
+
+  /* =========================================================
+     VALIDATION
+  ========================================================= */
 
   const ukPostcodePattern = /^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i;
 
   const isPostcodeValid = ukPostcodePattern.test(postcode.trim());
 
-  const isEnergyValid =
-    selectedService === 'energy' &&
-    isPostcodeValid &&
-    selectedAddress.length > 0 &&
-    occupancyType.length > 0 &&
-    alreadyInProperty.length > 0;
+  const isFormValid =
+    isPostcodeValid && selectedAddress && occupancyType.length > 0 && alreadyInProperty.length > 0;
 
-  const isBroadbandValid =
-    selectedService === 'broadband' &&
-    isPostcodeValid &&
-    selectedAddress.length > 0 &&
-    currentProvider.length > 0 &&
-    stillInContract.length > 0;
+  /* =========================================================
+     API FUNCTIONS
+  ========================================================= */
 
-  const isFormValid = isEnergyValid || isBroadbandValid;
+  async function getAddresses(postalCode: string) {
+    if (!postalCode) {
+      return;
+    }
+
+    try {
+      setIsAddressLoading(true);
+
+      setPostcode(postalCode);
+
+      const journeyId = localStorage.getItem(storeJourney);
+
+      const res = await journeyApi.getAddress(journeyId!, {
+        postcode: postalCode,
+      });
+
+      setAddressOptions(
+        res.data.addresses.map((address: any) => ({
+          id: address.uprn || address.providerReference || crypto.randomUUID(),
+
+          label: address.fullAddress,
+
+          value: address.fullAddress,
+
+          fullAddressObject: address,
+        })),
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAddressLoading(false);
+    }
+  }
+
+  const handlePostalCode = () => {
+    if (postcode && isPostcodeValid) {
+      getAddresses(postcode);
+    }
+  };
+
+  /* =========================================================
+     OUTSIDE CLICK
+  ========================================================= */
 
   useEffect(() => {
+    const urlPostcode = searchParams.get('postcode') || '';
+
+    if (urlPostcode) {
+      getAddresses(urlPostcode);
+    }
+
     function handleOutsideClick(event: MouseEvent) {
       const target = event.target as Node;
 
@@ -94,6 +181,10 @@ export default function CompareFlow() {
       if (providerDropdownRef.current && !providerDropdownRef.current.contains(target)) {
         setProviderDropdownOpen(false);
       }
+
+      if (energyServiceDropdownRef.current && !energyServiceDropdownRef.current.contains(target)) {
+        setEnergyServiceDropdownOpen(false);
+      }
     }
 
     document.addEventListener('mousedown', handleOutsideClick);
@@ -103,55 +194,97 @@ export default function CompareFlow() {
     };
   }, []);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  /* =========================================================
+     SUBMIT
+  ========================================================= */
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!isFormValid) {
       return;
     }
 
+    /* =======================================================
+       ENERGY / BUNDLE BILLS
+    ======================================================= */
+
     if (selectedService === 'energy') {
       sessionStorage.setItem(
         'compareFlowDetails',
         JSON.stringify({
           service: 'energy',
-          postcode,
+
+          flow: isBundleFlow ? 'bundle' : 'energy',
+
+          postcode: postcode.trim(),
+
           address: selectedAddress,
-          occupancyType,
-          alreadyInProperty,
+
+          serviceType: energyServiceType,
+
+          ...(isBundleFlow
+            ? {}
+            : {
+                paymentMethod,
+              }),
         }),
       );
 
-      router.push('/steps/personal-details-form');
+      sessionStorage.setItem('billgooseJourneyService', 'energy');
+
+      sessionStorage.setItem('billgooseJourneyFlow', isBundleFlow ? 'bundle' : 'energy');
+
+      window.dispatchEvent(new Event('billgoose-compare-flow-changed'));
+
+      if (isBundleFlow) {
+        router.push('/steps/personal-details-form?service=energy&flow=bundle');
+
+        return;
+      }
+
+      router.push('/result?service=energy');
 
       return;
     }
+
+    /* =======================================================
+       BROADBAND
+    ======================================================= */
 
     sessionStorage.setItem(
       'compareFlowDetails',
       JSON.stringify({
         service: 'broadband',
-        postcode,
+
+        flow: 'broadband',
+
+        postcode: postcode.trim(),
+
         address: selectedAddress,
+
         currentProvider,
+
         stillInContract,
       }),
     );
 
-    router.push('/steps/personal-details-form');
-  }
+    sessionStorage.setItem('billgooseJourneyService', 'broadband');
+
+    sessionStorage.setItem('billgooseJourneyFlow', 'broadband');
+
+    window.dispatchEvent(new Event('billgoose-compare-flow-changed'));
+
+    router.push('/result?service=broadband');
+  };
 
   return (
     <main
       className="
         min-h-screen
-
         md:px-6
-
         lg:px-[40px]
-
         xl:px-[30px]
-
         2xl:px-[100px]
       "
     >
@@ -161,7 +294,9 @@ export default function CompareFlow() {
           grid
           w-full
           max-w-[1380px]
+
           grid-cols-1
+
           gap-10
 
           pb-12
@@ -196,8 +331,9 @@ export default function CompareFlow() {
         "
       >
         {/* =====================================================
-            LEFT SIDE
+            LEFT CONTENT
         ====================================================== */}
+
         <div
           className="
             w-full
@@ -208,15 +344,20 @@ export default function CompareFlow() {
             lg:max-w-[510px]
           "
         >
-          {/* Back */}
+          {/* =================================================
+              BACK BUTTON
+          ================================================== */}
+
           <Link
             href={compareFlow.backButton.href}
             className="
               inline-flex
               h-10
               w-fit
+
               items-center
               justify-center
+
               gap-[1px]
 
               rounded-full
@@ -228,8 +369,10 @@ export default function CompareFlow() {
               pr-[14px]
 
               font-inter
+
               text-[16px]
               font-medium
+
               text-[#0D3B66]
 
               shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
@@ -252,7 +395,17 @@ export default function CompareFlow() {
               lg:font-[500]
             "
           >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+            <span
+              className="
+                flex
+                h-6
+                w-6
+                shrink-0
+
+                items-center
+                justify-center
+              "
+            >
               <span
                 aria-hidden="true"
                 className="
@@ -275,6 +428,7 @@ export default function CompareFlow() {
           {/* =================================================
               HEADING
           ================================================== */}
+
           <div
             className="
               mt-7
@@ -289,10 +443,12 @@ export default function CompareFlow() {
                 max-w-[510px]
 
                 font-red-hat-display
+
                 text-[30px]
                 font-[645]
                 leading-[36px]
                 tracking-[0]
+
                 text-secondary
 
                 min-[360px]:text-[32px]
@@ -313,29 +469,62 @@ export default function CompareFlow() {
                 lg:max-w-[510px]
                 lg:whitespace-normal
                 lg:text-[50px]
+                lg:font-[645]
                 lg:font-extrabold
                 lg:leading-[56px]
               "
             >
-              {/* Mobile */}
               <span className="md:hidden">
-                <span className="block min-[360px]:whitespace-nowrap">
-                  {serviceContent.heading.firstLine}
+                <span
+                  className="
+                    block
+
+                    min-[360px]:whitespace-nowrap
+                  "
+                >
+                  {compareFlow?.services.energy.heading?.firstLine}
                 </span>
 
-                <span className="block">{serviceContent.heading.secondLine}</span>
+                <span className="block">{compareFlow.services.energy.heading.secondLine}</span>
               </span>
 
-              {/* Tablet */}
-              <span className="hidden md:inline lg:hidden">
-                {serviceContent.heading.firstLine} {serviceContent.heading.secondLine}
+              <span
+                className="
+                  hidden
+
+                  md:inline
+
+                  lg:hidden
+                "
+              >
+                {compareFlow.services.energy.heading.firstLine}{' '}
+                {compareFlow.services.energy.heading.secondLine}
               </span>
 
-              {/* Desktop */}
-              <span className="hidden lg:block">
-                <span className="block whitespace-nowrap">{serviceContent.heading.firstLine}</span>
+              <span
+                className="
+                  hidden
 
-                <span className="block whitespace-nowrap">{serviceContent.heading.secondLine}</span>
+                  lg:block
+                "
+              >
+                <span
+                  className="
+                    block
+                    whitespace-nowrap
+                  "
+                >
+                  {compareFlow.services.energy.heading.firstLine}
+                </span>
+
+                <span
+                  className="
+                    block
+                    whitespace-nowrap
+                  "
+                >
+                  {compareFlow.services.energy.heading.secondLine}
+                </span>
               </span>
             </h1>
 
@@ -345,10 +534,12 @@ export default function CompareFlow() {
                 max-w-[510px]
 
                 font-inter
+
                 text-[14px]
                 font-normal
                 leading-[21px]
                 tracking-[0]
+
                 text-[#252B37]
 
                 min-[390px]:text-[15px]
@@ -366,19 +557,21 @@ export default function CompareFlow() {
                 lg:max-w-[510px]
                 lg:text-[18px]
                 lg:font-normal
+                lg:font-[400]
                 lg:leading-[25px]
               "
             >
-              {serviceContent.description}
+              {compareFlow.services.energy.description}
             </p>
           </div>
 
           {/* =================================================
               FORM
           ================================================== */}
+
           <form
-            onSubmit={handleSubmit}
             noValidate
+            onSubmit={handleSubmit}
             className="
               mt-8
               space-y-5
@@ -390,7 +583,10 @@ export default function CompareFlow() {
               lg:space-y-5
             "
           >
-            {/* Postcode */}
+            {/* =================================================
+                POSTCODE
+            ================================================== */}
+
             <div>
               <label
                 htmlFor="postcode"
@@ -399,10 +595,16 @@ export default function CompareFlow() {
                   block
 
                   font-inter
+
                   text-[13px]
+                  font-medium
                   font-[500]
                   leading-5
+                  tracking-[0]
+
                   text-[#344054]
+
+                  md:text-[13px]
 
                   lg:text-[14px]
                 "
@@ -410,94 +612,183 @@ export default function CompareFlow() {
                 {compareFlow.form.postcode.label}
               </label>
 
-              <div className="relative">
+              <div
+                className="
+                  relative
+
+                  flex
+                  h-[42px]
+                  w-full
+
+                  items-center
+
+                  rounded-full
+
+                  border
+                  border-[#D0D5DD]
+
+                  bg-white
+
+                  shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                  md:h-[44px]
+
+                  lg:h-[44px]
+                "
+              >
                 <input
                   id="postcode"
                   name="postcode"
                   type="text"
                   value={postcode}
+                  autoComplete="postal-code"
+                  placeholder={compareFlow.form.postcode.placeholder}
+                  aria-invalid={postcode.length > 0 && !isPostcodeValid}
                   onChange={(event) => {
                     setPostcode(event.target.value.toUpperCase());
+
+                    setSelectedAddress(null);
+
+                    setAddressDropdownOpen(false);
                   }}
-                  placeholder={compareFlow.form.postcode.placeholder}
-                  autoComplete="postal-code"
-                  aria-invalid={postcode.length > 0 && !isPostcodeValid}
                   className="
-                    h-12
-                    w-full
+                    h-full
+                    min-w-0
+                    flex-1
 
                     rounded-full
 
-                    border
-                    border-[#D0D5DD]
+                    border-0
 
-                    bg-[#FAF9FA]
+                    bg-transparent
 
-                    px-[18px]
-                    py-[14px]
-                    pr-12
+                    pl-[14px]
+                    pr-[120px]
 
                     font-inter
-                    text-[15px]
-                    font-normal
-                    leading-6
-                    text-[#344054]
 
-                    shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                    text-[13px]
+                    font-normal
+                    leading-5
+
+                    text-[#667085]
 
                     outline-none
-                    transition
 
                     placeholder:text-[#667085]
 
-                    focus:border-black
-                    focus:bg-white
-                    focus:ring-4
-                    focus:ring-[#EEFFFB]
+                    md:text-[13px]
 
-                    md:h-[50px]
-                    md:text-[14px]
-
-                    lg:h-[52px]
-                    lg:text-[16px]
+                    lg:text-[14px]
                   "
                 />
 
-                <CircleHelp
-                  size={20}
-                  strokeWidth={1.33}
-                  aria-hidden="true"
-                  className="
-                    pointer-events-none
-
+                <button
+                  type="button"
+                  disabled={postcode === '' || !isPostcodeValid}
+                  onClick={handlePostalCode}
+                  className={`
                     absolute
-                    right-[18px]
+                    right-[4px]
                     top-1/2
 
+                    flex
+                    h-[34px]
                     -translate-y-1/2
 
-                    text-[#98A2B3]
-                  "
-                />
+                    items-center
+                    justify-center
+
+                    rounded-full
+
+                    px-[14px]
+
+                    font-inter
+
+                    text-[11px]
+                    font-medium
+                    leading-4
+
+                    transition-colors
+                    duration-200
+
+                    ${
+                      postcode === '' || !isPostcodeValid
+                        ? 'cursor-not-allowed bg-[#E6F4F2] text-[#00897B]'
+                        : 'bg-[#0D3B66] text-white hover:bg-[#082A49]'
+                    }
+                  `}
+                >
+                  {isAddressLoading ? (
+                    <span
+                      className="
+                        flex
+                        items-center
+                        gap-2
+                      "
+                    >
+                      <span
+                        className="
+                          inline-block
+                          h-3.5
+                          w-3.5
+
+                          animate-spin
+
+                          rounded-full
+
+                          border-2
+                          border-white
+                          border-t-transparent
+                        "
+                      />
+                      Loading...
+                    </span>
+                  ) : (
+                    'Find address'
+                  )}
+                </button>
               </div>
 
               {postcode.length > 0 && !isPostcodeValid && (
-                <p className="mt-1.5 font-inter text-[12px] text-red-600">
+                <p
+                  className="
+                      mt-1.5
+
+                      font-inter
+
+                      text-[11px]
+                      font-normal
+                      leading-4
+
+                      text-[#D92D20]
+
+                      lg:text-[12px]
+                    "
+                >
                   {compareFlow.form.postcode.invalidError}
                 </p>
               )}
 
               <button
                 type="button"
-                onClick={() => setPostcode('')}
+                onClick={() => {
+                  setPostcode('');
+
+                  setAddressOptions([]);
+
+                  setSelectedAddress(null);
+                }}
                 className="
                   mt-2
                   block
 
                   font-inter
+
                   text-[13px]
                   font-normal
                   leading-5
+                  tracking-[0]
 
                   text-[#045C9E]
 
@@ -516,6 +807,7 @@ export default function CompareFlow() {
             {/* =================================================
                 ADDRESS
             ================================================== */}
+
             <div>
               <label
                 id="address-label"
@@ -524,10 +816,16 @@ export default function CompareFlow() {
                   block
 
                   font-inter
+
                   text-[13px]
+                  font-medium
                   font-[500]
                   leading-5
+                  tracking-[0]
+
                   text-[#344054]
+
+                  md:text-[13px]
 
                   lg:text-[14px]
                 "
@@ -544,17 +842,22 @@ export default function CompareFlow() {
                   aria-labelledby="address-label"
                   aria-expanded={addressDropdownOpen}
                   aria-haspopup="listbox"
+                  disabled={addressOptions.length === 0}
                   onClick={() => {
                     setAddressDropdownOpen((current) => !current);
 
                     setProviderDropdownOpen(false);
+
+                    setEnergyServiceDropdownOpen(false);
                   }}
                   className={`
                     flex
                     h-12
                     w-full
+
                     items-center
                     justify-between
+
                     gap-2
 
                     rounded-full
@@ -564,21 +867,24 @@ export default function CompareFlow() {
                     bg-white
 
                     px-[18px]
-                    py-[14px]
 
                     text-left
 
                     font-inter
+
                     text-[14px]
                     font-normal
                     leading-6
+                    tracking-[0]
 
                     shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
                     outline-none
+
                     transition
 
                     md:h-[50px]
+                    md:text-[14px]
 
                     lg:h-[52px]
                     lg:text-[16px]
@@ -591,14 +897,19 @@ export default function CompareFlow() {
                   `}
                 >
                   <span
-                    className={`min-w-0 truncate ${
-                      selectedAddress ? 'text-black' : 'text-[#667085]'
-                    }`}
+                    className={`
+                      min-w-0
+                      truncate
+
+                      ${selectedAddress ? 'text-[#101828]' : 'text-[#667085]'}
+                    `}
                   >
-                    {selectedAddress || compareFlow.form.address.placeholder}
+                    {selectedAddress?.fullAddress || compareFlow.form.address.placeholder}
                   </span>
 
                   <ChevronDown
+                    size={20}
+                    strokeWidth={2}
                     aria-hidden="true"
                     className={`
                       h-5
@@ -608,17 +919,49 @@ export default function CompareFlow() {
                       text-[#354052]
 
                       transition-transform
+                      duration-200
+
+                      md:h-[18px]
+                      md:w-[18px]
+
+                      lg:h-5
+                      lg:w-5
 
                       ${addressDropdownOpen ? 'rotate-180' : ''}
                     `}
-                    strokeWidth={2}
                   />
                 </button>
 
                 {addressDropdownOpen && (
-                  <DropdownPanel>
-                    {compareFlow.form.address.options.map((address) => {
-                      const isSelected = selectedAddress === address.label;
+                  <div
+                    role="listbox"
+                    aria-labelledby="address-label"
+                    className="
+                      absolute
+                      left-0
+                      top-[calc(100%+8px)]
+                      z-50
+
+                      max-h-[190px]
+                      w-full
+
+                      overflow-y-auto
+
+                      rounded-[20px]
+
+                      bg-white
+
+                      p-[5px]
+
+                      shadow-[0px_2px_4px_0px_rgba(84,84,84,0.15),0px_7px_7px_0px_rgba(84,84,84,0.13),0px_15px_9px_0px_rgba(84,84,84,0.08),0px_27px_11px_0px_rgba(84,84,84,0.02)]
+
+                      md:max-h-[220px]
+
+                      lg:max-h-[190px]
+                    "
+                  >
+                    {addressOptions.map((address) => {
+                      const isSelected = selectedAddress?.fullAddress === address.label;
 
                       return (
                         <button
@@ -627,26 +970,29 @@ export default function CompareFlow() {
                           role="option"
                           aria-selected={isSelected}
                           onClick={() => {
-                            setSelectedAddress(address.label);
+                            setSelectedAddress(address.fullAddressObject);
 
                             setAddressDropdownOpen(false);
                           }}
                           className={`
                               flex
-                              min-h-9
+                              min-h-10
                               w-full
+
                               items-center
                               justify-between
+
                               gap-2
 
                               rounded-[30px]
 
-                              px-[9px]
+                              px-3
                               py-2
 
                               text-left
 
                               font-inter
+
                               text-[13px]
                               leading-5
 
@@ -661,14 +1007,29 @@ export default function CompareFlow() {
                               ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
                             `}
                         >
-                          <span className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="
+                                flex
+                                min-w-0
+
+                                items-center
+
+                                gap-2
+                              "
+                          >
                             <Image
                               src="/images/location-icon.png"
                               alt=""
                               width={12}
                               height={14}
                               aria-hidden="true"
-                              className="h-[13.66px] w-[12px] shrink-0 object-contain"
+                              className="
+                                  h-[13.66px]
+                                  w-[12px]
+                                  shrink-0
+
+                                  object-contain
+                                "
                             />
 
                             <span className="truncate">{address.label}</span>
@@ -676,15 +1037,21 @@ export default function CompareFlow() {
 
                           {isSelected && (
                             <Check
-                              size={16}
+                              aria-hidden="true"
+                              className="
+                                  h-4
+                                  w-4
+                                  shrink-0
+
+                                  text-[#00897B]
+                                "
                               strokeWidth={2}
-                              className="shrink-0 text-[#00897B]"
                             />
                           )}
                         </button>
                       );
                     })}
-                  </DropdownPanel>
+                  </div>
                 )}
               </div>
 
@@ -695,10 +1062,16 @@ export default function CompareFlow() {
                   block
 
                   font-inter
+
                   text-[13px]
+                  font-regular
                   font-[500]
                   leading-5
+                  tracking-[0]
+
                   text-[#045C9E]
+
+                  md:text-[12px]
 
                   lg:text-[14px]
                 "
@@ -707,61 +1080,316 @@ export default function CompareFlow() {
               </button>
             </div>
 
+            {/* Rental / homeowner */}
+            {/* <fieldset>
+              <legend
+                className="
+                  mb-2
+                  font-inter
+                  text-[13px] font-medium
+                  leading-5 tracking-[0]
+                  text-[#344054]
+                  md:text-[13px]
+                  lg:text-[14px]
+                "
+              >
+                {compareFlow.form.energy.serviceType.label}
+              </legend>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {compareFlow.form.energy.serviceType.options.map((option) => (
+                  <ChoicePill
+                    key={option.id}
+                    label={option.label}
+                    selected={occupancyType === option.value}
+                    onClick={() => setOccupancyType(option.value as OccupancyStatus)}
+                  />
+                ))}
+              </div>
+            </fieldset> */}
+
+            {/* Already in property */}
+            {/* <fieldset>
+              <legend className="sr-only">{compareFlow.form.energy.serviceType.label}</legend>
+
+              <div
+                className="
+                  flex min-h-12 w-full
+                  items-center justify-between
+                  gap-[18px]
+                  rounded-full
+                  border border-[#D0D5DD]
+                  bg-white
+                  py-[9px] pl-4 pr-2
+                  shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                  min-[390px]:pl-6
+                  md:h-[50px] md:min-h-[50px] md:pl-5
+                  lg:h-[52px] lg:min-h-[52px]
+                "
+              >
+                <span
+                  className="
+                    font-inter
+                    text-[12px] font-medium
+                    leading-5 tracking-[0]
+                    text-[#344054]
+                    min-[390px]:text-[13px]
+                    md:text-[13px]
+                    lg:text-[14px]
+                  "
+                >
+                  {compareFlow.form.energy.serviceType.label}
+                </span>
+
+                <div className="flex h-[34px] shrink-0 items-center">
+                  {compareFlow.form.energy.serviceType.options.map((option) => (
+                    <PropertyOption
+                      key={option.id}
+                      label={option.label}
+                      selected={alreadyInProperty === option.value}
+                      onClick={() => {
+                        setAlreadyInProperty(option.value as MoveStatus);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </fieldset> */}
+
             {/* =================================================
-                ENERGY ONLY
+                ENERGY
             ================================================== */}
+
             {selectedService === 'energy' && (
               <>
-                <fieldset>
-                  <legend
+                <div>
+                  <label
+                    id="energy-service-label"
                     className="
                       mb-2
+                      block
 
                       font-inter
+
                       text-[13px]
-                      font-medium
+                      font-[500]
                       leading-5
+
                       text-[#344054]
 
                       lg:text-[14px]
                     "
                   >
-                    {compareFlow.form.energy.occupancy.label}
-                  </legend>
+                    {compareFlow.form.energy.serviceType.label}
+                  </label>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {compareFlow.form.energy.occupancy.options.map((option) => (
-                      <ChoicePill
-                        key={option.id}
-                        label={option.label}
-                        selected={occupancyType === option.value}
-                        onClick={() => setOccupancyType(option.value)}
+                  <div
+                    ref={energyServiceDropdownRef}
+                    className="relative"
+                  >
+                    <button
+                      type="button"
+                      aria-labelledby="energy-service-label"
+                      aria-expanded={energyServiceDropdownOpen}
+                      aria-haspopup="listbox"
+                      onClick={() => {
+                        setEnergyServiceDropdownOpen((current) => !current);
+
+                        setAddressDropdownOpen(false);
+
+                        setProviderDropdownOpen(false);
+                      }}
+                      className={`
+                        flex
+                        h-12
+                        w-full
+
+                        items-center
+                        justify-between
+
+                        gap-2
+
+                        rounded-full
+
+                        border
+
+                        bg-white
+
+                        px-[18px]
+
+                        text-left
+
+                        font-inter
+
+                        text-[14px]
+                        font-normal
+                        leading-6
+
+                        text-[#344054]
+
+                        shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                        outline-none
+
+                        transition
+
+                        md:h-[50px]
+
+                        lg:h-[52px]
+                        lg:text-[16px]
+
+                        ${
+                          energyServiceDropdownOpen
+                            ? 'border-black ring-4 ring-[#EEFFFB]'
+                            : 'border-[#D0D5DD]'
+                        }
+                      `}
+                    >
+                      <span>
+                        {
+                          compareFlow.form.energy.serviceType.options.find(
+                            (option) => option.value === energyServiceType,
+                          )?.label
+                        }
+                      </span>
+
+                      <ChevronDown
+                        aria-hidden="true"
+                        className={`
+                          h-5
+                          w-5
+                          shrink-0
+
+                          text-[#354052]
+
+                          transition-transform
+
+                          ${energyServiceDropdownOpen ? 'rotate-180' : ''}
+                        `}
+                        strokeWidth={2}
                       />
-                    ))}
+                    </button>
+
+                    {energyServiceDropdownOpen && (
+                      <DropdownPanel>
+                        {compareFlow.form.energy.serviceType.options.map((option) => {
+                          const isSelected = energyServiceType === option.value;
+
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              role="option"
+                              aria-selected={isSelected}
+                              onClick={() => {
+                                setEnergyServiceType(option.value);
+
+                                setEnergyServiceDropdownOpen(false);
+                              }}
+                              className={`
+                                  flex
+                                  min-h-10
+                                  w-full
+
+                                  items-center
+                                  justify-between
+
+                                  rounded-[30px]
+
+                                  px-3
+                                  py-2
+
+                                  text-left
+
+                                  font-inter
+
+                                  text-[13px]
+
+                                  text-[#344054]
+
+                                  transition-colors
+
+                                  hover:bg-[#F5F5F5]
+
+                                  lg:text-[14px]
+
+                                  ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
+                                `}
+                            >
+                              <span>{option.label}</span>
+
+                              {isSelected && (
+                                <Check
+                                  aria-hidden="true"
+                                  className="
+                                      h-4
+                                      w-4
+
+                                      text-[#00897B]
+                                    "
+                                  strokeWidth={2}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </DropdownPanel>
+                    )}
                   </div>
-                </fieldset>
+                </div>
 
-                <fieldset>
-                  <legend className="sr-only">
-                    {compareFlow.form.energy.propertyStatus.label}
-                  </legend>
+                {!isBundleFlow && (
+                  <fieldset>
+                    <legend
+                      className="
+                        mb-2
 
-                  <BinaryChoiceField
-                    label={compareFlow.form.energy.propertyStatus.label}
-                    value={alreadyInProperty}
-                    options={compareFlow.form.energy.propertyStatus.options}
-                    onChange={setAlreadyInProperty}
-                  />
-                </fieldset>
+                        font-inter
+
+                        text-[13px]
+                        font-[500]
+                        leading-5
+
+                        text-[#344054]
+
+                        lg:text-[14px]
+                      "
+                    >
+                      {compareFlow.form.energy.paymentMethod.label}
+                    </legend>
+
+                    <div
+                      className="
+                        flex
+                        flex-wrap
+
+                        items-center
+
+                        gap-2
+                      "
+                    >
+                      {compareFlow.form.energy.paymentMethod.options.map((option) => (
+                        <ChoicePill
+                          key={option.id}
+                          label={option.label}
+                          selected={paymentMethod === option.value}
+                          onClick={() => {
+                            setPaymentMethod(option.value);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </fieldset>
+                )}
               </>
             )}
 
             {/* =================================================
-                BROADBAND ONLY
+                BROADBAND
             ================================================== */}
+
             {selectedService === 'broadband' && (
               <>
-                {/* Current provider */}
                 <div>
                   <label
                     id="provider-label"
@@ -770,9 +1398,11 @@ export default function CompareFlow() {
                       block
 
                       font-inter
+
                       text-[13px]
                       font-[500]
                       leading-5
+
                       text-[#344054]
 
                       lg:text-[14px]
@@ -794,13 +1424,17 @@ export default function CompareFlow() {
                         setProviderDropdownOpen((current) => !current);
 
                         setAddressDropdownOpen(false);
+
+                        setEnergyServiceDropdownOpen(false);
                       }}
                       className={`
                         flex
                         h-12
                         w-full
+
                         items-center
                         justify-between
+
                         gap-2
 
                         rounded-full
@@ -814,13 +1448,14 @@ export default function CompareFlow() {
                         text-left
 
                         font-inter
+
                         text-[14px]
                         font-normal
-                        text-[#344054]
 
                         shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
                         outline-none
+
                         transition
 
                         md:h-[50px]
@@ -848,7 +1483,6 @@ export default function CompareFlow() {
                         className={`
                           h-5
                           w-5
-
                           shrink-0
 
                           text-[#354052]
@@ -881,6 +1515,7 @@ export default function CompareFlow() {
                                   flex
                                   min-h-10
                                   w-full
+
                                   items-center
                                   justify-between
 
@@ -889,8 +1524,12 @@ export default function CompareFlow() {
                                   px-3
                                   py-2
 
+                                  text-left
+
                                   font-inter
+
                                   text-[13px]
+
                                   text-[#344054]
 
                                   transition-colors
@@ -906,9 +1545,14 @@ export default function CompareFlow() {
 
                               {isSelected && (
                                 <Check
-                                  size={16}
+                                  aria-hidden="true"
+                                  className="
+                                      h-4
+                                      w-4
+
+                                      text-[#00897B]
+                                    "
                                   strokeWidth={2}
-                                  className="text-[#00897B]"
                                 />
                               )}
                             </button>
@@ -919,39 +1563,201 @@ export default function CompareFlow() {
                   </div>
                 </div>
 
-                {/* Contract status */}
                 <fieldset>
                   <legend className="sr-only">
                     {compareFlow.form.broadband.contractStatus.label}
                   </legend>
 
-                  <BinaryChoiceField
-                    label={compareFlow.form.broadband.contractStatus.label}
-                    value={stillInContract}
-                    options={compareFlow.form.broadband.contractStatus.options}
-                    onChange={setStillInContract}
-                  />
-
-                  <p
+                  <div
                     className="
-                      mt-2
+                      flex
+                      min-h-12
+                      w-full
 
-                      font-inter
-                      text-[11px]
-                      font-normal
-                      leading-4
-                      text-[#667085]
+                      items-center
+                      justify-between
 
-                      lg:text-[12px]
+                      gap-[18px]
+
+                      rounded-full
+
+                      border
+                      border-[#D0D5DD]
+
+                      bg-white
+
+                      py-[9px]
+                      pl-4
+                      pr-2
+
+                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                      min-[390px]:pl-6
+
+                      md:h-[50px]
+                      md:min-h-[50px]
+                      md:pl-5
+
+                      lg:h-[52px]
+                      lg:min-h-[52px]
                     "
                   >
-                    {compareFlow.form.broadband.contractStatus.helperText}
-                  </p>
+                    <span
+                      className="
+                        font-inter
+
+                        text-[12px]
+                        font-medium
+                        leading-5
+
+                        text-[#344054]
+
+                        min-[390px]:text-[13px]
+
+                        lg:text-[14px]
+                      "
+                    >
+                      {compareFlow.form.broadband.contractStatus.label}
+                    </span>
+
+                    <div
+                      className="
+                        flex
+                        h-[34px]
+                        shrink-0
+
+                        items-center
+                      "
+                    >
+                      {compareFlow.form.broadband.contractStatus.options.map((option) => (
+                        <PropertyOption
+                          key={option.id}
+                          label={option.label}
+                          selected={stillInContract === option.value}
+                          onClick={() => {
+                            setStillInContract(option.value);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </fieldset>
               </>
             )}
 
-            {/* Continue */}
+            {/* =================================================
+                MOVE IN DATE
+            ================================================== */}
+
+            {alreadyInProperty === MoveStatus.MOVING_IN && (
+              <FormField label="">
+                <div className="relative w-full">
+                  <input
+                    id="date-of-birth"
+                    type="date"
+                    value={moveInDate}
+                    onChange={(event) => setMoveInDate(event.target.value)}
+                    autoComplete="bday"
+                    className="
+                      flex
+                      h-12
+                      w-full
+
+                      items-center
+
+                      rounded-full
+
+                      border
+
+                      bg-white
+
+                      px-[18px]
+                      pr-11
+
+                      font-inter
+
+                      text-[14px]
+                      font-normal
+
+                      text-[#344054]
+
+                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                      outline-none
+
+                      transition
+
+                      lg:pr-[50px]
+
+                      [&::-webkit-calendar-picker-indicator]:absolute
+                      [&::-webkit-calendar-picker-indicator]:right-[18px]
+                      [&::-webkit-calendar-picker-indicator]:h-[18px]
+                      [&::-webkit-calendar-picker-indicator]:w-[18px]
+                      [&::-webkit-calendar-picker-indicator]:cursor-pointer
+                      [&::-webkit-calendar-picker-indicator]:opacity-0
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    aria-label="Open date of birth calendar"
+                    onClick={() => {
+                      const input = document.getElementById(
+                        'date-of-birth',
+                      ) as HTMLInputElement | null;
+
+                      if (input?.showPicker) {
+                        input.showPicker();
+                      } else {
+                        input?.click();
+                      }
+
+                      input?.focus();
+                    }}
+                    className="
+                      absolute
+                      right-[14px]
+                      top-1/2
+
+                      flex
+                      h-8
+                      w-8
+                      -translate-y-1/2
+
+                      items-center
+                      justify-center
+
+                      rounded-full
+
+                      text-[#667085]
+
+                      hover:bg-[#F2F4F7]
+
+                      focus-visible:outline-none
+                      focus-visible:ring-4
+                      focus-visible:ring-[#EEFFFB]
+                    "
+                  >
+                    <CalendarDays
+                      aria-hidden="true"
+                      className="
+                        h-4
+                        w-4
+
+                        lg:h-[18px]
+                        lg:w-[18px]
+                      "
+                      strokeWidth={1.6}
+                    />
+                  </button>
+                </div>
+              </FormField>
+            )}
+
+            {/* =================================================
+                CONTINUE
+            ================================================== */}
+
             <button
               type="submit"
               disabled={!isFormValid}
@@ -959,8 +1765,10 @@ export default function CompareFlow() {
                 inline-flex
                 h-12
                 w-full
+
                 items-center
                 justify-center
+
                 gap-2
 
                 rounded-full
@@ -968,11 +1776,14 @@ export default function CompareFlow() {
                 border
 
                 px-5
+                py-3
 
                 font-inter
+
                 text-[14px]
                 font-semibold
                 leading-5
+
                 text-white
 
                 shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
@@ -999,58 +1810,68 @@ export default function CompareFlow() {
               <span>{compareFlow.form.continueButton.label}</span>
 
               <ArrowRight
-                size={18}
-                strokeWidth={2}
                 aria-hidden="true"
+                className="
+                  h-[18px]
+                  w-[18px]
+
+                  md:h-4
+                  md:w-4
+
+                  lg:h-[18px]
+                  lg:w-[18px]
+                "
+                strokeWidth={2}
               />
             </button>
           </form>
         </div>
 
         {/* =====================================================
-            RIGHT IMAGE - DESKTOP/LAPTOP
+            RIGHT ILLUSTRATION - DESKTOP ONLY
         ====================================================== */}
+
         <div
           className="
             hidden
 
             lg:block
+            lg:mx-0
             lg:w-full
+            lg:max-w-none
             lg:justify-self-end
+            lg:rounded-[30px]
+            lg:p-[20px_24px]
 
             xl:h-[731px]
             xl:w-[648px]
+            xl:p-[20px_40px]
           "
         >
           {selectedService === 'broadband' ? (
             <div
               className="
-      relative
+                relative
+                ml-auto
+                mt-4
 
-      ml-auto
-      mt-4
+                aspect-[568/691]
+                w-full
+                max-w-[568px]
 
-      aspect-[568/691]
-      w-full
-      max-w-[568px]
+                overflow-hidden
 
-      overflow-hidden
-
-      xl:mt-10
-      xl:h-[691px]
-      xl:w-[568px]
-    "
+                xl:mt-10
+                xl:h-[691px]
+                xl:w-[568px]
+              "
             >
               <Image
                 src={serviceContent.image.src}
                 alt={serviceContent.image.alt}
                 fill
                 priority
-                sizes="
-                  (max-width:1023px) 0px,
-                  (max-width:1279px) 45vw,
-                  568px
-                "
+                sizes="(max-width:1023px) 0px, (max-width:1279px) 45vw, 568px"
                 className="
                   object-cover
                   object-center
@@ -1058,62 +1879,38 @@ export default function CompareFlow() {
               />
             </div>
           ) : (
-            /*
-             * Energy:
-             * preserve your existing artwork styling
-             */
             <div
               className="
-                lg:mx-0
-                lg:w-full
-                lg:max-w-none
-                lg:rounded-[30px]
-                lg:p-[20px_24px]
+                relative
 
-                xl:h-[731px]
-                xl:w-[648px]
-                xl:p-[20px_40px]
+                aspect-[568/691]
+                w-full
+
+                overflow-hidden
+
+                rounded-[22px]
+
+                bg-[#E9EAEB]
+
+                min-[390px]:rounded-[26px]
+
+                lg:rounded-[30px]
+
+                xl:h-[691px]
+                xl:w-[568px]
               "
             >
-              <div
+              <Image
+                src={compareFlow.services.energy.image.src}
+                alt={compareFlow.services.energy.image?.alt}
+                fill
+                priority
+                sizes="(max-width: 1023px) 0px, (max-width: 1279px) 45vw, 568px"
                 className="
-                  relative
-
-                  aspect-[568/691]
-                  w-full
-
-                  overflow-hidden
-
-                  rounded-[22px]
-
-                  bg-[#E9EAEB]
-
-                  lg:rounded-[30px]
-
-                  xl:h-[691px]
-                  xl:w-[568px]
+                  object-cover
+                  object-center
                 "
-              >
-                <Image
-                  src={serviceContent.image.src}
-                  alt={serviceContent.image.alt}
-                  fill
-                  priority
-                  sizes="
-                    (max-width:1023px) 0px,
-                    (max-width:1279px) 45vw,
-                    568px
-                  "
-                  className="
-                    scale-[0.92]
-
-                    bg-[#E9EAEB]
-
-                    object-contain
-                    object-center
-                  "
-                />
-              </div>
+              />
             </div>
           )}
         </div>
@@ -1158,7 +1955,7 @@ function DropdownPanel({ children }: { children: React.ReactNode }) {
 }
 
 /* =========================================================
-   ENERGY CHOICE
+   CHOICE PILL
 ========================================================= */
 
 type ChoicePillProps = {
@@ -1176,8 +1973,10 @@ function ChoicePill({ label, selected, onClick }: ChoicePillProps) {
       className={`
         inline-flex
         h-9
+
         items-center
         justify-center
+
         gap-2
 
         rounded-full
@@ -1189,6 +1988,7 @@ function ChoicePill({ label, selected, onClick }: ChoicePillProps) {
         px-3
 
         font-inter
+
         text-[13px]
         font-normal
         leading-5
@@ -1209,6 +2009,7 @@ function ChoicePill({ label, selected, onClick }: ChoicePillProps) {
           flex
           h-4
           w-4
+
           items-center
           justify-center
 
@@ -1219,7 +2020,18 @@ function ChoicePill({ label, selected, onClick }: ChoicePillProps) {
           ${selected ? 'border-[#00897B]' : 'border-[#D0D5DD]'}
         `}
       >
-        {selected && <span className="h-2 w-2 rounded-full bg-[#00897B]" />}
+        {selected && (
+          <span
+            className="
+              h-2
+              w-2
+
+              rounded-full
+
+              bg-[#00897B]
+            "
+          />
+        )}
       </span>
 
       <span>{label}</span>
@@ -1228,83 +2040,8 @@ function ChoicePill({ label, selected, onClick }: ChoicePillProps) {
 }
 
 /* =========================================================
-   YES / NO FIELD
+   PROPERTY OPTION
 ========================================================= */
-
-type BinaryChoiceFieldProps = {
-  label: string;
-  value: string;
-  options: {
-    id: string;
-    label: string;
-    value: string;
-  }[];
-  onChange: (value: string) => void;
-};
-
-function BinaryChoiceField({ label, value, options, onChange }: BinaryChoiceFieldProps) {
-  return (
-    <div
-      className="
-        flex
-        min-h-12
-        w-full
-        items-center
-        justify-between
-        gap-[18px]
-
-        rounded-full
-
-        border
-        border-[#D0D5DD]
-
-        bg-white
-
-        py-[9px]
-        pl-4
-        pr-2
-
-        shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-
-        min-[390px]:pl-6
-
-        md:h-[50px]
-        md:min-h-[50px]
-        md:pl-5
-
-        lg:h-[52px]
-        lg:min-h-[52px]
-      "
-    >
-      <span
-        className="
-          font-inter
-          text-[12px]
-          font-medium
-          leading-5
-          text-[#344054]
-
-          min-[390px]:text-[13px]
-
-          lg:text-[14px]
-        "
-      >
-        {label}
-      </span>
-
-      <div className="flex h-[34px] shrink-0 items-center">
-        {options.map((option) => (
-          <PropertyOption
-            key={option.id}
-            label={option.label}
-            selected={value === option.value}
-            onClick={() => onChange(option.value)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 type PropertyOptionProps = {
   label: string;
@@ -1322,6 +2059,7 @@ function PropertyOption({ label, selected, onClick }: PropertyOptionProps) {
         inline-flex
         h-[34px]
         min-w-[39px]
+
         items-center
         justify-center
 
@@ -1333,6 +2071,7 @@ function PropertyOption({ label, selected, onClick }: PropertyOptionProps) {
         py-2
 
         font-inter
+
         text-[13px]
         leading-none
 
@@ -1351,5 +2090,40 @@ function PropertyOption({ label, selected, onClick }: PropertyOptionProps) {
     >
       {label}
     </button>
+  );
+}
+
+/* =========================================================
+   FORM FIELD
+========================================================= */
+
+function FormField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="block w-full">
+      <label
+        className="
+          mb-1.5
+          block
+
+          font-inter
+
+          text-[11px]
+          font-medium
+          leading-4
+
+          text-[#344054]
+
+          sm:text-[12px]
+
+          lg:mb-2
+          lg:text-[14px]
+          lg:leading-5
+        "
+      >
+        {label}
+      </label>
+
+      {children}
+    </div>
   );
 }

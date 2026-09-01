@@ -1,66 +1,47 @@
 'use client';
 
-import type { FormEvent } from 'react';
 import { useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { MapPin } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 import data from '@/data/content.json';
 
-const UK_POSTCODE_REGEX =
-  /^(GIR\s?0AA|(?:(?:[A-PR-UWYZ][0-9][0-9A-HJKSTUW]?)|(?:[A-PR-UWYZ][A-HK-Y][0-9][0-9ABEHMNPRV-Y]?))\s?[0-9][ABD-HJLNP-UW-Z]{2})$/i;
-
-type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only';
+type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only' | 'insurance' | 'bundle-bills';
 
 export default function LowerHero() {
   const router = useRouter();
-  const { lowerHero } = data;
 
-  const [postcode, setPostcode] = useState('');
-  const [postcodeError, setPostcodeError] = useState('');
+  const { lowerHero } = data;
 
   const [selectedService, setSelectedService] = useState<ServiceType>(
     lowerHero.serviceTabs.defaultValue as ServiceType,
   );
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  function handleServiceSelect(service: ServiceType) {
+    setSelectedService(service);
 
-    const formattedPostcode = postcode.trim().toUpperCase().replace(/\s+/g, ' ');
-
-    if (!formattedPostcode) {
-      setPostcodeError(lowerHero.postcode.emptyError);
+    if (service === 'bundle-bills') {
+      router.push('/compare?service=energy&flow=bundle');
       return;
     }
 
-    if (!UK_POSTCODE_REGEX.test(formattedPostcode)) {
-      setPostcodeError('Please enter a valid UK postcode.');
+    if (service === 'sim-only') {
+      router.push('/result?service=sim-only');
       return;
     }
 
-    setPostcodeError('');
-
-    router.push(
-      `/compare?service=${selectedService}&postcode=${encodeURIComponent(formattedPostcode)}`,
-    );
-  };
-
-  const handlePostcodeChange = (value: string) => {
-    setPostcode(value);
-
-    if (postcodeError) {
-      setPostcodeError('');
-    }
-  };
+    router.push(`/compare?service=${service}`);
+  }
 
   return (
     <section
       className="
         w-full
         bg-white
+
         px-2
         pb-[72px]
 
@@ -81,7 +62,7 @@ export default function LowerHero() {
             relative
             mx-auto
 
-            h-[470px]
+            h-[540px]
             w-full
             max-w-[336px]
 
@@ -91,27 +72,27 @@ export default function LowerHero() {
 
             bg-[linear-gradient(100deg,#002B56_0.73%,#01ACA7_108.32%)]
 
-            min-[360px]:h-[510px]
+            min-[360px]:h-[570px]
             min-[360px]:max-w-[365px]
             min-[360px]:rounded-[18px]
 
-            min-[390px]:h-[559px]
+            min-[390px]:h-[610px]
             min-[390px]:max-w-[400px]
             min-[390px]:rounded-[20px]
 
-            md:h-[300px]
+            md:h-[340px]
             md:max-w-none
             md:rounded-[24px]
 
-            lg:h-[430px]
+            lg:h-[460px]
             lg:max-w-none
             lg:rounded-[30px]
 
-            xl:h-[474px]
+            xl:h-[490px]
           "
         >
           {/* =====================================================
-              MOBILE ARTWORK
+              MOBILE IMAGE
           ====================================================== */}
           <div
             className="
@@ -141,7 +122,6 @@ export default function LowerHero() {
               alt={lowerHero.mobileBackgroundImage.alt}
               fill
               priority
-              sizes="(max-width: 359px) 330px, (max-width: 389px) 355px, 390px"
               className="
                 object-contain
                 object-bottom
@@ -150,7 +130,7 @@ export default function LowerHero() {
           </div>
 
           {/* =====================================================
-              TABLET ARTWORK ONLY
+              TABLET IMAGE
           ====================================================== */}
           <div
             className="
@@ -160,20 +140,14 @@ export default function LowerHero() {
 
               hidden
 
-              md:block
-              lg:hidden
-
-              md:h-[94%]
-              md:w-[54%]
-
               md:right-[-62px]
               md:top-[55%]
+              md:block
+              md:h-[94%]
+              md:w-[54%]
               md:-translate-y-1/2
 
-              min-[900px]:h-[96%]
-              min-[900px]:w-[56%]
-              min-[900px]:right-[-34px]
-              min-[900px]:top-[55%]
+              lg:hidden
             "
           >
             <Image
@@ -181,7 +155,6 @@ export default function LowerHero() {
               alt={lowerHero.backgroundImage.alt}
               fill
               priority
-              sizes="(min-width: 768px) and (max-width: 1023px) 56vw, 0px"
               className="
                 object-contain
                 object-center
@@ -190,7 +163,7 @@ export default function LowerHero() {
           </div>
 
           {/* =====================================================
-              DESKTOP ARTWORK
+              DESKTOP IMAGE
           ====================================================== */}
           <div
             className="
@@ -210,7 +183,6 @@ export default function LowerHero() {
 
               xl:bottom-0
               xl:right-[-10px]
-              xl:w-[58%]
             "
           >
             <Image
@@ -218,7 +190,6 @@ export default function LowerHero() {
               alt={lowerHero.backgroundImage.alt}
               fill
               priority
-              sizes="(min-width: 1024px) 58vw, 0px"
               className="
                 object-contain
                 object-bottom-right
@@ -227,7 +198,7 @@ export default function LowerHero() {
           </div>
 
           {/* =====================================================
-              MOBILE CONTENT
+              MOBILE
           ====================================================== */}
           <div
             className="
@@ -250,147 +221,56 @@ export default function LowerHero() {
               md:hidden
             "
           >
-            <h2 className="max-w-[290px] font-red-hat-display text-[31px] font-extrabold leading-[34px] tracking-[0] text-white min-[360px]:max-w-[320px] min-[360px]:text-[34px] min-[360px]:leading-[37px] min-[390px]:max-w-[360px] min-[390px]:text-[38px] min-[390px]:leading-[41.88px]">
+            <h2
+              className="
+                max-w-[290px]
+
+                font-red-hat-display
+                text-[31px]
+                font-extrabold
+                leading-[34px]
+
+                text-white
+
+                min-[390px]:max-w-[360px]
+                min-[390px]:text-[38px]
+                min-[390px]:leading-[41.88px]
+              "
+            >
               {lowerHero.heading}
             </h2>
 
-            <p className="mt-2 max-w-[290px] font-red-hat-display text-[10px] font-[467] leading-[15px] tracking-[0] text-white min-[360px]:max-w-[320px] min-[360px]:text-[11px] min-[360px]:leading-[16px] min-[390px]:max-w-[350px] min-[390px]:text-[12px] min-[390px]:leading-[18px]">
+            <p
+              className="
+                mt-2
+                max-w-[290px]
+
+                font-red-hat-display
+                text-[10px]
+                font-[467]
+                leading-[15px]
+
+                text-white
+
+                min-[390px]:max-w-[350px]
+                min-[390px]:text-[12px]
+                min-[390px]:leading-[18px]
+              "
+            >
               {lowerHero.description}
             </p>
 
-            {/* Mobile service tabs */}
-            <div className="mt-4">
-              <LowerHeroServiceTabs
+            <div className="mt-5">
+              <LowerHeroServiceGrid
                 selectedService={selectedService}
-                onChange={setSelectedService}
+                onSelect={handleServiceSelect}
                 compact
               />
             </div>
-
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="
-                relative
-                mt-4
-                w-full
-                max-w-[300px]
-
-                min-[360px]:max-w-[326px]
-
-                min-[390px]:max-w-[348px]
-              "
-            >
-              <div
-                className={`flex h-[44px] w-full items-center rounded-[100px] border bg-white pl-[11px] transition-colors min-[360px]:h-[47px] min-[360px]:pl-3 min-[390px]:h-[50px] min-[390px]:pl-[14px] ${
-                  postcodeError ? 'border-red-400' : 'border-[#E4E4E4] focus-within:border-primary'
-                }`}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-1.5 min-[360px]:gap-2">
-                  <MapPin
-                    size={13}
-                    strokeWidth={1.8}
-                    className="shrink-0 text-secondary min-[360px]:h-[14px] min-[360px]:w-[14px] min-[390px]:h-4 min-[390px]:w-4"
-                    aria-hidden="true"
-                  />
-
-                  <label
-                    htmlFor="lower-hero-postcode-mobile"
-                    className="sr-only"
-                  >
-                    {lowerHero.postcode.label}
-                  </label>
-
-                  <input
-                    id="lower-hero-postcode-mobile"
-                    name="postcode"
-                    type="text"
-                    value={postcode}
-                    onChange={(event) => handlePostcodeChange(event.target.value)}
-                    placeholder={lowerHero.postcode.placeholder}
-                    autoComplete="postal-code"
-                    aria-invalid={Boolean(postcodeError)}
-                    aria-describedby={
-                      postcodeError ? 'lower-hero-postcode-mobile-error' : undefined
-                    }
-                    className="h-full min-w-0 flex-1 bg-transparent font-red-hat-display text-[8px] text-[#04242D] outline-none placeholder:text-[#475467] min-[360px]:text-[9px] min-[390px]:text-[10px]"
-                  />
-                </div>
-
-                {/* Animated mobile button */}
-                <div
-                  className="
-                    hero-animated-border
-
-                    -mr-px
-                    h-[44px]
-                    w-[108px]
-                    shrink-0
-
-                    rounded-[100px]
-
-                    p-[3px]
-
-                    min-[360px]:h-[47px]
-                    min-[360px]:w-[118px]
-
-                    min-[390px]:h-[50px]
-                    min-[390px]:w-[132px]
-                  "
-                >
-                  <button
-                    type="submit"
-                    className="
-                      relative
-                      z-10
-
-                      flex
-                      h-full
-                      w-full
-                      items-center
-                      justify-center
-
-                      whitespace-nowrap
-
-                      rounded-[100px]
-
-                      bg-secondary
-
-                      px-2
-
-                      font-red-hat-display
-                      text-[8px]
-                      font-semibold
-                      text-white
-
-                      transition-colors
-
-                      hover:bg-[#124A7E]
-
-                      min-[360px]:text-[9px]
-
-                      min-[390px]:px-3
-                      min-[390px]:text-[10px]
-                    "
-                  >
-                    {lowerHero.button.label}
-                  </button>
-                </div>
-              </div>
-
-              {postcodeError && (
-                <p
-                  id="lower-hero-postcode-mobile-error"
-                  className="absolute left-3 top-[48px] font-inter text-[8px] text-white min-[360px]:top-[51px] min-[390px]:top-[54px] min-[390px]:text-[9px]"
-                >
-                  {postcodeError}
-                </p>
-              )}
-            </form>
           </div>
 
           {/* =====================================================
-              TABLET CONTENT ONLY
+              TABLET
           ====================================================== */}
           <div
             className="
@@ -399,7 +279,8 @@ export default function LowerHero() {
 
               hidden
               h-full
-              w-[56%]
+              w-[60%]
+
               flex-col
               justify-center
 
@@ -407,8 +288,6 @@ export default function LowerHero() {
 
               md:flex
               lg:hidden
-
-              min-[900px]:pl-10
             "
           >
             <h2
@@ -419,12 +298,8 @@ export default function LowerHero() {
                 text-[40px]
                 font-bold
                 leading-[46px]
-                tracking-[0]
-                text-white
 
-                min-[900px]:max-w-[430px]
-                min-[900px]:text-[44px]
-                min-[900px]:leading-[50px]
+                text-white
               "
             >
               {lowerHero.heading}
@@ -433,307 +308,84 @@ export default function LowerHero() {
             <p
               className="
                 mt-3
-
                 max-w-[360px]
 
                 font-red-hat-display
                 text-[13px]
                 font-[467]
                 leading-[19px]
-                tracking-[0]
-                text-white
 
-                min-[900px]:max-w-[400px]
-                min-[900px]:text-[14px]
-                min-[900px]:leading-[21px]
+                text-white
               "
             >
               {lowerHero.description}
             </p>
 
-            {/* Tablet service tabs */}
-            <div className="mt-4">
-              <LowerHeroServiceTabs
+            <div className="mt-5 w-[430px]">
+              <LowerHeroServiceGrid
                 selectedService={selectedService}
-                onChange={setSelectedService}
+                onSelect={handleServiceSelect}
                 tablet
               />
             </div>
-
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="
-                relative
-                mt-4
-
-                w-[350px]
-
-                min-[900px]:w-[390px]
-              "
-            >
-              <div
-                className={`flex h-[52px] w-full items-center rounded-full border-[2px] bg-white transition-colors ${
-                  postcodeError ? 'border-red-400' : 'border-white focus-within:border-primary'
-                }`}
-              >
-                <div
-                  className="
-                    flex
-                    min-w-0
-                    flex-1
-                    items-center
-                    gap-2
-
-                    px-4
-                  "
-                >
-                  <MapPin
-                    size={17}
-                    strokeWidth={1.8}
-                    className="shrink-0 text-secondary"
-                    aria-hidden="true"
-                  />
-
-                  <label
-                    htmlFor="lower-hero-postcode-tablet"
-                    className="sr-only"
-                  >
-                    {lowerHero.postcode.label}
-                  </label>
-
-                  <input
-                    id="lower-hero-postcode-tablet"
-                    name="postcode"
-                    type="text"
-                    value={postcode}
-                    onChange={(event) => handlePostcodeChange(event.target.value)}
-                    placeholder={lowerHero.postcode.placeholder}
-                    autoComplete="postal-code"
-                    aria-invalid={Boolean(postcodeError)}
-                    aria-describedby={
-                      postcodeError ? 'lower-hero-postcode-tablet-error' : undefined
-                    }
-                    className="
-                      h-full
-                      min-w-0
-                      flex-1
-
-                      bg-transparent
-
-                      font-red-hat-display
-                      text-[11px]
-                      text-[#04242D]
-
-                      outline-none
-
-                      placeholder:text-[#04242D]
-
-                      min-[900px]:text-[12px]
-                    "
-                  />
-                </div>
-
-                {/* Animated tablet button */}
-                <div
-                  className="
-                    hero-animated-border
-
-                    -mr-[2px]
-
-                    h-[52px]
-                    w-[145px]
-                    shrink-0
-
-                    rounded-[100px]
-
-                    p-[3px]
-
-                    min-[900px]:w-[160px]
-                  "
-                >
-                  <button
-                    type="submit"
-                    className="
-                      relative
-                      z-10
-
-                      flex
-                      h-full
-                      w-full
-                      items-center
-                      justify-center
-
-                      whitespace-nowrap
-
-                      rounded-[100px]
-
-                      bg-secondary
-
-                      px-4
-
-                      font-red-hat-display
-                      text-[11px]
-                      font-semibold
-                      text-white
-
-                      transition-colors
-
-                      hover:bg-[#124A7E]
-                    "
-                  >
-                    {lowerHero.button.label}
-                  </button>
-                </div>
-              </div>
-
-              {postcodeError && (
-                <p
-                  id="lower-hero-postcode-tablet-error"
-                  className="
-                    absolute
-                    left-4
-                    top-[59px]
-
-                    font-inter
-                    text-[10px]
-                    text-white
-                  "
-                >
-                  {postcodeError}
-                </p>
-              )}
-            </form>
           </div>
 
           {/* =====================================================
-              DESKTOP CONTENT
+              DESKTOP
           ====================================================== */}
-          <div className="relative z-10 hidden h-full w-[53%] flex-col justify-center pl-16 lg:flex">
-            <h2 className="max-w-[520px] font-red-hat-display text-[60px] font-bold leading-[68px] tracking-[0] text-white">
+          <div
+            className="
+              relative
+              z-10
+
+              hidden
+              h-full
+              w-[55%]
+
+              flex-col
+              justify-center
+
+              pl-16
+
+              lg:flex
+            "
+          >
+            <h2
+              className="
+                max-w-[520px]
+
+                font-red-hat-display
+                text-[60px]
+                font-bold
+                leading-[68px]
+
+                text-white
+              "
+            >
               {lowerHero.heading}
             </h2>
 
-            <p className="mt-5 max-w-[505px] font-red-hat-display text-[18px] leading-[1.5] text-white">
+            <p
+              className="
+                mt-5
+                max-w-[505px]
+
+                font-red-hat-display
+                text-[18px]
+                leading-[1.5]
+
+                text-white
+              "
+            >
               {lowerHero.description}
             </p>
 
-            {/* Desktop/laptop tabs */}
-            <div className="mt-5">
-              <LowerHeroServiceTabs
+            <div className="mt-6 h-[176px] w-[560px]">
+              <LowerHeroServiceGrid
                 selectedService={selectedService}
-                onChange={setSelectedService}
+                onSelect={handleServiceSelect}
               />
             </div>
-
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="relative mt-5 w-[453px]"
-            >
-              <div
-                className={`flex h-16 w-full items-center rounded-full border-[3px] bg-white transition-colors ${
-                  postcodeError ? 'border-red-400' : 'border-white focus-within:border-primary'
-                }`}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3 px-5">
-                  <MapPin
-                    size={20}
-                    strokeWidth={1.8}
-                    className="shrink-0 text-secondary"
-                    aria-hidden="true"
-                  />
-
-                  <label
-                    htmlFor="lower-hero-postcode-desktop"
-                    className="sr-only"
-                  >
-                    {lowerHero.postcode.label}
-                  </label>
-
-                  <input
-                    id="lower-hero-postcode-desktop"
-                    name="postcode"
-                    type="text"
-                    value={postcode}
-                    onChange={(event) => handlePostcodeChange(event.target.value)}
-                    placeholder={lowerHero.postcode.placeholder}
-                    autoComplete="postal-code"
-                    aria-invalid={Boolean(postcodeError)}
-                    aria-describedby={
-                      postcodeError ? 'lower-hero-postcode-desktop-error' : undefined
-                    }
-                    className="h-full min-w-0 flex-1 bg-transparent font-red-hat-display text-[14px] text-[#04242D] outline-none placeholder:text-[#04242D]"
-                  />
-                </div>
-
-                {/* Animated desktop / laptop button */}
-                <div
-                  className="
-                    hero-animated-border
-
-                    -mr-[3px]
-
-                    h-16
-                    w-[187px]
-                    shrink-0
-
-                    rounded-[100px]
-
-                    p-[3px]
-                  "
-                >
-                  <button
-                    type="submit"
-                    className="
-                      relative
-                      z-10
-
-                      flex
-                      h-full
-                      w-full
-                      items-center
-                      justify-center
-
-                      whitespace-nowrap
-
-                      rounded-[100px]
-
-                      bg-secondary
-
-                      px-6
-                      py-[11px]
-
-                      font-red-hat-display
-                      text-[16px]
-                      font-semibold
-                      text-white
-
-                      transition-colors
-
-                      hover:bg-[#124A7E]
-
-                      focus-visible:outline-none
-                      focus-visible:ring-2
-                      focus-visible:ring-white
-                      focus-visible:ring-offset-2
-                      focus-visible:ring-offset-secondary
-                    "
-                  >
-                    {lowerHero.button.label}
-                  </button>
-                </div>
-              </div>
-
-              {postcodeError && (
-                <p
-                  id="lower-hero-postcode-desktop-error"
-                  className="absolute left-5 top-[72px] font-inter text-[13px] text-white"
-                >
-                  {postcodeError}
-                </p>
-              )}
-            </form>
           </div>
         </div>
       </div>
@@ -742,178 +394,182 @@ export default function LowerHero() {
 }
 
 /* =========================================================
-   LOWER HERO SERVICE TABS
+   SERVICE GRID
 ========================================================= */
 
-type LowerHeroServiceTabsProps = {
+type LowerHeroServiceGridProps = {
   selectedService: ServiceType;
-  onChange: (service: ServiceType) => void;
+  onSelect: (service: ServiceType) => void;
   compact?: boolean;
   tablet?: boolean;
 };
 
-function LowerHeroServiceTabs({
+function LowerHeroServiceGrid({
   selectedService,
-  onChange,
+  onSelect,
   compact = false,
   tablet = false,
-}: LowerHeroServiceTabsProps) {
-  const { serviceTabs } = data.lowerHero;
+}: LowerHeroServiceGridProps) {
+  const services = data.lowerHero.serviceTabs.items;
 
   return (
     <div
       className={`
-        flex
-        w-full
-        items-center
+        overflow-hidden
 
-        ${
-          compact
-            ? `
-              gap-[1px]
-            `
-            : tablet
-              ? `
-                gap-[4px]
-              `
-              : `
-                gap-[5px]
-              `
-        }
+        bg-white
+
+        ${compact ? 'rounded-[18px]' : tablet ? 'rounded-[20px]' : 'rounded-[24px]'}
       `}
     >
-      {serviceTabs.items.map((service) => {
-        const isActive = selectedService === service.value;
+      <div
+        className="
+          grid
+          grid-cols-2
 
-        return (
-          <button
-            key={service.id}
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => {
-              onChange(service.value as ServiceType);
-            }}
-            className={`
-              inline-flex
-              shrink-0
-              items-center
-              justify-center
+          sm:grid-cols-3
+        "
+      >
+        {services.map((service, index) => {
+          const isActive = selectedService === service.value;
 
-              whitespace-nowrap
-
-              rounded-full
-
-              font-red-hat-display
-              font-[550]
-
-              transition-all
-              duration-200
-
-              ${
-                compact
-                  ? `
-                    h-[27px]
-
-                    gap-[3px]
-
-                    px-[6px]
-
-                    text-[7.5px]
-                    leading-[12px]
-
-                    min-[360px]:h-[29px]
-                    min-[360px]:px-[7px]
-                    min-[360px]:text-[8px]
-
-                    min-[390px]:h-[31px]
-                    min-[390px]:gap-[3px]
-                    min-[390px]:px-[8px]
-                    min-[390px]:text-[9px]
-                  `
-                  : tablet
-                    ? `
-                      h-[32px]
-
-                      gap-[4px]
-
-                      px-[9px]
-
-                      text-[10px]
-                      leading-[16px]
-
-                      min-[900px]:h-[34px]
-                      min-[900px]:px-[10px]
-                      min-[900px]:text-[11px]
-                    `
-                    : `
-                      h-[38px]
-
-                      gap-[5px]
-
-                      px-[14px]
-
-                      text-[14px]
-                      leading-5
-                    `
-              }
-
-              ${
-                isActive
-                  ? `
-                    bg-[#00897B]
-                    text-white
-                  `
-                  : `
-                    bg-transparent
-                    text-[#D0D5DD]
-
-                    hover:bg-white/10
-                    hover:text-white
-                  `
-              }
-            `}
-          >
-            <Image
-              src={isActive ? service.activeIcon : service.icon}
-              alt={service.iconAlt}
-              width={68}
-              height={68}
+          return (
+            <button
+              key={service.id}
+              type="button"
+              aria-pressed={isActive}
+              onClick={() => {
+                onSelect(service.value as ServiceType);
+              }}
               className={`
-                shrink-0
-                object-contain
+                  group
 
-                ${
-                  compact
-                    ? `
-                      h-[9px]
-                      w-[9px]
+                  flex
+                  items-center
 
-                      min-[360px]:h-[10px]
-                      min-[360px]:w-[10px]
+                  border-[#EAECF0]
 
-                      min-[390px]:h-[11px]
-                      min-[390px]:w-[11px]
-                    `
-                    : tablet
+                  text-left
+
+                  transition-colors
+
+                  ${
+                    compact
                       ? `
-                        h-[12px]
-                        w-[12px]
+                        min-h-[56px]
+                        gap-2
+                        px-3
+                      `
+                      : tablet
+                        ? `
+                          min-h-[64px]
+                          gap-2.5
+                          px-4
+                        `
+                        : `
+                          min-h-[87px]
+                          gap-3
+                          px-5
+                        `
+                  }
 
-                        min-[900px]:h-[13px]
-                        min-[900px]:w-[13px]
+                  ${index % 3 !== 2 ? 'sm:border-r' : ''}
+
+                  ${index < 3 ? 'sm:border-b' : ''}
+
+                  ${index % 2 === 0 ? 'border-r sm:border-r-0' : ''}
+
+                  ${index < 4 ? 'border-b sm:border-b-0' : ''}
+
+                  ${
+                    isActive
+                      ? `
+                        bg-[#E7F6F5]
+                        text-[#00897B]
                       `
                       : `
-                        h-[17px]
-                        w-[17px]
-                      `
-                }
-              `}
-            />
+                        bg-white
+                        text-[#667085]
 
-            <span>{service.label}</span>
-          </button>
-        );
-      })}
+                        hover:bg-[#F9FAFB]
+                      `
+                  }
+                `}
+            >
+              <Image
+                src={isActive ? service.activeIcon : service.icon}
+                alt={service.iconAlt}
+                width={48}
+                height={48}
+                className={`
+                    shrink-0
+                    object-contain
+
+                    ${
+                      compact
+                        ? `
+                          h-[18px]
+                          w-[18px]
+                        `
+                        : tablet
+                          ? `
+                            h-[22px]
+                            w-[22px]
+                          `
+                          : `
+                            h-[26px]
+                            w-[26px]
+                          `
+                    }
+                  `}
+              />
+
+              <span
+                className={`
+                    min-w-0
+                    flex-1
+
+                    font-red-hat-display
+
+                    ${isActive ? 'font-extrabold' : 'font-[550]'}
+
+                    ${
+                      compact
+                        ? `
+                          text-[10px]
+
+                          min-[390px]:text-[11px]
+                        `
+                        : tablet
+                          ? `
+                            text-[13px]
+                          `
+                          : `
+                            text-[16px]
+                          `
+                    }
+                  `}
+              >
+                {service.label}
+              </span>
+
+              {isActive && (
+                <ChevronRight
+                  aria-hidden="true"
+                  className={`
+                      shrink-0
+
+                      text-[#0C3354]
+
+                      ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}
+                    `}
+                  strokeWidth={2}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

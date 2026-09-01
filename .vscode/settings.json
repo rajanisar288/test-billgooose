@@ -5,7 +5,7 @@
     "source.organizeImports": "explicit"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.rulers": [100],
+  "editor.rulers": [167],
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,

@@ -1,44 +1,240 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 
-import { Check, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import data from '@/data/content.json';
 
-type FilterValues = Record<string, string>;
+type CompareService = 'energy' | 'broadband';
 
-type FilterField = (typeof data.resultPage.filters.fields)[number];
+type CompareFlowDetails = {
+  service?: CompareService;
 
-type FilterOption = FilterField['options'][number];
+  postcode?: string;
+  address?: string;
+
+  serviceType?: string;
+  paymentMethod?: string;
+
+  currentProvider?: string;
+  stillInContract?: string;
+};
+
+type CompareServiceItem = {
+  id: string;
+  label: string;
+  icon: string;
+  alt: string;
+};
+
+const BROADBAND_TEMPORARY_PRICE = '£25.90/month';
+
+const WARNING_ICON = '/images/info-circle.png';
+
+const SAVING_ICON = '/images/percentage-icon.png';
+
+const BUNDLE_ICON = '/images/bundle-icon.png';
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function getCompareFlowSnapshot(): string {
+  try {
+    return sessionStorage.getItem('compareFlowDetails') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function getCompareFlowServerSnapshot(): string {
+  return '';
+}
+
+function subscribeToCompareFlow(callback: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === 'compareFlowDetails') {
+      callback();
+    }
+  };
+
+  window.addEventListener('storage', handleStorage);
+
+  window.addEventListener('billgoose-compare-flow-changed', callback);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+
+    window.removeEventListener('billgoose-compare-flow-changed', callback);
+  };
+}
+
+/* =========================================================
+   LABEL HELPERS
+========================================================= */
+
+function getEnergyServiceLabel(value?: string): string {
+  switch (value) {
+    case 'electricity-only':
+      return 'Electricity only';
+
+    case 'dual-fuel':
+      return 'Gas & Electricity (Dual Fuel)';
+
+    default:
+      return value || 'Gas & Electricity (Dual Fuel)';
+  }
+}
+
+function getPaymentMethodLabel(value?: string): string {
+  switch (value) {
+    case 'monthly-direct-debit':
+      return 'Monthly Direct Debit';
+
+    case 'prepayment':
+      return 'Pre Payment';
+
+    default:
+      return value || 'Pre Payment';
+  }
+}
+
+function getProviderLabel(value?: string): string {
+  if (!value) {
+    return 'Not selected';
+  }
+
+  const labels: Record<string, string> = {
+    bt: 'BT',
+    sky: 'Sky',
+    'virgin-media': 'Virgin Media',
+    talktalk: 'TalkTalk',
+    plusnet: 'Plusnet',
+    vodafone: 'Vodafone',
+    other: 'Other',
+  };
+
+  return labels[value] ?? value;
+}
+
+/* =========================================================
+   SIM ONLY HELPERS
+========================================================= */
+
+function getServiceLabel(id: string, alt: string): string {
+  const value = `${id} ${alt}`.toLowerCase();
+
+  if (value.includes('broadband')) {
+    return 'Broadband';
+  }
+
+  if (value.includes('mobile')) {
+    return 'Mobile';
+  }
+
+  if (value.includes('insurance') || value.includes('shield')) {
+    return 'Insurance';
+  }
+
+  if (value.includes('credit') || value.includes('card')) {
+    return 'Credit Cards';
+  }
+
+  if (value.includes('energy') || value.includes('electric')) {
+    return 'Energy';
+  }
+
+  return alt;
+}
+
+function getServiceHref(label: string): string {
+  switch (label) {
+    case 'Broadband':
+      return '/compare?service=broadband';
+
+    case 'Mobile':
+      return '/compare?service=mobile';
+
+    case 'Insurance':
+      return '/compare?service=insurance';
+
+    case 'Credit Cards':
+      return '/compare?service=credit-cards';
+
+    case 'Energy':
+      return '/compare?service=energy';
+
+    default:
+      return '/compare';
+  }
+}
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 export default function ResultFilters() {
-  const { filters } = data.resultPage;
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const defaultValues = useMemo<FilterValues>(() => {
-    return filters.fields.reduce<FilterValues>((values, field) => {
-      values[field.id] = field.defaultValue;
+  const isSimOnly = searchParams.get('service') === 'sim-only';
 
-      return values;
-    }, {});
-  }, [filters.fields]);
+  const snapshot = useSyncExternalStore(
+    subscribeToCompareFlow,
+    getCompareFlowSnapshot,
+    getCompareFlowServerSnapshot,
+  );
 
-  const [selectedValues, setSelectedValues] = useState<FilterValues>(defaultValues);
+  let details: CompareFlowDetails = {
+    service: 'energy',
+  };
 
-  const handleValueChange = (fieldId: string, value: string) => {
-    setSelectedValues((previousValues) => ({
-      ...previousValues,
-      [fieldId]: value,
+  if (snapshot) {
+    try {
+      details = JSON.parse(snapshot) as CompareFlowDetails;
+    } catch {
+      details = {
+        service: 'energy',
+      };
+    }
+  }
+
+  const service: CompareService = details.service === 'broadband' ? 'broadband' : 'energy';
+
+  const isBroadband = service === 'broadband';
+
+  // const address = details.address || '19 Masons Way, Wallyford, Musselburgh EH21 8BF';
+  const address =
+    typeof details.address === 'string'
+      ? details.address
+      : '19 Masons Way, Wallyford, Musselburgh EH21 8BF';
+
+  const handleEdit = () => {
+    router.push(`/compare?service=${service}`);
+  };
+
+  /* =========================================================
+     SIM ONLY ALSO COMPARE SERVICES
+  ========================================================= */
+
+  const simOnlyCompareServices = useMemo<CompareServiceItem[]>(() => {
+    const services = data.resultPage.hero.services.map((serviceItem) => ({
+      id: serviceItem.id,
+
+      label: getServiceLabel(serviceItem.id, serviceItem.alt),
+
+      icon: serviceItem.icon,
+
+      alt: serviceItem.alt,
     }));
-  };
 
-  const handleReset = () => {
-    setSelectedValues(defaultValues);
-  };
-
-  const handleApply = () => {
-    console.log('Applied result filters:', selectedValues);
-  };
+    return services.filter((serviceItem) =>
+      ['Broadband', 'Mobile', 'Insurance', 'Credit Cards'].includes(serviceItem.label),
+    );
+  }, []);
 
   return (
     <section
@@ -48,369 +244,46 @@ export default function ResultFilters() {
 
         mx-auto
 
-        hidden
-        max-w-[1320px]
+        w-full
+        max-w-[1390px]
 
-        lg:block
+        px-4
+
+        pb-3
+        pt-4
+
+        min-[390px]:px-5
+
+        sm:px-6
+        sm:pb-4
+        sm:pt-5
+
+        md:px-8
+        md:pb-5
+        md:pt-6
+
+        lg:-mt-[52px]
+        lg:mb-[50px]
+        lg:px-0
+        lg:pb-0
+        lg:pt-0
         lg:w-[calc(100%-80px)]
-        lg:-translate-y-12
 
-        xl:h-[148px]
-        xl:w-[calc(100%-120px)]
-        xl:-translate-y-[78px]
+        xl:-mt-[66px]
+        xl:mb-[50px]
       "
     >
-      <div
-        className="
-          w-full
+      {/* =====================================================
+          SIM ONLY
 
-          rounded-[16px]
-
-          border
-          border-[#ECECEC]
-
-          bg-white
-
-          p-4
-
-          shadow-[6px_4px_16px_0px_rgba(158,158,158,0.10),23px_17px_28px_0px_rgba(158,158,158,0.09),52px_38px_38px_0px_rgba(158,158,158,0.05),92px_67px_46px_0px_rgba(158,158,158,0.01)]
-
-          min-[390px]:p-5
-
-          xl:h-[148px]
-          xl:rounded-[20px]
-          xl:px-6
-          xl:py-5
-        "
-      >
-        <h2
-          className="
-            font-red-hat-display
-            text-[15px]
-            font-extrabold
-            leading-[16.5px]
-            text-[#101828]
-
-            xl:text-[16px]
-          "
-        >
-          {filters.heading}
-        </h2>
-
-        {/* Laptop / desktop filters */}
+          Same container across every breakpoint.
+      ====================================================== */}
+      {isSimOnly ? (
         <div
           className="
-            mt-4
+            w-full
 
-            grid
-            grid-cols-1
-            gap-4
-
-            lg:grid-cols-3
-
-            xl:hidden
-          "
-        >
-          {filters.fields.map((field) => (
-            <ResultFilterSelect
-              key={field.id}
-              field={field}
-              value={selectedValues[field.id]}
-              dropdownAriaLabel={filters.dropdownAriaLabel}
-              onChange={(value) => {
-                handleValueChange(field.id, value);
-              }}
-            />
-          ))}
-
-          <div
-            className="
-              flex
-              flex-col
-              gap-2
-
-              lg:col-span-3
-              lg:flex-row
-            "
-          >
-            <ActionButtons
-              applyLabel={filters.applyButton}
-              resetLabel={filters.resetButton}
-              onApply={handleApply}
-              onReset={handleReset}
-            />
-          </div>
-        </div>
-
-        {/* Large desktop filters */}
-        <div
-          className="
-            hidden
-
-            xl:mt-3
-            xl:grid
-            xl:h-[80px]
-            xl:grid-cols-[repeat(5,minmax(0,1fr))_1px_141px]
-            xl:items-end
-            xl:gap-4
-          "
-        >
-          {filters.fields.map((field) => (
-            <ResultFilterSelect
-              key={field.id}
-              field={field}
-              value={selectedValues[field.id]}
-              dropdownAriaLabel={filters.dropdownAriaLabel}
-              onChange={(value) => {
-                handleValueChange(field.id, value);
-              }}
-            />
-          ))}
-
-          <div
-            aria-hidden="true"
-            className="
-              h-[80px]
-              w-px
-              bg-[#EAECF0]
-            "
-          />
-
-          <div
-            className="
-              flex
-              h-[80px]
-              flex-col
-              gap-2
-            "
-          >
-            <ActionButtons
-              applyLabel={filters.applyButton}
-              resetLabel={filters.resetButton}
-              onApply={handleApply}
-              onReset={handleReset}
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-type ActionButtonsProps = {
-  applyLabel: string;
-  resetLabel: string;
-  onApply: () => void;
-  onReset: () => void;
-};
-
-function ActionButtons({ applyLabel, resetLabel, onApply, onReset }: ActionButtonsProps) {
-  return (
-    <>
-      <button
-        type="button"
-        onClick={onApply}
-        className="
-          inline-flex
-          h-10
-          w-full
-          items-center
-          justify-center
-
-          rounded-full
-
-          border
-          border-[#00897B]
-
-          bg-[#00897B]
-
-          px-[14px]
-
-          font-red-hat-display
-          text-[13px]
-          font-extrabold
-          text-white
-
-          lg:flex-1
-
-          xl:h-9
-          xl:w-[141px]
-          xl:flex-none
-        "
-      >
-        {applyLabel}
-      </button>
-
-      <button
-        type="button"
-        onClick={onReset}
-        className="
-          inline-flex
-          h-10
-          w-full
-          items-center
-          justify-center
-
-          rounded-full
-
-          border
-          border-[#D0D5DD]
-
-          bg-white
-
-          px-[14px]
-
-          font-red-hat-display
-          text-[13px]
-          font-extrabold
-          text-[#344054]
-
-          lg:flex-1
-
-          xl:h-9
-          xl:w-[141px]
-          xl:flex-none
-        "
-      >
-        {resetLabel}
-      </button>
-    </>
-  );
-}
-
-type ResultFilterSelectProps = {
-  field: FilterField;
-  value: string;
-  dropdownAriaLabel: string;
-  onChange: (value: string) => void;
-};
-
-function ResultFilterSelect({
-  field,
-  value,
-  dropdownAriaLabel,
-  onChange,
-}: ResultFilterSelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const selectedOption = field.options.find((option) => option.value === value);
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, []);
-
-  const handleOptionSelect = (option: FilterOption) => {
-    onChange(option.value);
-    setIsOpen(false);
-  };
-
-  return (
-    <div
-      ref={dropdownRef}
-      className="
-        relative
-        min-w-0
-      "
-    >
-      <label
-        htmlFor={`result-filter-${field.id}`}
-        className="
-          mb-1.5
-          block
-
-          font-inter
-          text-[12px]
-          font-medium
-          leading-5
-          text-[#344054]
-
-          xl:mb-2
-          xl:text-[14px]
-        "
-      >
-        {field.label}
-      </label>
-
-      <button
-        id={`result-filter-${field.id}`}
-        type="button"
-        onClick={() => {
-          setIsOpen((previous) => !previous);
-        }}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        aria-label={`${dropdownAriaLabel}: ${field.label}`}
-        className="
-          flex
-          h-10
-          w-full
-          items-center
-          justify-between
-          gap-2
-
-          rounded-full
-
-          border
-          border-[#EAECF0]
-
-          bg-white
-
-          px-3
-
-          font-inter
-          text-[13px]
-          text-[#667085]
-
-          xl:text-[16px]
-        "
-      >
-        <span className="truncate">{selectedOption?.label || field.placeholder}</span>
-
-        <ChevronDown
-          aria-hidden="true"
-          className={`
-    h-[16px]
-    w-[16px]
-    shrink-0
-
-    text-[#344054]
-
-    transition-transform
-    duration-200
-
-    xl:h-[18px]
-    xl:w-[18px]
-
-    ${isOpen ? 'rotate-180' : ''}
-  `}
-          strokeWidth={2.5}
-        />
-      </button>
-
-      {isOpen && (
-        <div
-          role="listbox"
-          className="
-            absolute
-            left-0
-            right-0
-            top-[calc(100%+8px)]
-            z-50
-
-            max-h-[220px]
-            overflow-y-auto
+            overflow-hidden
 
             rounded-[14px]
 
@@ -419,72 +292,715 @@ function ResultFilterSelect({
 
             bg-white
 
-            p-1.5
+            shadow-[0px_6px_18px_rgba(16,24,40,0.08)]
 
-            shadow-xl
+            sm:rounded-[16px]
+
+            xl:rounded-[18px]
           "
         >
-          {field.options.map((option) => {
-            const isSelected = option.value === value;
+          {/* =================================================
+              SAVING ROW
+          ================================================== */}
+          <div
+            className="
+              flex
+              min-h-[38px]
+              w-full
 
-            return (
-              <button
-                key={option.id}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onClick={() => {
-                  handleOptionSelect(option);
-                }}
-                className={`
-                  flex
-                  min-h-10
-                  w-full
-                  items-center
-                  justify-between
+              items-center
 
-                  rounded-[10px]
+              border-b
+              border-[#ABEFC6]
 
-                  px-3
-                  py-2
+              bg-[#F6FEF9]
 
-                  text-left
+              px-3
+              py-2
 
-                  font-inter
-                  text-[13px]
+              sm:min-h-[42px]
+              sm:px-4
 
-                  ${
-                    isSelected
-                      ? `
-                        bg-[#E6F4F2]
-                        text-[#0C3354]
-                      `
-                      : `
-                        text-[#667085]
+              lg:min-h-[45px]
 
-                        hover:bg-[#F9FAFB]
-                      `
-                  }
-                `}
+              xl:px-5
+            "
+          >
+            <div
+              className="
+                flex
+                min-w-0
+
+                items-start
+
+                gap-1.5
+
+                sm:items-center
+              "
+            >
+              <Image
+                src={SAVING_ICON}
+                alt=""
+                width={14}
+                height={14}
+                aria-hidden="true"
+                className="
+                  mt-[2px]
+
+                  h-[13px]
+                  w-[13px]
+                  shrink-0
+
+                  object-contain
+
+                  sm:mt-0
+                  sm:h-[14px]
+                  sm:w-[14px]
+                "
+              />
+
+              <p
+                className="
+                  min-w-0
+
+                  font-red-hat-display
+
+                  text-[10px]
+                  font-[467]
+                  leading-[15px]
+
+                  text-[#079455]
+
+                  min-[390px]:text-[11px]
+                  min-[390px]:leading-4
+
+                  sm:text-[12px]
+                  sm:leading-[18px]
+
+                  md:text-[13px]
+                  md:leading-5
+
+                  xl:text-[14px]
+                "
               >
-                {option.label}
+                <strong
+                  className="
+                    font-[645]
+                  "
+                >
+                  You could save up to £580/yr
+                </strong>{' '}
+                by switching to the best deal below
+              </p>
+            </div>
+          </div>
 
-                {isSelected && (
-                  <Check
-                    aria-hidden="true"
-                    className="
-                      h-4
-                      w-4
-                      text-[#00897B]
+          {/* =================================================
+              ALSO COMPARE
+          ================================================== */}
+          <div
+            className="
+              flex
+              w-full
+
+              flex-col
+
+              gap-2.5
+
+              px-3
+              py-3
+
+              min-[390px]:px-4
+
+              sm:flex-row
+              sm:flex-wrap
+              sm:items-center
+              sm:gap-2
+
+              md:px-5
+              md:py-4
+
+              lg:min-h-[62px]
+              lg:flex-nowrap
+              lg:px-5
+              lg:py-0
+
+              xl:px-6
+            "
+          >
+            <span
+              className="
+                shrink-0
+
+                whitespace-nowrap
+
+                font-red-hat-display
+
+                text-[11px]
+                font-[550]
+                leading-4
+
+                text-[#667085]
+
+                sm:mr-1
+                sm:text-[12px]
+
+                md:text-[13px]
+
+                xl:text-[14px]
+              "
+            >
+              Also compare:
+            </span>
+
+            {/* SERVICES */}
+            <div
+              className="
+                flex
+                min-w-0
+
+                flex-wrap
+
+                items-center
+
+                gap-1.5
+
+                sm:gap-2
+              "
+            >
+              {simOnlyCompareServices.map((serviceItem) => (
+                <Link
+                  key={serviceItem.id}
+                  href={getServiceHref(serviceItem.label)}
+                  className="
+                      inline-flex
+                      h-[27px]
+                      shrink-0
+
+                      items-center
+                      justify-center
+
+                      gap-1
+
+                      rounded-[6px]
+
+                      border
+                      border-[#EAECF0]
+
+                      bg-white
+
+                      px-[5px]
+
+                      shadow-[0px_1px_2px_rgba(16,24,40,0.04)]
+
+                      transition-colors
+
+                      hover:bg-[#F9FAFB]
+
+                      sm:h-[29px]
+                      sm:gap-1.5
+                      sm:px-[6px]
+
+                      lg:h-[30px]
                     "
-                    strokeWidth={2}
-                  />
-                )}
-              </button>
-            );
-          })}
+                >
+                  <span
+                    className="
+                        flex
+                        h-[17px]
+                        w-[17px]
+                        shrink-0
+
+                        items-center
+                        justify-center
+
+                        overflow-hidden
+
+                        rounded-[3px]
+
+                        bg-[#F2F4F7]
+
+                        sm:h-[19px]
+                        sm:w-[19px]
+
+                        lg:h-[20px]
+                        lg:w-[20px]
+                      "
+                  >
+                    <Image
+                      src={serviceItem.icon}
+                      alt={serviceItem.alt}
+                      width={18}
+                      height={18}
+                      className="
+                          h-[15px]
+                          w-[15px]
+
+                          object-contain
+
+                          sm:h-[17px]
+                          sm:w-[17px]
+
+                          lg:h-[18px]
+                          lg:w-[18px]
+                        "
+                    />
+                  </span>
+
+                  <span
+                    className="
+                        whitespace-nowrap
+
+                        font-red-hat-display
+
+                        text-[9px]
+                        font-[550]
+                        leading-4
+
+                        text-[#344054]
+
+                        min-[390px]:text-[10px]
+
+                        sm:text-[11px]
+
+                        xl:text-[13px]
+                      "
+                  >
+                    {serviceItem.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            {/* DIVIDER - desktop */}
+            <span
+              aria-hidden="true"
+              className="
+                hidden
+
+                h-[27px]
+                w-px
+                shrink-0
+
+                bg-[#EAECF0]
+
+                lg:mx-2
+                lg:block
+
+                xl:mx-4
+              "
+            />
+
+            {/* BUNDLE */}
+            <Link
+              href="/compare?service=energy&flow=bundle"
+              className="
+                inline-flex
+                w-fit
+                shrink-0
+
+                items-center
+
+                gap-1.5
+
+                whitespace-nowrap
+
+                font-red-hat-display
+
+                text-[11px]
+                font-[550]
+                leading-5
+
+                text-[#1570EF]
+
+                transition-colors
+
+                hover:text-[#175CD3]
+
+                sm:ml-1
+                sm:text-[12px]
+
+                md:text-[13px]
+
+                lg:ml-0
+                lg:text-[14px]
+
+                xl:text-[16px]
+              "
+            >
+              <Image
+                src={BUNDLE_ICON}
+                alt=""
+                width={13}
+                height={16}
+                aria-hidden="true"
+                className="
+                  h-[13px]
+                  w-[11px]
+                  shrink-0
+
+                  object-contain
+
+                  md:h-[15px]
+                  md:w-[12px]
+
+                  lg:h-4
+                  lg:w-[13px]
+                "
+              />
+              Bundle &amp; save up to £820/yr
+            </Link>
+          </div>
+        </div>
+      ) : (
+        /* =====================================================
+           ENERGY / BROADBAND / BUNDLE
+
+           Same editable-information container on
+           mobile, tablet and desktop.
+        ====================================================== */
+        <div
+          className="
+            overflow-hidden
+
+            rounded-[14px]
+
+            border
+            border-[#EAECF0]
+
+            bg-white
+
+            p-3
+
+            shadow-[0px_6px_18px_rgba(16,24,40,0.08)]
+
+            sm:rounded-[16px]
+            sm:p-4
+
+            xl:rounded-[18px]
+            xl:p-5
+          "
+        >
+          {/* =================================================
+              DETAILS CARDS
+
+              Mobile: stacked
+              Tablet: 3 columns
+              Desktop: existing 3 columns
+          ================================================== */}
+          <div
+            className="
+              grid
+              grid-cols-1
+
+              gap-2.5
+
+              sm:gap-3
+
+              md:grid-cols-3
+
+              xl:gap-4
+            "
+          >
+            {/* ADDRESS */}
+            <ResultInformationCard
+              title="Your address"
+              value={address}
+              onEdit={handleEdit}
+            />
+
+            {/* ENERGY / BROADBAND */}
+            {isBroadband ? (
+              <ResultInformationCard
+                title="Current provider"
+                value={getProviderLabel(details.currentProvider)}
+                onEdit={handleEdit}
+              />
+            ) : (
+              <ResultInformationCard
+                title="Selected service"
+                value={getEnergyServiceLabel(details.serviceType)}
+                onEdit={handleEdit}
+              />
+            )}
+
+            {/* PAYMENT / PRICE */}
+            {isBroadband ? (
+              <ResultInformationCard
+                title="Current package"
+                value={BROADBAND_TEMPORARY_PRICE}
+                onEdit={handleEdit}
+              />
+            ) : (
+              <ResultInformationCard
+                title="Payment method"
+                value={getPaymentMethodLabel(details.paymentMethod)}
+                onEdit={handleEdit}
+              />
+            )}
+          </div>
+
+          {/* =================================================
+              WARNING
+          ================================================== */}
+          <div
+            className="
+              mt-3
+
+              flex
+              min-h-[48px]
+
+              items-start
+
+              gap-2
+
+              rounded-[9px]
+
+              border
+              border-[#FEC84B]
+
+              bg-[#FFFAEB]
+
+              px-3
+              py-2.5
+
+              sm:mt-4
+              sm:gap-2.5
+              sm:rounded-[10px]
+              sm:px-4
+              sm:py-3
+            "
+          >
+            <Image
+              src={WARNING_ICON}
+              alt=""
+              width={18}
+              height={18}
+              aria-hidden="true"
+              className="
+                mt-[1px]
+
+                h-[15px]
+                w-[15px]
+                shrink-0
+
+                object-contain
+
+                sm:h-[18px]
+                sm:w-[18px]
+              "
+            />
+
+            <p
+              className="
+                min-w-0
+
+                font-inter
+
+                text-[9px]
+                font-normal
+                leading-[14px]
+
+                text-[#B54708]
+
+                min-[390px]:text-[10px]
+                min-[390px]:leading-[15px]
+
+                sm:text-[11px]
+                sm:leading-[17px]
+
+                md:text-[12px]
+                md:leading-[18px]
+
+                xl:text-[13px]
+                xl:leading-5
+              "
+            >
+              {isBroadband ? (
+                <>
+                  From 1 October 2026, the energy price cap will rise by 4% for a typical Direct
+                  Debit household. The temporary removal of VAT on electricity until 31 March 2027
+                  is reflected in this increase. See if switching could help you save even more.
+                </>
+              ) : (
+                <>
+                  From 1 October 2026, the energy price cap will rise by 4% for a typical Direct
+                  Debit household. The temporary removal of VAT on electricity until 31 March 2027
+                  is reflected in this increase. See if switching could help you save even more.{' '}
+                  <button
+                    type="button"
+                    className="
+                      inline
+
+                      font-inter
+                      font-extrabold
+
+                      text-[#B54708]
+
+                      underline
+                      decoration-solid
+                      underline-offset-2
+                    "
+                  >
+                    Learn more
+                  </button>
+                </>
+              )}
+            </p>
+          </div>
         </div>
       )}
-    </div>
+    </section>
+  );
+}
+
+/* =========================================================
+   INFORMATION CARD
+========================================================= */
+
+type ResultInformationCardProps = {
+  title: string;
+  value: string;
+  onEdit: () => void;
+};
+
+function ResultInformationCard({ title, value, onEdit }: ResultInformationCardProps) {
+  return (
+    <article
+      className="
+        flex
+        min-h-[70px]
+
+        items-start
+        justify-between
+
+        gap-3
+
+        rounded-[9px]
+
+        border
+        border-[#EAECF0]
+
+        bg-[#FCFCFD]
+
+        px-3
+        py-2.5
+
+        min-[390px]:min-h-[74px]
+
+        sm:min-h-[80px]
+        sm:rounded-[10px]
+        sm:px-4
+        sm:py-3
+
+        md:min-h-[84px]
+        md:gap-2
+        md:px-3
+
+        lg:min-h-[92px]
+        lg:gap-4
+        lg:px-4
+        lg:py-3
+
+        xl:min-h-[96px]
+        xl:px-5
+        xl:py-4
+      "
+    >
+      {/* TEXT */}
+      <div
+        className="
+          min-w-0
+          flex-1
+        "
+      >
+        <p
+          className="
+            font-inter
+
+            text-[10px]
+            font-semibold
+            leading-[15px]
+
+            text-[#101828]
+
+            sm:text-[11px]
+            sm:leading-[17px]
+
+            md:text-[10px]
+
+            lg:text-[12px]
+            lg:leading-[18px]
+
+            xl:text-[13px]
+            xl:leading-5
+          "
+        >
+          {title}
+        </p>
+
+        <p
+          className="
+            mt-1
+
+            line-clamp-2
+
+            font-inter
+
+            text-[11px]
+            font-normal
+            leading-[16px]
+
+            text-[#475467]
+
+            sm:text-[12px]
+            sm:leading-[18px]
+
+            md:text-[11px]
+
+            lg:text-[13px]
+            lg:leading-5
+
+            xl:text-[14px]
+            xl:leading-[22px]
+          "
+        >
+          {value}
+        </p>
+      </div>
+
+      {/* EDIT */}
+      <button
+        type="button"
+        onClick={onEdit}
+        className="
+          shrink-0
+
+          font-inter
+
+          text-[10px]
+          font-semibold
+          leading-[15px]
+
+          text-[#00897B]
+
+          transition-colors
+
+          hover:text-[#00796D]
+
+          sm:text-[11px]
+
+          md:text-[10px]
+
+          lg:text-[12px]
+          lg:leading-[18px]
+
+          xl:text-[13px]
+          xl:leading-5
+        "
+      >
+        Edit
+      </button>
+    </article>
   );
 }
