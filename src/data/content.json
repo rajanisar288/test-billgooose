@@ -55,13 +55,13 @@
         "status": "available"
       },
       {
-        "id": 4,
-        "label": "Credit Card",
-        "description": "",
-        "href": "/compare/credit-cards",
-        "icon": "/images/credit-cards.png",
-        "iconAlt": "Credit Card",
-        "status": "coming-soon"
+        "id": "sim-only",
+        "label": "SIM only",
+        "value": "sim-only",
+        "href": "/result?service=sim-only",
+        "icon": "/images/sim-icon-gray.png",
+        "activeIcon": "/images/sim-icon-green.png",
+        "iconAlt": "SIM only"
       },
       {
         "id": 5,
@@ -74,12 +74,12 @@
       },
       {
         "id": 6,
-        "label": "Loan",
-        "description": "",
-        "href": "/compare/loans",
-        "icon": "/images/loans.png",
-        "iconAlt": "Loan",
-        "status": "coming-soon"
+        "label": "Bundle Bills",
+        "description": "Bundle your household bills and save more",
+        "href": "/compare?service=energy&flow=bundle",
+        "icon": "/images/bundle-icon.png",
+        "iconAlt": "Bundle Bills",
+        "status": "available"
       }
     ],
     "account": {
@@ -288,7 +288,7 @@
         "description": "Latest SIM-only plans and contract offers",
         "icon": "/images/sim-icon.png",
         "linkText": "Compare Now",
-        "href": "/compare?service=sim-only"
+        "href": "/result?service=sim-only"
       },
       {
         "id": "insurance",
@@ -1717,6 +1717,223 @@
         }
       ]
     },
+    "simOnlyFilters": {
+      "heading": "Filters",
+      "applyButton": "Apply filters",
+      "resetButton": "Reset",
+      "networks": {
+        "label": "Networks",
+        "options": [
+          {
+            "id": "ee",
+            "label": "EE",
+            "value": "ee"
+          },
+          {
+            "id": "bt-mobile",
+            "label": "BT Mobile",
+            "value": "bt-mobile"
+          },
+          {
+            "id": "three",
+            "label": "Three",
+            "value": "three"
+          },
+          {
+            "id": "smarty",
+            "label": "Smarty",
+            "value": "smarty"
+          },
+          {
+            "id": "virgin-mobile",
+            "label": "Virgin Mobile",
+            "value": "virgin-mobile"
+          },
+          {
+            "id": "o2",
+            "label": "O2",
+            "value": "o2"
+          },
+          {
+            "id": "giffgaff",
+            "label": "Giffgaff",
+            "value": "giffgaff"
+          },
+          {
+            "id": "vodafone",
+            "label": "Vodafone",
+            "value": "vodafone"
+          },
+          {
+            "id": "sky-mobile",
+            "label": "Sky Mobile",
+            "value": "sky-mobile"
+          }
+        ]
+      },
+      "fields": [
+        {
+          "id": "monthly-cost",
+          "label": "Monthly cost",
+          "options": [
+            {
+              "id": "0-10",
+              "label": "£0 - £10",
+              "value": "0-10"
+            },
+            {
+              "id": "10-20",
+              "label": "£10 - £20",
+              "value": "10-20"
+            },
+            {
+              "id": "20-40",
+              "label": "£20 - £40",
+              "value": "20-40"
+            },
+            {
+              "id": "40-plus",
+              "label": "£40+",
+              "value": "40-plus"
+            }
+          ]
+        },
+        {
+          "id": "data",
+          "label": "Data",
+          "options": [
+            {
+              "id": "0-3gb",
+              "label": "0 - 3GB",
+              "value": "0-3gb"
+            },
+            {
+              "id": "3-10gb",
+              "label": "3 - 10GB",
+              "value": "3-10gb"
+            },
+            {
+              "id": "10-20gb",
+              "label": "10 - 20GB",
+              "value": "10-20gb"
+            },
+            {
+              "id": "20-40gb",
+              "label": "20 - 40GB",
+              "value": "20-40gb"
+            },
+            {
+              "id": "40-50gb",
+              "label": "40 - 50GB",
+              "value": "40-50gb"
+            },
+            {
+              "id": "50-100gb",
+              "label": "50 - 100GB",
+              "value": "50-100gb"
+            },
+            {
+              "id": "100gb-plus",
+              "label": "100GB+",
+              "value": "100gb-plus"
+            },
+            {
+              "id": "unlimited",
+              "label": "Unlimited",
+              "value": "unlimited"
+            }
+          ]
+        },
+        {
+          "id": "roaming-destinations",
+          "label": "Roaming destinations",
+          "options": [
+            {
+              "id": "europe",
+              "label": "Roaming in Europe",
+              "value": "europe"
+            },
+            {
+              "id": "usa",
+              "label": "USA",
+              "value": "usa"
+            },
+            {
+              "id": "india",
+              "label": "India",
+              "value": "india"
+            },
+            {
+              "id": "cyprus",
+              "label": "Cyprus",
+              "value": "cyprus"
+            },
+            {
+              "id": "malta",
+              "label": "Malta",
+              "value": "malta"
+            }
+          ]
+        },
+        {
+          "id": "contract-length",
+          "label": "Contract Length",
+          "options": [
+            {
+              "id": "no-contract",
+              "label": "No contract",
+              "value": "no-contract"
+            },
+            {
+              "id": "1-month",
+              "label": "1 month",
+              "value": "1-month"
+            },
+            {
+              "id": "12-months",
+              "label": "12 months",
+              "value": "12-months"
+            },
+            {
+              "id": "18-months",
+              "label": "18 months",
+              "value": "18-months"
+            },
+            {
+              "id": "24-months",
+              "label": "24 months",
+              "value": "24-months"
+            }
+          ]
+        },
+        {
+          "id": "other-plan-details",
+          "label": "Other plan details",
+          "options": [
+            {
+              "id": "5g-data",
+              "label": "5G data",
+              "value": "5g-data"
+            },
+            {
+              "id": "unlimited-texts",
+              "label": "Unlimited texts",
+              "value": "unlimited-texts"
+            },
+            {
+              "id": "unlimited-minutes",
+              "label": "Unlimited minutes",
+              "value": "unlimited-minutes"
+            },
+            {
+              "id": "esim",
+              "label": "eSIM compatible",
+              "value": "esim"
+            }
+          ]
+        }
+      ]
+    },
     "filters": {
       "heading": "Filters",
       "applyButton": "Apply filters",
@@ -1919,6 +2136,206 @@
       }
     },
     "plans": {
+      "simOnlyItems": [
+        {
+          "id": "ee-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "EE",
+          "networkDescription": "Uses EE’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "EE",
+          "badges": [
+            "6 month contract",
+            "No data caps"
+          ],
+          "data": "80 GB",
+          "priceLabel": "Starting price",
+          "price": "£3.18/month",
+          "upfrontLabel": "Price after 3 month",
+          "upfrontCost": "£7.95",
+          "roamingText": "Roaming included in 50+ countries",
+          "providerUrl": "https://ee.co.uk/mobile/sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "bt-mobile-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "BT Mobile",
+          "networkDescription": "Uses EE’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "BT Mobile",
+          "badges": [
+            "12 month contract",
+            "No annual increase"
+          ],
+          "data": "70 GB",
+          "priceLabel": "Starting price",
+          "price": "£9.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£12.00",
+          "roamingText": "Roam in over 40 countries",
+          "providerUrl": "https://www.bt.com/mobile",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "three-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Three",
+          "networkDescription": "Uses Three’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Three",
+          "badges": [
+            "12 month contract",
+            "No price increases"
+          ],
+          "data": "100 GB",
+          "priceLabel": "Monthly price",
+          "price": "£5.50/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£10.00",
+          "roamingText": "Includes 5G access",
+          "providerUrl": "https://www.three.co.uk/sim",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "smarty-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Smarty",
+          "networkDescription": "Uses Three’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Smarty",
+          "badges": [
+            "No contract",
+            "Price freeze options"
+          ],
+          "data": "20 GB",
+          "priceLabel": "Monthly fee",
+          "price": "£4.50/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "Free SIM",
+          "roamingText": "Roam in EU & USA",
+          "providerUrl": "https://smarty.co.uk/all-plans",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "virgin-mobile-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Virgin Mobile",
+          "networkDescription": "Uses EE’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Virgin Mobile",
+          "badges": [
+            "1 month contract",
+            "No price hikes"
+          ],
+          "data": "60 GB",
+          "priceLabel": "Price per month",
+          "price": "£8.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£9.99",
+          "roamingText": "Global roaming available",
+          "providerUrl": "https://www.virginmedia.com/mobile",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "o2-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "O2",
+          "networkDescription": "Uses O2’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "O2",
+          "badges": [
+            "No contract",
+            "Price locked for 6 months"
+          ],
+          "data": "40 GB",
+          "priceLabel": "Intro price",
+          "price": "£4.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£5.00",
+          "roamingText": "Roam free in EU",
+          "providerUrl": "https://www.o2.co.uk/shop/sim-cards/sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "giffgaff-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Giffgaff",
+          "networkDescription": "Uses O2’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Giffgaff",
+          "badges": [
+            "No contract",
+            "Flexible plans"
+          ],
+          "data": "30 GB",
+          "priceLabel": "Monthly cost",
+          "price": "£7.00/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "None",
+          "roamingText": "EU roaming included",
+          "providerUrl": "https://www.giffgaff.com/sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "vodafone-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Vodafone",
+          "networkDescription": "Uses Vodafone’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Vodafone",
+          "badges": [
+            "1 month contract",
+            "No annual price increases"
+          ],
+          "data": "50 GB",
+          "priceLabel": "Starting 3 month price",
+          "price": "£3.18/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£7.95",
+          "roamingText": "Roam up to 30GB in 37 destinations",
+          "providerUrl": "https://www.vodafone.co.uk/mobile/best-sim-only-deals",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        },
+        {
+          "id": "sky-mobile-sim-only",
+          "type": "sim-only",
+          "service": "sim-only",
+          "provider": "Sky Mobile",
+          "networkDescription": "Uses O2’s Network",
+          "logo": "/images/sim-only-provider.png",
+          "logoAlt": "Sky Mobile",
+          "badges": [
+            "No contract",
+            "Price lock available"
+          ],
+          "data": "25 GB",
+          "priceLabel": "Starting price",
+          "price": "£5.25/month",
+          "upfrontLabel": "Upfront costs",
+          "upfrontCost": "£7.50",
+          "roamingText": "EU roaming included",
+          "providerUrl": "https://www.sky.com/mobile",
+          "primaryButton": "View Deal",
+          "secondaryButton": "More Info"
+        }
+      ],
       "starIcon": "/images/star.png",
       "savingIcon": "/images/percentage-icon.png",
       "viewDealIcon": "/images/view-plan-icon.png",

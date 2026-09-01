@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 
+import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import data from '@/data/content.json';
 
 export default function ResultsStatus() {
@@ -13,12 +14,30 @@ export default function ResultsStatus() {
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  /* =========================================================
+     LOCK PAGE SCROLL WHILE FILTER DRAWER IS OPEN
+  ========================================================= */
+
+  useEffect(() => {
+    if (!isFilterOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFilterOpen]);
+
   return (
     <>
       {/* =====================================================
           MOBILE + TABLET ONLY
 
-          Desktop Results Summary now lives in ResultPlans.
+          Desktop Results Summary lives in ResultPlans.
       ====================================================== */}
       <section
         className="
@@ -57,9 +76,11 @@ export default function ResultsStatus() {
             <h2
               className="
                 font-red-hat-display
+
                 text-[18px]
                 font-extrabold
                 leading-6
+
                 text-[#101828]
 
                 sm:text-[20px]
@@ -74,9 +95,11 @@ export default function ResultsStatus() {
                 mt-1
 
                 font-inter
+
                 text-[11px]
                 font-normal
                 leading-[17px]
+
                 text-[#667085]
 
                 sm:text-[12px]
@@ -88,11 +111,15 @@ export default function ResultsStatus() {
             </p>
           </div>
 
-          {/* FILTER BUTTON */}
+          {/* =================================================
+              FILTER BUTTON
+          ================================================== */}
           <button
             type="button"
+            aria-expanded={isFilterOpen}
+            aria-controls="result-mobile-filters"
             onClick={() => {
-              setIsFilterOpen((current) => !current);
+              setIsFilterOpen(true);
             }}
             className="
               inline-flex
@@ -114,9 +141,13 @@ export default function ResultsStatus() {
               px-3
 
               font-red-hat-display
+
               text-[11px]
               font-semibold
+
               text-[#344054]
+
+              shadow-[0px_1px_2px_rgba(16,24,40,0.04)]
 
               sm:h-[40px]
               sm:px-4
@@ -171,41 +202,41 @@ export default function ResultsStatus() {
                     setSelectedPlanTab(option.value);
                   }}
                   className={`
-                      inline-flex
-                      h-[30px]
+                    inline-flex
+                    h-[30px]
 
-                      items-center
-                      justify-center
+                    items-center
+                    justify-center
 
-                      rounded-[6px]
+                    rounded-[6px]
 
-                      border
+                    border
 
-                      px-3
+                    px-3
 
-                      font-red-hat-display
-                      text-[10px]
+                    font-red-hat-display
+                    text-[10px]
 
-                      sm:text-[11px]
+                    sm:text-[11px]
 
-                      ${
-                        isSelected
-                          ? `
-                            border-[#00897B]
-                            bg-[#00897B]
+                    ${
+                      isSelected
+                        ? `
+                          border-[#00897B]
+                          bg-[#00897B]
 
-                            font-extrabold
-                            text-white
-                          `
-                          : `
-                            border-[#EAECF0]
-                            bg-white
+                          font-extrabold
+                          text-white
+                        `
+                        : `
+                          border-[#EAECF0]
+                          bg-white
 
-                            font-medium
-                            text-[#344054]
-                          `
-                      }
-                    `}
+                          font-medium
+                          text-[#344054]
+                        `
+                    }
+                  `}
                 >
                   {option.label}
                 </button>
@@ -235,6 +266,7 @@ export default function ResultsStatus() {
               px-3
 
               font-inter
+
               text-[10px]
               font-normal
 
@@ -253,40 +285,207 @@ export default function ResultsStatus() {
             />
           </button>
         </div>
+      </section>
 
-        {/* =================================================
-            TEMPORARY MOBILE/TABLET FILTER AREA
+      {/* =====================================================
+          MOBILE + TABLET FILTER DRAWER
 
-            Keep your existing modal/drawer here if you
-            already have one connected.
-        ================================================== */}
-        {isFilterOpen && (
+          Visible below lg only.
+          Desktop left sidebar remains untouched.
+      ====================================================== */}
+      {isFilterOpen && (
+        <div
+          id="result-mobile-filters"
+          className="
+            fixed
+            inset-0
+            z-[100]
+
+            bg-[rgba(16,24,40,0.35)]
+
+            lg:hidden
+          "
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsFilterOpen(false);
+            }
+          }}
+        >
+          {/* =================================================
+              MOBILE:
+              bottom sheet
+
+              TABLET:
+              right-side panel
+          ================================================== */}
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filters"
             className="
-              mt-4
+              absolute
+              bottom-0
+              left-0
+              right-0
 
-              rounded-[12px]
+              flex
+              max-h-[88dvh]
+              w-full
+              flex-col
 
-              border
-              border-[#EAECF0]
+              overflow-hidden
+
+              rounded-t-[20px]
 
               bg-white
 
-              p-4
+              shadow-[0px_-8px_30px_rgba(16,24,40,0.12)]
+
+              md:bottom-0
+              md:left-auto
+              md:right-0
+              md:top-0
+
+              md:h-full
+              md:max-h-none
+              md:w-[420px]
+
+              md:rounded-none
+              md:rounded-l-[20px]
+
+              md:shadow-[-12px_0px_32px_rgba(16,24,40,0.12)]
             "
           >
-            <p
+            {/* ===============================================
+                DRAWER HEADER
+            ================================================ */}
+            <div
               className="
-                font-inter
-                text-[12px]
-                text-[#535862]
+                flex
+                h-[58px]
+                shrink-0
+
+                items-center
+                justify-between
+
+                border-b
+                border-[#EAECF0]
+
+                bg-white
+
+                px-4
+
+                min-[390px]:px-5
+
+                md:h-[64px]
+                md:px-6
               "
             >
-              Filter options
-            </p>
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                "
+              >
+                <SlidersHorizontal
+                  aria-hidden="true"
+                  className="
+                    h-[18px]
+                    w-[18px]
+
+                    text-[#344054]
+                  "
+                  strokeWidth={1.8}
+                />
+
+                <h2
+                  className="
+                    font-red-hat-display
+
+                    text-[16px]
+                    font-extrabold
+                    leading-6
+
+                    text-[#101828]
+
+                    md:text-[18px]
+                  "
+                >
+                  Filters
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                aria-label="Close filters"
+                onClick={() => {
+                  setIsFilterOpen(false);
+                }}
+                className="
+                  flex
+                  h-9
+                  w-9
+
+                  items-center
+                  justify-center
+
+                  rounded-full
+
+                  border
+                  border-[#EAECF0]
+
+                  bg-white
+
+                  text-[#475467]
+
+                  transition-colors
+
+                  hover:bg-[#F9FAFB]
+                "
+              >
+                <X
+                  aria-hidden="true"
+                  className="
+                    h-[18px]
+                    w-[18px]
+                  "
+                  strokeWidth={1.8}
+                />
+              </button>
+            </div>
+
+            {/* ===============================================
+                ACTUAL FILTERS
+
+                This is your same filter component used
+                on desktop.
+            ================================================ */}
+            <div
+              className="
+                min-h-0
+                flex-1
+
+                overflow-x-hidden
+                overflow-y-auto
+
+                bg-[#F9FAFB]
+
+                p-4
+
+                min-[390px]:p-5
+
+                md:p-6
+              "
+            >
+              <ResultFilterSidebar
+                showBanner={false}
+                mobilePanel
+              />
+            </div>
           </div>
-        )}
-      </section>
+        </div>
+      )}
     </>
   );
 }

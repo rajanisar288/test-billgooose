@@ -28,6 +28,11 @@ export default function LowerHero() {
       return;
     }
 
+    if (service === 'sim-only') {
+      router.push('/result?service=sim-only');
+      return;
+    }
+
     router.push(`/compare?service=${service}`);
   }
 
