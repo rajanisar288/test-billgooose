@@ -19,6 +19,14 @@ type BroadbandSwitchModalProps = {
   selectedPlan: StandardPlan | null;
   recommendedPlans: ResultPlan[];
   onClose: () => void;
+
+  /*
+   * Bundle-specific behavior.
+   *
+   * Normal Energy/Broadband behavior remains unchanged
+   * when this is false.
+   */
+  bundleFlow?: boolean;
 };
 
 export default function BroadbandSwitchModal({
@@ -26,6 +34,7 @@ export default function BroadbandSwitchModal({
   selectedPlan,
   recommendedPlans,
   onClose,
+  bundleFlow = false,
 }: BroadbandSwitchModalProps) {
   const router = useRouter();
 
@@ -40,9 +49,51 @@ export default function BroadbandSwitchModal({
       ? featuredBroadband.featured.backgroundImage
       : '/images/bg-card-2.png';
 
+  /* =========================================================
+     CLOSE
+  ========================================================= */
+
   const handleClose = useCallback(() => {
     onClose();
   }, [onClose]);
+
+  /* =========================================================
+     BUNDLE → REVIEW DETAILS
+  ========================================================= */
+
+  const handleBundleContinue = useCallback(() => {
+    if (!selectedPlan) {
+      return;
+    }
+
+    /*
+     * Preserve the Energy plan currently displayed/selected
+     * by the Bundle user.
+     */
+    sessionStorage.setItem(
+      'journeySelectedPlan',
+      JSON.stringify({
+        ...selectedPlan,
+        service: 'energy',
+      }),
+    );
+
+    /*
+     * Keep the service and Bundle context available through
+     * Review Details and Payment.
+     */
+    sessionStorage.setItem('billgooseJourneyService', 'energy');
+
+    sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
+
+    onClose();
+
+    router.push('/review-your-details?service=energy&flow=bundle');
+  }, [onClose, router, selectedPlan]);
+
+  /* =========================================================
+     MODAL EFFECTS
+  ========================================================= */
 
   useEffect(() => {
     if (!isOpen) {
@@ -67,6 +118,10 @@ export default function BroadbandSwitchModal({
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, handleClose]);
+
+  /* =========================================================
+     NO PLAN
+  ========================================================= */
 
   if (!selectedPlan) {
     return null;
@@ -304,6 +359,7 @@ export default function BroadbandSwitchModal({
                   h-3
                   w-3
                   shrink-0
+
                   object-contain
                 "
               />
@@ -347,12 +403,18 @@ export default function BroadbandSwitchModal({
             sm:px-5
           "
         >
+          {/* =================================================
+              SELECTED ENERGY PLAN
+          ================================================== */}
           <ModalPlanCard
             plan={selectedPlan}
             savingIcon={plans.savingIcon}
             selected
           />
 
+          {/* =================================================
+              BROADBAND SUGGESTIONS
+          ================================================== */}
           <p
             className="
               mb-3
@@ -363,6 +425,7 @@ export default function BroadbandSwitchModal({
               font-[550]
               leading-[20px]
               tracking-[0]
+
               text-[#101828]
 
               sm:text-[14px]
@@ -382,9 +445,29 @@ export default function BroadbandSwitchModal({
             ))}
           </div>
 
+          {/* =================================================
+              COMPARE ALL BROADBAND
+          ================================================== */}
           <button
             type="button"
             onClick={() => {
+              /*
+               * Bundle:
+               *
+               * Do not start another Broadband compare journey.
+               * The user has already completed the Bundle
+               * qualification journey.
+               *
+               * Proceed to Review Your Details.
+               */
+              if (bundleFlow) {
+                handleBundleContinue();
+                return;
+              }
+
+              /*
+               * Existing non-Bundle behavior.
+               */
               onClose();
 
               router.push('/compare?service=broadband');
@@ -395,8 +478,10 @@ export default function BroadbandSwitchModal({
               inline-flex
               h-[48px]
               w-full
+
               items-center
               justify-center
+
               gap-3
 
               rounded-full
@@ -412,6 +497,7 @@ export default function BroadbandSwitchModal({
               text-[13px]
               font-bold
               leading-5
+
               text-white
 
               shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
@@ -434,6 +520,7 @@ export default function BroadbandSwitchModal({
                 h-[12px]
                 w-[15px]
                 shrink-0
+
                 object-contain
               "
             />
@@ -451,9 +538,24 @@ export default function BroadbandSwitchModal({
             />
           </button>
 
+          {/* =================================================
+              CONTINUE ENERGY ONLY
+          ================================================== */}
           <button
             type="button"
             onClick={() => {
+              /*
+               * Bundle:
+               * both modal actions now proceed to Review.
+               */
+              if (bundleFlow) {
+                handleBundleContinue();
+                return;
+              }
+
+              /*
+               * Existing Energy behavior.
+               */
               sessionStorage.setItem('journeySelectedPlan', JSON.stringify(selectedPlan));
 
               onClose();
@@ -513,6 +615,7 @@ function ModalPlanCard({ plan, savingIcon, selected = false }: ModalPlanCardProp
 
         items-center
         justify-between
+
         gap-2.5
 
         rounded-[10px]
@@ -553,6 +656,7 @@ function ModalPlanCard({ plan, savingIcon, selected = false }: ModalPlanCardProp
           flex
           min-w-0
           flex-1
+
           items-center
 
           gap-2
@@ -661,6 +765,7 @@ function ModalPlanCard({ plan, savingIcon, selected = false }: ModalPlanCardProp
             flex
             items-baseline
             justify-end
+
             gap-[1px]
           "
         >
@@ -707,7 +812,9 @@ function ModalPlanCard({ plan, savingIcon, selected = false }: ModalPlanCardProp
 
             inline-flex
             min-h-[16px]
+
             items-center
+
             gap-[3px]
 
             rounded-full

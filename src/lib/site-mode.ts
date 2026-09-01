@@ -5,4 +5,4 @@ export const SITE_MODE: SiteMode =
 
 export const IS_UAT_MODE = SITE_MODE === 'UAT';
 
-export const IS_PRODUCTION_MODE = SITE_MODE === 'UAT';
+export const IS_PRODUCTION_MODE = SITE_MODE === 'PRODUCTION';

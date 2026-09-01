@@ -7,35 +7,11 @@ import data from '@/data/content.json';
 
 const NEWSLETTER_IMAGE = '/images/compare-mail.png';
 
-/* =========================================================
-   SIM ONLY
-========================================================= */
-
-const SIM_ONLY_ITEM = {
-  id: 'sim-only',
-  title: 'SIM Only',
-  description: 'Latest SIM-only plans and contract offers',
-  icon: '/images/sim-icon.png',
-  href: '/compare?service=sim',
-  linkText: 'Compare Now',
-};
-
 export default function Compare() {
   const { compare, newsletter } = data;
 
-  /*
-   * Existing active services:
-   * Energy, Broadband, Mobile
-   *
-   * Add SIM Only as the fourth active service.
-   */
-  const activeItems = [...compare.items.slice(0, 3), SIM_ONLY_ITEM];
-
-  /*
-   * Existing coming-soon services stay:
-   * Credit Card, Insurance, Loans
-   */
-  const comingSoonItems = compare.items.slice(3, 6);
+  const activeItems = compare.items;
+  const comingSoonItems = compare.comingSoonItems;
 
   return (
     <section
@@ -51,6 +27,8 @@ export default function Compare() {
         min-[390px]:pb-[100px]
         min-[390px]:pt-[48px]
 
+        md:px-6
+
         lg:px-8
         lg:pt-[100px]
       "
@@ -64,6 +42,7 @@ export default function Compare() {
             className="
               inline-flex
               min-h-[30px]
+
               items-center
               gap-2
 
@@ -90,6 +69,7 @@ export default function Compare() {
               className="
                 h-[18px]
                 w-[18px]
+
                 object-contain
 
                 min-[390px]:h-5
@@ -103,6 +83,7 @@ export default function Compare() {
                 text-[12px]
                 font-medium
                 leading-none
+
                 text-[#0C111D]
 
                 min-[390px]:text-[14px]
@@ -132,11 +113,13 @@ export default function Compare() {
           <h2
             className="
               font-red-hat-display
+
               text-[28px]
               font-extrabold
               leading-[31px]
               tracking-[-0.4px]
-              text-secondary
+
+              text-[#0C3354]
 
               min-[360px]:text-[30px]
               min-[360px]:leading-[33px]
@@ -163,8 +146,10 @@ export default function Compare() {
 
               font-inter
               text-[13px]
+              font-normal
               leading-[18px]
-              text-secondary
+
+              text-[#0C3354]
 
               min-[390px]:max-w-none
               min-[390px]:text-[15px]
@@ -181,7 +166,7 @@ export default function Compare() {
         </div>
 
         {/* =====================================================
-            ACTIVE SERVICE CARDS
+            SIX ACTIVE SERVICE CARDS
         ====================================================== */}
         <div
           className="
@@ -189,261 +174,251 @@ export default function Compare() {
 
             grid
             grid-cols-1
-            gap-4
+
+            gap-3
 
             sm:grid-cols-2
+            sm:gap-4
 
             md:mt-10
-            md:gap-4
 
             lg:mt-12
-            lg:grid-cols-4
-            lg:gap-5
+            lg:grid-cols-3
+            lg:gap-x-5
+            lg:gap-y-5
           "
         >
-          {activeItems.map((item) => (
-            <article
-              key={item.id}
-              className="
-                flex
-                min-h-[168px]
-                w-full
-                min-w-0
-                flex-col
+          {activeItems.map((item) => {
+            const isBundleBills = item.title.toLowerCase().includes('bundle');
 
-                rounded-[20px]
+            const itemHref = isBundleBills ? '/compare?service=energy&flow=bundle' : item.href;
 
-                border
-                border-[#EAECF0]
-                border-t-[#DFE6EBB2]
-
-                bg-white
-
-                p-4
-
-                shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
-
-                sm:min-h-[174px]
-
-                md:min-h-[182px]
-                md:rounded-[24px]
-                md:p-5
-
-                lg:h-[184px]
-                lg:min-h-[184px]
-                lg:rounded-[24px]
-                lg:p-0
-
-                xl:h-[190px]
-                xl:min-h-[190px]
-              "
-            >
-              {/* =================================================
-                  CARD CONTENT
-              ================================================== */}
-              <div
+            return (
+              <article
+                key={item.id}
                 className="
                   flex
-                  flex-1
-                  items-center
-                  gap-4
+                  min-h-[154px]
+                  w-full
+                  min-w-0
 
-                  lg:gap-3
-                  lg:px-4
-                  lg:py-4
+                  flex-col
 
-                  xl:gap-4
-                  xl:px-[18px]
-                  xl:py-[18px]
+                  overflow-hidden
+
+                  rounded-[18px]
+
+                  border
+                  border-[#EAECF0]
+
+                  bg-white
+
+                  shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+
+                  sm:min-h-[160px]
+                  sm:rounded-[20px]
+
+                  md:min-h-[164px]
+
+                  lg:h-[176px]
+                  lg:min-h-[176px]
+                  lg:rounded-[22px]
                 "
               >
-                {/* ===============================================
-                    IMAGE
-                ================================================ */}
+                {/* =================================================
+                    TOP CONTENT
+                ================================================== */}
                 <div
                   className="
                     flex
-                    h-[72px]
-                    w-[72px]
+                    min-h-0
+                    flex-1
+
+                    items-center
+
+                    gap-3.5
+
+                    px-4
+                    py-4
+
+                    sm:gap-4
+                    sm:px-5
+
+                    lg:gap-4
+                    lg:px-[18px]
+                    lg:py-[17px]
+                  "
+                >
+                  {/* ICON */}
+                  <div
+                    className="
+                      flex
+                      h-[62px]
+                      w-[62px]
+                      shrink-0
+
+                      items-center
+                      justify-center
+
+                      rounded-[13px]
+
+                      border
+                      border-[#00B1AA33]
+
+                      bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
+
+                      sm:h-[66px]
+                      sm:w-[66px]
+                      sm:rounded-[14px]
+
+                      lg:h-[72px]
+                      lg:w-[72px]
+                      lg:rounded-[16px]
+                    "
+                  >
+                    <Image
+                      src={item.icon}
+                      alt={item.title}
+                      width={64}
+                      height={64}
+                      className="
+                        h-[50px]
+                        w-[50px]
+
+                        object-contain
+
+                        sm:h-[54px]
+                        sm:w-[54px]
+
+                        lg:h-[60px]
+                        lg:w-[60px]
+                      "
+                    />
+                  </div>
+
+                  {/* COPY */}
+                  <div className="min-w-0 flex-1">
+                    <h3
+                      className="
+                        font-red-hat-display
+
+                        text-[17px]
+                        font-extrabold
+                        leading-[22px]
+                        tracking-[0]
+
+                        text-[#0C3354]
+
+                        sm:text-[18px]
+                        sm:leading-[23px]
+
+                        lg:text-[20px]
+                        lg:leading-[25px]
+                      "
+                    >
+                      {item.title}
+                    </h3>
+
+                    <p
+                      className="
+                        mt-1
+
+                        max-w-[210px]
+
+                        font-red-hat-display
+                        text-[12px]
+                        font-[467]
+                        leading-[17px]
+                        tracking-[0]
+
+                        text-[#576574]
+
+                        sm:text-[13px]
+                        sm:leading-[18px]
+
+                        lg:mt-1.5
+                        lg:text-[14px]
+                        lg:leading-[19px]
+                      "
+                    >
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* =================================================
+                    CTA
+                ================================================== */}
+                <div
+                  className="
+                    flex
+                    h-[42px]
                     shrink-0
+
                     items-center
                     justify-center
 
-                    rounded-[16px]
+                    border-t
+                    border-[#F2F4F7]
 
-                    border
-                    border-[#00B1AA33]
+                    px-4
 
-                    bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
-
-                    md:h-[78px]
-                    md:w-[78px]
-                    md:rounded-[18px]
-
-                    lg:h-[60px]
-                    lg:w-[60px]
-                    lg:rounded-[14px]
-
-                    xl:h-[68px]
-                    xl:w-[68px]
-                    xl:rounded-[16px]
+                    lg:h-[48px]
                   "
                 >
-                  <Image
-                    src={item.icon}
-                    alt=""
-                    width={64}
-                    height={64}
+                  <Link
+                    href={itemHref}
                     className="
-                      h-[58px]
-                      w-[58px]
-                      object-contain
+                      inline-flex
+                      items-center
+                      justify-center
 
-                      md:h-[64px]
-                      md:w-[64px]
+                      gap-1.5
 
-                      lg:h-[48px]
-                      lg:w-[48px]
+                      font-inter
+                      text-[11px]
+                      font-semibold
+                      leading-5
 
-                      xl:h-[56px]
-                      xl:w-[56px]
-                    "
-                  />
-                </div>
+                      text-[#00897B]
 
-                {/* ===============================================
-                    TEXT
-                ================================================ */}
-                <div className="min-w-0 flex-1">
-                  <h3
-                    className="
-                      font-red-hat-display
-                      text-[17px]
-                      font-[645]
-                      leading-[23px]
-                      tracking-[0]
-                      text-secondary
+                      transition-all
+                      duration-200
 
-                      md:text-[18px]
+                      hover:gap-2.5
 
-                      lg:text-[16px]
-                      lg:font-extrabold
-                      lg:leading-[22px]
+                      focus-visible:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-[#00897B]
+                      focus-visible:ring-offset-2
 
-                      xl:text-[18px]
-                      xl:leading-[24px]
+                      sm:text-[12px]
+
+                      lg:text-[13px]
                     "
                   >
-                    {item.title}
-                  </h3>
+                    <span>{item.linkText}</span>
 
-                  <p
-                    className="
-                      mt-1
+                    <ArrowRight
+                      aria-hidden="true"
+                      className="
+                        h-[14px]
+                        w-[14px]
 
-                      max-w-[205px]
-
-                      font-red-hat-display
-                      text-[12px]
-                      font-[467]
-                      leading-[17px]
-                      tracking-[0]
-                      text-[#576574]
-
-                      md:text-[13px]
-                      md:leading-[18px]
-
-                      lg:mt-1
-                      lg:max-w-none
-                      lg:font-inter
-                      lg:text-[11px]
-                      lg:leading-[16px]
-
-                      xl:text-[12px]
-                      xl:leading-[17px]
-                    "
-                  >
-                    {item.description}
-                  </p>
+                        lg:h-4
+                        lg:w-4
+                      "
+                      strokeWidth={2}
+                    />
+                  </Link>
                 </div>
-              </div>
-
-              {/* =================================================
-                  DIVIDER + CTA
-              ================================================== */}
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-center
-
-                  border-t
-                  border-[#F2F4F7]
-
-                  px-4
-                  py-3
-
-                  lg:px-4
-                  lg:py-[11px]
-
-                  xl:py-3
-                "
-              >
-                <Link
-                  href={item.href}
-                  className="
-                    inline-flex
-                    w-fit
-                    items-center
-                    gap-[6px]
-
-                    font-inter
-                    text-[12px]
-                    font-semibold
-                    leading-5
-                    text-[#00897B]
-
-                    transition-[gap]
-                    duration-200
-
-                    hover:gap-[10px]
-
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-primary
-                    focus-visible:ring-offset-4
-
-                    md:text-[13px]
-
-                    lg:text-[11px]
-
-                    xl:text-[12px]
-                  "
-                >
-                  <span>{item.linkText}</span>
-
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="
-                      h-[15px]
-                      w-[15px]
-
-                      lg:h-[14px]
-                      lg:w-[14px]
-
-                      xl:h-[15px]
-                      xl:w-[15px]
-                    "
-                    strokeWidth={2}
-                  />
-                </Link>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
 
         {/* =====================================================
-            SECOND ROW
+            BOTTOM ROW
         ====================================================== */}
         <div
           className="
@@ -451,30 +426,27 @@ export default function Compare() {
 
             grid
             grid-cols-1
+
             gap-4
 
             md:mt-5
             md:grid-cols-2
             md:gap-5
 
-            lg:mt-5
             lg:gap-6
           "
         >
-          {/* =================================================
-              COMING SOON CARD
-          ================================================== */}
+          {/* COMING SOON */}
           <div
             className="
               relative
 
-              min-h-[205px]
+              min-h-[190px]
 
-              rounded-[20px]
+              rounded-[18px]
 
               border
               border-[#EAECF0]
-              border-t-[#DFE6EBB2]
 
               bg-white
 
@@ -482,36 +454,32 @@ export default function Compare() {
               pb-4
               pt-9
 
-              shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+              shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
 
-              md:rounded-[24px]
-              md:px-4
+              sm:rounded-[20px]
+              sm:px-4
 
-              lg:h-[219px]
-              lg:w-full
-              lg:rounded-[28px]
+              lg:h-[200px]
+              lg:min-h-[200px]
+              lg:rounded-[22px]
               lg:px-5
               lg:pb-5
               lg:pt-[42px]
             "
           >
-            {/* ===============================================
-                COMING SOON CONNECTOR / TITLE
-            ================================================ */}
             <div
               className="
                 absolute
                 left-4
                 right-4
-                top-[14px]
+                top-[13px]
 
                 flex
                 items-center
                 justify-center
 
-                lg:left-[20px]
-                lg:right-[20px]
-                lg:top-[14px]
+                lg:left-5
+                lg:right-5
               "
             >
               <span
@@ -530,32 +498,31 @@ export default function Compare() {
 
                   inline-flex
                   h-[20px]
+
                   items-center
                   justify-center
 
-                  rounded-[100px]
+                  rounded-full
 
                   border
-                  border-[#F2F4F7]
+                  border-[#D1E9FF]
 
                   bg-[#EFF8FF]
 
                   px-2
 
                   font-red-hat-display
-                  text-[10px]
+                  text-[9px]
                   font-bold
-                  leading-[16px]
+                  leading-4
+
                   text-[#147AD2]
 
-                  md:h-[21px]
-                  md:text-[11px]
+                  sm:text-[10px]
 
                   lg:h-[22px]
-                  lg:w-[92px]
-                  lg:px-0
-                  lg:text-[12px]
-                  lg:leading-[18px]
+                  lg:min-w-[88px]
+                  lg:text-[11px]
                 "
               >
                 Coming Soon
@@ -572,19 +539,17 @@ export default function Compare() {
               />
             </div>
 
-            {/* ===============================================
-                COMING SOON ITEMS
-            ================================================ */}
             <div
               className="
                 grid
                 h-full
-                grid-cols-3
-                gap-2
+                grid-cols-2
 
-                md:gap-3
+                gap-2.5
 
-                lg:gap-3
+                sm:gap-3
+
+                lg:gap-4
               "
             >
               {comingSoonItems.map((item) => (
@@ -593,6 +558,7 @@ export default function Compare() {
                   className="
                     flex
                     min-w-0
+
                     flex-col
                     items-center
                     justify-center
@@ -604,53 +570,50 @@ export default function Compare() {
 
                     bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
 
-                    px-1
-                    py-2
+                    px-2
+                    py-3
 
-                    md:rounded-[14px]
+                    sm:rounded-[14px]
 
-                    lg:h-[123px]
+                    lg:h-[126px]
                     lg:rounded-[16px]
-                    lg:px-2
-                    lg:py-2
                   "
                 >
                   <Image
                     src={item.icon}
-                    alt=""
+                    alt={item.title}
                     width={72}
                     height={72}
                     className="
-                      h-[48px]
-                      w-[48px]
+                      h-[50px]
+                      w-[50px]
+
                       object-contain
 
-                      md:h-[58px]
-                      md:w-[58px]
+                      sm:h-[56px]
+                      sm:w-[56px]
 
-                      lg:h-[72px]
-                      lg:w-[72px]
+                      lg:h-[66px]
+                      lg:w-[66px]
                     "
                   />
 
                   <span
                     className="
-                      mt-1
-
-                      max-w-full
+                      mt-1.5
 
                       text-center
 
                       font-red-hat-display
-                      text-[10px]
+                      text-[11px]
                       font-[550]
-                      leading-[14px]
-                      text-black
+                      leading-[15px]
 
-                      md:text-[12px]
-                      md:leading-[16px]
+                      text-[#101828]
 
-                      lg:text-[14px]
+                      sm:text-[12px]
+
+                      lg:text-[13px]
                       lg:font-bold
                       lg:leading-[18px]
                     "
@@ -662,42 +625,36 @@ export default function Compare() {
             </div>
           </div>
 
-          {/* =================================================
-              NEWSLETTER CARD
-          ================================================== */}
+          {/* NEWSLETTER */}
           <div
             className="
               relative
 
-              min-h-[205px]
+              min-h-[190px]
 
               overflow-hidden
 
-              rounded-[20px]
+              rounded-[18px]
 
               border
               border-[#EAECF0]
-              border-t-[#DFE6EBB2]
 
               bg-white
 
               p-4
 
-              shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+              shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
 
-              md:rounded-[24px]
-              md:p-5
+              sm:rounded-[20px]
+              sm:p-5
 
-              lg:h-[219px]
-              lg:w-full
-              lg:rounded-[28px]
+              lg:h-[200px]
+              lg:min-h-[200px]
+              lg:rounded-[22px]
               lg:px-6
               lg:py-5
             "
           >
-            {/* ===============================================
-                DECORATIVE CORNER
-            ================================================ */}
             <div
               aria-hidden="true"
               className="
@@ -707,21 +664,18 @@ export default function Compare() {
                 right-0
                 top-0
 
-                h-[105px]
+                h-[100px]
                 w-[130px]
 
                 rounded-bl-[80px]
 
-                bg-[linear-gradient(135deg,rgba(231,246,245,0.85)_0%,rgba(255,255,255,0)_100%)]
+                bg-[linear-gradient(135deg,rgba(231,246,245,0.9)_0%,rgba(255,255,255,0)_100%)]
 
-                lg:h-[140px]
-                lg:w-[180px]
+                lg:h-[125px]
+                lg:w-[165px]
               "
             />
 
-            {/* ===============================================
-                MAILBOX IMAGE
-            ================================================ */}
             <div
               className="
                 pointer-events-none
@@ -734,53 +688,50 @@ export default function Compare() {
                 h-[72px]
                 w-[72px]
 
-                md:h-[88px]
-                md:w-[88px]
+                sm:h-[82px]
+                sm:w-[82px]
 
-                lg:right-5
-                lg:top-3
-                lg:h-[117px]
-                lg:w-[117px]
+                lg:right-4
+                lg:top-2
+                lg:h-[98px]
+                lg:w-[98px]
               "
             >
               <Image
                 src={NEWSLETTER_IMAGE}
                 alt=""
                 fill
-                sizes="117px"
+                sizes="98px"
                 className="object-contain"
               />
             </div>
 
-            {/* ===============================================
-                COPY
-            ================================================ */}
             <div
               className="
                 relative
                 z-20
 
-                max-w-[68%]
+                max-w-[70%]
 
-                md:max-w-[67%]
+                sm:max-w-[72%]
 
-                lg:max-w-[365px]
+                lg:max-w-[350px]
               "
             >
               <h3
                 className="
                   font-red-hat-display
+
                   text-[19px]
                   font-extrabold
-                  leading-[26px]
-                  tracking-[0]
+                  leading-[25px]
+
                   text-[#0C3354]
 
-                  md:text-[21px]
-                  md:leading-[30px]
+                  sm:text-[21px]
 
                   lg:text-[24px]
-                  lg:leading-[36.4px]
+                  lg:leading-[30px]
                 "
               >
                 Be the first to know
@@ -793,26 +744,23 @@ export default function Compare() {
                   max-w-[340px]
 
                   font-red-hat-display
-                  text-[12px]
+                  text-[11px]
                   font-[467]
-                  leading-[16px]
-                  tracking-[0]
+                  leading-[15px]
+
                   text-[#576574]
 
-                  md:text-[13px]
-                  md:leading-[17px]
+                  sm:text-[12px]
+                  sm:leading-[16px]
 
-                  lg:text-[16px]
-                  lg:leading-[19px]
+                  lg:text-[13px]
+                  lg:leading-[17px]
                 "
               >
                 {newsletter.description}
               </p>
             </div>
 
-            {/* ===============================================
-                EMAIL FORM
-            ================================================ */}
             <form
               className="
                 absolute
@@ -821,11 +769,10 @@ export default function Compare() {
                 right-4
                 z-20
 
-                md:bottom-5
-                md:left-5
-                md:right-5
+                sm:bottom-5
+                sm:left-5
+                sm:right-5
 
-                lg:bottom-5
                 lg:left-6
                 lg:right-6
               "
@@ -835,6 +782,7 @@ export default function Compare() {
                   flex
                   h-[44px]
                   w-full
+
                   items-center
 
                   rounded-full
@@ -846,10 +794,10 @@ export default function Compare() {
 
                   pl-3
 
-                  md:h-[46px]
-                  md:pl-4
+                  sm:h-[46px]
+                  sm:pl-4
 
-                  lg:h-[52px]
+                  lg:h-[48px]
                 "
               >
                 <Mail
@@ -858,10 +806,11 @@ export default function Compare() {
                     h-[14px]
                     w-[14px]
                     shrink-0
+
                     text-[#355E87]
 
-                    lg:h-[16px]
-                    lg:w-[16px]
+                    lg:h-4
+                    lg:w-4
                   "
                   strokeWidth={1.7}
                 />
@@ -887,16 +836,17 @@ export default function Compare() {
 
                     font-inter
                     text-[10px]
-                    text-secondary
+
+                    text-[#0C3354]
 
                     outline-none
 
                     placeholder:text-[#475467]
 
-                    md:text-[11px]
+                    sm:text-[11px]
 
                     lg:px-3
-                    lg:text-[13px]
+                    lg:text-[12px]
                   "
                 />
 
@@ -914,12 +864,12 @@ export default function Compare() {
 
                     p-[2px]
 
-                    md:h-[46px]
-                    md:w-[115px]
+                    sm:h-[46px]
+                    sm:w-[115px]
 
-                    lg:h-[52px]
-                    lg:w-[132px]
-                    lg:p-[3px]
+                    lg:h-[48px]
+                    lg:w-[125px]
+                    lg:p-[2px]
                   "
                 >
                   <button
@@ -928,6 +878,7 @@ export default function Compare() {
                       flex
                       h-full
                       w-full
+
                       items-center
                       justify-center
 
@@ -935,22 +886,23 @@ export default function Compare() {
 
                       rounded-full
 
-                      bg-secondary
+                      bg-[#0D3B66]
 
                       px-3
 
                       font-red-hat-display
                       text-[10px]
                       font-semibold
+
                       text-white
 
                       transition-colors
 
                       hover:bg-[#124A7E]
 
-                      md:text-[11px]
+                      sm:text-[11px]
 
-                      lg:text-[13px]
+                      lg:text-[12px]
                     "
                   >
                     {newsletter.form.buttonLabel}

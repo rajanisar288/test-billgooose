@@ -1,50 +1,84 @@
 'use client';
 
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
+import ContractDateForm from '@/components/journey/forms/contract-date-form';
+import JourneyMobileStepHeader from '@/components/journey/forms/journey-mobile-step-header';
 import data from '@/data/content.json';
 
-import ContractDateForm from '../../../../components/journey/forms/contract-date-form';
-import JourneyMobileStepHeader from '../../../../components/journey/forms/journey-mobile-step-header';
+type JourneyFlow = 'energy' | 'bundle' | 'broadband';
 
-type JourneyService = 'energy' | 'broadband';
+function getJourneyFlowSnapshot(): JourneyFlow {
+  try {
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    if (storedFlow === 'bundle') {
+      return 'bundle';
+    }
+
+    if (storedFlow === 'broadband') {
+      return 'broadband';
+    }
+
+    return 'energy';
+  } catch {
+    return 'energy';
+  }
+}
+
+function getJourneyFlowServerSnapshot(): JourneyFlow {
+  return 'energy';
+}
+
+function subscribeToJourneyFlow(callback: () => void) {
+  function handleStorage(event: StorageEvent) {
+    if (event.key === 'billgooseJourneyFlow' || event.key === 'compareFlowDetails') {
+      callback();
+    }
+  }
+
+  function handleJourneyChanged() {
+    callback();
+  }
+
+  window.addEventListener('storage', handleStorage);
+  window.addEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+  window.addEventListener('billgoose-journey-service-changed', handleJourneyChanged);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+    window.removeEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+    window.removeEventListener('billgoose-journey-service-changed', handleJourneyChanged);
+  };
+}
 
 export default function ContractDatePage() {
-  const { journey } = data;
+  const { sidebar } = data.journey;
 
-  const [service] = useState<JourneyService>(() => {
-    if (typeof window === 'undefined') {
-      return 'energy';
-    }
+  const journeyFlow = useSyncExternalStore(
+    subscribeToJourneyFlow,
+    getJourneyFlowSnapshot,
+    getJourneyFlowServerSnapshot,
+  );
 
-    try {
-      const stored = sessionStorage.getItem('compareFlowDetails');
+  const steps =
+    journeyFlow === 'bundle'
+      ? sidebar.bundleSteps
+      : journeyFlow === 'broadband'
+        ? sidebar.broadbandSteps
+        : sidebar.energySteps;
 
-      if (!stored) {
-        return 'energy';
-      }
+  const currentStep = 2;
 
-      const parsed = JSON.parse(stored) as {
-        service?: string;
-      };
-
-      return parsed.service === 'broadband' ? 'broadband' : 'energy';
-    } catch {
-      return 'energy';
-    }
-  });
-
-  const steps = service === 'broadband' ? journey.sidebar.broadbandSteps : journey.sidebar.steps;
-
-  const step = steps[1];
+  const currentStepData = steps[currentStep - 1];
 
   return (
     <>
       <JourneyMobileStepHeader
-        currentStep={2}
+        currentStep={currentStep}
         totalSteps={steps.length}
-        heading={step.title}
-        description={step.description}
+        heading={currentStepData.title}
+        description={currentStepData.description}
       />
 
       <ContractDateForm />

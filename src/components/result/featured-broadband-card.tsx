@@ -1099,17 +1099,21 @@ export default function FeaturedBroadbandCard({ plan, onViewDetails }: FeaturedB
       ====================================================== */}
       <article
         className="
-          hidden w-full
-          overflow-hidden
-          rounded-[16px]
-          border border-[#EAECF0]
-          bg-white
+    hidden
+    w-full
+    min-w-0
 
-          lg:block
+    overflow-hidden
 
-          xl:min-h-[310.25px]
-          xl:w-[1096px]
-        "
+    rounded-[12px]
+
+    border
+    border-[#EAECF0]
+
+    bg-white
+
+    lg:block
+  "
       >
         {/* Featured banner */}
         <div
@@ -1557,7 +1561,6 @@ export default function FeaturedBroadbandCard({ plan, onViewDetails }: FeaturedB
               hover:bg-[#EAECF0]
 
               xl:h-9
-              xl:w-[1054px]
               xl:text-[14px]
             "
           >

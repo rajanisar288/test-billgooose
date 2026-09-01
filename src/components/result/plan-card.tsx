@@ -2,34 +2,36 @@ import Image from 'next/image';
 
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
-import type { StandardPlan } from '@/components/result/plan.types';
+import type { CompareResultService, StandardPlan } from '@/components/result/plan.types';
 import data from '@/data/content.json';
 
 type PlanCardProps = {
   plan: StandardPlan;
+
+  service: CompareResultService;
+
   onViewDetails: (plan: StandardPlan) => void;
+
   onSelectPlan: (plan: StandardPlan) => void;
 };
 
 const STAR_COUNT = 5;
 
-export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCardProps) {
+export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }: PlanCardProps) {
   const { plans } = data.resultPage;
 
-  const isViewDeal = plan.type === 'view-deal';
+  const isBroadband = service === 'broadband';
 
-  const handlePrimaryAction = () => {
-    if (isViewDeal) {
-      return;
-    }
-
+  const handleSelectPlan = () => {
     onSelectPlan(plan);
   };
+
+  const description = isBroadband ? `${plan.description} · ${plan.contract}` : plan.description;
 
   return (
     <>
       {/* =====================================================
-          MOBILE CARD ONLY
+          MOBILE CARD
       ====================================================== */}
       <article
         className="
@@ -49,7 +51,6 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
           md:hidden
         "
       >
-        {/* Provider information */}
         <div className="flex items-start gap-3">
           <Image
             src={plan.logo}
@@ -87,6 +88,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
             <p
               className="
                 mt-[1px]
+
                 truncate
 
                 font-red-hat-display
@@ -98,106 +100,114 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
                 text-[#667085]
               "
             >
-              {plan.description}
+              {description}
             </p>
 
-            {/* Rating */}
-            <div
-              className="
-                mt-1
-
-                flex
-                flex-wrap
-                items-center
-
-                gap-x-[5px]
-                gap-y-1
-              "
-            >
+            {!isBroadband && (
               <div
                 className="
-                  flex
-                  shrink-0
-                  items-center
-                  gap-[1px]
-                "
-                aria-label="5-star rating"
-              >
-                {Array.from({
-                  length: STAR_COUNT,
-                }).map((_, index) => (
-                  <Image
-                    key={`mobile-star-${index}`}
-                    src={plans.starIcon}
-                    alt=""
-                    width={14}
-                    height={14}
-                    aria-hidden="true"
-                    className="
-                      h-[14px]
-                      w-[14px]
-                      shrink-0
+                  mt-1
 
-                      object-contain
-                    "
-                  />
+                  flex
+                  flex-wrap
+                  items-center
+
+                  gap-x-[5px]
+                  gap-y-1
+                "
+              >
+                <div className="flex items-center gap-[1px]">
+                  {Array.from({
+                    length: STAR_COUNT,
+                  }).map((_, index) => (
+                    <Image
+                      key={`mobile-star-${index}`}
+                      src={plans.starIcon}
+                      alt=""
+                      width={14}
+                      height={14}
+                      aria-hidden="true"
+                      className="
+                        h-[14px]
+                        w-[14px]
+
+                        object-contain
+                      "
+                    />
+                  ))}
+                </div>
+
+                <span
+                  className="
+                    font-red-hat-display
+
+                    text-[14px]
+                    font-bold
+
+                    text-[#101828]
+                  "
+                >
+                  {plan.rating}
+                </span>
+
+                <span className="text-[#98A2B3]">·</span>
+
+                <span
+                  className="
+                    font-red-hat-display
+
+                    text-[14px]
+                    font-medium
+
+                    text-[#667085]
+                  "
+                >
+                  {plan.contract}
+                </span>
+              </div>
+            )}
+
+            {isBroadband && (
+              <div
+                className="
+                  mt-2
+
+                  flex
+                  flex-wrap
+
+                  gap-1
+                "
+              >
+                {plan.features.map((feature) => (
+                  <span
+                    key={feature}
+                    className="
+                        rounded-[4px]
+
+                        bg-[#EAF2F8]
+
+                        px-1.5
+                        py-0.5
+
+                        font-red-hat-display
+
+                        text-[9px]
+                        font-[645]
+
+                        text-[#105089]
+                      "
+                  >
+                    {feature}
+                  </span>
                 ))}
               </div>
+            )}
 
-              <span
-                className="
-                  font-red-hat-display
-
-                  text-[14px]
-                  font-bold
-                  leading-[20px]
-
-                  text-[#101828]
-                "
-              >
-                {plan.rating}
-              </span>
-
-              <span
-                aria-hidden="true"
-                className="
-                  text-[14px]
-                  font-bold
-                  leading-none
-
-                  text-[#98A2B3]
-                "
-              >
-                ·
-              </span>
-
-              <span
-                className="
-                  whitespace-nowrap
-
-                  font-red-hat-display
-
-                  text-[14px]
-                  font-medium
-                  leading-[20px]
-
-                  text-[#667085]
-                "
-              >
-                {plan.contract}
-              </span>
-            </div>
-
-            {/* Saving */}
             <span
               className="
                 mt-1
 
                 inline-flex
-                min-h-[20px]
-
-                items-center
-                gap-1
 
                 rounded-full
 
@@ -210,32 +220,15 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
                 text-[12px]
                 font-bold
-                leading-[18px]
 
                 text-[#027A48]
               "
             >
-              <Image
-                src={plans.savingIcon}
-                alt=""
-                width={13}
-                height={13}
-                aria-hidden="true"
-                className="
-                  h-[13px]
-                  w-[13px]
-                  shrink-0
-
-                  object-contain
-                "
-              />
-
               {plan.saving}
             </span>
           </div>
         </div>
 
-        {/* View details */}
         <button
           type="button"
           onClick={() => {
@@ -264,42 +257,31 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
             text-[13px]
             font-bold
-            leading-[19px]
 
             text-[#101828]
-
-            shadow-[0px_1px_2px_rgba(16,24,40,0.03)]
-
-            transition-colors
-
-            hover:bg-[#F9FAFB]
           "
         >
           <span>{plan.viewDetailsButton}</span>
 
           <ChevronDown
-            aria-hidden="true"
             className="
               h-[15px]
               w-[15px]
-              shrink-0
 
               text-[#667085]
             "
-            strokeWidth={1.8}
           />
         </button>
 
-        {/* Price */}
         <div
           className="
             mt-3
 
             flex
-            min-h-[68px]
 
             items-center
             justify-between
+
             gap-3
 
             rounded-[10px]
@@ -313,7 +295,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
             py-2
           "
         >
-          <div className="min-w-0">
+          <div>
             <p
               className="
                 font-red-hat-display
@@ -321,66 +303,60 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
                 text-[10px]
                 font-extrabold
                 uppercase
-                leading-[14px]
-                tracking-[0.5px]
 
                 text-[#667085]
               "
             >
-              {plan.priceLabel}
+              {isBroadband ? 'Monthly cost' : plan.priceLabel}
             </p>
 
-            <div className="mt-[2px]">
-              <span
+            <p
+              className="
+                font-red-hat-display
+
+                text-[20px]
+                font-extrabold
+
+                text-[#101828]
+              "
+            >
+              {plan.price}
+            </p>
+
+            {isBroadband && plan.averageSpeed && (
+              <p
                 className="
-                  block
+                    mt-1
 
-                  font-red-hat-display
+                    font-red-hat-display
 
-                  text-[20px]
-                  font-extrabold
-                  leading-[22px]
+                    text-[11px]
 
-                  text-[#101828]
-                "
+                    text-[#667085]
+                  "
               >
-                {plan.price}
-              </span>
-
-              <span
-                className="
-                  block
-
-                  font-red-hat-display
-
-                  text-[12px]
-                  font-medium
-                  leading-[14px]
-
-                  text-[#667085]
-                "
-              >
-                {plan.pricePeriod}
-              </span>
-            </div>
+                {plan.averageSpeed}
+              </p>
+            )}
           </div>
 
           <button
             type="button"
-            onClick={handlePrimaryAction}
-            className={`
+            onClick={handleSelectPlan}
+            className="
               inline-flex
               h-[42px]
               min-w-[155px]
-              shrink-0
 
               items-center
               justify-center
-              gap-2
-
-              whitespace-nowrap
 
               rounded-full
+
+              border
+              border-[#00897B]
+
+              bg-[#00897B]
 
               px-4
 
@@ -388,53 +364,13 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
               text-[14px]
               font-bold
-              leading-[20px]
 
               text-white
 
-              shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
-
-              transition-colors
-
-              ${
-                isViewDeal
-                  ? `
-                    border
-                    border-[#0D3B66]
-
-                    bg-[#0D3B66]
-
-                    hover:bg-[#082F4F]
-                  `
-                  : `
-                    border
-                    border-[#00897B]
-
-                    bg-[#00897B]
-
-                    hover:bg-[#00796D]
-                  `
-              }
-            `}
+              hover:bg-[#00796D]
+            "
           >
             {plan.primaryButton}
-
-            {isViewDeal && (
-              <Image
-                src={plans.viewDealIcon}
-                alt=""
-                width={12}
-                height={12}
-                aria-hidden="true"
-                className="
-                  h-3
-                  w-3
-                  shrink-0
-
-                  object-contain
-                "
-              />
-            )}
           </button>
         </div>
       </article>
@@ -462,13 +398,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
           lg:hidden
         "
       >
-        <div
-          className="
-            flex
-            items-start
-            gap-3
-          "
-        >
+        <div className="flex items-start gap-3">
           <Image
             src={plan.logo}
             alt={plan.logoAlt}
@@ -477,6 +407,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
             className="
               h-[74px]
               w-[74px]
+
               shrink-0
 
               rounded-[9px]
@@ -485,14 +416,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
             "
           />
 
-          <div
-            className="
-              min-w-0
-              flex-1
-
-              pt-[1px]
-            "
-          >
+          <div className="min-w-0 flex-1">
             <h3
               className="
                 truncate
@@ -501,7 +425,6 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
                 text-[20px]
                 font-extrabold
-                leading-[24px]
 
                 text-[#101828]
               "
@@ -512,41 +435,30 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
             <p
               className="
                 mt-[1px]
+
                 truncate
 
                 font-red-hat-display
 
                 text-[15px]
                 font-medium
-                leading-[20px]
 
                 text-[#667085]
               "
             >
-              {plan.description}
+              {description}
             </p>
 
-            <div
-              className="
-                mt-[3px]
-
-                flex
-                flex-wrap
-                items-center
-
-                gap-x-[5px]
-                gap-y-1
-              "
-            >
+            {!isBroadband && (
               <div
                 className="
+                  mt-[3px]
+
                   flex
-                  shrink-0
                   items-center
 
-                  gap-[1px]
+                  gap-[5px]
                 "
-                aria-label="5-star rating"
               >
                 {Array.from({
                   length: STAR_COUNT,
@@ -557,114 +469,49 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
                     alt=""
                     width={15}
                     height={15}
-                    aria-hidden="true"
-                    className="
-                      h-[15px]
-                      w-[15px]
-                      shrink-0
-
-                      object-contain
-                    "
                   />
                 ))}
+
+                <span className="font-bold">{plan.rating}</span>
+
+                <span>·</span>
+
+                <span>{plan.contract}</span>
               </div>
+            )}
 
-              <span
-                className="
-                  font-red-hat-display
+            {isBroadband && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {plan.features.map((feature) => (
+                  <span
+                    key={feature}
+                    className="
+                        rounded-[4px]
 
-                  text-[15px]
-                  font-bold
-                  leading-5
+                        bg-[#EAF2F8]
 
-                  text-[#101828]
-                "
-              >
-                {plan.rating}
-              </span>
+                        px-1.5
+                        py-0.5
 
-              <span
-                aria-hidden="true"
-                className="
-                  text-[15px]
-                  font-bold
-                  leading-none
+                        font-red-hat-display
 
-                  text-[#98A2B3]
-                "
-              >
-                ·
-              </span>
+                        text-[10px]
+                        font-[645]
 
-              <span
-                className="
-                  whitespace-nowrap
-
-                  font-red-hat-display
-
-                  text-[15px]
-                  font-medium
-                  leading-5
-
-                  text-[#667085]
-                "
-              >
-                {plan.contract}
-              </span>
-            </div>
-
-            <span
-              className="
-                mt-[5px]
-
-                inline-flex
-                min-h-[21px]
-
-                items-center
-                gap-1
-
-                rounded-full
-
-                bg-[#ECFDF3]
-
-                px-[7px]
-                py-[1px]
-
-                font-red-hat-display
-
-                text-[12px]
-                font-bold
-                leading-[18px]
-
-                text-[#027A48]
-              "
-            >
-              <Image
-                src={plans.savingIcon}
-                alt=""
-                width={13}
-                height={13}
-                aria-hidden="true"
-                className="
-                  h-[13px]
-                  w-[13px]
-                  shrink-0
-
-                  object-contain
-                "
-              />
-
-              {plan.saving}
-            </span>
+                        text-[#105089]
+                      "
+                  >
+                    {feature}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* View details */}
         <button
           type="button"
-          onClick={() => {
-            onViewDetails(plan);
-          }}
+          onClick={() => onViewDetails(plan)}
           className="
             mt-[14px]
 
@@ -688,43 +535,28 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
             text-[13px]
             font-bold
-            leading-[19px]
 
             text-[#101828]
-
-            shadow-[0px_1px_2px_rgba(16,24,40,0.03)]
-
-            transition-colors
-
-            hover:bg-[#F9FAFB]
           "
         >
-          <span>{plan.viewDetailsButton}</span>
+          {plan.viewDetailsButton}
 
           <ChevronDown
-            aria-hidden="true"
             className="
               h-[15px]
               w-[15px]
-              shrink-0
-
-              text-[#667085]
             "
-            strokeWidth={1.8}
           />
         </button>
 
-        {/* Price row */}
         <div
           className="
             mt-[13px]
 
             flex
-            min-h-[66px]
 
             items-center
             justify-between
-            gap-4
 
             rounded-[10px]
 
@@ -737,7 +569,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
             py-[9px]
           "
         >
-          <div className="min-w-0">
+          <div>
             <p
               className="
                 font-red-hat-display
@@ -745,70 +577,44 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
                 text-[10px]
                 font-extrabold
                 uppercase
-                leading-[14px]
-                tracking-[0.5px]
 
                 text-[#667085]
               "
             >
-              {plan.priceLabel}
+              {isBroadband ? 'Monthly cost' : plan.priceLabel}
             </p>
 
-            <div
+            <p
               className="
-                mt-[2px]
+                font-red-hat-display
 
-                flex
-                items-baseline
-                gap-[2px]
+                text-[20px]
+                font-extrabold
+
+                text-[#101828]
               "
             >
-              <span
-                className="
-                  font-red-hat-display
-
-                  text-[20px]
-                  font-extrabold
-                  leading-[22px]
-
-                  text-[#101828]
-                "
-              >
-                {plan.price}
-              </span>
-
-              <span
-                className="
-                  font-red-hat-display
-
-                  text-[12px]
-                  font-medium
-                  leading-[14px]
-
-                  text-[#667085]
-                "
-              >
-                {plan.pricePeriod}
-              </span>
-            </div>
+              {plan.price}
+            </p>
           </div>
 
           <button
             type="button"
-            onClick={handlePrimaryAction}
-            className={`
+            onClick={handleSelectPlan}
+            className="
               inline-flex
               h-[42px]
               min-w-[175px]
-              shrink-0
 
               items-center
               justify-center
-              gap-2
-
-              whitespace-nowrap
 
               rounded-full
+
+              border
+              border-[#00897B]
+
+              bg-[#00897B]
 
               px-5
 
@@ -816,64 +622,27 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
               text-[14px]
               font-bold
-              leading-5
 
               text-white
 
-              shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
-
-              transition-colors
-
-              ${
-                isViewDeal
-                  ? `
-                    border
-                    border-[#0D3B66]
-
-                    bg-[#0D3B66]
-
-                    hover:bg-[#082F4F]
-                  `
-                  : `
-                    border
-                    border-[#00897B]
-
-                    bg-[#00897B]
-
-                    hover:bg-[#00796D]
-                  `
-              }
-            `}
+              hover:bg-[#00796D]
+            "
           >
             {plan.primaryButton}
-
-            {isViewDeal && (
-              <Image
-                src={plans.viewDealIcon}
-                alt=""
-                width={12}
-                height={12}
-                aria-hidden="true"
-                className="
-                  h-3
-                  w-3
-                  shrink-0
-
-                  object-contain
-                "
-              />
-            )}
           </button>
         </div>
       </article>
 
       {/* =====================================================
-          DESKTOP CARD
+          DESKTOP
       ====================================================== */}
       <article
         className="
           hidden
           w-full
+          min-w-0
+
+          overflow-hidden
 
           rounded-[16px]
 
@@ -882,31 +651,24 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
           bg-white
 
-          p-5
-
           lg:block
-
-          xl:min-h-[159.25px]
-          xl:w-[1096px]
-          xl:px-5
-          xl:py-5
         "
       >
         <div
           className="
             flex
-            flex-row
+            w-full
+            min-w-0
 
-            items-start
+            items-center
             justify-between
 
             gap-5
 
-            xl:h-full
-            xl:gap-5
+            px-5
+            py-5
           "
         >
-          {/* Left */}
           <div
             className="
               flex
@@ -914,6 +676,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
               flex-1
 
               items-start
+
               gap-4
 
               xl:gap-5
@@ -925,30 +688,26 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
               width={72}
               height={72}
               className="
-                h-16
-                w-16
+                h-[72px]
+                w-[72px]
                 shrink-0
 
                 object-contain
-
-                xl:h-[72px]
-                xl:w-[72px]
               "
             />
 
             <div className="min-w-0 flex-1">
               <h3
                 className="
+                  truncate
+
                   font-red-hat-display
 
-                  text-[18px]
-                  font-extrabold
-                  leading-[21px]
+                  text-[20px]
+                  font-[645]
+                  leading-[21.75px]
 
                   text-[#101828]
-
-                  xl:text-[20px]
-                  xl:leading-[21.75px]
                 "
               >
                 {plan.provider}
@@ -958,122 +717,86 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
                 className="
                   mt-1
 
+                  truncate
+
                   font-red-hat-display
 
-                  text-[14px]
-                  font-medium
-                  leading-[18px]
+                  text-[13px]
+                  font-[467]
+                  leading-[19.5px]
 
                   text-[#667085]
-
-                  xl:text-[15px]
-                  xl:leading-[19.5px]
                 "
               >
-                {plan.description}
+                {description}
               </p>
 
-              <div
-                className="
-                  mt-2
-
-                  flex
-                  flex-wrap
-                  items-center
-
-                  gap-x-2
-                  gap-y-1
-                "
-              >
+              {/* ENERGY RATING */}
+              {!isBroadband && (
                 <div
                   className="
+                    mt-2
+
                     flex
-                    shrink-0
-
+                    flex-wrap
                     items-center
-                    gap-[2px]
 
-                    xl:gap-[3px]
+                    gap-x-2
+                    gap-y-1
                   "
-                  aria-label="5-star rating"
                 >
-                  {Array.from({
-                    length: STAR_COUNT,
-                  }).map((_, index) => (
-                    <Image
-                      key={`star-${index}`}
-                      src={plans.starIcon}
-                      alt=""
-                      width={16}
-                      height={16}
-                      aria-hidden="true"
-                      className="
-                        h-[14px]
-                        w-[14px]
-                        shrink-0
+                  <div className="flex items-center gap-[3px]">
+                    {Array.from({
+                      length: STAR_COUNT,
+                    }).map((_, index) => (
+                      <Image
+                        key={`desktop-star-${index}`}
+                        src={plans.starIcon}
+                        alt=""
+                        width={16}
+                        height={16}
+                        aria-hidden="true"
+                        className="
+                            h-4
+                            w-4
 
-                        object-contain
+                            object-contain
+                          "
+                      />
+                    ))}
+                  </div>
 
-                        xl:h-4
-                        xl:w-4
-                      "
-                    />
-                  ))}
+                  <span
+                    className="
+                      font-red-hat-display
+
+                      text-[14px]
+                      font-[645]
+
+                      text-[#101828]
+                    "
+                  >
+                    {plan.rating}
+                  </span>
+
+                  <span className="text-[#98A2B3]">·</span>
+
+                  <span
+                    className="
+                      font-red-hat-display
+
+                      text-[14px]
+                      font-[467]
+
+                      text-[#667085]
+                    "
+                  >
+                    {plan.contract}
+                  </span>
                 </div>
+              )}
 
-                <span
-                  className="
-                    font-red-hat-display
-
-                    text-[13px]
-                    font-bold
-                    leading-5
-
-                    text-[#101828]
-
-                    xl:text-[14px]
-                    xl:leading-6
-                  "
-                >
-                  {plan.rating}
-                </span>
-
-                <span
-                  aria-hidden="true"
-                  className="
-                    font-red-hat-display
-
-                    text-[15px]
-                    font-bold
-                    leading-5
-
-                    text-[#98A2B3]
-
-                    xl:text-[16px]
-                    xl:leading-6
-                  "
-                >
-                  ·
-                </span>
-
-                <span
-                  className="
-                    font-red-hat-display
-
-                    text-[13px]
-                    font-bold
-                    leading-5
-
-                    text-[#667085]
-
-                    xl:text-[14px]
-                    xl:leading-6
-                  "
-                >
-                  {plan.contract}
-                </span>
-              </div>
-
+              {/* FEATURES */}
               <div
                 className="
                   mt-2
@@ -1082,6 +805,7 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
                   flex-wrap
 
                   items-center
+
                   gap-1.5
                 "
               >
@@ -1089,31 +813,25 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
                   <span
                     key={feature}
                     className="
-                      inline-flex
-                      min-h-[20px]
+                        inline-flex
+                        min-h-[21px]
 
-                      items-center
+                        items-center
 
-                      rounded-[4px]
+                        rounded-[4px]
 
-                      bg-[#EAF2F8]
+                        bg-[#EAF2F8]
 
-                      px-2
-                      py-0.5
+                        px-[7px]
+                        py-0.5
 
-                      font-red-hat-display
+                        font-red-hat-display
 
-                      text-[11px]
-                      font-extrabold
-                      leading-4
+                        text-[11.5px]
+                        font-[645]
 
-                      text-[#105089]
-
-                      xl:min-h-[21.25px]
-                      xl:px-[7px]
-                      xl:text-[11.5px]
-                      xl:leading-[17.25px]
-                    "
+                        text-[#105089]
+                      "
                   >
                     {feature}
                   </span>
@@ -1122,167 +840,129 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
             </div>
           </div>
 
-          {/* Right */}
+          {/* SAVING + ACTIONS */}
           <div
             className="
               flex
-              w-auto
-              min-w-[238px]
+              shrink-0
 
-              flex-col
+              items-center
 
-              items-end
-              gap-3
-
-              xl:min-w-[253px]
-              xl:justify-between
+              gap-5
             "
           >
-            <div className="text-right">
+            <div
+              className="
+                flex
+                w-[125px]
+                shrink-0
+
+                flex-col
+                justify-center
+
+                rounded-[8px]
+
+                border
+                border-[#A6F4C5]
+
+                bg-[#F6FEF9]
+
+                px-3
+                py-2.5
+              "
+            >
               <p
                 className="
                   font-red-hat-display
 
-                  text-[10px]
-                  font-extrabold
-                  uppercase
-                  leading-4
-                  tracking-[0.55px]
+                  text-[20px]
+                  font-[645]
+                  leading-[30px]
 
-                  text-[#667085]
-
-                  xl:text-[11px]
-                  xl:leading-[16.5px]
+                  text-[#12B76A]
                 "
               >
-                {plan.priceLabel}
+                {plan.saving}
               </p>
 
-              <div
+              <p
                 className="
-                  mt-0.5
-
-                  flex
-                  items-baseline
-                  justify-end
-
-                  gap-0.5
-                "
-              >
-                <span
-                  className="
-                    font-red-hat-display
-
-                    text-[20px]
-                    font-extrabold
-                    leading-6
-
-                    text-black
-
-                    xl:text-[22px]
-                    xl:leading-[24.2px]
-                  "
-                >
-                  {plan.price}
-                </span>
-
-                <span
-                  className="
-                    font-red-hat-display
-
-                    text-[12px]
-                    font-medium
-                    leading-[14px]
-
-                    text-[#667085]
-
-                    xl:text-[13px]
-                    xl:leading-[14.3px]
-                  "
-                >
-                  {plan.pricePeriod}
-                </span>
-              </div>
-
-              <span
-                className="
-                  mt-1
-
-                  inline-flex
-                  min-h-[21px]
-
-                  items-center
-                  gap-1
-
-                  rounded-full
-
-                  bg-[#ECFDF3]
-
-                  px-[7px]
-                  py-0.5
+                  mt-[2px]
 
                   font-red-hat-display
 
-                  text-[10.5px]
-                  font-extrabold
-                  leading-[17px]
+                  text-[12px]
+                  font-[467]
+                  leading-[14.4px]
 
-                  text-[#027A48]
-
-                  xl:text-[11.5px]
-                  xl:leading-[17.25px]
+                  text-[#054F31]
                 "
               >
-                <Image
-                  src={plans.savingIcon}
-                  alt=""
-                  width={12}
-                  height={12}
-                  aria-hidden="true"
-                  className="
-                    h-3
-                    w-3
-                    shrink-0
-
-                    object-contain
-                  "
-                />
-
-                {plan.saving}
-              </span>
+                Annual saving at today&apos;s rates
+              </p>
             </div>
 
             <div
               className="
                 flex
-                w-auto
+                w-[135px]
+                shrink-0
 
-                justify-end
+                flex-col
+
                 gap-2
               "
             >
-              {/* View details */}
               <button
                 type="button"
-                onClick={() => {
-                  onViewDetails(plan);
-                }}
+                onClick={handleSelectPlan}
                 className="
                   inline-flex
-                  h-10
-                  min-w-[124px]
-                  shrink-0
+                  h-[40px]
+                  w-full
 
                   items-center
                   justify-center
-                  gap-1
-
-                  whitespace-nowrap
 
                   rounded-full
 
                   border
-                  border-[#D0D5DD]
+                  border-[#00897B]
+
+                  bg-[#00897B]
+
+                  px-[14px]
+
+                  font-red-hat-display
+
+                  text-[14px]
+                  font-bold
+
+                  text-white
+
+                  hover:bg-[#00796D]
+                "
+              >
+                {plan.primaryButton}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onViewDetails(plan)}
+                className="
+                  inline-flex
+                  h-[40px]
+                  w-full
+
+                  items-center
+                  justify-center
+
+                  gap-1.5
+
+                  rounded-full
+
+                  border
+                  border-[#667085]
 
                   bg-white
 
@@ -1290,124 +970,183 @@ export default function PlanCard({ plan, onViewDetails, onSelectPlan }: PlanCard
 
                   font-red-hat-display
 
-                  text-[13px]
-                  font-extrabold
-                  leading-5
+                  text-[14px]
+                  font-[645]
 
-                  text-[#344054]
-
-                  shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-
-                  transition-colors
+                  text-[#101828]
 
                   hover:bg-[#F9FAFB]
-
-                  xl:h-9
-                  xl:w-[131px]
-                  xl:text-[14px]
                 "
               >
                 {plan.viewDetailsButton}
 
                 <ChevronRight
-                  aria-hidden="true"
                   className="
                     h-[18px]
                     w-[18px]
-                    shrink-0
 
                     text-[#0D3B66]
                   "
-                  strokeWidth={3}
+                  strokeWidth={2.5}
                 />
-              </button>
-
-              {/* Primary CTA */}
-              <button
-                type="button"
-                onClick={handlePrimaryAction}
-                className={`
-                  inline-flex
-                  h-10
-                  shrink-0
-
-                  items-center
-                  justify-center
-                  gap-2
-
-                  whitespace-nowrap
-
-                  rounded-full
-
-                  px-[14px]
-
-                  font-red-hat-display
-
-                  text-[13px]
-                  font-extrabold
-                  leading-5
-
-                  text-white
-
-                  shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-
-                  transition-colors
-
-                  xl:h-9
-                  xl:text-[14px]
-
-                  ${
-                    isViewDeal
-                      ? `
-                        min-w-[112px]
-
-                        border
-                        border-[#0D3B66]
-
-                        bg-[#0D3B66]
-
-                        hover:bg-[#082F4F]
-
-                        xl:w-[121px]
-                      `
-                      : `
-                        min-w-[102px]
-
-                        border
-                        border-[#00897B]
-
-                        bg-[#00897B]
-
-                        hover:bg-[#00796D]
-
-                        xl:w-[102px]
-                      `
-                  }
-                `}
-              >
-                {plan.primaryButton}
-
-                {isViewDeal && (
-                  <Image
-                    src={plans.viewDealIcon}
-                    alt=""
-                    width={12}
-                    height={12}
-                    aria-hidden="true"
-                    className="
-                      h-3
-                      w-3
-                      shrink-0
-
-                      object-contain
-                    "
-                  />
-                )}
               </button>
             </div>
           </div>
         </div>
+
+        {/* =================================================
+            METRICS
+        ================================================== */}
+
+        {isBroadband ? (
+          <div
+            className="
+              grid
+              grid-cols-3
+
+              gap-3
+
+              border-t
+              border-[#EAECF0]
+
+              bg-[#FCFCFD]
+
+              px-5
+              py-3
+            "
+          >
+            <ResultMetric
+              label="Monthly cost"
+              value={plan.price}
+            />
+
+            <ResultMetric
+              label="Average speed"
+              value={plan.averageSpeed ?? '—'}
+            />
+
+            <ResultMetric
+              label="Upfront costs"
+              value={plan.upfrontCost ?? '£0.00'}
+            />
+          </div>
+        ) : (
+          <div
+            className="
+              grid
+              grid-cols-4
+
+              gap-3
+
+              border-t
+              border-[#EAECF0]
+
+              bg-[#FCFCFD]
+
+              px-5
+              py-3
+            "
+          >
+            <ResultMetric
+              label="Monthly cost"
+              value={plan.price}
+            />
+
+            <ResultMetric
+              label="Est. annual cost"
+              value={getEstimatedAnnualCost(plan.price)}
+            />
+
+            <ResultMetric
+              label="Contract"
+              value={plan.contract}
+            />
+
+            <ResultMetric
+              label="Exit fee"
+              value="£190"
+            />
+          </div>
+        )}
       </article>
     </>
   );
+}
+
+/* =========================================================
+   RESULT METRIC
+========================================================= */
+
+type ResultMetricProps = {
+  label: string;
+
+  value: string;
+};
+
+function ResultMetric({ label, value }: ResultMetricProps) {
+  return (
+    <div
+      className="
+        min-w-0
+
+        rounded-[8px]
+
+        border
+        border-[#EAECF0]
+
+        bg-[#F9FAFB]
+
+        px-3
+        py-2
+      "
+    >
+      <p
+        className="
+          truncate
+
+          font-red-hat-display
+
+          text-[13px]
+          font-[467]
+          leading-[19.5px]
+
+          text-[#667085]
+        "
+      >
+        {label}
+      </p>
+
+      <p
+        className="
+          mt-[2px]
+
+          truncate
+
+          font-red-hat-display
+
+          text-[14px]
+          font-[645]
+          leading-[21px]
+
+          text-[#101828]
+        "
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+/* =========================================================
+   ENERGY ANNUAL COST
+========================================================= */
+
+function getEstimatedAnnualCost(monthlyPrice: string): string {
+  const numericPrice = Number(monthlyPrice.replace(/[^0-9.]/g, ''));
+
+  if (Number.isNaN(numericPrice) || numericPrice <= 0) {
+    return '—';
+  }
+
+  return `£${(numericPrice * 12).toFixed(2)}`;
 }

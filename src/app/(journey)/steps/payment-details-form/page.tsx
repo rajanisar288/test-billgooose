@@ -6,10 +6,20 @@ import JourneyMobileStepHeader from '@/components/journey/forms/journey-mobile-s
 import PaymentMethodForm from '@/components/journey/forms/payment-method-form';
 import data from '@/data/content.json';
 
-type JourneyService = 'energy' | 'broadband';
+type JourneyFlow = 'energy' | 'bundle' | 'broadband';
 
-function getServiceSnapshot(): JourneyService {
+function getJourneyFlowSnapshot(): JourneyFlow {
   try {
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    if (storedFlow === 'bundle') {
+      return 'bundle';
+    }
+
+    if (storedFlow === 'broadband') {
+      return 'broadband';
+    }
+
     const raw = sessionStorage.getItem('compareFlowDetails');
 
     if (!raw) {
@@ -18,44 +28,79 @@ function getServiceSnapshot(): JourneyService {
 
     const parsed = JSON.parse(raw) as {
       service?: string;
+      flow?: string;
     };
 
-    return parsed.service === 'broadband' ? 'broadband' : 'energy';
+    if (parsed.flow === 'bundle') {
+      return 'bundle';
+    }
+
+    if (parsed.service === 'broadband') {
+      return 'broadband';
+    }
+
+    return 'energy';
   } catch {
     return 'energy';
   }
 }
 
-function getServerSnapshot(): JourneyService {
+function getServerSnapshot(): JourneyFlow {
   return 'energy';
 }
 
 function subscribe(callback: () => void) {
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key === 'compareFlowDetails') {
+  function handleStorage(event: StorageEvent) {
+    if (
+      event.key === 'compareFlowDetails' ||
+      event.key === 'billgooseJourneyFlow' ||
+      event.key === 'billgooseJourneyService'
+    ) {
       callback();
     }
-  };
+  }
+
+  function handleJourneyChanged() {
+    callback();
+  }
 
   window.addEventListener('storage', handleStorage);
 
+  window.addEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+
+  window.addEventListener('billgoose-journey-service-changed', handleJourneyChanged);
+
   return () => {
     window.removeEventListener('storage', handleStorage);
+
+    window.removeEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+
+    window.removeEventListener('billgoose-journey-service-changed', handleJourneyChanged);
   };
 }
 
 export default function PaymentDetailsPage() {
   const { sidebar } = data.journey;
 
-  const service = useSyncExternalStore(subscribe, getServiceSnapshot, getServerSnapshot);
+  const journeyFlow = useSyncExternalStore(subscribe, getJourneyFlowSnapshot, getServerSnapshot);
 
   /*
-   * Energy Payment = step 5
-   * Broadband Contract Length = step 4
+   * Broadband:
+   * payment-details-form is reused as
+   * Contract Length = Step 4 of 4.
+   *
+   * Bundle:
+   * payment-details-form is
+   * Payment Method Type = Step 5 of 5.
+   *
+   * Normal Energy:
+   * this route is no longer part of the journey.
    */
-  const currentStep = service === 'broadband' ? 4 : 5;
+  const isBroadband = journeyFlow === 'broadband';
 
-  const steps = service === 'broadband' ? sidebar.broadbandSteps : sidebar.steps;
+  const steps = isBroadband ? sidebar.broadbandSteps : sidebar.bundleSteps;
+
+  const currentStep = isBroadband ? 4 : 5;
 
   const currentStepData = steps[currentStep - 1];
 
