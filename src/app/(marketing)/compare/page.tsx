@@ -1,7 +1,8 @@
+import { Suspense } from 'react';
+
 import CompareFlow from '@/components/marketing/Compare-flow';
 import Footer2 from '@/components/marketing/Footer2';
 import { generateMarketingMetadata } from '@/lib/seo/metadata';
-import { Suspense } from 'react';
 
 export const metadata = generateMarketingMetadata({
   title: 'Compare Household Bills',

@@ -1,30 +1,28 @@
+import { Suspense } from 'react';
+
 import Header from '@/components/marketing/Header';
+import MobileResultsDetailsContent from '@/components/result/mobile-results-details-content';
 
-import MobileResultsDetails from '../../components/result/mobile-results-details';
+function CompareLoading() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600" />
 
-type MobileResultsDetailsPageProps = {
-  searchParams: Promise<{
-    brand?: string;
-    type?: string;
-    id?: string;
-  }>;
-};
+        <p className="mt-4 text-gray-600">Loading comparison tools...</p>
+      </div>
+    </div>
+  );
+}
 
-export default async function MobileResultsDetailsPage({
-  searchParams,
-}: MobileResultsDetailsPageProps) {
-  const params = await searchParams;
-
+export default function MobileResultsDetailsPage() {
   return (
     <main className="min-h-screen bg-white">
-      {/* Existing white navbar */}
       <Header />
 
-      <MobileResultsDetails
-        brand={params.brand ?? ''}
-        itemType={params.type === 'featured' ? 'featured' : 'deal'}
-        itemId={params.id ?? ''}
-      />
+      <Suspense fallback={<CompareLoading />}>
+        <MobileResultsDetailsContent />
+      </Suspense>
     </main>
   );
 }
