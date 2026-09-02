@@ -33,6 +33,11 @@ export default function LowerHero() {
       return;
     }
 
+    if (service === 'mobile') {
+      router.push('/result?service=mobile');
+      return;
+    }
+
     router.push(`/compare?service=${service}`);
   }
 

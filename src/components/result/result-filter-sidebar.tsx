@@ -686,12 +686,12 @@ function FilterCheckbox({ label, checked, onClick }: FilterCheckboxProps) {
           font-inter
 
           text-[10px]
-          font-normal
+          font-[660]
           leading-[15px]
 
           text-[#535862]
 
-          lg:text-[11px]
+          lg:text-[12px]
         "
       >
         {label}
@@ -824,7 +824,8 @@ function FilterAccordion({ field, value, onChange }: FilterAccordionProps) {
 
                       font-inter
 
-                      text-[11px]
+                      font-[660]
+                      text-[12px]
 
                       ${
                         selected

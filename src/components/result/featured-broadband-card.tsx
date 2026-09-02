@@ -1242,21 +1242,39 @@ export default function FeaturedBroadbandCard({ plan, onViewDetails }: FeaturedB
                 xl:gap-5
               "
             >
-              <Image
-                src={plan.logo}
-                alt={plan.logoAlt}
-                width={72}
-                height={72}
+              <div
                 className="
-                  h-16
-                  w-16
-                  shrink-0
-                  object-contain
+    flex
+    h-[72px]
+    w-[72px]
+    shrink-0
 
-                  xl:h-[72px]
-                  xl:w-[72px]
-                "
-              />
+    items-center
+    justify-center
+
+    overflow-hidden
+
+    rounded-[11.25px]
+
+    border-[1.13px]
+    border-[#EAECF0]
+
+    bg-[#EAF2F8]
+  "
+              >
+                <Image
+                  src={plan.logo}
+                  alt={plan.logoAlt}
+                  width={72}
+                  height={72}
+                  className="
+      h-full
+      w-full
+
+      object-contain
+    "
+                />
+              </div>
 
               <div className="min-w-0 flex-1">
                 <h3

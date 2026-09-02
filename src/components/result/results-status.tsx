@@ -7,7 +7,12 @@ import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import data from '@/data/content.json';
 
-export default function ResultsStatus() {
+type ResultsStatusProps = {
+  heading?: string;
+  description?: string;
+};
+
+export default function ResultsStatus({ heading, description }: ResultsStatusProps) {
   const { resultsStatus } = data.resultPage;
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(resultsStatus.planTabs.defaultValue);
@@ -87,7 +92,7 @@ export default function ResultsStatus() {
                 sm:leading-7
               "
             >
-              {resultsStatus.heading}
+              {heading ?? resultsStatus.heading}
             </h2>
 
             <p
@@ -106,8 +111,14 @@ export default function ResultsStatus() {
                 sm:leading-[18px]
               "
             >
-              <strong className="font-normal">{resultsStatus.descriptionStart}</strong>{' '}
-              {resultsStatus.descriptionRest}
+              {description ? (
+                description
+              ) : (
+                <>
+                  <strong className="font-normal">{resultsStatus.descriptionStart}</strong>{' '}
+                  {resultsStatus.descriptionRest}
+                </>
+              )}
             </p>
           </div>
 
@@ -156,10 +167,7 @@ export default function ResultsStatus() {
           >
             <SlidersHorizontal
               aria-hidden="true"
-              className="
-                h-4
-                w-4
-              "
+              className="h-4 w-4"
               strokeWidth={1.8}
             />
             Filters
@@ -183,13 +191,7 @@ export default function ResultsStatus() {
           "
         >
           {/* TABS */}
-          <div
-            className="
-              flex
-              items-center
-              gap-2
-            "
-          >
+          <div className="flex items-center gap-2">
             {resultsStatus.planTabs.options.map((option) => {
               const isSelected = selectedPlanTab === option.value;
 
@@ -278,10 +280,7 @@ export default function ResultsStatus() {
             Recommended
             <ChevronDown
               aria-hidden="true"
-              className="
-                h-3
-                w-3
-              "
+              className="h-3 w-3"
             />
           </button>
         </div>
@@ -289,9 +288,6 @@ export default function ResultsStatus() {
 
       {/* =====================================================
           MOBILE + TABLET FILTER DRAWER
-
-          Visible below lg only.
-          Desktop left sidebar remains untouched.
       ====================================================== */}
       {isFilterOpen && (
         <div
@@ -311,13 +307,6 @@ export default function ResultsStatus() {
             }
           }}
         >
-          {/* =================================================
-              MOBILE:
-              bottom sheet
-
-              TABLET:
-              right-side panel
-          ================================================== */}
           <div
             role="dialog"
             aria-modal="true"
@@ -356,9 +345,7 @@ export default function ResultsStatus() {
               md:shadow-[-12px_0px_32px_rgba(16,24,40,0.12)]
             "
           >
-            {/* ===============================================
-                DRAWER HEADER
-            ================================================ */}
+            {/* DRAWER HEADER */}
             <div
               className="
                 flex
@@ -381,13 +368,7 @@ export default function ResultsStatus() {
                 md:px-6
               "
             >
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-2
-                "
-              >
+              <div className="flex items-center gap-2">
                 <SlidersHorizontal
                   aria-hidden="true"
                   className="
@@ -446,21 +427,13 @@ export default function ResultsStatus() {
               >
                 <X
                   aria-hidden="true"
-                  className="
-                    h-[18px]
-                    w-[18px]
-                  "
+                  className="h-[18px] w-[18px]"
                   strokeWidth={1.8}
                 />
               </button>
             </div>
 
-            {/* ===============================================
-                ACTUAL FILTERS
-
-                This is your same filter component used
-                on desktop.
-            ================================================ */}
+            {/* ACTUAL FILTERS */}
             <div
               className="
                 min-h-0

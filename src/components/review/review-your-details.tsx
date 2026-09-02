@@ -767,7 +767,8 @@ function ReviewField({ label, value }: ReviewFieldProps) {
           break-words
 
           font-inter
-          text-[14px]
+          text-[15px]
+          font-[660]
           font-medium
           leading-[16px]
           text-[#101828]
@@ -987,21 +988,39 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
           <p className="font-inter text-[12px] text-[#667085]">No plan selected.</p>
         ) : (
           <div className="flex items-center gap-3">
-            <Image
-              src={plan.logo}
-              alt={plan.logoAlt}
-              width={54}
-              height={54}
+            <div
               className="
-                h-[54px]
-                w-[54px]
-                shrink-0
+    flex
+    h-[72px]
+    w-[72px]
+    shrink-0
 
-                rounded-[7px]
+    items-center
+    justify-center
 
-                object-contain
-              "
-            />
+    overflow-hidden
+
+    rounded-[11.25px]
+
+    border-[1.13px]
+    border-[#EAECF0]
+
+    bg-[#EAF2F8]
+  "
+            >
+              <Image
+                src={plan.logo}
+                alt={plan.logoAlt}
+                width={72}
+                height={72}
+                className="
+      h-full
+      w-full
+
+      object-contain
+    "
+              />
+            </div>
 
             <div className="min-w-0 flex-1">
               <p
@@ -1023,7 +1042,8 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
                   truncate
 
                   font-inter
-                  text-[10px]
+                  font-[660]
+                  text-[14px]
                   leading-[14px]
                   text-[#667085]
                 "
@@ -1205,7 +1225,8 @@ function SummaryCard({ plan, onConfirm }: { plan: StandardPlan | null; onConfirm
             <p
               className="
                 font-inter
-                text-[10px]
+                text-[13px]
+                font-[660]
                 text-[#667085]
               "
             >
@@ -1415,10 +1436,11 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
         font-inter
         text-[10px]
 
-        md:text-[11px]
+        md:text-[13px]
+        font-[660]
       "
     >
-      <span className="text-[#667085]">{label}</span>
+      <span className="text-[#667085] font-[660]">{label}</span>
 
       <span
         className="

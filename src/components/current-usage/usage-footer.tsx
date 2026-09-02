@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { ArrowRight, ChevronLeft } from 'lucide-react';
@@ -9,7 +8,25 @@ import data from '@/data/content.json';
 
 export default function UsageFooter() {
   const router = useRouter();
+
   const { footer } = data.currentUsage;
+
+  /* =========================================================
+     COMPARE ENERGY PRICES
+
+     NORMAL ENERGY ONLY
+
+     Current Usage
+     → Energy Results
+  ========================================================= */
+
+  const handleCompareEnergyPrices = () => {
+    sessionStorage.setItem('billgooseJourneyService', 'energy');
+
+    sessionStorage.setItem('billgooseJourneyFlow', 'energy');
+
+    router.push('/result?service=energy');
+  };
 
   return (
     <footer
@@ -121,8 +138,9 @@ export default function UsageFooter() {
           </button>
 
           {/* Compare */}
-          <Link
-            href="/result"
+          <button
+            type="button"
+            onClick={handleCompareEnergyPrices}
             className="
               ml-auto
               inline-flex h-11
@@ -169,7 +187,7 @@ export default function UsageFooter() {
               "
               strokeWidth={2}
             />
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -287,8 +305,9 @@ export default function UsageFooter() {
         </div>
 
         {/* Compare */}
-        <Link
-          href="/result"
+        <button
+          type="button"
+          onClick={handleCompareEnergyPrices}
           className="
             ml-3
             inline-flex h-12
@@ -343,7 +362,7 @@ export default function UsageFooter() {
             "
             strokeWidth={2}
           />
-        </Link>
+        </button>
       </div>
     </footer>
   );

@@ -11,6 +11,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 type RedirectService = 'broadband' | 'sim-only';
 
+type RedirectOrigin = 'sim-only' | 'mobile-details';
+
 /* =========================================================
    CURRENT SERVICE
 ========================================================= */
@@ -56,6 +58,32 @@ function getUrlForService(service: RedirectService): string {
 }
 
 /* =========================================================
+   REDIRECT ORIGIN
+
+   Only relevant for SIM-only.
+
+   Normal SIM page:
+   externalRedirectOrigin = sim-only
+
+   SIM deal clicked from mobile detail:
+   externalRedirectOrigin = mobile-details
+========================================================= */
+
+function getRedirectOrigin(service: RedirectService): RedirectOrigin {
+  if (service !== 'sim-only') {
+    return 'sim-only';
+  }
+
+  try {
+    const value = sessionStorage.getItem('externalRedirectOrigin');
+
+    return value === 'mobile-details' ? 'mobile-details' : 'sim-only';
+  } catch {
+    return 'sim-only';
+  }
+}
+
+/* =========================================================
    OPENED STATE STORAGE
 ========================================================= */
 
@@ -83,12 +111,22 @@ function createOpenedSnapshot(service: RedirectService) {
   };
 }
 
+function createOriginSnapshot(service: RedirectService) {
+  return () => {
+    return getRedirectOrigin(service);
+  };
+}
+
 function getProviderServerSnapshot() {
   return '';
 }
 
 function getOpenedServerSnapshot() {
   return false;
+}
+
+function getOriginServerSnapshot(): RedirectOrigin {
+  return 'sim-only';
 }
 
 /* =========================================================
@@ -117,26 +155,10 @@ function subscribe(callback: () => void) {
 
 /* =========================================================
    PAGE
-
-   Suspense is required because RedirectingContent uses
-   useSearchParams().
-========================================================= */
-
-export default function RedirectingPage() {
-  return (
-    <Suspense fallback={<RedirectingFallback />}>
-      <RedirectingContent />
-    </Suspense>
-  );
-}
-
-/* =========================================================
-   CONTENT
 ========================================================= */
 
 function RedirectingContent() {
   const router = useRouter();
-
   const searchParams = useSearchParams();
 
   const service = resolveRedirectService(searchParams.get('service'));
@@ -153,6 +175,18 @@ function RedirectingContent() {
     getOpenedServerSnapshot,
   );
 
+  const redirectOrigin = useSyncExternalStore(
+    subscribe,
+    createOriginSnapshot(service),
+    getOriginServerSnapshot,
+  );
+
+  /* =========================================================
+     MOBILE DETAILS REDIRECT?
+  ========================================================= */
+
+  const isMobileDetailsRedirect = service === 'sim-only' && redirectOrigin === 'mobile-details';
+
   /* =========================================================
      REDIRECT
   ========================================================= */
@@ -163,8 +197,8 @@ function RedirectingContent() {
     const openedStorageKey = getOpenedStorageKey(service);
 
     /*
-     * Reset opened state whenever
-     * a new redirect page is entered.
+     * Reset opened state every
+     * time redirect page loads.
      */
     try {
       sessionStorage.setItem(openedStorageKey, 'false');
@@ -180,6 +214,22 @@ function RedirectingContent() {
 
     if (!providerUrl) {
       const fallbackTimer = window.setTimeout(() => {
+        /*
+         * Mobile-details SIM redirect
+         * returns to MOBILE deals.
+         *
+         * Normal SIM-only stays exactly
+         * as before.
+         *
+         * Broadband stays exactly
+         * as before.
+         */
+        if (service === 'sim-only' && getRedirectOrigin(service) === 'mobile-details') {
+          router.replace('/result?service=mobile');
+
+          return;
+        }
+
         router.replace(
           service === 'sim-only' ? '/result?service=sim-only' : '/result?service=broadband',
         );
@@ -212,16 +262,39 @@ function RedirectingContent() {
   }, [router, service]);
 
   /* =========================================================
-     CONTENT VALUES
+     CONTENT
   ========================================================= */
 
   const serviceName = service === 'sim-only' ? 'SIM-only' : 'broadband';
 
-  const backButtonLabel =
-    service === 'sim-only' ? 'Back to SIM-only deals' : 'Back to broadband deals';
+  /* =========================================================
+     BACK BUTTON
 
-  const resultRoute =
-    service === 'sim-only' ? '/result?service=sim-only' : '/result?service=broadband';
+     BROADBAND:
+     Back to broadband deals
+
+     NORMAL SIM:
+     Back to SIM-only deals
+
+     MOBILE DETAILS SIM:
+     Back to mobile deals
+  ========================================================= */
+
+  let backButtonLabel = 'Back to broadband deals';
+
+  let resultRoute = '/result?service=broadband';
+
+  if (service === 'sim-only') {
+    if (isMobileDetailsRedirect) {
+      backButtonLabel = 'Back to mobile deals';
+
+      resultRoute = '/result?service=mobile';
+    } else {
+      backButtonLabel = 'Back to SIM-only deals';
+
+      resultRoute = '/result?service=sim-only';
+    }
+  }
 
   return (
     <main
@@ -389,12 +462,8 @@ function RedirectingContent() {
           "
         >
           {hasOpenedProvider
-            ? `Continue on the ${
-                provider || 'provider'
-              } website in the newly opened tab to complete your ${serviceName} order.`
-            : `We’re preparing the ${
-                provider || 'provider'
-              } website for you. It will open in a new tab.`}
+            ? `Continue on the ${provider || 'provider'} website in the newly opened tab to complete your ${serviceName} order.`
+            : `We’re preparing the ${provider || 'provider'} website for you. It will open in a new tab.`}
         </p>
 
         {/* =====================================================
@@ -427,6 +496,23 @@ function RedirectingContent() {
           <button
             type="button"
             onClick={() => {
+              /*
+               * Clear origin after it
+               * has served its purpose.
+               *
+               * This prevents a future
+               * normal SIM redirect from
+               * accidentally inheriting
+               * mobile-details.
+               */
+              if (service === 'sim-only') {
+                try {
+                  sessionStorage.removeItem('externalRedirectOrigin');
+                } catch {
+                  // Ignore storage failure.
+                }
+              }
+
               router.push(resultRoute);
             }}
             className="
@@ -471,11 +557,6 @@ function RedirectingContent() {
     </main>
   );
 }
-
-/* =========================================================
-   SUSPENSE FALLBACK
-========================================================= */
-
 function RedirectingFallback() {
   return (
     <main
@@ -483,116 +564,19 @@ function RedirectingFallback() {
         flex
         min-h-screen
         w-full
-
         items-center
         justify-center
-
         bg-[#F9FAFB]
-
         px-5
       "
-    >
-      <section
-        className="
-          flex
-          w-full
-          max-w-[460px]
+    />
+  );
+}
 
-          flex-col
-          items-center
-
-          rounded-[24px]
-
-          border
-          border-[#EAECF0]
-
-          bg-white
-
-          px-6
-          py-12
-
-          text-center
-
-          shadow-[0px_12px_32px_rgba(16,24,40,0.08)]
-
-          sm:px-10
-        "
-      >
-        <Image
-          src="/images/updated-logo.png"
-          alt="BillGoose"
-          width={160}
-          height={50}
-          priority
-          className="
-            h-auto
-            w-[150px]
-
-            object-contain
-          "
-        />
-
-        <div
-          className="
-            mt-9
-
-            flex
-            h-[52px]
-            w-[52px]
-
-            items-center
-            justify-center
-          "
-        >
-          <span
-            className="
-              block
-              h-[42px]
-              w-[42px]
-
-              animate-spin
-
-              rounded-full
-
-              border-[4px]
-              border-[#E7F6F5]
-              border-t-[#00897B]
-            "
-          />
-        </div>
-
-        <h1
-          className="
-            mt-6
-
-            font-red-hat-display
-
-            text-[24px]
-            font-extrabold
-            leading-[30px]
-
-            text-[#0C3354]
-          "
-        >
-          Preparing your deal
-        </h1>
-
-        <p
-          className="
-            mt-2
-
-            font-inter
-
-            text-[14px]
-            font-normal
-            leading-[21px]
-
-            text-[#667085]
-          "
-        >
-          Please wait a moment.
-        </p>
-      </section>
-    </main>
+export default function RedirectingPage() {
+  return (
+    <Suspense fallback={<RedirectingFallback />}>
+      <RedirectingContent />
+    </Suspense>
   );
 }

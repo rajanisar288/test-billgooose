@@ -23,25 +23,21 @@ export default function Hero() {
   function handleServiceSelect(service: ServiceType) {
     setSelectedService(service);
 
-    /* =========================================================
-       BUNDLE BILLS
-    ========================================================= */
     if (service === 'bundle-bills') {
       router.push('/compare?service=energy&flow=bundle');
       return;
     }
 
-    /* =========================================================
-       SIM ONLY
-    ========================================================= */
     if (service === 'sim-only') {
       router.push('/result?service=sim-only');
       return;
     }
 
-    /* =========================================================
-       OTHER SERVICES
-    ========================================================= */
+    if (service === 'mobile') {
+      router.push('/result?service=mobile');
+      return;
+    }
+
     router.push(`/compare?service=${service}`);
   }
 

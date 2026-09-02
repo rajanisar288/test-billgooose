@@ -22,6 +22,15 @@ import data from '@/data/content.json';
 
 type CompareService = 'energy' | 'broadband' | 'sim-only';
 
+type RedirectOrigin = 'sim-only' | 'mobile-details';
+
+type ResultPlansProps = {
+  heading?: string;
+  description?: string;
+  serviceOverride?: CompareService;
+  redirectOrigin?: RedirectOrigin;
+};
+
 type CompareFlowDetails = {
   service?: string;
   flow?: string;
@@ -76,7 +85,12 @@ function getStoredCompareService(): 'energy' | 'broadband' | null {
    COMPONENT
 ========================================================= */
 
-export default function ResultPlans() {
+export default function ResultPlans({
+  heading,
+  description,
+  serviceOverride,
+  redirectOrigin = 'sim-only',
+}: ResultPlansProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -89,11 +103,12 @@ export default function ResultPlans() {
   const queryService = searchParams.get('service');
 
   const service: CompareService =
-    queryService === 'broadband'
+    serviceOverride ??
+    (queryService === 'broadband'
       ? 'broadband'
       : queryService === 'sim-only'
         ? 'sim-only'
-        : 'energy';
+        : 'energy');
 
   const isSimOnly = service === 'sim-only';
 
@@ -111,11 +126,6 @@ export default function ResultPlans() {
 
   /* =========================================================
      DETAILS DRAWER
-
-     Used by:
-     - Energy
-     - Broadband
-     - SIM Only More Info
   ========================================================= */
 
   const [selectedPlan, setSelectedPlan] = useState<StandardPlan | null>(null);
@@ -136,7 +146,7 @@ export default function ResultPlans() {
   };
 
   /* =========================================================
-     BEFORE YOU SWITCH / BUNDLE MODAL
+     BUNDLE MODAL
   ========================================================= */
 
   const [switchModalPlan, setSwitchModalPlan] = useState<StandardPlan | null>(null);
@@ -152,11 +162,6 @@ export default function ResultPlans() {
   ========================================================= */
 
   const handleSelectPlan = (plan: StandardPlan) => {
-    /*
-     * Detect Bundle at click time.
-     *
-     * This keeps the completed Bundle flow unchanged.
-     */
     const queryFlow = searchParams.get('flow');
 
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
@@ -188,6 +193,8 @@ export default function ResultPlans() {
 
     /* =====================================================
        BROADBAND
+
+       UNCHANGED
     ====================================================== */
 
     if (service === 'broadband') {
@@ -248,10 +255,6 @@ export default function ResultPlans() {
       return;
     }
 
-    /*
-     * Close More Info drawer if View Deal
-     * was clicked from inside the drawer.
-     */
     setIsDetailsOpen(false);
 
     sessionStorage.setItem('journeySelectedPlan', JSON.stringify(plan));
@@ -262,25 +265,26 @@ export default function ResultPlans() {
 
     sessionStorage.setItem('externalRedirectService', 'sim-only');
 
+    /*
+     * NEW:
+     *
+     * Normal SIM page:
+     *   sim-only
+     *
+     * Mobile details page:
+     *   mobile-details
+     */
+    sessionStorage.setItem('externalRedirectOrigin', redirectOrigin);
+
     sessionStorage.setItem('billgooseJourneyService', 'sim-only');
 
     sessionStorage.setItem('billgooseJourneyFlow', 'sim-only');
 
-    /*
-     * Same tab:
-     * BillGoose redirect loader.
-     *
-     * Redirecting page opens provider
-     * website in another tab.
-     */
     router.push('/redirecting?service=sim-only');
   };
 
   /* =========================================================
      SIM ONLY MORE INFO
-
-     Convert SIM-only data into the same StandardPlan
-     shape expected by the existing PlanDetailsDrawer.
   ========================================================= */
 
   const handleSimOnlyMoreInfo = (plan: SimOnlyPlan) => {
@@ -335,12 +339,6 @@ export default function ResultPlans() {
 
   /* =========================================================
      DRAWER MAIN ACTION
-
-     Energy / Broadband:
-     existing Select Plan logic.
-
-     SIM Only:
-     View Deal -> redirect loader.
   ========================================================= */
 
   const handleDrawerPrimaryAction = (plan: StandardPlan) => {
@@ -355,8 +353,6 @@ export default function ResultPlans() {
 
   /* =========================================================
      BUNDLE RECOMMENDATIONS
-
-     ALWAYS based on Energy items.
   ========================================================= */
 
   const recommendedPlans = useMemo(() => {
@@ -375,7 +371,7 @@ export default function ResultPlans() {
   }, [energyPlanItems, switchModalPlan]);
 
   /* =========================================================
-     NORMAL RESULT CARDS
+     NORMAL CARDS
   ========================================================= */
 
   const renderNormalCards = () => {
@@ -471,11 +467,11 @@ export default function ResultPlans() {
         {/* =====================================================
             MOBILE + TABLET
         ====================================================== */}
+
         <div className="lg:hidden">
           <div
             className="
               space-y-4
-
               sm:space-y-5
             "
           >
@@ -486,6 +482,7 @@ export default function ResultPlans() {
         {/* =====================================================
             DESKTOP
         ====================================================== */}
+
         <div
           className="
             hidden
@@ -498,32 +495,19 @@ export default function ResultPlans() {
             xl:gap-6
           "
         >
-          {/* =================================================
-              FILTERS
-          ================================================== */}
           <ResultFilterSidebar />
 
-          {/* =================================================
-              RESULTS
-          ================================================== */}
-          <div
-            className="
-              min-w-0
-              w-full
-            "
-          >
+          <div className="min-w-0 w-full">
             {/* ===============================================
                 RESULTS SUMMARY
             ================================================ */}
+
             <div
               className="
                 flex
-
                 items-end
                 justify-between
-
                 gap-5
-
                 pb-3
               "
             >
@@ -532,7 +516,7 @@ export default function ResultPlans() {
                   className="
                     font-red-hat-display
 
-                    text-[16px]
+                    text-[18px]
                     font-extrabold
                     leading-5
 
@@ -541,7 +525,7 @@ export default function ResultPlans() {
                     xl:text-[18px]
                   "
                 >
-                  {resultsStatus.heading}
+                  {heading ?? resultsStatus.heading}
                 </h2>
 
                 <p
@@ -550,52 +534,30 @@ export default function ResultPlans() {
 
                     font-inter
 
-                    text-[14px]
+                    text-[15px]
                     font-normal
                     leading-5
 
                     text-[#667085]
                   "
                 >
-                  {isSimOnly ? (
+                  {description ? (
+                    description
+                  ) : isSimOnly ? (
                     <>
-                      <strong
-                        className="
-                          font-normal
-                        "
-                      >
-                        {simOnlyPlanItems.length} deals
-                      </strong>{' '}
+                      <strong className="font-normal">{simOnlyPlanItems.length} deals</strong>{' '}
                       available, starting with the lowest monthly cost.
                     </>
                   ) : (
                     <>
-                      <strong
-                        className="
-                          font-normal
-                        "
-                      >
-                        {resultsStatus.descriptionStart}
-                      </strong>{' '}
+                      <strong className="font-normal">{resultsStatus.descriptionStart}</strong>{' '}
                       {resultsStatus.descriptionRest}
                     </>
                   )}
                 </p>
 
-                {/* =============================================
-                    ENERGY / BROADBAND TABS ONLY
-                ============================================== */}
                 {!isSimOnly && (
-                  <div
-                    className="
-                      mt-3
-
-                      flex
-                      items-center
-
-                      gap-2
-                    "
-                  >
+                  <div className="mt-3 flex items-center gap-2">
                     {resultsStatus.planTabs.options.map((option) => {
                       const isSelected = selectedPlanTab === option.value;
 
@@ -610,33 +572,26 @@ export default function ResultPlans() {
                           className={`
                               inline-flex
                               h-[28px]
-
                               items-center
                               justify-center
-
                               rounded-[6px]
-
                               border
-
                               px-3
-
+                              font-[660]
                               font-red-hat-display
-
-                              text-[10px]
+                              text-[13px]
 
                               ${
                                 isSelected
                                   ? `
                                     border-[#00897B]
                                     bg-[#00897B]
-
                                     font-extrabold
                                     text-white
                                   `
                                   : `
                                     border-[#EAECF0]
                                     bg-white
-
                                     font-medium
                                     text-[#344054]
                                   `
@@ -651,46 +606,21 @@ export default function ResultPlans() {
                 )}
               </div>
 
-              {/* ===============================================
-                  SORT
-              ================================================ */}
-              <div
-                className="
-                  flex
-                  shrink-0
-
-                  items-center
-
-                  gap-2
-                "
-              >
-                <div
-                  className="
-                    flex
-                    items-center
-
-                    gap-1.5
-                  "
-                >
+              {/* SORT */}
+              <div className="flex shrink-0 items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <ArrowDownUp
                     aria-hidden="true"
-                    className="
-                      h-[18px]
-                      w-[18px]
-
-                      text-[#344054]
-                    "
+                    className="h-[18px] w-[18px] text-[#344054]"
                     strokeWidth={1.7}
                   />
 
                   <span
                     className="
                       font-inter
-
                       text-[13px]
                       font-medium
                       leading-5
-
                       text-[#344054]
                     "
                   >
@@ -722,7 +652,7 @@ export default function ResultPlans() {
                     font-inter
 
                     text-[13px]
-                    font-normal
+                    font-[660]
                     leading-5
 
                     text-[#667085]
@@ -731,36 +661,22 @@ export default function ResultPlans() {
                   Recommended
                   <ChevronDown
                     aria-hidden="true"
-                    className="
-                      h-4
-                      w-4
-                    "
+                    className="h-4 w-4"
                     strokeWidth={1.8}
                   />
                 </button>
               </div>
             </div>
 
-            {/* ===============================================
-                PLAN CARDS
-            ================================================ */}
-            <div
-              className="
-                min-w-0
-                space-y-3
-              "
-            >
-              {renderCards()}
-            </div>
+            <div className="min-w-0 space-y-3">{renderCards()}</div>
           </div>
         </div>
       </section>
 
       {/* =====================================================
           DETAILS DRAWER
-
-          Reused for SIM-only More Info.
       ====================================================== */}
+
       <PlanDetailsDrawer
         plan={selectedPlan}
         isOpen={isDetailsOpen}
@@ -770,9 +686,8 @@ export default function ResultPlans() {
 
       {/* =====================================================
           BUNDLE MODAL
-
-          Unchanged.
       ====================================================== */}
+
       {!isSimOnly && (
         <BroadbandSwitchModal
           isOpen={isSwitchModalOpen}
@@ -788,9 +703,6 @@ export default function ResultPlans() {
 
 /* =========================================================
    SIM ONLY CARD
-
-   Kept inside ResultPlans.tsx.
-   No separate SIM card component.
 ========================================================= */
 
 type SimOnlyCardProps = {
@@ -817,42 +729,20 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
         shadow-[0px_1px_3px_rgba(16,24,40,0.03)]
       "
     >
-      {/* =====================================================
-          TOP
-      ====================================================== */}
-      <div
-        className="
-          flex
-
-          border-b
-          border-[#EAECF0]
-        "
-      >
-        {/* =================================================
-            PROVIDER
-        ================================================== */}
+      <div className="flex border-b border-[#EAECF0]">
         <div
           className="
             flex
             min-w-0
             flex-1
-
             items-center
-
             gap-3
-
             p-3
 
             sm:gap-4
             sm:p-4
           "
         >
-          {/* =================================================
-              LOGO
-
-              No background here because your image
-              already contains its background.
-          ================================================== */}
           <div
             className="
               flex
@@ -879,90 +769,52 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
               className="
                 h-full
                 w-full
-
                 object-contain
               "
             />
           </div>
 
-          {/* =================================================
-              PROVIDER CONTENT
-          ================================================== */}
-          <div
-            className="
-              min-w-0
-              flex-1
-            "
-          >
-            {/* Provider heading */}
+          <div className="min-w-0 flex-1">
             <h3
               className="
                 font-red-hat-display
-
                 text-[20px]
                 font-bold
                 leading-[21.75px]
-                tracking-[0]
-
                 text-[#101828]
               "
             >
               {plan.provider}
             </h3>
 
-            {/* Description */}
             <p
               className="
                 mt-[2px]
-
                 font-red-hat-display
-
                 text-[15px]
                 font-medium
                 leading-[19.5px]
-                tracking-[0]
-
                 text-[#667085]
               "
             >
               {plan.networkDescription}
             </p>
 
-            {/* ===============================================
-                BADGES
-            ================================================ */}
-            <div
-              className="
-                mt-2
-
-                flex
-                flex-wrap
-
-                gap-1.5
-              "
-            >
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {plan.badges.map((badge) => (
                 <span
                   key={badge}
                   className="
                       inline-flex
-
                       items-center
-
                       rounded-[4px]
-
                       bg-[#EEF4FA]
-
                       px-2
                       py-[3px]
-
                       font-red-hat-display
-
                       text-[11.5px]
                       font-bold
                       leading-[17.25px]
-                      tracking-[0]
-
                       text-[#105089]
                     "
                 >
@@ -973,34 +825,23 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
           </div>
         </div>
 
-        {/* =================================================
-            ACTIONS
-        ================================================== */}
         <div
           className="
             flex
             w-[138px]
             shrink-0
-
             flex-col
-
             items-center
             justify-center
-
             gap-2
-
             border-l
             border-[#EAECF0]
-
             px-[9px]
 
             sm:w-[148px]
             sm:px-[14px]
           "
         >
-          {/* ===============================================
-              VIEW DEAL
-          ================================================ */}
           <button
             type="button"
             onClick={onViewDeal}
@@ -1029,7 +870,6 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
               text-[14px]
               font-bold
               leading-5
-              tracking-[0]
 
               text-white
 
@@ -1037,10 +877,6 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
 
               hover:border-[#0D3B66]
               hover:bg-[#0D3B66]
-
-              focus-visible:outline-none
-              focus-visible:ring-4
-              focus-visible:ring-[#D1E9FF]
             "
           >
             {plan.primaryButton}
@@ -1056,12 +892,6 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
             />
           </button>
 
-          {/* ===============================================
-              MORE INFO
-
-              Opens same PlanDetailsDrawer used by
-              Energy / Broadband.
-          ================================================ */}
           <button
             type="button"
             onClick={onMoreInfo}
@@ -1090,7 +920,6 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
               text-[14px]
               font-bold
               leading-5
-              tracking-[0]
 
               text-[#101828]
 
@@ -1099,10 +928,6 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
               transition-colors
 
               hover:bg-[#EAECF0]
-
-              focus-visible:outline-none
-              focus-visible:ring-4
-              focus-visible:ring-[#EAECF0]
             "
           >
             {plan.secondaryButton}
@@ -1120,20 +945,14 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
         </div>
       </div>
 
-      {/* =====================================================
-          METRICS
-      ====================================================== */}
       <div
         className="
           grid
           grid-cols-1
-
           gap-2
-
           p-3
 
           sm:grid-cols-3
-
           sm:gap-3
           sm:p-4
         "
@@ -1154,31 +973,13 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
         />
       </div>
 
-      {/* =====================================================
-          BOTTOM INFORMATION
-      ====================================================== */}
-      <div
-        className="
-          flex
-
-          items-center
-
-          gap-2
-
-          px-3
-          pb-3
-
-          sm:px-4
-          sm:pb-4
-        "
-      >
+      <div className="flex items-center gap-2 px-3 pb-3 sm:px-4 sm:pb-4">
         <Globe2
           aria-hidden="true"
           className="
             h-[18px]
             w-[16px]
             shrink-0
-
             text-[#101828]
           "
           strokeWidth={1.7}
@@ -1187,12 +988,9 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
         <p
           className="
             font-red-hat-display
-
             text-[13px]
             font-medium
             leading-[19.5px]
-            tracking-[0]
-
             text-[#101828]
           "
         >
@@ -1204,7 +1002,7 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
 }
 
 /* =========================================================
-   SIM METRIC CARD
+   SIM METRIC
 ========================================================= */
 
 type SimMetricProps = {
@@ -1229,34 +1027,26 @@ function SimMetric({ label, value }: SimMetricProps) {
         py-2.5
       "
     >
-      {/* HEADING */}
       <p
         className="
           font-red-hat-display
-
           text-[13px]
           font-medium
           leading-[19.5px]
-          tracking-[0]
-
           text-[#667085]
         "
       >
         {label}
       </p>
 
-      {/* VALUE */}
       <p
         className="
           mt-[2px]
-
           font-red-hat-display
-
           text-[14px]
           font-bold
           leading-[21px]
           tracking-[-0.01em]
-
           text-[#101828]
         "
       >
