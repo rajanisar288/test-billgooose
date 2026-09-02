@@ -13,6 +13,18 @@ export default function PreferencesPanel() {
 
   const [isOpen, setIsOpen] = useState(false);
 
+  /* =========================================================
+     ONLY SHOW:
+     - Address
+     - Service
+  ========================================================= */
+
+  const visiblePreferences = preferences.items.filter((preference) => {
+    const title = preference.title.toLowerCase();
+
+    return title.includes('address') || title.includes('service');
+  });
+
   return (
     <aside
       className="
@@ -108,7 +120,7 @@ export default function PreferencesPanel() {
       >
         <div className="overflow-hidden">
           <div className="space-y-3 p-3 sm:p-4">
-            {preferences.items.map((preference) => (
+            {visiblePreferences.map((preference) => (
               <PreferenceItem
                 key={preference.id}
                 title={preference.title}

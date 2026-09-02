@@ -243,7 +243,7 @@ export default function CompareFlow() {
         return;
       }
 
-      router.push('/result?service=energy');
+      router.push('/current-usage?service=energy');
 
       return;
     }

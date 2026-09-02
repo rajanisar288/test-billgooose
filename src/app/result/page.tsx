@@ -1,38 +1,57 @@
-import { Suspense } from 'react';
-
 import Footer2 from '@/components/marketing/Footer2';
+import MobileResults from '@/components/result/mobile-results';
 import ResultDesktopActions from '@/components/result/result-desktop-actions';
 import ResultFilters from '@/components/result/result-filters';
 import ResultHero from '@/components/result/result-hero';
 import ResultPlans from '@/components/result/result-plans';
 import ResultsStatus from '@/components/result/results-status';
 
-export default function ResultPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
+type ResultPageProps = {
+  searchParams: Promise<{
+    service?: string;
+  }>;
+};
+
+export default async function ResultPage({ searchParams }: ResultPageProps) {
+  const params = await searchParams;
+
+  /* =========================================================
+     MOBILE
+
+     Dedicated Mobile result layout.
+  ========================================================= */
+  if (params.service === 'mobile') {
+    return (
       <main className="min-h-screen bg-[#F8F9FA]">
-        <ResultHero />
+        <MobileResults />
 
-        {/* =====================================================
-          SAME RESULT DETAILS / SIM SUMMARY
-          NOW USED ON MOBILE + TABLET + DESKTOP
-      ====================================================== */}
-        <ResultFilters />
+        <Footer2 />
+      </main>
+    );
+  }
 
-        {/* =====================================================
-          DESKTOP ACTIONS
+  /* =========================================================
+     EXISTING RESULTS
 
-          Existing desktop-only component remains untouched.
-      ====================================================== */}
-        <ResultDesktopActions />
+     Energy
+     Broadband
+     SIM Only
+     Bundle
 
-        {/* =====================================================
-          MOBILE + TABLET RESULTS HEADING / FILTER BUTTON
-      ====================================================== */}
-        <ResultsStatus />
+     UNCHANGED.
+  ========================================================= */
+  return (
+    <main className="min-h-screen bg-[#F8F9FA]">
+      <ResultHero />
 
-        <section
-          className="
+      <ResultFilters />
+
+      <ResultDesktopActions />
+
+      <ResultsStatus />
+
+      <section
+        className="
           mx-auto
           w-full
           max-w-[1440px]
@@ -47,22 +66,21 @@ export default function ResultPage() {
           lg:px-10
           lg:pb-[40px]
         "
-        >
-          <div
-            className="
+      >
+        <div
+          className="
             mt-5
 
             sm:mt-6
 
             xl:mt-7
           "
-          >
-            <ResultPlans />
-          </div>
-        </section>
+        >
+          <ResultPlans />
+        </div>
+      </section>
 
-        <Footer2 />
-      </main>
-    </Suspense>
+      <Footer2 />
+    </main>
   );
 }

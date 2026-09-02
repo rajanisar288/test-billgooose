@@ -682,19 +682,39 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               xl:gap-5
             "
           >
-            <Image
-              src={plan.logo}
-              alt={plan.logoAlt}
-              width={72}
-              height={72}
+            <div
               className="
-                h-[72px]
-                w-[72px]
-                shrink-0
+    flex
+    h-[72px]
+    w-[72px]
+    shrink-0
 
-                object-contain
-              "
-            />
+    items-center
+    justify-center
+
+    overflow-hidden
+
+    rounded-[11.25px]
+
+    border-[1.13px]
+    border-[#EAECF0]
+
+    bg-[#EAF2F8]
+  "
+            >
+              <Image
+                src={plan.logo}
+                alt={plan.logoAlt}
+                width={72}
+                height={72}
+                className="
+      h-full
+      w-full
+
+      object-contain
+    "
+              />
+            </div>
 
             <div className="min-w-0 flex-1">
               <h3
@@ -721,7 +741,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
 
                   font-red-hat-display
 
-                  text-[13px]
+                  text-[15px]
                   font-[467]
                   leading-[19.5px]
 
@@ -731,7 +751,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
                 {description}
               </p>
 
-              {/* ENERGY RATING */}
+              {/* ENERGY RATING
               {!isBroadband && (
                 <div
                   className="
@@ -794,7 +814,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
                     {plan.contract}
                   </span>
                 </div>
-              )}
+              )} */}
 
               {/* FEATURES */}
               <div

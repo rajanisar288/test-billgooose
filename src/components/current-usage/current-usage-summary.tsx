@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { ArrowRight } from 'lucide-react';
 
@@ -13,6 +13,8 @@ import UpdateConsumptionModal, {
 import data from '@/data/content.json';
 
 export default function CurrentUsageSummary() {
+  const router = useRouter();
+
   const { summary } = data.currentUsage;
 
   const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
@@ -25,6 +27,23 @@ export default function CurrentUsageSummary() {
     sessionStorage.setItem('journeyConsumptionDetails', JSON.stringify(values));
 
     setIsUpdateConsumptionOpen(false);
+  };
+
+  /* =========================================================
+     COMPARE ENERGY PRICES
+
+     NORMAL ENERGY ONLY
+
+     Current Usage
+     → Energy Results
+  ========================================================= */
+
+  const handleCompareEnergyPrices = () => {
+    sessionStorage.setItem('billgooseJourneyService', 'energy');
+
+    sessionStorage.setItem('billgooseJourneyFlow', 'energy');
+
+    router.push('/result?service=energy');
   };
 
   return (
@@ -245,9 +264,10 @@ export default function CurrentUsageSummary() {
               lg:gap-3
             "
           >
-            {/* Compare - unchanged */}
-            <Link
-              href="/result"
+            {/* Compare Energy Prices */}
+            <button
+              type="button"
+              onClick={handleCompareEnergyPrices}
               className="
                 inline-flex
                 h-12
@@ -316,7 +336,7 @@ export default function CurrentUsageSummary() {
                 "
                 strokeWidth={2}
               />
-            </Link>
+            </button>
 
             {/* Update consumption */}
             <button

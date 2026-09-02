@@ -1,9 +1,16 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import data from '@/data/content.json';
 
-export default function ResultHero() {
+type ResultHeroProps = {
+  variant?: 'default' | 'mobile';
+};
+
+export default function ResultHero({ variant = 'default' }: ResultHeroProps) {
   const { hero } = data.resultPage;
+
+  const isMobileResult = variant === 'mobile';
 
   return (
     <section
@@ -35,50 +42,54 @@ export default function ResultHero() {
           w-full max-w-[1440px]
         "
       >
-        {/* Goose */}
+        {/* =====================================================
+            GOOSE
+        ====================================================== */}
         <Image
           src={hero.mascot.src}
           alt={hero.mascot.alt}
           width={368}
           height={510}
           className="
-  pointer-events-none
-  absolute
+            pointer-events-none
+            absolute
 
-  bottom-[-20px]
-  left-[-42px]
+            bottom-[-20px]
+            left-[-42px]
 
-  h-[282px]
-  w-[204px]
+            h-[282px]
+            w-[204px]
 
-  object-contain
-  object-bottom
+            object-contain
+            object-bottom
 
-  min-[390px]:bottom-[-22px]
-  min-[390px]:left-[-38px]
+            min-[390px]:bottom-[-22px]
+            min-[390px]:left-[-38px]
 
-  sm:bottom-[-24px]
-  sm:left-[-30px]
+            sm:bottom-[-24px]
+            sm:left-[-30px]
 
-  md:bottom-[-30px]
-  md:left-[-18px]
-  md:h-[365px]
-  md:w-[264px]
+            md:bottom-[-30px]
+            md:left-[-18px]
+            md:h-[365px]
+            md:w-[264px]
 
-  lg:bottom-[-20px]
-  lg:left-[20px]
-  lg:h-auto
-  lg:w-[340px]
+            lg:bottom-[-20px]
+            lg:left-[20px]
+            lg:h-auto
+            lg:w-[340px]
 
-  xl:bottom-auto
-  xl:left-[6px]
-  xl:top-[-55px]
-  xl:h-[510px]
-  xl:w-[368px]
-"
+            xl:bottom-auto
+            xl:left-[6px]
+            xl:top-[-55px]
+            xl:h-[510px]
+            xl:w-[368px]
+          "
         />
 
-        {/* Heading + service icons */}
+        {/* =====================================================
+            HEADING + DESCRIPTION + SERVICE ICONS
+        ====================================================== */}
         <div
           className="
             relative z-10
@@ -115,6 +126,9 @@ export default function ResultHero() {
             xl:pt-[56px]
           "
         >
+          {/* =================================================
+              HEADING
+          ================================================== */}
           <h1
             className="
               font-red-hat-display
@@ -141,37 +155,131 @@ export default function ResultHero() {
               xl:leading-[55.27px]
             "
           >
-            <span className="block whitespace-nowrap">{hero.heading.firstLine}</span>
+            {isMobileResult ? (
+              <span className="block whitespace-nowrap">Mobile phone deals</span>
+            ) : (
+              <>
+                <span className="block whitespace-nowrap">{hero.heading.firstLine}</span>
 
-            <span className="block whitespace-nowrap">{hero.heading.secondLine}</span>
+                <span className="block whitespace-nowrap">{hero.heading.secondLine}</span>
+              </>
+            )}
           </h1>
 
-          {/* Service icons */}
+          {/* =================================================
+              MOBILE RESULT DESCRIPTION
+
+              Only shown for mobile results.
+          ================================================== */}
+          {isMobileResult && (
+            <p
+              className="
+                mt-2
+                max-w-[240px]
+
+                font-red-hat-display
+
+                text-[8px]
+                font-medium
+                leading-[11px]
+
+                text-[#D0D5DD]
+
+                min-[390px]:max-w-[260px]
+                min-[390px]:text-[9px]
+                min-[390px]:leading-[12px]
+
+                sm:mt-2.5
+                sm:max-w-[310px]
+                sm:text-[10px]
+                sm:leading-[14px]
+
+                md:mt-3
+                md:max-w-[420px]
+                md:text-[12px]
+                md:leading-[17px]
+
+                lg:max-w-[510px]
+                lg:text-[15px]
+                lg:leading-[20px]
+
+                xl:max-w-[540px]
+              "
+            >
+              Looking for a new phone contract? We can help you find your ideal handset on a pay
+              monthly plan that suits your needs. Happy with your current phone?{' '}
+              <Link
+                href="/result?service=sim-only"
+                className="
+                  font-bold
+
+                  text-white
+
+                  underline
+                  underline-offset-2
+
+                  transition-opacity
+
+                  hover:opacity-80
+                "
+              >
+                Compare SIM only deals
+              </Link>{' '}
+              instead.
+            </p>
+          )}
+
+          {/* =================================================
+              SERVICE ICONS
+          ================================================== */}
           <div
-            className="
-    mt-4
-    grid
-    grid-cols-3
-    justify-start
-    gap-1.5
+            className={`
+              grid
+              grid-cols-3
+              justify-start
+              gap-1.5
 
-    min-[390px]:gap-2
+              min-[390px]:gap-2
 
-    sm:mt-5
-    sm:gap-2
+              sm:gap-2
 
-    md:mt-6
-    md:grid-cols-[repeat(3,68px)]
-    md:gap-x-[55px]
-    md:gap-y-[6px]
+              md:grid-cols-[repeat(3,68px)]
+              md:gap-x-[55px]
+              md:gap-y-[6px]
 
-    lg:mt-8
-    lg:flex
-    lg:justify-start
+              lg:flex
+              lg:justify-start
 
-    xl:mt-9
-    xl:gap-4
-  "
+              xl:gap-4
+
+              ${
+                isMobileResult
+                  ? `
+                    mt-3
+
+                    min-[390px]:mt-3
+
+                    sm:mt-4
+
+                    md:mt-5
+
+                    lg:mt-6
+
+                    xl:mt-7
+                  `
+                  : `
+                    mt-4
+
+                    sm:mt-5
+
+                    md:mt-6
+
+                    lg:mt-8
+
+                    xl:mt-9
+                  `
+              }
+            `}
           >
             {hero.services.map((service) => (
               <div

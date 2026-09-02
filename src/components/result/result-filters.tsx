@@ -180,7 +180,13 @@ export default function ResultFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const isSimOnly = searchParams.get('service') === 'sim-only';
+  const requestedService = searchParams.get('service');
+
+  const isSimOnly = requestedService === 'sim-only';
+
+  const isMobile = requestedService === 'mobile';
+
+  const showSimpleResultBar = isSimOnly || isMobile;
 
   const snapshot = useSyncExternalStore(
     subscribeToCompareFlow,
@@ -278,7 +284,7 @@ export default function ResultFilters() {
 
           Same container across every breakpoint.
       ====================================================== */}
-      {isSimOnly ? (
+      {showSimpleResultBar ? (
         <div
           className="
             w-full
@@ -798,7 +804,7 @@ export default function ResultFilters() {
                 font-inter
 
                 text-[9px]
-                font-normal
+                font-[660]
                 leading-[14px]
 
                 text-[#B54708]
@@ -812,7 +818,7 @@ export default function ResultFilters() {
                 md:text-[12px]
                 md:leading-[18px]
 
-                xl:text-[13px]
+                xl:text-[13.5px]
                 xl:leading-5
               "
             >
@@ -948,7 +954,7 @@ function ResultInformationCard({ title, value, onEdit }: ResultInformationCardPr
             font-inter
 
             text-[11px]
-            font-normal
+            font-[660]
             leading-[16px]
 
             text-[#475467]
