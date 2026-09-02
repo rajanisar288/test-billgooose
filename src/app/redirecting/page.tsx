@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -157,9 +157,8 @@ function subscribe(callback: () => void) {
    PAGE
 ========================================================= */
 
-export default function RedirectingPage() {
+function RedirectingContent() {
   const router = useRouter();
-
   const searchParams = useSearchParams();
 
   const service = resolveRedirectService(searchParams.get('service'));
@@ -556,5 +555,28 @@ export default function RedirectingPage() {
         )}
       </section>
     </main>
+  );
+}
+function RedirectingFallback() {
+  return (
+    <main
+      className="
+        flex
+        min-h-screen
+        w-full
+        items-center
+        justify-center
+        bg-[#F9FAFB]
+        px-5
+      "
+    />
+  );
+}
+
+export default function RedirectingPage() {
+  return (
+    <Suspense fallback={<RedirectingFallback />}>
+      <RedirectingContent />
+    </Suspense>
   );
 }
