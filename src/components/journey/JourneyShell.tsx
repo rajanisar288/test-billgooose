@@ -19,8 +19,8 @@ type JourneyShellProps = {
   children: ReactNode;
 };
 
-export type JourneyService = 'energy' | 'broadband';
-export type JourneyFlow = 'energy' | 'broadband' | 'bundle';
+export type JourneyService = 'energy' | 'broadband' | 'insurance';
+export type JourneyFlow = 'energy' | 'broadband' | 'bundle' | 'insurance';
 
 /* =========================================================
    JOURNEY SERVICE
@@ -32,6 +32,10 @@ function getJourneyServiceSnapshot(): JourneyService {
 
     if (storedService === 'broadband') {
       return 'broadband';
+    }
+
+    if (storedService === 'insurance') {
+      return 'insurance';
     }
 
     if (storedService === 'energy') {
@@ -47,6 +51,10 @@ function getJourneyServiceSnapshot(): JourneyService {
     const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
       service?: string;
     };
+
+    if (parsedCompareFlow.service === 'insurance') {
+      return 'insurance';
+    }
 
     return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
   } catch {
@@ -74,6 +82,10 @@ function getJourneyFlowSnapshot(): JourneyFlow {
       return 'broadband';
     }
 
+    if (storedFlow === 'insurance') {
+      return 'insurance';
+    }
+
     if (storedFlow === 'energy') {
       return 'energy';
     }
@@ -95,6 +107,10 @@ function getJourneyFlowSnapshot(): JourneyFlow {
 
     if (parsedCompareFlow.service === 'broadband') {
       return 'broadband';
+    }
+
+    if (parsedCompareFlow.service === 'insurance') {
+      return 'insurance';
     }
 
     return 'energy';
@@ -201,11 +217,13 @@ export default function JourneyShell({ children }: JourneyShellProps) {
   ========================================================= */
 
   const steps =
-    service === 'broadband'
-      ? sidebar.broadbandSteps
-      : journeyFlow === 'bundle'
-        ? sidebar.bundleSteps
-        : sidebar.energySteps;
+    service === 'insurance'
+      ? sidebar.insuranceSteps
+      : service === 'broadband'
+        ? sidebar.broadbandSteps
+        : journeyFlow === 'bundle'
+          ? sidebar.bundleSteps
+          : sidebar.energySteps;
 
   /*
    * Bundle still uses the Energy routes underneath,

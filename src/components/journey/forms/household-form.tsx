@@ -71,9 +71,13 @@ export default function HouseholdForm() {
 
   const [selectedPropertyType, setSelectedPropertyType] = useState(propertyType.options[0].value);
 
-  const [selectedOccupants, setSelectedOccupants] = useState(occupants.defaultValue);
+  const [selectedOccupants, setSelectedOccupants] = useState(2);
 
-  const [selectedBedrooms, setSelectedBedrooms] = useState(bedrooms.defaultValue);
+  const [selectedBedrooms, setSelectedBedrooms] = useState(1);
+
+  const isValidOccupants = selectedOccupants >= 0 && selectedOccupants <= 10;
+
+  const isValidBedrooms = selectedBedrooms >= 0 && selectedBedrooms <= 10;
 
   /* =========================================================
      BROADBAND STATE
@@ -119,7 +123,7 @@ export default function HouseholdForm() {
        → Step 4 Electric Vehicle
     ======================================================== */
 
-    if (!selectedPropertyType || !selectedOccupants || !selectedBedrooms) {
+    if (!selectedPropertyType || !isValidOccupants || !isValidBedrooms) {
       return;
     }
 
@@ -568,29 +572,19 @@ export default function HouseholdForm() {
               grid-cols-1
               gap-3
 
-              min-[390px]:grid-cols-3
-              min-[390px]:gap-2
-
               sm:gap-3
 
-              md:grid-cols-3
+              md:grid-cols-1
               md:gap-3
 
               lg:mt-4
-              lg:grid-cols-[157.33px_157.33px_157.33px]
-              lg:gap-[14px]
+              lg:grid-cols-[500px]
             "
           >
-            {occupants.options.map((option) => (
-              <SelectorOption
-                key={option.id}
-                label={option.label}
-                selected={selectedOccupants === option.value}
-                onClick={() => {
-                  setSelectedOccupants(option.value);
-                }}
-              />
-            ))}
+            <CounterSelector
+              value={selectedOccupants}
+              onChange={setSelectedOccupants}
+            />
           </div>
         </fieldset>
 
@@ -607,42 +601,11 @@ export default function HouseholdForm() {
             description={bedrooms.description}
           />
 
-          <div className="mt-3 space-y-3 lg:mt-4">
-            <SelectorOption
-              label={bedrooms.options[0].label}
-              selected={selectedBedrooms === bedrooms.options[0].value}
-              onClick={() => {
-                setSelectedBedrooms(bedrooms.options[0].value);
-              }}
-              fullWidth
+          <div className="mt-3 lg:mt-4">
+            <CounterSelector
+              value={selectedBedrooms}
+              onChange={setSelectedBedrooms}
             />
-
-            <div
-              className="
-                grid
-                grid-cols-1
-                gap-3
-
-                min-[390px]:grid-cols-2
-                min-[390px]:gap-[14px]
-
-                md:grid-cols-2
-                md:gap-[14px]
-
-                lg:grid-cols-[243px_243px]
-              "
-            >
-              {bedrooms.options.slice(1).map((option) => (
-                <SelectorOption
-                  key={option.id}
-                  label={option.label}
-                  selected={selectedBedrooms === option.value}
-                  onClick={() => {
-                    setSelectedBedrooms(option.value);
-                  }}
-                />
-              ))}
-            </div>
           </div>
         </fieldset>
       </form>
@@ -791,23 +754,30 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
 }
 
 /* =========================================================
-   ENERGY SELECTOR OPTION
+   COUNTER SELECTOR
 ========================================================= */
 
-type SelectorOptionProps = {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-  fullWidth?: boolean;
+type CounterSelectorProps = {
+  value: number;
+  onChange: (value: number) => void;
 };
 
-function SelectorOption({ label, selected, onClick, fullWidth = false }: SelectorOptionProps) {
+function CounterSelector({ value, onChange }: CounterSelectorProps) {
+  const decrease = () => {
+    if (value > 0) {
+      onChange(value - 1);
+    }
+  };
+
+  const increase = () => {
+    if (value < 10) {
+      onChange(value + 1);
+    }
+  };
+
   return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={`
+    <div
+      className="
         flex
         h-[52px]
         w-full
@@ -815,61 +785,114 @@ function SelectorOption({ label, selected, onClick, fullWidth = false }: Selecto
         items-center
         justify-between
 
-        gap-3
-
         rounded-[14px]
 
         border
+        border-[#D0D5DD]
 
         bg-white
 
-        px-4
-
-        text-left
-
-        transition-colors
+        px-3
 
         sm:h-[56px]
         sm:rounded-[16px]
-        sm:px-[18px]
-
-        md:h-[54px]
-        md:rounded-[14px]
-        md:px-4
+        sm:px-4
 
         lg:h-[61px]
-        lg:gap-4
+        lg:w-[500px]
         lg:rounded-[16px]
         lg:px-5
-
-        ${fullWidth ? 'lg:w-[500px]' : ''}
-
-        ${selected ? 'border-[#00897B]' : 'border-[#D0D5DD]'}
-      `}
+      "
     >
-      <span
+      <button
+        type="button"
+        onClick={decrease}
+        disabled={value === 0}
+        aria-label="Decrease value"
         className="
-          min-w-0
+          flex
+          h-9
+          w-9
 
-          font-red-hat-display
-          text-[13px]
-          font-bold
+          items-center
+          justify-center
+
+          rounded-full
+
+          border
+          border-[#D0D5DD]
+
+          font-inter
+
+          text-[22px]
+          font-medium
           leading-none
-          tracking-[0]
 
-          text-[#0D3B66]
+          text-[#344054]
 
-          sm:text-[14px]
+          transition-colors
 
-          md:text-[14px]
+          hover:border-[#00897B]
+          hover:text-[#00897B]
 
-          lg:text-[16px]
+          disabled:cursor-not-allowed
+          disabled:opacity-40
         "
       >
-        {label}
+        −
+      </button>
+
+      <span
+        className="
+          font-red-hat-display
+
+          text-[18px]
+          font-bold
+          leading-5
+
+          text-[#0D3B66]
+        "
+      >
+        {value}
       </span>
 
-      <SelectionCircle selected={selected} />
-    </button>
+      <button
+        type="button"
+        onClick={increase}
+        disabled={value === 10}
+        aria-label="Increase value"
+        className="
+          flex
+          h-9
+          w-9
+
+          items-center
+          justify-center
+
+          rounded-full
+
+          border
+          border-[#D0D5DD]
+
+          font-inter
+
+          text-[22px]
+          font-medium
+          leading-none
+
+          text-[#344054]
+
+          transition-colors
+
+          hover:border-[#00897B]
+          hover:text-[#00897B]
+
+          disabled:cursor-not-allowed
+          disabled:opacity-40
+        "
+      >
+        +
+      </button>
+    </div>
   );
 }

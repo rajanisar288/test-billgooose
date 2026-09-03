@@ -15,31 +15,18 @@ export default function ResultPageContent() {
 
   const service = searchParams.get('service');
 
-  /* =========================================================
-     MOBILE
-
-     Dedicated Mobile result layout.
-  ========================================================= */
   if (service === 'mobile') {
     return (
       <main className="min-h-screen bg-[#F8F9FA]">
         <MobileResults />
-
         <Footer2 />
       </main>
     );
   }
 
-  /* =========================================================
-     EXISTING RESULTS
+  const isInsurance = service === 'insurance';
+  const insuranceDescription = '3 insurance quotes found, starting with the lowest monthly cost.';
 
-     Energy
-     Broadband
-     SIM Only
-     Bundle
-
-     UNCHANGED.
-  ========================================================= */
   return (
     <main className="min-h-screen bg-[#F8F9FA]">
       <ResultHero />
@@ -48,35 +35,29 @@ export default function ResultPageContent() {
 
       <ResultDesktopActions />
 
-      <ResultsStatus />
+      <ResultsStatus
+        heading={isInsurance ? 'Results summary' : undefined}
+        description={isInsurance ? insuranceDescription : undefined}
+      />
 
       <section
         className="
           mx-auto
           w-full
           max-w-[1440px]
-
           px-4
           pb-[10px]
-
           sm:px-6
-
           md:pb-[20px]
-
           lg:px-10
           lg:pb-[40px]
         "
       >
-        <div
-          className="
-            mt-5
-
-            sm:mt-6
-
-            xl:mt-7
-          "
-        >
-          <ResultPlans />
+        <div className="mt-5 sm:mt-6 xl:mt-7">
+          <ResultPlans
+            heading={isInsurance ? 'Results summary' : undefined}
+            description={isInsurance ? insuranceDescription : undefined}
+          />
         </div>
       </section>
 

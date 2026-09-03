@@ -180,7 +180,7 @@ export default function CurrentUsageSummary() {
               md:mt-[10px]
             "
           >
-            <span
+            {/* <span
               className="
                 inline-flex
                 h-5
@@ -203,7 +203,7 @@ export default function CurrentUsageSummary() {
               "
             >
               {summary.totalUsage}
-            </span>
+            </span> */}
 
             <span
               className="

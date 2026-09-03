@@ -8,7 +8,7 @@ import data from '@/data/content.json';
 
 import { getPreviousJourneyRoute } from './journey-routes';
 
-type JourneyService = 'energy' | 'broadband';
+type JourneyService = 'energy' | 'broadband' | 'insurance';
 
 type JourneyNavigationProps = {
   currentStep: number;
@@ -70,7 +70,6 @@ export default function JourneyNavigation({
           gap-4
         "
       >
-        {/* Back */}
         <button
           type="button"
           onClick={handleBack}
@@ -110,13 +109,10 @@ export default function JourneyNavigation({
             aria-hidden="true"
             className="
               mr-1
-
               h-[8px]
               w-[8px]
               shrink-0
-
               rotate-45
-
               border-b-[2px]
               border-l-[2px]
               border-[#344054]
@@ -126,7 +122,6 @@ export default function JourneyNavigation({
           {navigation.backButton}
         </button>
 
-        {/* Continue / Complete */}
         <button
           type="submit"
           form={`journey-step-form-${currentStep}`}
@@ -167,13 +162,7 @@ export default function JourneyNavigation({
 
           <ArrowRight
             aria-hidden="true"
-            className="
-              h-4
-              w-4
-              shrink-0
-
-              text-white
-            "
+            className="h-4 w-4 shrink-0 text-white"
             strokeWidth={3}
           />
         </button>

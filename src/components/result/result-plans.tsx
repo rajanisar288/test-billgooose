@@ -5,7 +5,15 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { ArrowDownUp, ChevronDown, ChevronRight, ExternalLink, Globe2 } from 'lucide-react';
+import {
+  ArrowDownUp,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  Globe2,
+  X,
+} from 'lucide-react';
 
 import FeaturedBroadbandCard from '@/components/result/featured-broadband-card';
 import PlanCard from '@/components/result/plan-card';
@@ -19,7 +27,7 @@ import type {
 import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import data from '@/data/content.json';
 
-type CompareService = 'energy' | 'broadband' | 'sim-only';
+type CompareService = 'energy' | 'broadband' | 'sim-only' | 'insurance';
 
 type RedirectOrigin = 'sim-only' | 'mobile-details';
 
@@ -44,6 +52,13 @@ type CompareFlowDetails = {
   stillInContract?: string;
 };
 
+type InsurancePlan = StandardPlan & {
+  totalCost: string;
+  monthlyPayment: string;
+  deposit: string;
+  savingDescription: string;
+};
+
 /* =========================================================
    TYPE HELPERS
 ========================================================= */
@@ -60,7 +75,7 @@ function isStandardPlan(plan: ResultPlan): plan is StandardPlan {
    GET STORED COMPARE SERVICE
 ========================================================= */
 
-function getStoredCompareService(): 'energy' | 'broadband' | null {
+function getStoredCompareService(): 'energy' | 'broadband' | 'insurance' | null {
   try {
     const storedDetails = sessionStorage.getItem('compareFlowDetails');
 
@@ -70,7 +85,11 @@ function getStoredCompareService(): 'energy' | 'broadband' | null {
 
     const details = JSON.parse(storedDetails) as CompareFlowDetails;
 
-    if (details.service === 'energy' || details.service === 'broadband') {
+    if (
+      details.service === 'energy' ||
+      details.service === 'broadband' ||
+      details.service === 'insurance'
+    ) {
       return details.service;
     }
 
@@ -107,9 +126,12 @@ export default function ResultPlans({
       ? 'broadband'
       : queryService === 'sim-only'
         ? 'sim-only'
-        : 'energy');
+        : queryService === 'insurance'
+          ? 'insurance'
+          : 'energy');
 
   const isSimOnly = service === 'sim-only';
+  const isInsurance = service === 'insurance';
 
   /* =========================================================
      PLAN DATA
@@ -121,7 +143,18 @@ export default function ResultPlans({
 
   const simOnlyPlanItems = (plans.simOnlyItems ?? []) as SimOnlyPlan[];
 
-  const [selectedPlanTab, setSelectedPlanTab] = useState(resultsStatus.planTabs.defaultValue);
+  /* =========================================================
+     INSURANCE RESULT DATA
+
+     Insurance uses content.json so the card content can be
+     maintained without changing this component.
+  ========================================================= */
+
+  const insurancePlanItems = (plans.insuranceItems ?? []) as InsurancePlan[];
+
+  const [selectedPlanTab, setSelectedPlanTab] = useState(
+    isInsurance ? 'monthly' : resultsStatus.planTabs.defaultValue,
+  );
 
   /* =========================================================
      DETAILS DRAWER
@@ -154,6 +187,34 @@ export default function ResultPlans({
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
 
     const isBundleFlow = queryFlow === 'bundle' || storedFlow === 'bundle';
+
+    /* =====================================================
+       INSURANCE
+    ====================================================== */
+
+    if (service === 'insurance') {
+      if (!plan.providerUrl) {
+        return;
+      }
+
+      sessionStorage.setItem(
+        'journeySelectedPlan',
+        JSON.stringify({
+          ...plan,
+          service: 'insurance',
+        }),
+      );
+
+      sessionStorage.setItem('billgooseJourneyService', 'insurance');
+      sessionStorage.setItem('billgooseJourneyFlow', 'insurance');
+
+      sessionStorage.setItem('insuranceRedirectUrl', plan.providerUrl);
+      sessionStorage.setItem('insuranceRedirectProvider', plan.provider);
+
+      router.push('/redirecting?service=insurance');
+
+      return;
+    }
 
     /* =====================================================
        BUNDLE
@@ -342,6 +403,17 @@ export default function ResultPlans({
   ========================================================= */
 
   const renderNormalCards = () => {
+    if (service === 'insurance') {
+      return insurancePlanItems.map((plan) => (
+        <InsurancePlanCard
+          key={plan.id}
+          plan={plan}
+          onViewDetails={handleViewDetails}
+          onSelectPlan={handleSelectPlan}
+        />
+      ));
+    }
+
     if (service === 'broadband') {
       return broadbandPlanItems.map((plan) => (
         <PlanCard
@@ -515,6 +587,16 @@ export default function ResultPlans({
                       <strong className="font-normal">{simOnlyPlanItems.length} deals</strong>{' '}
                       available, starting with the lowest monthly cost.
                     </>
+                  ) : service === 'insurance' ? (
+                    <>
+                      <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
+                      found, starting with the lowest monthly cost.
+                    </>
+                  ) : isInsurance ? (
+                    <>
+                      <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
+                      sorted with lowest first.
+                    </>
                   ) : (
                     <>
                       <strong className="font-normal">{resultsStatus.descriptionStart}</strong>{' '}
@@ -525,7 +607,13 @@ export default function ResultPlans({
 
                 {!isSimOnly && (
                   <div className="mt-3 flex items-center gap-2">
-                    {resultsStatus.planTabs.options.map((option) => {
+                    {(isInsurance
+                      ? [
+                          { id: 'monthly', label: 'Monthly', value: 'monthly' },
+                          { id: 'annual', label: 'Annual', value: 'annual' },
+                        ]
+                      : resultsStatus.planTabs.options
+                    ).map((option) => {
                       const isSelected = selectedPlanTab === option.value;
 
                       return (
@@ -651,6 +739,598 @@ export default function ResultPlans({
         onSelectPlan={handleDrawerPrimaryAction}
       />
     </>
+  );
+}
+
+/* =========================================================
+   INSURANCE CARD
+
+   Desktop / laptop target:
+   954px × 317px
+   radius 16px
+   1px #EAECF0 border
+========================================================= */
+
+type InsurancePlanCardProps = {
+  plan: InsurancePlan;
+  onViewDetails: (plan: StandardPlan) => void;
+  onSelectPlan: (plan: StandardPlan) => void;
+};
+
+function InsurancePlanCard({ plan, onViewDetails, onSelectPlan }: InsurancePlanCardProps) {
+  const leftFeatures = plan.features.slice(0, 4);
+  const rightFeatures = plan.features.slice(4);
+
+  return (
+    <article
+      className="
+        w-full
+        overflow-hidden
+
+        rounded-[16px]
+
+        border
+        border-[#EAECF0]
+
+        bg-white
+
+        shadow-[0px_1px_3px_rgba(16,24,40,0.03)]
+
+        lg:h-[317px]
+        lg:max-w-full
+        lg:w-[954px]
+      "
+    >
+      {/* =====================================================
+          TOP ROW
+      ====================================================== */}
+      <div
+        className="
+          flex
+          w-full
+          flex-col
+
+          md:flex-row
+          md:items-stretch
+
+          lg:h-[103px]
+        "
+      >
+        {/* IMAGE + TITLE */}
+        <div
+          className="
+            flex
+            min-w-0
+            flex-1
+            items-center
+            gap-3
+
+            px-4
+            py-4
+
+            lg:gap-4
+            lg:px-4
+            lg:py-[15px]
+          "
+        >
+          <div
+            className="
+              flex
+              h-[68px]
+              w-[68px]
+              shrink-0
+              items-center
+              justify-center
+              overflow-hidden
+
+              rounded-[10px]
+
+              border
+              border-[#EAECF0]
+
+              bg-white
+
+              lg:h-[72px]
+              lg:w-[72px]
+              lg:rounded-[11.25px]
+            "
+          >
+            <Image
+              src={plan.logo}
+              alt={plan.logoAlt}
+              width={72}
+              height={72}
+              className="
+                h-full
+                w-full
+                object-contain
+              "
+            />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h3
+              className="
+                truncate
+
+                font-red-hat-display
+
+                text-[18px]
+                font-[645]
+                leading-[22px]
+
+                text-[#101828]
+
+                lg:text-[20px]
+                lg:leading-[21.75px]
+              "
+            >
+              {plan.provider}
+            </h3>
+
+            <p
+              className="
+                mt-1
+                truncate
+
+                font-red-hat-display
+
+                text-[13px]
+                font-[467]
+                leading-[19px]
+
+                text-[#667085]
+
+                lg:text-[15px]
+                lg:leading-[19.5px]
+              "
+            >
+              {plan.description}
+            </p>
+          </div>
+        </div>
+
+        {/* SAVE — intentionally no divider between title and saving box */}
+        <div
+          className="
+            flex
+            shrink-0
+            items-center
+
+            px-4
+            py-3
+
+            md:w-[164px]
+
+            lg:w-[166px]
+            lg:px-3
+          "
+        >
+          <div
+            className="
+              w-full
+
+              rounded-[8px]
+
+              border
+              border-[#A6F4C5]
+
+              bg-[#F6FEF9]
+
+              px-3
+              py-2.5
+            "
+          >
+            <p
+              className="
+                font-red-hat-display
+
+                text-[20px]
+                font-[645]
+                leading-[28px]
+
+                text-[#12B76A]
+              "
+            >
+              {plan.saving}
+            </p>
+
+            <p
+              className="
+                mt-[2px]
+
+                font-red-hat-display
+
+                text-[11px]
+                font-[467]
+                leading-[14px]
+
+                text-[#054F31]
+              "
+            >
+              {plan.savingDescription}
+            </p>
+          </div>
+        </div>
+
+        {/* ACTIONS — divider only between saving box and buttons */}
+        <div
+          className="
+            flex
+            shrink-0
+            flex-row
+            items-center
+            gap-2
+
+            border-t
+            border-[#EAECF0]
+
+            px-4
+            py-3
+
+            md:w-[168px]
+            md:flex-col
+            md:justify-center
+            md:border-l
+            md:border-t-0
+
+            lg:w-[172px]
+            lg:px-4
+          "
+        >
+          <button
+            type="button"
+            onClick={() => {
+              onSelectPlan(plan);
+            }}
+            className="
+              inline-flex
+              h-[38px]
+              flex-1
+              items-center
+              justify-center
+
+              rounded-full
+
+              border
+              border-[#00897B]
+
+              bg-[#00897B]
+
+              px-4
+
+              font-red-hat-display
+
+              text-[13px]
+              font-bold
+
+              text-white
+
+              transition-colors
+
+              hover:bg-[#00796D]
+
+              md:w-full
+              md:flex-none
+
+              lg:h-[40px]
+              lg:text-[14px]
+            "
+          >
+            {plan.primaryButton}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onViewDetails(plan);
+            }}
+            className="
+              inline-flex
+              h-[38px]
+              flex-1
+              items-center
+              justify-center
+              gap-1.5
+
+              rounded-full
+
+              border
+              border-[#667085]
+
+              bg-white
+
+              px-4
+
+              font-red-hat-display
+
+              text-[13px]
+              font-[645]
+
+              text-[#101828]
+
+              transition-colors
+
+              hover:bg-[#F9FAFB]
+
+              md:w-full
+              md:flex-none
+
+              lg:h-[40px]
+              lg:text-[14px]
+            "
+          >
+            {plan.viewDetailsButton}
+
+            <ChevronRight
+              aria-hidden="true"
+              className="
+                h-[18px]
+                w-[18px]
+
+                text-[#0D3B66]
+              "
+              strokeWidth={2.5}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* =====================================================
+          BOTTOM ROW
+
+          Desktop:
+          3 columns, ~298.67px each with 12px gaps.
+      ====================================================== */}
+      <div
+        className="
+          grid
+          grid-cols-1
+          gap-3
+
+          border-t
+          border-[#EAECF0]
+
+          px-4
+          py-4
+
+          md:grid-cols-2
+
+          lg:h-[214px]
+          lg:grid-cols-3
+          lg:gap-3
+          lg:px-4
+          lg:py-4
+        "
+      >
+        <InsuranceFeatureBlock
+          title="Buildings cover"
+          features={leftFeatures}
+        />
+
+        <InsuranceFeatureBlock
+          title="Buildings cover"
+          features={rightFeatures}
+          mutedLast
+        />
+
+        <div
+          className="
+            space-y-3
+
+            md:col-span-2
+
+            lg:col-span-1
+          "
+        >
+          <InsuranceMetric
+            label="Total cost"
+            value={plan.totalCost}
+            highlighted
+          />
+
+          <InsuranceMetric
+            label="Monthly x 11"
+            value={plan.monthlyPayment}
+          />
+
+          <InsuranceMetric
+            label="Deposit"
+            value={plan.deposit}
+          />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/* =========================================================
+   INSURANCE FEATURE BLOCK
+========================================================= */
+
+function InsuranceFeatureBlock({
+  title,
+  features,
+  mutedLast = false,
+}: {
+  title: string;
+  features: string[];
+  mutedLast?: boolean;
+}) {
+  return (
+    <div
+      className="
+        min-w-0
+
+        rounded-[8px]
+
+        border
+        border-[#EAECF0]
+
+        bg-[#F9FAFB]
+
+        px-4
+        py-3
+      "
+    >
+      <p
+        className="
+          font-red-hat-display
+
+          text-[13px]
+          font-[550]
+          leading-[19.5px]
+          tracking-[-0.01em]
+
+          text-[#667085]
+        "
+      >
+        {title}
+      </p>
+
+      <div className="mt-2 space-y-[6px]">
+        {features.map((feature, index) => {
+          const isMuted = mutedLast && index === features.length - 1;
+
+          return (
+            <div
+              key={feature}
+              className="
+                flex
+                min-w-0
+                items-start
+                gap-2
+              "
+            >
+              {isMuted ? (
+                <X
+                  aria-hidden="true"
+                  className="
+                    mt-[3px]
+
+                    h-[13px]
+                    w-[13px]
+                    shrink-0
+
+                    text-[#98A2B3]
+                  "
+                  strokeWidth={2}
+                />
+              ) : (
+                <Check
+                  aria-hidden="true"
+                  className="
+                    mt-[3px]
+
+                    h-[13px]
+                    w-[13px]
+                    shrink-0
+
+                    text-[#00897B]
+                  "
+                  strokeWidth={2.3}
+                />
+              )}
+
+              <span
+                className={`
+                  min-w-0
+
+                  font-red-hat-display
+
+                  text-[13px]
+                  font-[467]
+                  leading-[19.5px]
+
+                  ${isMuted ? 'text-[#667085]' : 'text-[#101828]'}
+                `}
+              >
+                {feature}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   INSURANCE COST CARD
+========================================================= */
+
+function InsuranceMetric({
+  label,
+  value,
+  highlighted = false,
+}: {
+  label: string;
+  value: string;
+  highlighted?: boolean;
+}) {
+  return (
+    <div
+      className={`
+        flex
+        h-[50.333px]
+        w-full
+
+        items-center
+        justify-between
+
+        gap-3
+
+        rounded-[8px]
+
+        border
+
+        px-3
+        py-2.5
+
+        ${
+          highlighted
+            ? `
+              border-[#00897B]
+              bg-[linear-gradient(0deg,rgba(0,137,123,0.05),rgba(0,137,123,0.05)),linear-gradient(0deg,rgba(255,255,255,0.95),rgba(255,255,255,0.95))]
+            `
+            : `
+              border-[#EAECF0]
+              bg-[#F9FAFB]
+            `
+        }
+      `}
+    >
+      <span
+        className={`
+          font-red-hat-display
+
+          text-[14px]
+          font-[467]
+          leading-[21px]
+
+          ${highlighted ? 'text-[#101828]' : 'text-[#667085]'}
+        `}
+      >
+        {label}
+      </span>
+
+      <strong
+        className="
+          font-red-hat-display
+
+          text-[16px]
+          font-[645]
+          leading-6
+          tracking-[-0.01em]
+
+          text-right
+
+          text-[#101828]
+        "
+      >
+        {value}
+      </strong>
+    </div>
   );
 }
 

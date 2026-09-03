@@ -13,7 +13,7 @@ import data from '@/data/content.json';
 import { MoveStatus, type Address } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 
-type CompareService = 'energy' | 'broadband';
+type CompareService = 'energy' | 'broadband' | 'insurance';
 
 export default function CompareFlow() {
   const { compareFlow } = data;
@@ -24,11 +24,19 @@ export default function CompareFlow() {
   const requestedService = searchParams.get('service');
   const requestedFlow = searchParams.get('flow');
 
-  const selectedService: CompareService = requestedService === 'broadband' ? 'broadband' : 'energy';
+  const selectedService: CompareService =
+    requestedService === 'broadband'
+      ? 'broadband'
+      : requestedService === 'insurance'
+        ? 'insurance'
+        : 'energy';
 
   const isBundleFlow = requestedFlow === 'bundle';
 
-  const serviceContent = compareFlow.services[selectedService];
+  const serviceContent =
+    selectedService === 'insurance'
+      ? compareFlow.services.energy
+      : compareFlow.services[selectedService];
 
   /* =========================================================
      COMMON STATE
@@ -122,6 +130,26 @@ export default function CompareFlow() {
     compareFlow.form.broadband.contractStatus.defaultValue,
   );
 
+  const hasNoCurrentProvider = currentProvider === 'no-current-provider';
+
+  const shouldShowContractStatus =
+    selectedService === 'broadband' && Boolean(currentProvider) && !hasNoCurrentProvider;
+
+  /* =========================================================
+     INSURANCE STATE
+  ========================================================= */
+
+  const insuranceTypeOptions = [
+    { id: 'life-insurance', label: 'Life Insurance', value: 'life-insurance' },
+    { id: 'home-insurance', label: 'Home Insurance', value: 'home-insurance' },
+    { id: 'vehicle-insurance', label: 'Vehicle Insurance', value: 'vehicle-insurance' },
+    { id: 'health-insurance', label: 'Health Insurance', value: 'health-insurance' },
+  ];
+
+  const [email, setEmail] = useState('');
+  const [insuranceType, setInsuranceType] = useState('life-insurance');
+  const [insuranceTypeDropdownOpen, setInsuranceTypeDropdownOpen] = useState(false);
+
   /* =========================================================
      REFS
   ========================================================= */
@@ -132,6 +160,8 @@ export default function CompareFlow() {
 
   const energyServiceDropdownRef = useRef<HTMLDivElement>(null);
 
+  const insuranceTypeDropdownRef = useRef<HTMLDivElement>(null);
+
   /* =========================================================
      VALIDATION
   ========================================================= */
@@ -140,8 +170,25 @@ export default function CompareFlow() {
 
   const isPostcodeValid = ukPostcodePattern.test(postcode.trim());
 
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isEmailValid = emailPattern.test(email.trim());
+
   const isFormValid =
-    isPostcodeValid && selectedAddress && occupancyType.length > 0 && alreadyInProperty.length > 0;
+    selectedService === 'insurance'
+      ? Boolean(isPostcodeValid && selectedAddress && isEmailValid && insuranceType)
+      : selectedService === 'broadband'
+        ? Boolean(
+            isPostcodeValid &&
+            selectedAddress &&
+            currentProvider &&
+            (hasNoCurrentProvider || stillInContract),
+          )
+        : Boolean(
+            isPostcodeValid &&
+            selectedAddress &&
+            occupancyType.length > 0 &&
+            alreadyInProperty.length > 0,
+          );
 
   /* =========================================================
      API FUNCTIONS
@@ -212,6 +259,10 @@ export default function CompareFlow() {
       if (energyServiceDropdownRef.current && !energyServiceDropdownRef.current.contains(target)) {
         setEnergyServiceDropdownOpen(false);
       }
+
+      if (insuranceTypeDropdownRef.current && !insuranceTypeDropdownRef.current.contains(target)) {
+        setInsuranceTypeDropdownOpen(false);
+      }
     }
 
     document.addEventListener('mousedown', handleOutsideClick);
@@ -229,6 +280,33 @@ export default function CompareFlow() {
     event.preventDefault();
 
     if (!isFormValid) {
+      return;
+    }
+
+    /* =======================================================
+       INSURANCE
+    ======================================================= */
+
+    if (selectedService === 'insurance') {
+      sessionStorage.setItem(
+        'compareFlowDetails',
+        JSON.stringify({
+          service: 'insurance',
+          flow: 'insurance',
+          postcode: postcode.trim(),
+          address: selectedAddress,
+          email: email.trim(),
+          insuranceType,
+        }),
+      );
+
+      sessionStorage.setItem('billgooseJourneyService', 'insurance');
+      sessionStorage.setItem('billgooseJourneyFlow', 'insurance');
+
+      window.dispatchEvent(new Event('billgoose-compare-flow-changed'));
+
+      router.push('/steps/personal-details-form?service=insurance');
+
       return;
     }
 
@@ -512,10 +590,10 @@ export default function CompareFlow() {
                     min-[360px]:whitespace-nowrap
                   "
                 >
-                  {compareFlow?.services.energy.heading?.firstLine}
+                  {serviceContent.heading.firstLine}
                 </span>
 
-                <span className="block">{compareFlow.services.energy.heading.secondLine}</span>
+                <span className="block">{serviceContent.heading.secondLine}</span>
               </span>
 
               <span
@@ -527,8 +605,7 @@ export default function CompareFlow() {
                   lg:hidden
                 "
               >
-                {compareFlow.services.energy.heading.firstLine}{' '}
-                {compareFlow.services.energy.heading.secondLine}
+                {serviceContent.heading.firstLine} {serviceContent.heading.secondLine}
               </span>
 
               <span
@@ -544,7 +621,7 @@ export default function CompareFlow() {
                     whitespace-nowrap
                   "
                 >
-                  {compareFlow.services.energy.heading.firstLine}
+                  {serviceContent.heading.firstLine}
                 </span>
 
                 <span
@@ -553,7 +630,7 @@ export default function CompareFlow() {
                     whitespace-nowrap
                   "
                 >
-                  {compareFlow.services.energy.heading.secondLine}
+                  {serviceContent.heading.secondLine}
                 </span>
               </span>
             </h1>
@@ -591,7 +668,7 @@ export default function CompareFlow() {
                 lg:leading-[25px]
               "
             >
-              {compareFlow.services.energy.description}
+              {serviceContent.description}
             </p>
           </div>
 
@@ -879,6 +956,8 @@ export default function CompareFlow() {
                     setProviderDropdownOpen(false);
 
                     setEnergyServiceDropdownOpen(false);
+
+                    setInsuranceTypeDropdownOpen(false);
                   }}
                   className={`
                     flex
@@ -1185,6 +1264,219 @@ export default function CompareFlow() {
                 </div>
               </div>
             </fieldset> */}
+
+            {/* =================================================
+                INSURANCE
+            ================================================== */}
+
+            {selectedService === 'insurance' && (
+              <>
+                <div>
+                  <label
+                    htmlFor="insurance-email"
+                    className="
+                      mb-2
+                      block
+                      font-inter
+                      text-[13px]
+                      font-[500]
+                      leading-5
+                      text-[#344054]
+                      lg:text-[14px]
+                    "
+                  >
+                    Email address
+                  </label>
+
+                  <input
+                    id="insurance-email"
+                    name="insurance-email"
+                    type="email"
+                    value={email}
+                    autoComplete="email"
+                    placeholder="Enter your email address"
+                    aria-invalid={email.length > 0 && !isEmailValid}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                    }}
+                    className="
+                      h-12
+                      w-full
+                      rounded-full
+                      border
+                      border-[#D0D5DD]
+                      bg-white
+                      px-[18px]
+                      font-inter
+                      text-[14px]
+                      font-normal
+                      leading-6
+                      text-[#344054]
+                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                      outline-none
+                      transition
+                      placeholder:text-[#667085]
+                      focus:border-black
+                      focus:ring-4
+                      focus:ring-[#EEFFFB]
+                      md:h-[50px]
+                      lg:h-[52px]
+                      lg:text-[16px]
+                    "
+                  />
+
+                  {email.length > 0 && !isEmailValid && (
+                    <p
+                      className="
+                        mt-1.5
+                        font-inter
+                        text-[11px]
+                        font-normal
+                        leading-4
+                        text-[#D92D20]
+                        lg:text-[12px]
+                      "
+                    >
+                      Please enter a valid email address.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    id="insurance-type-label"
+                    className="
+                      mb-2
+                      block
+                      font-inter
+                      text-[13px]
+                      font-[500]
+                      leading-5
+                      text-[#344054]
+                      lg:text-[14px]
+                    "
+                  >
+                    Insurance Type
+                  </label>
+
+                  <div
+                    ref={insuranceTypeDropdownRef}
+                    className="relative"
+                  >
+                    <button
+                      type="button"
+                      aria-labelledby="insurance-type-label"
+                      aria-expanded={insuranceTypeDropdownOpen}
+                      aria-haspopup="listbox"
+                      onClick={() => {
+                        setInsuranceTypeDropdownOpen((current) => !current);
+                        setAddressDropdownOpen(false);
+                        setProviderDropdownOpen(false);
+                        setEnergyServiceDropdownOpen(false);
+                      }}
+                      className={`
+                        flex
+                        h-12
+                        w-full
+                        items-center
+                        justify-between
+                        gap-2
+                        rounded-full
+                        border
+                        bg-white
+                        px-[18px]
+                        text-left
+                        font-inter
+                        text-[14px]
+                        font-normal
+                        leading-6
+                        text-[#344054]
+                        shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                        outline-none
+                        transition
+                        md:h-[50px]
+                        lg:h-[52px]
+                        lg:text-[16px]
+                        ${
+                          insuranceTypeDropdownOpen
+                            ? 'border-black ring-4 ring-[#EEFFFB]'
+                            : 'border-[#D0D5DD]'
+                        }
+                      `}
+                    >
+                      <span>
+                        {
+                          insuranceTypeOptions.find((option) => option.value === insuranceType)
+                            ?.label
+                        }
+                      </span>
+
+                      <ChevronDown
+                        aria-hidden="true"
+                        className={`
+                          h-5
+                          w-5
+                          shrink-0
+                          text-[#354052]
+                          transition-transform
+                          ${insuranceTypeDropdownOpen ? 'rotate-180' : ''}
+                        `}
+                        strokeWidth={2}
+                      />
+                    </button>
+
+                    {insuranceTypeDropdownOpen && (
+                      <DropdownPanel>
+                        {insuranceTypeOptions.map((option) => {
+                          const isSelected = insuranceType === option.value;
+
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              role="option"
+                              aria-selected={isSelected}
+                              onClick={() => {
+                                setInsuranceType(option.value);
+                                setInsuranceTypeDropdownOpen(false);
+                              }}
+                              className={`
+                                flex
+                                min-h-10
+                                w-full
+                                items-center
+                                justify-between
+                                rounded-[30px]
+                                px-3
+                                py-2
+                                text-left
+                                font-inter
+                                text-[13px]
+                                text-[#344054]
+                                transition-colors
+                                hover:bg-[#F5F5F5]
+                                lg:text-[14px]
+                                ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
+                              `}
+                            >
+                              <span>{option.label}</span>
+
+                              {isSelected && (
+                                <Check
+                                  aria-hidden="true"
+                                  className="h-4 w-4 text-[#00897B]"
+                                  strokeWidth={2}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </DropdownPanel>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* =================================================
                 ENERGY
@@ -1658,6 +1950,12 @@ export default function CompareFlow() {
                               onClick={() => {
                                 setCurrentProvider(provider.value);
 
+                                if (provider.value === 'no-current-provider') {
+                                  setStillInContract(
+                                    compareFlow.form.broadband.contractStatus.defaultValue,
+                                  );
+                                }
+
                                 setProviderDropdownOpen(false);
                               }}
                               className={`
@@ -1712,13 +2010,15 @@ export default function CompareFlow() {
                   </div>
                 </div>
 
-                <fieldset>
-                  <legend className="sr-only">
-                    {compareFlow.form.broadband.contractStatus.label}
-                  </legend>
+                {shouldShowContractStatus && (
+                  <>
+                    <fieldset>
+                      <legend className="sr-only">
+                        {compareFlow.form.broadband.contractStatus.label}
+                      </legend>
 
-                  <div
-                    className="
+                      <div
+                        className="
                       flex
                       min-h-12
                       w-full
@@ -1750,9 +2050,9 @@ export default function CompareFlow() {
                       lg:h-[52px]
                       lg:min-h-[52px]
                     "
-                  >
-                    <span
-                      className="
+                      >
+                        <span
+                          className="
                         font-inter
 
                         text-[12px]
@@ -1765,32 +2065,34 @@ export default function CompareFlow() {
 
                         lg:text-[14px]
                       "
-                    >
-                      {compareFlow.form.broadband.contractStatus.label}
-                    </span>
+                        >
+                          {compareFlow.form.broadband.contractStatus.label}
+                        </span>
 
-                    <div
-                      className="
+                        <div
+                          className="
                         flex
                         h-[34px]
                         shrink-0
 
                         items-center
                       "
-                    >
-                      {compareFlow.form.broadband.contractStatus.options.map((option) => (
-                        <PropertyOption
-                          key={option.id}
-                          label={option.label}
-                          selected={stillInContract === option.value}
-                          onClick={() => {
-                            setStillInContract(option.value);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </fieldset>
+                        >
+                          {compareFlow.form.broadband.contractStatus.options.map((option) => (
+                            <PropertyOption
+                              key={option.id}
+                              label={option.label}
+                              selected={stillInContract === option.value}
+                              onClick={() => {
+                                setStillInContract(option.value);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </fieldset>
+                  </>
+                )}
               </>
             )}
 
@@ -2050,8 +2352,8 @@ export default function CompareFlow() {
               "
             >
               <Image
-                src={compareFlow.services.energy.image.src}
-                alt={compareFlow.services.energy.image?.alt}
+                src={serviceContent.image.src}
+                alt={serviceContent.image.alt}
                 fill
                 priority
                 sizes="(max-width: 1023px) 0px, (max-width: 1279px) 45vw, 568px"

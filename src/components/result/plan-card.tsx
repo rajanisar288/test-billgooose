@@ -21,6 +21,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
   const { plans } = data.resultPage;
 
   const isBroadband = service === 'broadband';
+  const isInsurance = service === 'insurance';
 
   const handleSelectPlan = () => {
     onSelectPlan(plan);
@@ -1048,6 +1049,43 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
             <ResultMetric
               label="Upfront costs"
               value={plan.upfrontCost ?? '£0.00'}
+            />
+          </div>
+        ) : isInsurance ? (
+          <div
+            className="
+              grid
+              grid-cols-4
+
+              gap-3
+
+              border-t
+              border-[#EAECF0]
+
+              bg-[#FCFCFD]
+
+              px-5
+              py-3
+            "
+          >
+            <ResultMetric
+              label="Monthly cost"
+              value={plan.price}
+            />
+
+            <ResultMetric
+              label="Annual cost"
+              value={getEstimatedAnnualCost(plan.price)}
+            />
+
+            <ResultMetric
+              label="Cover"
+              value="Buildings & contents"
+            />
+
+            <ResultMetric
+              label="Excess"
+              value="£250"
             />
           </div>
         ) : (

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 
-import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { INSURANCE_JOURNEY_ROUTES, JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
 
 export default function PersonalDetailsForm() {
@@ -79,6 +79,14 @@ export default function PersonalDetailsForm() {
     sessionStorage.setItem(personalDetails.storageKey, JSON.stringify(personalDetailsData));
 
     window.dispatchEvent(new Event('journey-review-updated'));
+
+    const journeyService = sessionStorage.getItem('billgooseJourneyService');
+
+    if (journeyService === 'insurance') {
+      router.push(`${INSURANCE_JOURNEY_ROUTES[2]}?service=insurance`);
+
+      return;
+    }
 
     router.push(JOURNEY_ROUTES[2]);
   }

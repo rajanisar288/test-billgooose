@@ -16,8 +16,8 @@ type SignedInUser = {
 };
 
 /* =========================================================
-   AUTH SNAPSHOT
-========================================================= */
+    AUTH SNAPSHOT
+  ========================================================= */
 
 function getAuthSnapshot(): string {
   try {
@@ -54,8 +54,75 @@ function subscribeToAuth(callback: () => void) {
 }
 
 /* =========================================================
-   HEADER
-========================================================= */
+    COMPARE FLOW SNAPSHOT
+  ========================================================= */
+
+function getCompareFlowSnapshot(): string {
+  try {
+    return JSON.stringify({
+      service: sessionStorage.getItem('billgooseJourneyService') ?? '',
+      flow: sessionStorage.getItem('billgooseJourneyFlow') ?? '',
+      details: sessionStorage.getItem('compareFlowDetails') ?? '',
+    });
+  } catch {
+    return '';
+  }
+}
+
+function getCompareFlowServerSnapshot(): string {
+  return '';
+}
+
+function subscribeToCompareFlow(callback: () => void) {
+  const handleStorage = () => {
+    callback();
+  };
+
+  window.addEventListener('storage', handleStorage);
+  window.addEventListener('billgoose-compare-flow-changed', handleStorage);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+    window.removeEventListener('billgoose-compare-flow-changed', handleStorage);
+  };
+}
+
+/* =========================================================
+    URL SEARCH SNAPSHOT
+
+    Avoids useSearchParams so the shared Header does not force
+    /compare to require a Suspense boundary during static build.
+  ========================================================= */
+
+function getLocationSearchSnapshot(): string {
+  try {
+    return window.location.search;
+  } catch {
+    return '';
+  }
+}
+
+function getLocationSearchServerSnapshot(): string {
+  return '';
+}
+
+function subscribeToLocationSearch(callback: () => void) {
+  const handleLocationChange = () => {
+    callback();
+  };
+
+  window.addEventListener('popstate', handleLocationChange);
+  window.addEventListener('billgoose-location-changed', handleLocationChange);
+
+  return () => {
+    window.removeEventListener('popstate', handleLocationChange);
+    window.removeEventListener('billgoose-location-changed', handleLocationChange);
+  };
+}
+
+/* =========================================================
+    HEADER
+  ========================================================= */
 
 export default function Header() {
   const router = useRouter();
@@ -81,6 +148,18 @@ export default function Header() {
     getAuthServerSnapshot,
   );
 
+  const compareFlowSnapshot = useSyncExternalStore(
+    subscribeToCompareFlow,
+    getCompareFlowSnapshot,
+    getCompareFlowServerSnapshot,
+  );
+
+  const locationSearch = useSyncExternalStore(
+    subscribeToLocationSearch,
+    getLocationSearchSnapshot,
+    getLocationSearchServerSnapshot,
+  );
+
   let signedInUser: SignedInUser | null = null;
 
   if (authSnapshot) {
@@ -100,9 +179,79 @@ export default function Header() {
    */
   const isMyInfoPage = pathname === '/my-info' || pathname.startsWith('/my-info/');
 
+  /*
+   * Compare-flow journey icon.
+   *
+   * URL params are preferred. Session storage is used as a
+   * fallback so the icon still appears when the compare-flow
+   * screen itself does not keep service/flow in the URL.
+   */
+  let storedCompareService = '';
+  let storedCompareFlow = '';
+
+  if (compareFlowSnapshot) {
+    try {
+      const snapshot = JSON.parse(compareFlowSnapshot) as {
+        service?: string;
+        flow?: string;
+        details?: string;
+      };
+
+      storedCompareService = snapshot.service ?? '';
+      storedCompareFlow = snapshot.flow ?? '';
+
+      if (snapshot.details) {
+        const details = JSON.parse(snapshot.details) as {
+          service?: string;
+          flow?: string;
+        };
+
+        storedCompareService = storedCompareService || details.service || '';
+        storedCompareFlow = storedCompareFlow || details.flow || '';
+      }
+    } catch {
+      // Ignore malformed session data.
+    }
+  }
+
+  const locationParams = new URLSearchParams(locationSearch);
+
+  const compareService = locationParams.get('service') || storedCompareService;
+  const compareFlow = locationParams.get('flow') || storedCompareFlow;
+
+  /*
+   * Show the journey icon on the compare flow screen.
+   *
+   * Your compare screen can be reached with URL params or
+   * with flow/service already stored in sessionStorage.
+   */
+  const shouldShowCompareJourneyIcon = pathname === '/compare' || pathname.startsWith('/compare/');
+
+  let compareJourneyIcon: string | null = null;
+  let compareJourneyIconAlt = '';
+
+  if (shouldShowCompareJourneyIcon) {
+    if (compareService === 'broadband') {
+      compareJourneyIcon = '/images/compare-broadband.png';
+      compareJourneyIconAlt = 'Broadband';
+    } else if (compareService === 'insurance') {
+      compareJourneyIcon = '/images/compare-insurance.png';
+      compareJourneyIconAlt = 'Insurance';
+    } else if (
+      (compareService === 'energy' && compareFlow === 'bundle') ||
+      compareFlow === 'bundle'
+    ) {
+      compareJourneyIcon = '/images/compare-bundlebills.png';
+      compareJourneyIconAlt = 'Bundle Bills';
+    } else if (compareService === 'energy') {
+      compareJourneyIcon = '/images/compare-energy.png';
+      compareJourneyIconAlt = 'Energy';
+    }
+  }
+
   /* =========================================================
-     CLOSE MENUS
-  ========================================================= */
+      CLOSE MENUS
+    ========================================================= */
 
   function closeMenus() {
     setIsMobileNavigationOpen(false);
@@ -111,8 +260,8 @@ export default function Header() {
   }
 
   /* =========================================================
-     SIGN IN
-  ========================================================= */
+      SIGN IN
+    ========================================================= */
 
   function handleSignInClick() {
     try {
@@ -129,8 +278,8 @@ export default function Header() {
   }
 
   /* =========================================================
-     ACCOUNT
-  ========================================================= */
+      ACCOUNT
+    ========================================================= */
 
   function toggleAccountMenu() {
     setIsAccountOpen((current) => !current);
@@ -140,8 +289,8 @@ export default function Header() {
   }
 
   /* =========================================================
-     LOGOUT
-  ========================================================= */
+      LOGOUT
+    ========================================================= */
 
   function handleLogout() {
     try {
@@ -158,8 +307,8 @@ export default function Header() {
   }
 
   /* =========================================================
-     OUTSIDE CLICK
-  ========================================================= */
+      OUTSIDE CLICK
+    ========================================================= */
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
@@ -186,8 +335,8 @@ export default function Header() {
   }, []);
 
   /* =========================================================
-     MOBILE BODY SCROLL
-  ========================================================= */
+      MOBILE BODY SCROLL
+    ========================================================= */
 
   useEffect(() => {
     if (!isMobileNavigationOpen) {
@@ -206,102 +355,155 @@ export default function Header() {
   return (
     <header
       className={`
-        relative
-        z-50
-        w-full
+          relative
+          z-50
+          w-full
 
-        ${isMyInfoPage ? 'bg-[#0B2B43]' : 'bg-white'}
-      `}
+          ${isMyInfoPage ? 'bg-[#0B2B43]' : 'bg-white'}
+        `}
     >
       <div className="mx-auto w-full max-w-[1440px]">
         <div
           className="
-            flex
-            min-h-[72px]
+              flex
+              min-h-[72px]
 
-            items-center
-            justify-between
+              items-center
+              justify-between
 
-            px-5
+              px-5
 
-            sm:px-8
+              sm:px-8
 
-            lg:min-h-[103px]
-            lg:px-10
-          "
+              lg:min-h-[103px]
+              lg:px-10
+            "
         >
           {/* =================================================
-              LOGO
-          ================================================== */}
-          <Link
-            href="/"
-            onClick={closeMenus}
-            aria-label="Go to BillGoose homepage"
-            className="
-              inline-flex
-              shrink-0
-            "
-          >
-            <Image
-              src={isMyInfoPage ? '/images/logo-white.png' : header.logo.src}
-              alt={header.logo.alt}
-              width={266}
-              height={82}
-              priority
+                LOGO
+            ================================================== */}
+          <div className="flex shrink-0 items-center">
+            <Link
+              href="/"
+              onClick={closeMenus}
+              aria-label="Go to BillGoose homepage"
               className="
-                h-auto
-                w-[145px]
-
-                object-contain
-
-                sm:w-[180px]
-
-                lg:w-[266px]
+                inline-flex
+                shrink-0
               "
-            />
-          </Link>
+            >
+              <Image
+                src={isMyInfoPage ? '/images/logo-white.png' : header.logo.src}
+                alt={header.logo.alt}
+                width={266}
+                height={82}
+                priority
+                className="
+                  h-auto
+                  w-[145px]
+
+                  object-contain
+
+                  sm:w-[180px]
+
+                  lg:w-[266px]
+                "
+              />
+            </Link>
+
+            {compareJourneyIcon && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="
+                    mx-3
+                    h-[34px]
+                    w-px
+                    shrink-0
+                    bg-[#D0D5DD]
+
+                    sm:mx-4
+                    sm:h-[38px]
+
+                    lg:mx-5
+                    lg:h-[50px]
+                  "
+                />
+
+                <div
+                  className="
+                    flex
+                    h-[40px]
+                    w-[40px]
+                    shrink-0
+                    items-center
+                    justify-center
+
+                    sm:h-[44px]
+                    sm:w-[44px]
+
+                    lg:h-[50px]
+                    lg:w-[50px]
+                  "
+                >
+                  <Image
+                    src={compareJourneyIcon}
+                    alt={compareJourneyIconAlt}
+                    width={50}
+                    height={50}
+                    priority
+                    className="
+                      h-full
+                      w-full
+                      object-contain
+                    "
+                  />
+                </div>
+              </>
+            )}
+          </div>
 
           {/* =================================================
-              DESKTOP
-          ================================================== */}
+                DESKTOP
+            ================================================== */}
           <div
             className="
-              hidden
-              items-center
-              gap-3
+                hidden
+                items-center
+                gap-3
 
-              lg:flex
-            "
+                lg:flex
+              "
           >
             {/* ===============================================
-                MAIN NAVIGATION
-            ================================================ */}
+                  MAIN NAVIGATION
+              ================================================ */}
             <nav
               aria-label="Main navigation"
               className={`
-                flex
-                items-center
+                  flex
+                  items-center
 
-                rounded-full
+                  rounded-full
 
-                border
+                  border
 
-                p-1
+                  p-1
 
-                shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                  shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
-                ${
-                  isMyInfoPage
-                    ? `
-                      border-white/10
-                      bg-white/10
-                    `
-                    : `
-                      border-[#EAECF0]
-                      bg-[#F9FAFB]
-                    `
-                }
-              `}
+                  ${
+                    isMyInfoPage
+                      ? `
+                        border-white/10
+                        bg-white/10
+                      `
+                      : `
+                        border-[#EAECF0]
+                        bg-[#F9FAFB]
+                      `
+                  }
+                `}
             >
               {header.navigation.map((item) => {
                 const navigationText = isMyInfoPage ? 'text-white' : 'text-[#355E87]';
@@ -323,44 +525,44 @@ export default function Header() {
                           setIsAccountOpen(false);
                         }}
                         className={`
-                            flex
-                            h-10
+                              flex
+                              h-10
 
-                            items-center
-                            gap-1
+                              items-center
+                              gap-1
 
-                            rounded-full
+                              rounded-full
 
-                            px-4
+                              px-4
 
-                            font-inter
-                            text-[14px]
-                            font-medium
+                              font-inter
+                              text-[14px]
+                              font-medium
 
-                            transition-colors
+                              transition-colors
 
-                            ${navigationText}
+                              ${navigationText}
 
-                            ${
-                              isMyInfoPage
-                                ? 'hover:bg-white/10'
-                                : 'hover:bg-white hover:text-[#00897B]'
-                            }
-                          `}
+                              ${
+                                isMyInfoPage
+                                  ? 'hover:bg-white/10'
+                                  : 'hover:bg-white hover:text-[#00897B]'
+                              }
+                            `}
                       >
                         <span>{item.label}</span>
 
                         <ChevronDown
                           aria-hidden="true"
                           className={`
-                              h-4
-                              w-4
+                                h-4
+                                w-4
 
-                              transition-transform
-                              duration-200
+                                transition-transform
+                                duration-200
 
-                              ${isCompareOpen ? 'rotate-180' : ''}
-                            `}
+                                ${isCompareOpen ? 'rotate-180' : ''}
+                              `}
                           strokeWidth={2}
                         />
                       </button>
@@ -369,26 +571,26 @@ export default function Header() {
                         <div
                           role="menu"
                           className="
-                              absolute
-                              right-0
-                              top-[calc(100%+10px)]
-                              z-[100]
+                                absolute
+                                right-0
+                                top-[calc(100%+10px)]
+                                z-[100]
 
-                              w-[220px]
+                                w-[220px]
 
-                              overflow-hidden
+                                overflow-hidden
 
-                              rounded-[12px]
+                                rounded-[12px]
 
-                              border
-                              border-[#EAECF0]
+                                border
+                                border-[#EAECF0]
 
-                              bg-white
+                                bg-white
 
-                              p-2
+                                p-2
 
-                              shadow-[0px_12px_30px_rgba(16,24,40,0.16)]
-                            "
+                                shadow-[0px_12px_30px_rgba(16,24,40,0.16)]
+                              "
                         >
                           {header.compareMenu.map((menuItem) => (
                             <Link
@@ -397,24 +599,24 @@ export default function Header() {
                               role="menuitem"
                               onClick={closeMenus}
                               className="
-                                    block
+                                      block
 
-                                    rounded-[8px]
+                                      rounded-[8px]
 
-                                    px-3
-                                    py-2.5
+                                      px-3
+                                      py-2.5
 
-                                    font-inter
-                                    text-[13px]
-                                    font-medium
+                                      font-inter
+                                      text-[13px]
+                                      font-medium
 
-                                    text-[#344054]
+                                      text-[#344054]
 
-                                    transition-colors
+                                      transition-colors
 
-                                    hover:bg-[#F9FAFB]
-                                    hover:text-[#00897B]
-                                  "
+                                      hover:bg-[#F9FAFB]
+                                      hover:text-[#00897B]
+                                    "
                             >
                               {menuItem.label}
                             </Link>
@@ -431,27 +633,29 @@ export default function Header() {
                     href={item.href}
                     onClick={closeMenus}
                     className={`
-                        flex
-                        h-10
+                          flex
+                          h-10
 
-                        items-center
+                          items-center
 
-                        rounded-full
+                          rounded-full
 
-                        px-4
+                          px-4
 
-                        font-inter
-                        text-[14px]
-                        font-medium
+                          font-inter
+                          text-[14px]
+                          font-medium
 
-                        transition-colors
+                          transition-colors
 
-                        ${navigationText}
+                          ${navigationText}
 
-                        ${
-                          isMyInfoPage ? 'hover:bg-white/10' : 'hover:bg-white hover:text-[#00897B]'
-                        }
-                      `}
+                          ${
+                            isMyInfoPage
+                              ? 'hover:bg-white/10'
+                              : 'hover:bg-white hover:text-[#00897B]'
+                          }
+                        `}
                   >
                     {item.label}
                   </Link>
@@ -460,8 +664,8 @@ export default function Header() {
             </nav>
 
             {/* ===============================================
-                LOGGED IN
-            ================================================ */}
+                  LOGGED IN
+              ================================================ */}
             {isSignedIn ? (
               <div
                 ref={desktopAccountRef}
@@ -470,34 +674,34 @@ export default function Header() {
                 {/* Control shown in your screenshot */}
                 <div
                   className={`
-                    flex
-                    h-[50px]
+                      flex
+                      h-[50px]
 
-                    items-center
-                    gap-[7px]
+                      items-center
+                      gap-[7px]
 
-                    rounded-full
+                      rounded-full
 
-                    border
+                      border
 
-                    py-[6px]
-                    pl-[13px]
-                    pr-[6px]
+                      py-[6px]
+                      pl-[13px]
+                      pr-[6px]
 
-                    shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
+                      shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
 
-                    ${
-                      isMyInfoPage
-                        ? `
-                          border-white/30
-                          bg-transparent
-                        `
-                        : `
-                          border-[#D0D5DD]
-                          bg-white
-                        `
-                    }
-                  `}
+                      ${
+                        isMyInfoPage
+                          ? `
+                            border-white/30
+                            bg-transparent
+                          `
+                          : `
+                            border-[#D0D5DD]
+                            bg-white
+                          `
+                      }
+                    `}
                 >
                   {/* Three lines */}
                   <button
@@ -506,28 +710,28 @@ export default function Header() {
                     aria-label="Open account menu"
                     aria-expanded={isAccountOpen}
                     className={`
-                      flex
-                      h-[27px]
-                      w-[27px]
+                        flex
+                        h-[27px]
+                        w-[27px]
 
-                      items-center
-                      justify-center
+                        items-center
+                        justify-center
 
-                      transition-colors
+                        transition-colors
 
-                      ${
-                        isMyInfoPage
-                          ? 'text-white hover:text-[#8CCAC3]'
-                          : 'text-[#0D3B66] hover:text-[#00897B]'
-                      }
-                    `}
+                        ${
+                          isMyInfoPage
+                            ? 'text-white hover:text-[#8CCAC3]'
+                            : 'text-[#0D3B66] hover:text-[#00897B]'
+                        }
+                      `}
                   >
                     <Menu
                       aria-hidden="true"
                       className="
-                        h-[24px]
-                        w-[24px]
-                      "
+                          h-[24px]
+                          w-[24px]
+                        "
                       strokeWidth={2}
                     />
                   </button>
@@ -539,35 +743,35 @@ export default function Header() {
                     aria-label="Open account menu"
                     aria-expanded={isAccountOpen}
                     className="
-                      flex
-                      h-9
-                      w-9
+                        flex
+                        h-9
+                        w-9
 
-                      shrink-0
-                      items-center
-                      justify-center
+                        shrink-0
+                        items-center
+                        justify-center
 
-                      rounded-full
+                        rounded-full
 
-                      bg-[#00897B]
+                        bg-[#00897B]
 
-                      text-white
+                        text-white
 
-                      transition-colors
+                        transition-colors
 
-                      hover:bg-[#00796D]
+                        hover:bg-[#00796D]
 
-                      focus-visible:outline-none
-                      focus-visible:ring-2
-                      focus-visible:ring-[#8CCAC3]
-                    "
+                        focus-visible:outline-none
+                        focus-visible:ring-2
+                        focus-visible:ring-[#8CCAC3]
+                      "
                   >
                     <UserRound
                       aria-hidden="true"
                       className="
-                        h-[19px]
-                        w-[19px]
-                      "
+                          h-[19px]
+                          w-[19px]
+                        "
                       strokeWidth={2}
                     />
                   </button>
@@ -583,70 +787,70 @@ export default function Header() {
               </div>
             ) : (
               /* =============================================
-                  LOGGED OUT
-              ============================================== */
+                    LOGGED OUT
+                ============================================== */
               <Link
                 href="/sign-in"
                 aria-label="Sign In"
                 onClick={handleSignInClick}
                 className="
-                  inline-flex
-                  h-[50px]
+                    inline-flex
+                    h-[50px]
 
-                  items-center
-                  gap-2.5
+                    items-center
+                    gap-2.5
 
-                  rounded-full
+                    rounded-full
 
-                  border
-                  border-[#EAECF0]
+                    border
+                    border-[#EAECF0]
 
-                  bg-[#F9FAFB]
+                    bg-[#F9FAFB]
 
-                  py-[6px]
-                  pl-5
-                  pr-[6px]
+                    py-[6px]
+                    pl-5
+                    pr-[6px]
 
-                  font-red-hat-display
-                  text-[15px]
-                  font-bold
-                  leading-6
+                    font-red-hat-display
+                    text-[15px]
+                    font-bold
+                    leading-6
 
-                  text-[#355E87]
+                    text-[#355E87]
 
-                  shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
+                    shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
 
-                  transition-colors
+                    transition-colors
 
-                  hover:bg-white
-                  hover:text-[#00897B]
-                "
+                    hover:bg-white
+                    hover:text-[#00897B]
+                  "
               >
                 <span>Sign In</span>
 
                 <span
                   className="
-                    flex
-                    h-9
-                    w-9
+                      flex
+                      h-9
+                      w-9
 
-                    shrink-0
-                    items-center
-                    justify-center
+                      shrink-0
+                      items-center
+                      justify-center
 
-                    rounded-full
+                      rounded-full
 
-                    bg-[#00897B]
+                      bg-[#00897B]
 
-                    text-white
-                  "
+                      text-white
+                    "
                 >
                   <UserRound
                     aria-hidden="true"
                     className="
-                      h-[18px]
-                      w-[18px]
-                    "
+                        h-[18px]
+                        w-[18px]
+                      "
                     strokeWidth={2}
                   />
                 </span>
@@ -655,51 +859,51 @@ export default function Header() {
           </div>
 
           {/* =================================================
-              MOBILE + TABLET
-          ================================================== */}
+                MOBILE + TABLET
+            ================================================== */}
           <div
             ref={mobileAccountRef}
             className="
-              relative
+                relative
 
-              lg:hidden
-            "
+                lg:hidden
+              "
           >
             <div
               className={`
-                flex
-                h-[44px]
+                  flex
+                  h-[44px]
 
-                items-center
-                gap-[5px]
+                  items-center
+                  gap-[5px]
 
-                rounded-full
+                  rounded-full
 
-                border
+                  border
 
-                py-[6px]
-                pl-[11px]
-                pr-[5px]
+                  py-[6px]
+                  pl-[11px]
+                  pr-[5px]
 
-                shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
+                  shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
 
-                min-[390px]:h-[50px]
-                min-[390px]:gap-[7px]
-                min-[390px]:pl-[13px]
-                min-[390px]:pr-[6px]
+                  min-[390px]:h-[50px]
+                  min-[390px]:gap-[7px]
+                  min-[390px]:pl-[13px]
+                  min-[390px]:pr-[6px]
 
-                ${
-                  isMyInfoPage
-                    ? `
-                      border-white/30
-                      bg-transparent
-                    `
-                    : `
-                      border-[#EAECF0]
-                      bg-[#F9FAFB]
-                    `
-                }
-              `}
+                  ${
+                    isMyInfoPage
+                      ? `
+                        border-white/30
+                        bg-transparent
+                      `
+                      : `
+                        border-[#EAECF0]
+                        bg-[#F9FAFB]
+                      `
+                  }
+                `}
             >
               {/* Menu button */}
               <button
@@ -715,15 +919,15 @@ export default function Header() {
                 aria-label={isSignedIn ? 'Open account menu' : 'Open navigation menu'}
                 aria-expanded={isSignedIn ? isAccountOpen : isMobileNavigationOpen}
                 className={`
-                  flex
-                  h-6
-                  w-6
+                    flex
+                    h-6
+                    w-6
 
-                  items-center
-                  justify-center
+                    items-center
+                    justify-center
 
-                  ${isMyInfoPage ? 'text-white' : 'text-[#0D3B66]'}
-                `}
+                    ${isMyInfoPage ? 'text-white' : 'text-[#0D3B66]'}
+                  `}
               >
                 {!isSignedIn && isMobileNavigationOpen ? (
                   <X
@@ -747,33 +951,33 @@ export default function Header() {
                   onClick={toggleAccountMenu}
                   aria-label="Open account menu"
                   className="
-                    flex
-                    h-8
-                    w-8
+                      flex
+                      h-8
+                      w-8
 
-                    shrink-0
-                    items-center
-                    justify-center
+                      shrink-0
+                      items-center
+                      justify-center
 
-                    rounded-full
+                      rounded-full
 
-                    bg-[#00897B]
+                      bg-[#00897B]
 
-                    text-white
+                      text-white
 
-                    min-[390px]:h-9
-                    min-[390px]:w-9
-                  "
+                      min-[390px]:h-9
+                      min-[390px]:w-9
+                    "
                 >
                   <UserRound
                     aria-hidden="true"
                     className="
-                      h-4
-                      w-4
+                        h-4
+                        w-4
 
-                      min-[390px]:h-[17px]
-                      min-[390px]:w-[17px]
-                    "
+                        min-[390px]:h-[17px]
+                        min-[390px]:w-[17px]
+                      "
                     strokeWidth={2}
                   />
                 </button>
@@ -783,33 +987,33 @@ export default function Header() {
                   onClick={handleSignInClick}
                   aria-label="Sign in"
                   className="
-                    flex
-                    h-8
-                    w-8
+                      flex
+                      h-8
+                      w-8
 
-                    shrink-0
-                    items-center
-                    justify-center
+                      shrink-0
+                      items-center
+                      justify-center
 
-                    rounded-full
+                      rounded-full
 
-                    bg-[#00897B]
+                      bg-[#00897B]
 
-                    text-white
+                      text-white
 
-                    min-[390px]:h-9
-                    min-[390px]:w-9
-                  "
+                      min-[390px]:h-9
+                      min-[390px]:w-9
+                    "
                 >
                   <UserRound
                     aria-hidden="true"
                     className="
-                      h-4
-                      w-4
+                        h-4
+                        w-4
 
-                      min-[390px]:h-[17px]
-                      min-[390px]:w-[17px]
-                    "
+                        min-[390px]:h-[17px]
+                        min-[390px]:w-[17px]
+                      "
                     strokeWidth={2}
                   />
                 </Link>
@@ -827,31 +1031,31 @@ export default function Header() {
         </div>
 
         {/* =================================================
-            MOBILE NAVIGATION — SIGNED OUT
-        ================================================== */}
+              MOBILE NAVIGATION — SIGNED OUT
+          ================================================== */}
         {!isSignedIn && (
           <div
             className={`
-              overflow-hidden
+                overflow-hidden
 
-              transition-all
-              duration-300
+                transition-all
+                duration-300
 
-              lg:hidden
+                lg:hidden
 
-              ${isMobileNavigationOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}
-            `}
+                ${isMobileNavigationOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}
+              `}
           >
             <nav
               aria-label="Mobile navigation"
               className="
-                space-y-1
+                  space-y-1
 
-                px-5
-                pb-5
+                  px-5
+                  pb-5
 
-                sm:px-8
-              "
+                  sm:px-8
+                "
             >
               {header.navigation.map((item) => (
                 <Link
@@ -859,23 +1063,23 @@ export default function Header() {
                   href={item.href}
                   onClick={closeMenus}
                   className={`
-                      block
+                        block
 
-                      rounded-[10px]
+                        rounded-[10px]
 
-                      px-4
-                      py-3
+                        px-4
+                        py-3
 
-                      font-inter
-                      text-[14px]
-                      font-medium
+                        font-inter
+                        text-[14px]
+                        font-medium
 
-                      ${
-                        isMyInfoPage
-                          ? 'text-white hover:bg-white/10'
-                          : 'text-[#344054] hover:bg-[#F9FAFB]'
-                      }
-                    `}
+                        ${
+                          isMyInfoPage
+                            ? 'text-white hover:bg-white/10'
+                            : 'text-[#344054] hover:bg-[#F9FAFB]'
+                        }
+                      `}
                 >
                   {item.label}
                 </Link>
@@ -889,8 +1093,8 @@ export default function Header() {
 }
 
 /* =========================================================
-   ACCOUNT MENU
-========================================================= */
+    ACCOUNT MENU
+  ========================================================= */
 
 type AccountMenuProps = {
   email: string;
@@ -902,59 +1106,59 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
   return (
     <div
       className="
-        absolute
-        right-0
-        top-[calc(100%+8px)]
-        z-[100]
+          absolute
+          right-0
+          top-[calc(100%+8px)]
+          z-[100]
 
-        w-[235px]
+          w-[235px]
 
-        overflow-hidden
+          overflow-hidden
 
-        rounded-[10px]
+          rounded-[10px]
 
-        border
-        border-[#EAECF0]
-
-        bg-white
-
-        shadow-[0px_12px_30px_rgba(16,24,40,0.16)]
-
-        min-[390px]:w-[250px]
-      "
-    >
-      {/* =====================================================
-          USER
-      ====================================================== */}
-      <div
-        className="
-          flex
-          items-center
-          gap-3
-
-          border-b
+          border
           border-[#EAECF0]
 
-          px-3
-          py-3
+          bg-white
+
+          shadow-[0px_12px_30px_rgba(16,24,40,0.16)]
+
+          min-[390px]:w-[250px]
         "
+    >
+      {/* =====================================================
+            USER
+        ====================================================== */}
+      <div
+        className="
+            flex
+            items-center
+            gap-3
+
+            border-b
+            border-[#EAECF0]
+
+            px-3
+            py-3
+          "
       >
         <div
           className="
-            flex
-            h-10
-            w-10
+              flex
+              h-10
+              w-10
 
-            shrink-0
-            items-center
-            justify-center
+              shrink-0
+              items-center
+              justify-center
 
-            rounded-full
+              rounded-full
 
-            bg-[#00897B]
+              bg-[#00897B]
 
-            text-white
-          "
+              text-white
+            "
         >
           <UserRound
             aria-hidden="true"
@@ -966,28 +1170,28 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
         <div className="min-w-0">
           <p
             className="
-              font-red-hat-display
-              text-[14px]
-              font-bold
-              leading-5
+                font-red-hat-display
+                text-[14px]
+                font-bold
+                leading-5
 
-              text-[#101828]
-            "
+                text-[#101828]
+              "
           >
             SIGNED IN
           </p>
 
           <p
             className="
-              truncate
+                truncate
 
-              font-inter
-              text-[11px]
-              font-normal
-              leading-4
+                font-inter
+                text-[11px]
+                font-normal
+                leading-4
 
-              text-[#667085]
-            "
+                text-[#667085]
+              "
           >
             {email || 'Signed in'}
           </p>
@@ -995,40 +1199,40 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
       </div>
 
       {/* =====================================================
-          MY DEALS
-      ====================================================== */}
+            MY DEALS
+        ====================================================== */}
       <Link
         href="/my-info"
         onClick={onClose}
         className="
-          flex
-          min-h-[44px]
+            flex
+            min-h-[44px]
 
-          items-center
-          gap-2.5
+            items-center
+            gap-2.5
 
-          border-b
-          border-[#EAECF0]
+            border-b
+            border-[#EAECF0]
 
-          px-4
+            px-4
 
-          font-inter
-          text-[13px]
-          font-medium
+            font-inter
+            text-[13px]
+            font-medium
 
-          text-[#101828]
+            text-[#101828]
 
-          transition-colors
+            transition-colors
 
-          hover:bg-[#F9FAFB]
-        "
+            hover:bg-[#F9FAFB]
+          "
       >
         <UserRound
           aria-hidden="true"
           className="
-            h-4
-            w-4
-          "
+              h-4
+              w-4
+            "
           strokeWidth={1.8}
         />
 
@@ -1036,40 +1240,40 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
       </Link>
 
       {/* =====================================================
-          SETTINGS
-      ====================================================== */}
+            SETTINGS
+        ====================================================== */}
       <Link
         href="/my-info"
         onClick={onClose}
         className="
-          flex
-          min-h-[44px]
+            flex
+            min-h-[44px]
 
-          items-center
-          gap-2.5
+            items-center
+            gap-2.5
 
-          border-b
-          border-[#EAECF0]
+            border-b
+            border-[#EAECF0]
 
-          px-4
+            px-4
 
-          font-inter
-          text-[13px]
-          font-medium
+            font-inter
+            text-[13px]
+            font-medium
 
-          text-[#101828]
+            text-[#101828]
 
-          transition-colors
+            transition-colors
 
-          hover:bg-[#F9FAFB]
-        "
+            hover:bg-[#F9FAFB]
+          "
       >
         <Settings
           aria-hidden="true"
           className="
-            h-4
-            w-4
-          "
+              h-4
+              w-4
+            "
           strokeWidth={1.8}
         />
 
@@ -1077,38 +1281,38 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
       </Link>
 
       {/* =====================================================
-          LOGOUT
-      ====================================================== */}
+            LOGOUT
+        ====================================================== */}
       <button
         type="button"
         onClick={onLogout}
         className="
-          flex
-          min-h-[44px]
-          w-full
+            flex
+            min-h-[44px]
+            w-full
 
-          items-center
-          gap-2.5
+            items-center
+            gap-2.5
 
-          px-4
+            px-4
 
-          font-inter
-          text-[13px]
-          font-medium
+            font-inter
+            text-[13px]
+            font-medium
 
-          text-[#F04438]
+            text-[#F04438]
 
-          transition-colors
+            transition-colors
 
-          hover:bg-[#FEF3F2]
-        "
+            hover:bg-[#FEF3F2]
+          "
       >
         <LogOut
           aria-hidden="true"
           className="
-            h-4
-            w-4
-          "
+              h-4
+              w-4
+            "
           strokeWidth={1.8}
         />
 

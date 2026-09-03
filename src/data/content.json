@@ -67,10 +67,10 @@
         "id": 5,
         "label": "Insurance",
         "description": "",
-        "href": "/compare/insurance",
+        "href": "/compare?service=insurance",
         "icon": "/images/insurance.png",
         "iconAlt": "Insurance",
-        "status": "coming-soon"
+        "status": "available"
       },
       {
         "id": 6,
@@ -903,6 +903,11 @@
               "value": "vodafone"
             },
             {
+              "id": "no-current-provider",
+              "label": "No I do not have a current provider",
+              "value": "no-current-provider"
+            },
+            {
               "id": "other",
               "label": "Other",
               "value": "other"
@@ -910,7 +915,7 @@
           ]
         },
         "contractStatus": {
-          "label": "Are you still in contract?",
+          "label": "Are you still in contract with your current provider?",
           "helperText": "Select No if you're not sure",
           "defaultValue": "yes",
           "options": [
@@ -1060,7 +1065,24 @@
       "footer": {
         "copyright": "© BillGoose 2026",
         "email": "query@billgoose.com"
-      }
+      },
+      "insuranceSteps": [
+        {
+          "number": 1,
+          "title": "Personal Details",
+          "description": "Tell us about your details"
+        },
+        {
+          "number": 2,
+          "title": "Policy Details",
+          "description": "Tell us about policy details"
+        },
+        {
+          "number": 3,
+          "title": "House Details",
+          "description": "Tell us about your house details"
+        }
+      ]
     },
     "navigation": {
       "backButton": "Back",
@@ -1278,7 +1300,7 @@
         "description": "Include all residents, even kids, to match your allowance to actual use.",
         "icon": "/images/occupants-icon.png",
         "iconAlt": "",
-        "defaultValue": "4-6",
+        "defaultValue": "4",
         "options": [
           {
             "id": "2-to-3",
@@ -1546,6 +1568,159 @@
           }
         ]
       }
+    },
+    "insurancePolicyDetails": {
+      "heading": "Policy Details",
+      "description": "Please enter your policy details below.",
+      "storageKey": "journeyInsurancePolicyDetails",
+      "ownership": {
+        "label": "Do you own or rent your home?",
+        "defaultValue": "own-outright",
+        "options": [
+          {
+            "id": "mortgage",
+            "label": "I have a mortgage",
+            "value": "mortgage"
+          },
+          {
+            "id": "own-outright",
+            "label": "I own my home outright",
+            "value": "own-outright"
+          },
+          {
+            "id": "renting",
+            "label": "I'm renting",
+            "value": "renting"
+          }
+        ]
+      },
+      "coverStart": {
+        "label": "When, within 30 days, would you like your cover to start?",
+        "placeholder": "Select",
+        "defaultValue": "today",
+        "options": [
+          {
+            "id": "today",
+            "label": "Today",
+            "value": "today"
+          },
+          {
+            "id": "within-7-days",
+            "label": "Within 7 days",
+            "value": "within-7-days"
+          },
+          {
+            "id": "within-14-days",
+            "label": "Within 14 days",
+            "value": "within-14-days"
+          },
+          {
+            "id": "within-30-days",
+            "label": "Within 30 days",
+            "value": "within-30-days"
+          }
+        ]
+      },
+      "paymentFrequency": {
+        "label": "How do you want to pay for your home insurance?",
+        "description": "One annual payment is typically the cheaper option, since paying monthly means you could be entering into a credit agreement and charged interest.",
+        "defaultValue": "annual",
+        "options": [
+          {
+            "id": "annual",
+            "label": "Annual",
+            "value": "annual"
+          },
+          {
+            "id": "monthly",
+            "label": "Monthly",
+            "value": "monthly"
+          }
+        ]
+      }
+    },
+    "insuranceHouseDetails": {
+      "heading": "House Details",
+      "description": "Tell us about house type and household size.",
+      "storageKey": "journeyInsuranceHouseDetails",
+      "homeType": {
+        "label": "What type of home do you want to insure?",
+        "defaultValue": "house",
+        "options": [
+          {
+            "id": "house",
+            "label": "House",
+            "value": "house"
+          },
+          {
+            "id": "flat",
+            "label": "Flat",
+            "value": "flat"
+          },
+          {
+            "id": "townhouse",
+            "label": "Townhouse",
+            "value": "townhouse"
+          },
+          {
+            "id": "maisonette",
+            "label": "Maisonette",
+            "value": "maisonette"
+          },
+          {
+            "id": "bungalow",
+            "label": "Bungalow",
+            "value": "bungalow"
+          },
+          {
+            "id": "room-bedsit",
+            "label": "Room only or bedsit",
+            "value": "room-bedsit"
+          }
+        ]
+      },
+      "houseStyle": {
+        "label": "What type of house is it?",
+        "defaultValue": "detached",
+        "options": [
+          {
+            "id": "detached",
+            "label": "Detached",
+            "value": "detached"
+          },
+          {
+            "id": "semi-detached",
+            "label": "Semi-detached",
+            "value": "semi-detached"
+          },
+          {
+            "id": "mid-terrace",
+            "label": "Mid-Terrace",
+            "value": "mid-terrace"
+          },
+          {
+            "id": "end-terrace",
+            "label": "End-Terrace",
+            "value": "end-terrace"
+          }
+        ]
+      },
+      "smokeDetectors": {
+        "label": "Do you have working smoke detectors?",
+        "defaultValue": "yes",
+        "options": [
+          {
+            "id": "yes",
+            "label": "Yes",
+            "value": "yes"
+          },
+          {
+            "id": "no",
+            "label": "No",
+            "value": "no"
+          }
+        ]
+      }
     }
   },
   "currentUsage": {
@@ -1562,24 +1737,24 @@
       "heading": "Your Current Usage",
       "description": "Your details were used to estimate energy usage; please verify if needed.",
       "periods": {
-        "defaultValue": "monthly",
+        "defaultValue": "annual",
         "options": [
-          {
-            "id": "monthly",
-            "label": "Monthly",
-            "value": "monthly"
-          },
           {
             "id": "annual",
             "label": "Annual",
             "value": "annual"
+          },
+          {
+            "id": "monthly",
+            "label": "Monthly",
+            "value": "monthly"
           }
         ]
       }
     },
     "summary": {
-      "amount": "£121.34",
-      "period": "/month",
+      "amount": "1300 kWh",
+      "period": "/annual",
       "description": "is your estimated monthly spend",
       "totalUsage": "958 kWh total",
       "serviceLabel": "Gas & Electricity",
@@ -1598,7 +1773,6 @@
         "address": "59 Masons Way, Wallyford Mussel",
         "usage": "650",
         "unit": "kWh",
-        "price": "~£46/mo",
         "buttonLabel": "Update Gas Consumption",
         "icon": "/images/gas-usage-icon.png",
         "iconAlt": "",
@@ -1610,7 +1784,6 @@
         "address": "59 Masons Way, Wallyford Mussel",
         "usage": "650",
         "unit": "kWh",
-        "price": "~£46/mo",
         "buttonLabel": "Update Electricity Consumption",
         "icon": "/images/electricity-usage-icon.png",
         "iconAlt": "",
@@ -1669,8 +1842,8 @@
     },
     "footer": {
       "backButton": "Back",
-      "estimatedCostLabel": "Current estimated cost",
-      "estimatedCost": "£121/month",
+      "estimatedCostLabel": "Current estimated usage",
+      "estimatedCost": "1300kWh/annual",
       "compareButton": "Compare Energy Prices"
     }
   },
@@ -3490,6 +3663,225 @@
           "averageSpeed": "200Mbps",
           "upfrontCost": "£0.00",
           "providerUrl": "https://www.brsk.co.uk/",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        }
+      ],
+      "insuranceItems": [
+        {
+          "id": "home-protect-1",
+          "type": "select-plan",
+          "provider": "Home Protect",
+          "description": "Full Fibre 500 · 24 months",
+          "logo": "/images/insurance-provider.png",
+          "logoAlt": "Home Protect",
+          "rating": "",
+          "providerUrl": "https://www.homeprotect.co.uk/",
+          "contract": "24 months",
+          "features": [
+            "£1,000,000 cover",
+            "£250 voluntary excess",
+            "£499 total excess",
+            "Accident cover included",
+            "Standard Alternative Accommodation",
+            "Standard Home Emergency Cover",
+            "Standard Legal Assistance",
+            "Standard Replacement Locks & Keys"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£55.30",
+          "pricePeriod": "/mo",
+          "saving": "£65.15",
+          "savingDescription": "you'll Save for annual payment",
+          "totalCost": "£663.60",
+          "monthlyPayment": "£55.30",
+          "deposit": "£55.30",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "home-protect-2",
+          "type": "select-plan",
+          "provider": "Home Protect",
+          "description": "Full Fibre 500 · 24 months",
+          "logo": "/images/insurance-provider.png",
+          "logoAlt": "Home Protect",
+          "rating": "",
+          "providerUrl": "https://www.homeprotect.co.uk/",
+          "contract": "24 months",
+          "features": [
+            "£1,000,000 cover",
+            "£250 voluntary excess",
+            "£499 total excess",
+            "Accident cover included",
+            "Standard Alternative Accommodation",
+            "Standard Home Emergency Cover",
+            "Standard Legal Assistance",
+            "Standard Replacement Locks & Keys"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£55.30",
+          "pricePeriod": "/mo",
+          "saving": "£65.15",
+          "savingDescription": "you'll Save for annual payment",
+          "totalCost": "£663.60",
+          "monthlyPayment": "£55.30",
+          "deposit": "£55.30",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "home-protect-3",
+          "type": "select-plan",
+          "provider": "Home Protect",
+          "providerUrl": "https://www.homeprotect.co.uk/",
+          "description": "Full Fibre 500 · 24 months",
+          "logo": "/images/insurance-provider.png",
+          "logoAlt": "Home Protect",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "£1,000,000 cover",
+            "£250 voluntary excess",
+            "£499 total excess",
+            "Accident cover included",
+            "Standard Alternative Accommodation",
+            "Standard Home Emergency Cover",
+            "Standard Legal Assistance",
+            "Standard Replacement Locks & Keys"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£55.30",
+          "pricePeriod": "/mo",
+          "saving": "£65.15",
+          "savingDescription": "you'll Save for annual payment",
+          "totalCost": "£663.60",
+          "monthlyPayment": "£55.30",
+          "deposit": "£55.30",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "home-protect-4",
+          "type": "select-plan",
+          "providerUrl": "https://www.homeprotect.co.uk/",
+          "provider": "Home Protect",
+          "description": "Full Fibre 500 · 24 months",
+          "logo": "/images/insurance-provider.png",
+          "logoAlt": "Home Protect",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "£1,000,000 cover",
+            "£250 voluntary excess",
+            "£499 total excess",
+            "Accident cover included",
+            "Standard Alternative Accommodation",
+            "Standard Home Emergency Cover",
+            "Standard Legal Assistance",
+            "Standard Replacement Locks & Keys"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£55.30",
+          "pricePeriod": "/mo",
+          "saving": "£65.15",
+          "savingDescription": "you'll Save for annual payment",
+          "totalCost": "£663.60",
+          "monthlyPayment": "£55.30",
+          "deposit": "£55.30",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "home-protect-5",
+          "type": "select-plan",
+          "provider": "Home Protect",
+          "description": "Full Fibre 500 · 24 months",
+          "logo": "/images/insurance-provider.png",
+          "logoAlt": "Home Protect",
+          "providerUrl": "https://www.homeprotect.co.uk/",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "£1,000,000 cover",
+            "£250 voluntary excess",
+            "£499 total excess",
+            "Accident cover included",
+            "Standard Alternative Accommodation",
+            "Standard Home Emergency Cover",
+            "Standard Legal Assistance",
+            "Standard Replacement Locks & Keys"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£55.30",
+          "pricePeriod": "/mo",
+          "saving": "£65.15",
+          "savingDescription": "you'll Save for annual payment",
+          "totalCost": "£663.60",
+          "monthlyPayment": "£55.30",
+          "deposit": "£55.30",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "home-protect-6",
+          "type": "select-plan",
+          "provider": "Home Protect",
+          "providerUrl": "https://www.homeprotect.co.uk/",
+          "description": "Full Fibre 500 · 24 months",
+          "logo": "/images/insurance-provider.png",
+          "logoAlt": "Home Protect",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "£1,000,000 cover",
+            "£250 voluntary excess",
+            "£499 total excess",
+            "Accident cover included",
+            "Standard Alternative Accommodation",
+            "Standard Home Emergency Cover",
+            "Standard Legal Assistance",
+            "Standard Replacement Locks & Keys"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£55.30",
+          "pricePeriod": "/mo",
+          "saving": "£65.15",
+          "savingDescription": "you'll Save for annual payment",
+          "totalCost": "£663.60",
+          "monthlyPayment": "£55.30",
+          "deposit": "£55.30",
+          "viewDetailsButton": "View Details",
+          "primaryButton": "Select Plan"
+        },
+        {
+          "id": "home-protect-7",
+          "type": "select-plan",
+          "provider": "Home Protect",
+          "providerUrl": "https://www.homeprotect.co.uk/",
+          "description": "Full Fibre 500 · 24 months",
+          "logo": "/images/insurance-provider.png",
+          "logoAlt": "Home Protect",
+          "rating": "",
+          "contract": "24 months",
+          "features": [
+            "£1,000,000 cover",
+            "£250 voluntary excess",
+            "£499 total excess",
+            "Accident cover included",
+            "Standard Alternative Accommodation",
+            "Standard Home Emergency Cover",
+            "Standard Legal Assistance",
+            "Standard Replacement Locks & Keys"
+          ],
+          "priceLabel": "Monthly cost",
+          "price": "£55.30",
+          "pricePeriod": "/mo",
+          "saving": "£65.15",
+          "savingDescription": "you'll Save for annual payment",
+          "totalCost": "£663.60",
+          "monthlyPayment": "£55.30",
+          "deposit": "£55.30",
           "viewDetailsButton": "View Details",
           "primaryButton": "Select Plan"
         }

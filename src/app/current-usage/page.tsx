@@ -59,7 +59,6 @@ export default function CurrentUsagePage() {
                   address={card.address}
                   usage={card.usage}
                   unit={card.unit}
-                  price={card.price}
                   buttonLabel={card.buttonLabel}
                   icon={card.icon}
                   iconAlt={card.iconAlt}

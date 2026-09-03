@@ -13,7 +13,6 @@ type UsageCardProps = {
   address: string;
   usage: string;
   unit: string;
-  price: string;
   buttonLabel: string;
   icon: string;
   iconAlt: string;
@@ -31,7 +30,6 @@ export default function UsageCard({
   address,
   usage,
   unit,
-  price,
   buttonLabel,
   icon,
   iconAlt,
@@ -254,9 +252,7 @@ export default function UsageCard({
               lg:text-[20px]
               lg:leading-[30px]
             "
-          >
-            {price}
-          </span>
+          ></span>
         </div>
 
         {/* Button */}

@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
    TYPES
 ========================================================= */
 
-type RedirectService = 'broadband' | 'sim-only';
+type RedirectService = 'broadband' | 'sim-only' | 'insurance';
 
 type RedirectOrigin = 'sim-only' | 'mobile-details';
 
@@ -18,7 +18,15 @@ type RedirectOrigin = 'sim-only' | 'mobile-details';
 ========================================================= */
 
 function resolveRedirectService(value: string | null): RedirectService {
-  return value === 'sim-only' ? 'sim-only' : 'broadband';
+  if (value === 'sim-only') {
+    return 'sim-only';
+  }
+
+  if (value === 'insurance') {
+    return 'insurance';
+  }
+
+  return 'broadband';
 }
 
 /* =========================================================
@@ -35,6 +43,10 @@ function getProviderForService(service: RedirectService): string {
       );
     }
 
+    if (service === 'insurance') {
+      return sessionStorage.getItem('insuranceRedirectProvider') ?? '';
+    }
+
     return sessionStorage.getItem('broadbandRedirectProvider') ?? '';
   } catch {
     return '';
@@ -49,6 +61,10 @@ function getUrlForService(service: RedirectService): string {
         sessionStorage.getItem('simOnlyRedirectUrl') ??
         ''
       );
+    }
+
+    if (service === 'insurance') {
+      return sessionStorage.getItem('insuranceRedirectUrl') ?? '';
     }
 
     return sessionStorage.getItem('broadbandRedirectUrl') ?? '';
@@ -88,7 +104,15 @@ function getRedirectOrigin(service: RedirectService): RedirectOrigin {
 ========================================================= */
 
 function getOpenedStorageKey(service: RedirectService) {
-  return service === 'sim-only' ? 'simOnlyRedirectOpened' : 'broadbandRedirectOpened';
+  if (service === 'sim-only') {
+    return 'simOnlyRedirectOpened';
+  }
+
+  if (service === 'insurance') {
+    return 'insuranceRedirectOpened';
+  }
+
+  return 'broadbandRedirectOpened';
 }
 
 /* =========================================================
@@ -230,6 +254,12 @@ function RedirectingContent() {
           return;
         }
 
+        if (service === 'insurance') {
+          router.replace('/result?service=insurance');
+
+          return;
+        }
+
         router.replace(
           service === 'sim-only' ? '/result?service=sim-only' : '/result?service=broadband',
         );
@@ -265,7 +295,8 @@ function RedirectingContent() {
      CONTENT
   ========================================================= */
 
-  const serviceName = service === 'sim-only' ? 'SIM-only' : 'broadband';
+  const serviceName =
+    service === 'sim-only' ? 'SIM-only' : service === 'insurance' ? 'insurance' : 'broadband';
 
   /* =========================================================
      BACK BUTTON
@@ -294,6 +325,12 @@ function RedirectingContent() {
 
       resultRoute = '/result?service=sim-only';
     }
+  }
+
+  if (service === 'insurance') {
+    backButtonLabel = 'Back to insurance deals';
+
+    resultRoute = '/result?service=insurance';
   }
 
   return (

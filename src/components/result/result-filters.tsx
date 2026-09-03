@@ -8,19 +8,21 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import data from '@/data/content.json';
 
-type CompareService = 'energy' | 'broadband';
+type CompareService = 'energy' | 'broadband' | 'insurance';
 
 type CompareFlowDetails = {
   service?: CompareService;
 
   postcode?: string;
-  address?: string;
+  address?: string | { fullAddress?: string };
 
   serviceType?: string;
   paymentMethod?: string;
 
   currentProvider?: string;
   stillInContract?: string;
+
+  insuranceType?: string;
 };
 
 type CompareServiceItem = {
@@ -120,6 +122,58 @@ function getProviderLabel(value?: string): string {
   return labels[value] ?? value;
 }
 
+function getInsuranceTypeLabel(value?: string): string {
+  const labels: Record<string, string> = {
+    'life-insurance': 'Life Insurance',
+    'home-insurance': 'Home Insurance',
+    'vehicle-insurance': 'Vehicle Insurance',
+    'health-insurance': 'Health Insurance',
+  };
+
+  return value ? (labels[value] ?? value) : 'Home Insurance';
+}
+
+function getHouseTypeLabel(value?: string): string {
+  const labels: Record<string, string> = {
+    house: 'House',
+    flat: 'Flat',
+    townhouse: 'Townhouse',
+    maisonette: 'Maisonette',
+    bungalow: 'Bungalow',
+    'room-bedsit': 'Room only or bedsit',
+  };
+
+  return value ? (labels[value] ?? value) : 'House';
+}
+
+function getInsuranceHouseSnapshot(): string {
+  try {
+    return sessionStorage.getItem('journeyInsuranceHouseDetails') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function getInsuranceHouseServerSnapshot(): string {
+  return '';
+}
+
+function subscribeToInsuranceHouse(callback: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === 'journeyInsuranceHouseDetails') {
+      callback();
+    }
+  };
+
+  window.addEventListener('storage', handleStorage);
+  window.addEventListener('journey-review-updated', callback);
+
+  return () => {
+    window.removeEventListener('storage', handleStorage);
+    window.removeEventListener('journey-review-updated', callback);
+  };
+}
+
 /* =========================================================
    SIM ONLY HELPERS
 ========================================================= */
@@ -194,6 +248,12 @@ export default function ResultFilters() {
     getCompareFlowServerSnapshot,
   );
 
+  const insuranceHouseSnapshot = useSyncExternalStore(
+    subscribeToInsuranceHouse,
+    getInsuranceHouseSnapshot,
+    getInsuranceHouseServerSnapshot,
+  );
+
   let details: CompareFlowDetails = {
     service: 'energy',
   };
@@ -208,15 +268,30 @@ export default function ResultFilters() {
     }
   }
 
-  const service: CompareService = details.service === 'broadband' ? 'broadband' : 'energy';
+  const service: CompareService =
+    details.service === 'broadband'
+      ? 'broadband'
+      : details.service === 'insurance'
+        ? 'insurance'
+        : 'energy';
 
   const isBroadband = service === 'broadband';
+  const isInsurance = service === 'insurance';
 
-  // const address = details.address || '19 Masons Way, Wallyford, Musselburgh EH21 8BF';
   const address =
     typeof details.address === 'string'
       ? details.address
-      : '19 Masons Way, Wallyford, Musselburgh EH21 8BF';
+      : details.address?.fullAddress || '19 Masons Way, Wallyford, Musselburgh EH21 8BF';
+
+  let insuranceHouseDetails: { homeType?: string } = {};
+
+  if (insuranceHouseSnapshot) {
+    try {
+      insuranceHouseDetails = JSON.parse(insuranceHouseSnapshot) as { homeType?: string };
+    } catch {
+      insuranceHouseDetails = {};
+    }
+  }
 
   const handleEdit = () => {
     router.push(`/compare?service=${service}`);
@@ -660,7 +735,7 @@ export default function ResultFilters() {
         </div>
       ) : (
         /* =====================================================
-           ENERGY / BROADBAND / BUNDLE
+           ENERGY / BROADBAND / BUNDLE / INSURANCE
 
            Same editable-information container on
            mobile, tablet and desktop.
@@ -715,8 +790,14 @@ export default function ResultFilters() {
               onEdit={handleEdit}
             />
 
-            {/* ENERGY / BROADBAND */}
-            {isBroadband ? (
+            {/* SERVICE-SPECIFIC SECOND CARD */}
+            {isInsurance ? (
+              <ResultInformationCard
+                title="House type"
+                value={getHouseTypeLabel(insuranceHouseDetails.homeType)}
+                onEdit={handleEdit}
+              />
+            ) : isBroadband ? (
               <ResultInformationCard
                 title="Current provider"
                 value={getProviderLabel(details.currentProvider)}
@@ -730,8 +811,14 @@ export default function ResultFilters() {
               />
             )}
 
-            {/* PAYMENT / PRICE */}
-            {isBroadband ? (
+            {/* SERVICE-SPECIFIC THIRD CARD */}
+            {isInsurance ? (
+              <ResultInformationCard
+                title="Insurance type"
+                value={getInsuranceTypeLabel(details.insuranceType)}
+                onEdit={handleEdit}
+              />
+            ) : isBroadband ? (
               <ResultInformationCard
                 title="Current package"
                 value={BROADBAND_TEMPORARY_PRICE}
@@ -822,7 +909,13 @@ export default function ResultFilters() {
                 xl:leading-5
               "
             >
-              {isBroadband ? (
+              {isInsurance ? (
+                <>
+                  Your insurance quotes are based on the address, house details and insurance type
+                  you provided. Final prices and cover may vary after the provider completes its
+                  eligibility and underwriting checks.
+                </>
+              ) : isBroadband ? (
                 <>
                   From 1 October 2026, the energy price cap will rise by 4% for a typical Direct
                   Debit household. The temporary removal of VAT on electricity until 31 March 2027

@@ -6,23 +6,34 @@ export const JOURNEY_ROUTES = {
   5: '/steps/payment-details-form',
 } as const;
 
-export const BROADBAND_JOURNEY_ROUTES = {
+// export const BROADBAND_JOURNEY_ROUTES = {
+//   1: '/steps/personal-details-form',
+//   2: '/steps/contract-date-form',
+//   3: '/steps/household-form',
+//   4: '/steps/payment-details-form',
+// } as const;
+
+export const INSURANCE_JOURNEY_ROUTES = {
   1: '/steps/personal-details-form',
-  2: '/steps/contract-date-form',
-  3: '/steps/household-form',
-  4: '/steps/payment-details-form',
+  2: '/steps/policy-details',
+  3: '/steps/house-details',
 } as const;
 
-export type JourneyService = 'energy' | 'broadband';
+export type JourneyService = 'energy' | 'broadband' | 'insurance';
 
 export const ENERGY_TOTAL_JOURNEY_STEPS = 5;
 export const BROADBAND_TOTAL_JOURNEY_STEPS = 4;
+export const INSURANCE_TOTAL_JOURNEY_STEPS = 3;
 
 /* =========================================================
    GET TOTAL STEPS
 ========================================================= */
 
 export function getTotalJourneySteps(service: JourneyService): number {
+  if (service === 'insurance') {
+    return INSURANCE_TOTAL_JOURNEY_STEPS;
+  }
+
   return service === 'broadband' ? BROADBAND_TOTAL_JOURNEY_STEPS : ENERGY_TOTAL_JOURNEY_STEPS;
 }
 
@@ -31,17 +42,29 @@ export function getTotalJourneySteps(service: JourneyService): number {
 ========================================================= */
 
 export function getJourneyRoute(step: number, service: JourneyService = 'energy'): string {
-  if (service === 'broadband') {
+  if (service === 'insurance') {
     if (step <= 1) {
-      return BROADBAND_JOURNEY_ROUTES[1];
+      return INSURANCE_JOURNEY_ROUTES[1];
     }
 
-    if (step >= BROADBAND_TOTAL_JOURNEY_STEPS) {
-      return BROADBAND_JOURNEY_ROUTES[4];
+    if (step >= INSURANCE_TOTAL_JOURNEY_STEPS) {
+      return INSURANCE_JOURNEY_ROUTES[3];
     }
 
-    return BROADBAND_JOURNEY_ROUTES[step as keyof typeof BROADBAND_JOURNEY_ROUTES];
+    return INSURANCE_JOURNEY_ROUTES[step as keyof typeof INSURANCE_JOURNEY_ROUTES];
   }
+
+  // if (service === 'broadband') {
+  //   if (step <= 1) {
+  //     return BROADBAND_JOURNEY_ROUTES[1];
+  //   }
+
+  //   if (step >= BROADBAND_TOTAL_JOURNEY_STEPS) {
+  //     return BROADBAND_JOURNEY_ROUTES[4];
+  //   }
+
+  //   return BROADBAND_JOURNEY_ROUTES[step as keyof typeof BROADBAND_JOURNEY_ROUTES];
+  // }
 
   if (step <= 1) {
     return JOURNEY_ROUTES[1];
@@ -91,40 +114,37 @@ export function getJourneyStepFromPathname(
   const normalizedPathname =
     pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
-  /*
-   * Broadband remains:
-   *
-   * 1 Personal
-   * 2 Provider
-   * 3 Speed
-   * 4 Contract length
-   */
-  if (service === 'broadband') {
+  if (service === 'insurance') {
     switch (normalizedPathname) {
-      case BROADBAND_JOURNEY_ROUTES[2]:
+      case INSURANCE_JOURNEY_ROUTES[2]:
         return 2;
 
-      case BROADBAND_JOURNEY_ROUTES[3]:
+      case INSURANCE_JOURNEY_ROUTES[3]:
         return 3;
 
-      case BROADBAND_JOURNEY_ROUTES[4]:
-        return 4;
-
-      case BROADBAND_JOURNEY_ROUTES[1]:
+      case INSURANCE_JOURNEY_ROUTES[1]:
       default:
         return 1;
     }
   }
 
-  /*
-   * Energy:
-   *
-   * 1 Personal
-   * 2 Contract Date
-   * 3 Household
-   * 4 Electric Vehicle
-   * 5 Payment
-   */
+  // if (service === 'broadband') {
+  //   switch (normalizedPathname) {
+  //     case BROADBAND_JOURNEY_ROUTES[2]:
+  //       return 2;
+
+  //     case BROADBAND_JOURNEY_ROUTES[3]:
+  //       return 3;
+
+  //     case BROADBAND_JOURNEY_ROUTES[4]:
+  //       return 4;
+
+  //     case BROADBAND_JOURNEY_ROUTES[1]:
+  //     default:
+  //       return 1;
+  //   }
+  // }
+
   switch (normalizedPathname) {
     case JOURNEY_ROUTES[2]:
       return 2;

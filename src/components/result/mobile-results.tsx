@@ -983,7 +983,7 @@ function MobileDealCard({ deal, labels, onSeeDeals }: MobileDealCardProps) {
           </div>
 
           <Image
-            src="/images/card-green-icon.png"
+            src="/images/green-mobile.png"
             alt=""
             width={34}
             height={34}
