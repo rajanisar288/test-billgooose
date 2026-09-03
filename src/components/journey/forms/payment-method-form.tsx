@@ -125,9 +125,25 @@ export default function PaymentMethodForm() {
 
     sessionStorage.setItem(paymentMethod.storageKey, selectedPaymentMethod);
 
+    const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
     /*
-     * Energy does NOT go directly to result.
-     * Open the existing modal journey first.
+     * Bundle Bills:
+     *
+     * Payment Method
+     * → Gas Warning Modal
+     *
+     * Skip the Services modal because the Bundle service
+     * selection has already been established earlier.
+     */
+    if (journeyFlow === 'bundle') {
+      setGasWarningModalOpen(true);
+
+      return;
+    }
+
+    /*
+     * Existing non-Bundle Energy behavior remains unchanged.
      */
     setServicesModalOpen(true);
   }

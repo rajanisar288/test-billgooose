@@ -43,16 +43,43 @@ export default function CompareFlow() {
   const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
 
   /*
-   * These values are still used by the existing validation /
-   * property date logic, but their controls are currently
-   * commented out.
+   * Bundle Bills only:
    *
-   * They do not need React setters while those controls
-   * remain commented.
+   * These controls are local to Bundle because the current
+   * content.json does not contain compareFlow.form.occupancy
+   * or compareFlow.form.propertyStatus.
+   *
+   * Normal Energy and Broadband remain untouched.
    */
-  const occupancyType = compareFlow.form.energy.serviceType.defaultValue;
+  const bundleOccupancyOptions = [
+    {
+      id: 'rental',
+      label: 'Rental',
+      value: 'rental',
+    },
+    {
+      id: 'homeowner',
+      label: 'Homeowner',
+      value: 'homeowner',
+    },
+  ];
 
-  const alreadyInProperty = compareFlow.form.energy.serviceType.defaultValue as MoveStatus;
+  const bundlePropertyStatusOptions = [
+    {
+      id: 'yes',
+      label: 'Yes',
+      value: 'yes',
+    },
+    {
+      id: 'no',
+      label: 'No',
+      value: 'no',
+    },
+  ];
+
+  const [occupancyType, setOccupancyType] = useState('homeowner');
+
+  const [alreadyInProperty, setAlreadyInProperty] = useState('yes');
 
   const [moveInDate, setMoveInDate] = useState('');
 
@@ -224,7 +251,10 @@ export default function CompareFlow() {
           serviceType: energyServiceType,
 
           ...(isBundleFlow
-            ? {}
+            ? {
+                occupancyType,
+                alreadyInProperty,
+              }
             : {
                 paymentMethod,
               }),
@@ -1338,6 +1368,125 @@ export default function CompareFlow() {
                   </div>
                 </div>
 
+                {/* =================================================
+                    BUNDLE ONLY — OCCUPANCY / PROPERTY STATUS
+                ================================================== */}
+
+                {isBundleFlow && (
+                  <>
+                    {/* Rental / homeowner */}
+                    <fieldset>
+                      <legend
+                        className="
+                          mb-2
+
+                          font-inter
+
+                          text-[13px]
+                          font-medium
+                          leading-5
+                          tracking-[0]
+
+                          text-[#344054]
+
+                          md:text-[13px]
+
+                          lg:text-[14px]
+                        "
+                      >
+                        Are you a renter or homeowner?
+                      </legend>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {bundleOccupancyOptions.map((option) => (
+                          <ChoicePill
+                            key={option.id}
+                            label={option.label}
+                            selected={occupancyType === option.value}
+                            onClick={() => {
+                              setOccupancyType(option.value);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </fieldset>
+
+                    {/* Already in property */}
+                    <fieldset>
+                      <legend className="sr-only">Are you already in the property?</legend>
+
+                      <div
+                        className="
+                          flex
+                          min-h-12
+                          w-full
+
+                          items-center
+                          justify-between
+
+                          gap-[18px]
+
+                          rounded-full
+
+                          border
+                          border-[#D0D5DD]
+
+                          bg-white
+
+                          py-[9px]
+                          pl-4
+                          pr-2
+
+                          shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                          min-[390px]:pl-6
+
+                          md:h-[50px]
+                          md:min-h-[50px]
+                          md:pl-5
+
+                          lg:h-[52px]
+                          lg:min-h-[52px]
+                        "
+                      >
+                        <span
+                          className="
+                            font-inter
+
+                            text-[12px]
+                            font-medium
+                            leading-5
+                            tracking-[0]
+
+                            text-[#344054]
+
+                            min-[390px]:text-[13px]
+
+                            md:text-[13px]
+
+                            lg:text-[14px]
+                          "
+                        >
+                          Are you already in the property?
+                        </span>
+
+                        <div className="flex h-[34px] shrink-0 items-center">
+                          {bundlePropertyStatusOptions.map((option) => (
+                            <PropertyOption
+                              key={option.id}
+                              label={option.label}
+                              selected={alreadyInProperty === option.value}
+                              onClick={() => {
+                                setAlreadyInProperty(option.value);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </fieldset>
+                  </>
+                )}
+
                 {!isBundleFlow && (
                   <fieldset>
                     <legend
@@ -1649,7 +1798,7 @@ export default function CompareFlow() {
                 MOVE IN DATE
             ================================================== */}
 
-            {alreadyInProperty === MoveStatus.MOVING_IN && (
+            {alreadyInProperty === String(MoveStatus.MOVING_IN) && (
               <FormField label="">
                 <div className="relative w-full">
                   <input

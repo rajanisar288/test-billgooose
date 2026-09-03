@@ -39,11 +39,15 @@ export default function CurrentUsageSummary() {
   ========================================================= */
 
   const handleCompareEnergyPrices = () => {
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    const isBundleFlow = storedFlow === 'bundle';
+
     sessionStorage.setItem('billgooseJourneyService', 'energy');
 
-    sessionStorage.setItem('billgooseJourneyFlow', 'energy');
+    sessionStorage.setItem('billgooseJourneyFlow', isBundleFlow ? 'bundle' : 'energy');
 
-    router.push('/result?service=energy');
+    router.push(isBundleFlow ? '/result?service=energy&flow=bundle' : '/result?service=energy');
   };
 
   return (

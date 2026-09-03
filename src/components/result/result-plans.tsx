@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ArrowDownUp, ChevronDown, ChevronRight, ExternalLink, Globe2 } from 'lucide-react';
 
-import BroadbandSwitchModal from '@/components/result/broadband-switch-modal';
 import FeaturedBroadbandCard from '@/components/result/featured-broadband-card';
 import PlanCard from '@/components/result/plan-card';
 import PlanDetailsDrawer from '@/components/result/plan-details-drawer';
@@ -146,18 +145,6 @@ export default function ResultPlans({
   };
 
   /* =========================================================
-     BUNDLE MODAL
-  ========================================================= */
-
-  const [switchModalPlan, setSwitchModalPlan] = useState<StandardPlan | null>(null);
-
-  const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false);
-
-  const handleCloseSwitchModal = () => {
-    setIsSwitchModalOpen(false);
-  };
-
-  /* =========================================================
      ENERGY / BROADBAND SELECT PLAN
   ========================================================= */
 
@@ -185,8 +172,7 @@ export default function ResultPlans({
 
       sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
 
-      setSwitchModalPlan(plan);
-      setIsSwitchModalOpen(true);
+      router.push('/review-your-details?service=energy&flow=bundle');
 
       return;
     }
@@ -350,25 +336,6 @@ export default function ResultPlans({
 
     handleSelectPlan(plan);
   };
-
-  /* =========================================================
-     BUNDLE RECOMMENDATIONS
-  ========================================================= */
-
-  const recommendedPlans = useMemo(() => {
-    if (!switchModalPlan) {
-      return [];
-    }
-
-    const featuredPlan = energyPlanItems.find(isFeaturedBroadbandPlan);
-
-    const standardRecommendations = energyPlanItems
-      .filter(isStandardPlan)
-      .filter((plan) => plan.id !== switchModalPlan.id)
-      .slice(0, 2);
-
-    return [...(featuredPlan ? [featuredPlan] : []), ...standardRecommendations];
-  }, [energyPlanItems, switchModalPlan]);
 
   /* =========================================================
      NORMAL CARDS
@@ -683,20 +650,6 @@ export default function ResultPlans({
         onClose={handleCloseDetails}
         onSelectPlan={handleDrawerPrimaryAction}
       />
-
-      {/* =====================================================
-          BUNDLE MODAL
-      ====================================================== */}
-
-      {!isSimOnly && (
-        <BroadbandSwitchModal
-          isOpen={isSwitchModalOpen}
-          selectedPlan={switchModalPlan}
-          recommendedPlans={recommendedPlans}
-          onClose={handleCloseSwitchModal}
-          bundleFlow
-        />
-      )}
     </>
   );
 }

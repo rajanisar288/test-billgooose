@@ -14,18 +14,19 @@ export default function UsageFooter() {
   /* =========================================================
      COMPARE ENERGY PRICES
 
-     NORMAL ENERGY ONLY
-
-     Current Usage
-     → Energy Results
+     PRESERVE NORMAL ENERGY / BUNDLE CONTEXT
   ========================================================= */
 
   const handleCompareEnergyPrices = () => {
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+    const isBundleFlow = storedFlow === 'bundle';
+
     sessionStorage.setItem('billgooseJourneyService', 'energy');
 
-    sessionStorage.setItem('billgooseJourneyFlow', 'energy');
+    sessionStorage.setItem('billgooseJourneyFlow', isBundleFlow ? 'bundle' : 'energy');
 
-    router.push('/result?service=energy');
+    router.push(isBundleFlow ? '/result?service=energy&flow=bundle' : '/result?service=energy');
   };
 
   return (
