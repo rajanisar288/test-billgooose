@@ -54,7 +54,7 @@ export interface Address {
 
 export enum MoveStatus {
   ALREADY_MOVED_IN = 'alreadyMovedIn',
-  MOVING_IN = 'movingIn',
+  MOVING_IN = 'no',
 }
 
 export enum OccupancyStatus {

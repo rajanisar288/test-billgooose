@@ -2100,7 +2100,7 @@ export default function CompareFlow() {
                 MOVE IN DATE
             ================================================== */}
 
-            {alreadyInProperty === String(MoveStatus.MOVING_IN) && (
+            {alreadyInProperty == String(MoveStatus.MOVING_IN) && (
               <FormField label="">
                 <div className="relative w-full">
                   <input
