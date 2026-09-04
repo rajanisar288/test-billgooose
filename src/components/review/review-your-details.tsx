@@ -108,7 +108,7 @@ function getReviewSnapshot(): string {
 
     household: sessionStorage.getItem(journey.household.storageKey) ?? '',
 
-    paymentMethod: sessionStorage.getItem(journey.paymentMethod.storageKey) ?? '',
+    paymentMethod: getStoredPaymentMethod(),
 
     contractDetails: sessionStorage.getItem(journey.contractDetails.storageKey) ?? '',
 
@@ -147,6 +147,34 @@ function subscribeToReviewData(callback: () => void) {
   };
 }
 
+function getStoredPaymentMethod(): string {
+  const { journey } = data;
+
+  /*
+   * Bundle Bills saves the selected payment method on the
+   * Payment Method journey step.
+   */
+  try {
+    const storedJourneyPayment = sessionStorage.getItem(journey.paymentMethod.storageKey);
+
+    if (storedJourneyPayment) {
+      return storedJourneyPayment;
+    }
+  } catch {
+    // Fall through to compare-flow storage.
+  }
+
+  /*
+   * Normal Energy saves the selected payment method directly
+   * inside compareFlowDetails on the Compare page.
+   */
+  const compareFlow = readJson<{
+    paymentMethod?: string;
+  }>('compareFlowDetails', {});
+
+  return compareFlow.paymentMethod ?? '';
+}
+
 function buildReviewState(snapshot: string): ReviewState {
   if (!snapshot) {
     return EMPTY_STATE;
@@ -156,6 +184,8 @@ function buildReviewState(snapshot: string): ReviewState {
 
   const compareFlow = readJson<{
     service?: string;
+    flow?: string;
+    paymentMethod?: string;
   }>('compareFlowDetails', {});
 
   const service: JourneyService = compareFlow.service === 'broadband' ? 'broadband' : 'energy';
@@ -167,7 +197,7 @@ function buildReviewState(snapshot: string): ReviewState {
 
     household: readJson<HouseholdDetails>(journey.household.storageKey, {}),
 
-    paymentMethod: sessionStorage.getItem(journey.paymentMethod.storageKey) ?? '',
+    paymentMethod: getStoredPaymentMethod(),
 
     contractDetails: readJson<ContractDetails>(journey.contractDetails.storageKey, {}),
 
@@ -234,6 +264,14 @@ export default function ReviewYourDetails() {
       '—'
     );
   }, [details.household.bedrooms, journey.household.bedrooms.options]);
+
+  const paymentMethodLabel = useMemo(() => {
+    return (
+      journey.paymentMethod.options.find((item) => item.value === details.paymentMethod)?.label ??
+      details.paymentMethod ??
+      '—'
+    );
+  }, [details.paymentMethod, journey.paymentMethod.options]);
 
   const providerLabel = useMemo(() => {
     return (
@@ -466,7 +504,7 @@ export default function ReviewYourDetails() {
                   >
                     <ReviewField
                       label="Payment method"
-                      value={details.paymentMethod}
+                      value={paymentMethodLabel}
                     />
                   </ReviewSection>
 
@@ -1192,11 +1230,11 @@ function SummaryCard({ plan, onConfirm }: { plan: StandardPlan | null; onConfirm
 
       <div className="p-4">
         <SummaryRow
-          label="Energy (Dual Fuel)"
+          label={plan?.provider ?? '-'}
           value={plan?.price ?? '—'}
         />
 
-        <SummaryRow
+        {/* <SummaryRow
           label="Broadband"
           value="£25.90"
         />
@@ -1209,7 +1247,7 @@ function SummaryCard({ plan, onConfirm }: { plan: StandardPlan | null; onConfirm
         <SummaryRow
           label="Platform fee"
           value="£1.90"
-        />
+        /> */}
 
         <div
           className="

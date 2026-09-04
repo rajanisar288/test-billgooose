@@ -1050,21 +1050,21 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                     label="Energy (Dual Fuel)"
                     value={energyPrice}
                   />
-
+                  {/*
                   <SummaryRow
                     label="Broadband"
                     value="£25.90"
-                  />
+                  /> */}
 
-                  <SummaryRow
+                  {/* <SummaryRow
                     label="Mobile"
                     value="£15.90"
-                  />
+                  /> */}
 
-                  <SummaryRow
+                  {/* <SummaryRow
                     label="Platform fee"
                     value="£1.90"
-                  />
+                  /> */}
 
                   {/* TOTAL */}
                   <div

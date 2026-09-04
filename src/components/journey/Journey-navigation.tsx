@@ -26,6 +26,41 @@ export default function JourneyNavigation({
   const { navigation } = data.journey;
 
   const handleBack = () => {
+    /*
+     * Step 1 needs to return to the page that started
+     * the journey rather than trying to resolve step 0.
+     */
+    if (currentStep === 1) {
+      const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
+
+      /* NORMAL ENERGY */
+      if (service === 'energy' && journeyFlow !== 'bundle') {
+        router.push('/result?service=energy');
+        return;
+      }
+
+      /* BUNDLE BILLS */
+      if (service === 'energy' && journeyFlow === 'bundle') {
+        router.push('/compare?service=energy&flow=bundle');
+        return;
+      }
+
+      /* INSURANCE */
+      if (service === 'insurance') {
+        router.push('/compare?service=insurance');
+        return;
+      }
+
+      /* BROADBAND FALLBACK */
+      if (service === 'broadband') {
+        router.push('/result?service=broadband');
+        return;
+      }
+    }
+
+    /*
+     * Step 2+ keeps your existing journey navigation.
+     */
     router.push(getPreviousJourneyRoute(currentStep, service));
   };
 

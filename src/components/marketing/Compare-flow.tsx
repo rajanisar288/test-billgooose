@@ -202,6 +202,10 @@ export default function CompareFlow() {
     try {
       setIsAddressLoading(true);
 
+      setAddressOptions([]);
+      setSelectedAddress(null);
+      setAddressDropdownOpen(false);
+
       setPostcode(postalCode);
 
       const journeyId = localStorage.getItem(storeJourney);
@@ -210,19 +214,27 @@ export default function CompareFlow() {
         postcode: postalCode,
       });
 
-      setAddressOptions(
-        res.data.addresses.map((address: any) => ({
-          id: address.uprn || address.providerReference || crypto.randomUUID(),
+      const mappedAddresses = res.data.addresses.map((address: any) => ({
+        id: address.uprn || address.providerReference || crypto.randomUUID(),
 
-          label: address.fullAddress,
+        label: address.fullAddress,
 
-          value: address.fullAddress,
+        value: address.fullAddress,
 
-          fullAddressObject: address,
-        })),
-      );
+        fullAddressObject: address,
+      }));
+
+      setAddressOptions(mappedAddresses);
+
+      if (mappedAddresses.length > 0) {
+        setAddressDropdownOpen(true);
+      }
     } catch (error) {
       console.error(error);
+
+      setAddressOptions([]);
+      setSelectedAddress(null);
+      setAddressDropdownOpen(false);
     } finally {
       setIsAddressLoading(false);
     }
@@ -239,12 +251,6 @@ export default function CompareFlow() {
   ========================================================= */
 
   useEffect(() => {
-    const urlPostcode = searchParams.get('postcode') || '';
-
-    if (urlPostcode) {
-      getAddresses(urlPostcode);
-    }
-
     function handleOutsideClick(event: MouseEvent) {
       const target = event.target as Node;
 
@@ -754,8 +760,8 @@ export default function CompareFlow() {
                   onChange={(event) => {
                     setPostcode(event.target.value.toUpperCase());
 
+                    setAddressOptions([]);
                     setSelectedAddress(null);
-
                     setAddressDropdownOpen(false);
                   }}
                   className="
@@ -885,6 +891,8 @@ export default function CompareFlow() {
                   setAddressOptions([]);
 
                   setSelectedAddress(null);
+
+                  setAddressDropdownOpen(false);
                 }}
                 className="
                   mt-2
@@ -913,12 +921,16 @@ export default function CompareFlow() {
 
             {/* =================================================
                 ADDRESS
+
+                Only shown after Find address returns addresses.
             ================================================== */}
 
-            <div>
-              <label
-                id="address-label"
-                className="
+            {addressOptions.length > 0 && (
+              <>
+                <div>
+                  <label
+                    id="address-label"
+                    className="
                   mb-2
                   block
 
@@ -936,30 +948,30 @@ export default function CompareFlow() {
 
                   lg:text-[14px]
                 "
-              >
-                {compareFlow.form.address.label}
-              </label>
+                  >
+                    {compareFlow.form.address.label}
+                  </label>
 
-              <div
-                ref={addressDropdownRef}
-                className="relative"
-              >
-                <button
-                  type="button"
-                  aria-labelledby="address-label"
-                  aria-expanded={addressDropdownOpen}
-                  aria-haspopup="listbox"
-                  disabled={addressOptions.length === 0}
-                  onClick={() => {
-                    setAddressDropdownOpen((current) => !current);
+                  <div
+                    ref={addressDropdownRef}
+                    className="relative"
+                  >
+                    <button
+                      type="button"
+                      aria-labelledby="address-label"
+                      aria-expanded={addressDropdownOpen}
+                      aria-haspopup="listbox"
+                      disabled={addressOptions.length === 0}
+                      onClick={() => {
+                        setAddressDropdownOpen((current) => !current);
 
-                    setProviderDropdownOpen(false);
+                        setProviderDropdownOpen(false);
 
-                    setEnergyServiceDropdownOpen(false);
+                        setEnergyServiceDropdownOpen(false);
 
-                    setInsuranceTypeDropdownOpen(false);
-                  }}
-                  className={`
+                        setInsuranceTypeDropdownOpen(false);
+                      }}
+                      className={`
                     flex
                     h-12
                     w-full
@@ -1004,23 +1016,23 @@ export default function CompareFlow() {
                         : 'border-[#D0D5DD]'
                     }
                   `}
-                >
-                  <span
-                    className={`
+                    >
+                      <span
+                        className={`
                       min-w-0
                       truncate
 
                       ${selectedAddress ? 'text-[#101828]' : 'text-[#667085]'}
                     `}
-                  >
-                    {selectedAddress?.fullAddress || compareFlow.form.address.placeholder}
-                  </span>
+                      >
+                        {selectedAddress?.fullAddress || compareFlow.form.address.placeholder}
+                      </span>
 
-                  <ChevronDown
-                    size={20}
-                    strokeWidth={2}
-                    aria-hidden="true"
-                    className={`
+                      <ChevronDown
+                        size={20}
+                        strokeWidth={2}
+                        aria-hidden="true"
+                        className={`
                       h-5
                       w-5
                       shrink-0
@@ -1038,14 +1050,14 @@ export default function CompareFlow() {
 
                       ${addressDropdownOpen ? 'rotate-180' : ''}
                     `}
-                  />
-                </button>
+                      />
+                    </button>
 
-                {addressDropdownOpen && (
-                  <div
-                    role="listbox"
-                    aria-labelledby="address-label"
-                    className="
+                    {addressDropdownOpen && (
+                      <div
+                        role="listbox"
+                        aria-labelledby="address-label"
+                        className="
                       absolute
                       left-0
                       top-[calc(100%+8px)]
@@ -1068,22 +1080,22 @@ export default function CompareFlow() {
 
                       lg:max-h-[190px]
                     "
-                  >
-                    {addressOptions.map((address) => {
-                      const isSelected = selectedAddress?.fullAddress === address.label;
+                      >
+                        {addressOptions.map((address) => {
+                          const isSelected = selectedAddress?.fullAddress === address.label;
 
-                      return (
-                        <button
-                          key={address.id}
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          onClick={() => {
-                            setSelectedAddress(address.fullAddressObject);
+                          return (
+                            <button
+                              key={address.id}
+                              type="button"
+                              role="option"
+                              aria-selected={isSelected}
+                              onClick={() => {
+                                setSelectedAddress(address.fullAddressObject);
 
-                            setAddressDropdownOpen(false);
-                          }}
-                          className={`
+                                setAddressDropdownOpen(false);
+                              }}
+                              className={`
                               flex
                               min-h-10
                               w-full
@@ -1115,9 +1127,9 @@ export default function CompareFlow() {
 
                               ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
                             `}
-                        >
-                          <span
-                            className="
+                            >
+                              <span
+                                className="
                                 flex
                                 min-w-0
 
@@ -1125,48 +1137,48 @@ export default function CompareFlow() {
 
                                 gap-2
                               "
-                          >
-                            <Image
-                              src="/images/location-icon.png"
-                              alt=""
-                              width={12}
-                              height={14}
-                              aria-hidden="true"
-                              className="
+                              >
+                                <Image
+                                  src="/images/location-icon.png"
+                                  alt=""
+                                  width={12}
+                                  height={14}
+                                  aria-hidden="true"
+                                  className="
                                   h-[13.66px]
                                   w-[12px]
                                   shrink-0
 
                                   object-contain
                                 "
-                            />
+                                />
 
-                            <span className="truncate">{address.label}</span>
-                          </span>
+                                <span className="truncate">{address.label}</span>
+                              </span>
 
-                          {isSelected && (
-                            <Check
-                              aria-hidden="true"
-                              className="
+                              {isSelected && (
+                                <Check
+                                  aria-hidden="true"
+                                  className="
                                   h-4
                                   w-4
                                   shrink-0
 
                                   text-[#00897B]
                                 "
-                              strokeWidth={2}
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
+                                  strokeWidth={2}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              <button
-                type="button"
-                className="
+                  <button
+                    type="button"
+                    className="
                   mt-2
                   block
 
@@ -1184,10 +1196,12 @@ export default function CompareFlow() {
 
                   lg:text-[14px]
                 "
-              >
-                {compareFlow.form.address.manualText}
-              </button>
-            </div>
+                  >
+                    {compareFlow.form.address.manualText}
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Rental / homeowner */}
             {/* <fieldset>

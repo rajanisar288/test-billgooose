@@ -1122,7 +1122,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
 
             <ResultMetric
               label="Exit fee"
-              value="£190"
+              value="No Exit Fee"
             />
           </div>
         )}
@@ -1206,5 +1206,5 @@ function getEstimatedAnnualCost(monthlyPrice: string): string {
     return '—';
   }
 
-  return `£${(numericPrice * 12).toFixed(2)}`;
+  return `£${(numericPrice * 12).toFixed(1)}`;
 }
