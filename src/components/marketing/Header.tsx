@@ -134,6 +134,8 @@ export default function Header() {
 
   const [isCompareOpen, setIsCompareOpen] = useState(false);
 
+  const [isMobileCompareOpen, setIsMobileCompareOpen] = useState(false);
+
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   const compareRef = useRef<HTMLDivElement>(null);
@@ -256,6 +258,7 @@ export default function Header() {
   function closeMenus() {
     setIsMobileNavigationOpen(false);
     setIsCompareOpen(false);
+    setIsMobileCompareOpen(false);
     setIsAccountOpen(false);
   }
 
@@ -1057,33 +1060,172 @@ export default function Header() {
                   sm:px-8
                 "
             >
-              {header.navigation.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  onClick={closeMenus}
-                  className={`
-                        block
-
+              {header.navigation.map((item) => {
+                if (item.hasDropdown) {
+                  return (
+                    <div
+                      key={item.id}
+                      className="
+                        overflow-hidden
                         rounded-[10px]
+                      "
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={isMobileCompareOpen}
+                        aria-controls="mobile-compare-menu"
+                        onClick={() => {
+                          setIsMobileCompareOpen((current) => !current);
+                        }}
+                        className={`
+                          flex
+                          w-full
+                          items-center
+                          justify-between
 
-                        px-4
-                        py-3
+                          rounded-[10px]
 
-                        font-inter
-                        text-[14px]
-                        font-medium
+                          px-4
+                          py-3
 
-                        ${
-                          isMyInfoPage
-                            ? 'text-white hover:bg-white/10'
-                            : 'text-[#344054] hover:bg-[#F9FAFB]'
-                        }
-                      `}
-                >
-                  {item.label}
-                </Link>
-              ))}
+                          font-inter
+                          text-[14px]
+                          font-medium
+
+                          transition-colors
+
+                          ${
+                            isMyInfoPage
+                              ? 'text-white hover:bg-white/10'
+                              : 'text-[#344054] hover:bg-[#F9FAFB]'
+                          }
+                        `}
+                      >
+                        <span>{item.label}</span>
+
+                        <ChevronDown
+                          aria-hidden="true"
+                          className={`
+                            h-4
+                            w-4
+                            shrink-0
+
+                            transition-transform
+                            duration-200
+
+                            ${isMobileCompareOpen ? 'rotate-180' : ''}
+                          `}
+                          strokeWidth={2}
+                        />
+                      </button>
+
+                      <div
+                        id="mobile-compare-menu"
+                        className={`
+                          overflow-hidden
+
+                          transition-all
+                          duration-300
+
+                          ${isMobileCompareOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'}
+                        `}
+                      >
+                        <div
+                          className="
+                            mx-2
+                            mb-2
+
+                            space-y-1
+
+                            rounded-[12px]
+
+                            border
+                            border-[#EAECF0]
+
+                            bg-white
+
+                            p-2
+                          "
+                        >
+                          {header.compareMenu.map((menuItem) => (
+                            <Link
+                              key={menuItem.id}
+                              href={menuItem.href}
+                              onClick={closeMenus}
+                              className="
+                                flex
+                                min-h-[44px]
+                                w-full
+                                items-center
+                                gap-3
+
+                                rounded-[9px]
+
+                                px-3
+                                py-2
+
+                                font-inter
+                                text-[13px]
+                                font-medium
+
+                                text-[#344054]
+
+                                transition-colors
+
+                                hover:bg-[#F9FAFB]
+                                hover:text-[#00897B]
+                              "
+                            >
+                              <Image
+                                src={menuItem.icon}
+                                alt={menuItem.iconAlt}
+                                width={24}
+                                height={24}
+                                className="
+                                  h-6
+                                  w-6
+                                  shrink-0
+                                  object-contain
+                                "
+                              />
+
+                              <span>{menuItem.label}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={closeMenus}
+                    className={`
+                      block
+
+                      rounded-[10px]
+
+                      px-4
+                      py-3
+
+                      font-inter
+                      text-[14px]
+                      font-medium
+
+                      ${
+                        isMyInfoPage
+                          ? 'text-white hover:bg-white/10'
+                          : 'text-[#344054] hover:bg-[#F9FAFB]'
+                      }
+                    `}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
         )}
