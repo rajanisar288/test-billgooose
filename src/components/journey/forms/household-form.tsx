@@ -7,8 +7,12 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 type JourneyService = 'energy' | 'broadband';
 
@@ -54,10 +58,14 @@ function subscribeToJourneyService(callback: () => void) {
 
 export default function HouseholdForm() {
   const router = useRouter();
+  const { updateJourney } = useUpdateJourney();
 
   const { household, broadbandSpeed } = data.journey;
 
   const { propertyType, occupants, bedrooms } = household;
+
+  const { journey, setJourney } = useJourneyStore();
+  const { showSuccess, showError } = useToast();
 
   const service = useSyncExternalStore(
     subscribeToJourneyService,
@@ -69,23 +77,33 @@ export default function HouseholdForm() {
      ENERGY STATE
   ========================================================= */
 
-  const [selectedPropertyType, setSelectedPropertyType] = useState(propertyType.options[0].value);
+  const [selectedPropertyType, setSelectedPropertyType] = useState(
+    journey?.customer ? journey?.customer?.propertyType : propertyType.options[0].value,
+  );
 
-  const [selectedOccupants, setSelectedOccupants] = useState(occupants.defaultValue);
+  const [selectedOccupants, setSelectedOccupants] = useState(
+    journey?.customer?.occupants
+      ? Number(journey.customer.occupants)
+      : Number(occupants.defaultValue),
+  );
 
-  const [selectedBedrooms, setSelectedBedrooms] = useState(bedrooms.defaultValue);
+  const [selectedBedrooms, setSelectedBedrooms] = useState(
+    journey?.customer?.bedrooms ? Number(journey.customer.bedrooms) : Number(bedrooms.defaultValue),
+  );
 
   /* =========================================================
      BROADBAND STATE
   ========================================================= */
 
-  const [selectedBroadbandSpeed, setSelectedBroadbandSpeed] = useState(broadbandSpeed.defaultValue);
+  const [selectedBroadbandSpeed, setSelectedBroadbandSpeed] = useState(
+    journey?.customer ? journey?.customer?.broadbandSpeed : broadbandSpeed.defaultValue,
+  );
 
   /* =========================================================
      SUBMIT
   ========================================================= */
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     /* =======================================================
@@ -96,18 +114,19 @@ export default function HouseholdForm() {
     ======================================================== */
 
     if (service === 'broadband') {
-      if (!selectedBroadbandSpeed) {
+      const isValidBroadbandSpeed = broadbandSpeed.options.some(
+        (option) => option.value === selectedBroadbandSpeed,
+      );
+
+      if (!isValidBroadbandSpeed) {
         return;
       }
 
-      sessionStorage.setItem(
-        broadbandSpeed.storageKey,
-        JSON.stringify({
-          broadbandSpeed: selectedBroadbandSpeed,
-        }),
+      await updateJourney(
+        { customer: selectedBroadbandSpeed },
+        getNextJourneyRoute(3, 'broadband'),
+        getCurrentRelativeUrl(),
       );
-
-      router.push(getNextJourneyRoute(3, 'broadband'));
 
       return;
     }
@@ -119,7 +138,13 @@ export default function HouseholdForm() {
        → Step 4 Electric Vehicle
     ======================================================== */
 
-    if (!selectedPropertyType || !selectedOccupants || !selectedBedrooms) {
+    const isValidPropertyType = propertyType.options.some(
+      (option) => option.value === selectedPropertyType,
+    );
+    const isValidOccupants = selectedOccupants >= 0 && selectedOccupants <= 10;
+    const isValidBedrooms = selectedBedrooms >= 0 && selectedBedrooms <= 10;
+
+    if (!isValidPropertyType || !isValidOccupants || !isValidBedrooms) {
       return;
     }
 
@@ -129,9 +154,11 @@ export default function HouseholdForm() {
       bedrooms: selectedBedrooms,
     };
 
-    sessionStorage.setItem(household.storageKey, JSON.stringify(householdData));
-
-    router.push(getNextJourneyRoute(3, 'energy'));
+    await updateJourney(
+      { customer: householdData },
+      getNextJourneyRoute(3, 'energy'),
+      getCurrentRelativeUrl(),
+    );
   }
 
   /* =========================================================
@@ -581,7 +608,7 @@ export default function HouseholdForm() {
               lg:gap-[14px]
             "
           >
-            {occupants.options.map((option) => (
+            {/* {occupants.options.map((option) => (
               <SelectorOption
                 key={option.id}
                 label={option.label}
@@ -590,7 +617,11 @@ export default function HouseholdForm() {
                   setSelectedOccupants(option.value);
                 }}
               />
-            ))}
+            ))} */}
+            <CounterSelector
+              value={selectedOccupants}
+              onChange={setSelectedOccupants}
+            />
           </div>
         </fieldset>
 
@@ -608,14 +639,14 @@ export default function HouseholdForm() {
           />
 
           <div className="mt-3 space-y-3 lg:mt-4">
-            <SelectorOption
+            {/* <SelectorOption
               label={bedrooms.options[0].label}
               selected={selectedBedrooms === bedrooms.options[0].value}
               onClick={() => {
                 setSelectedBedrooms(bedrooms.options[0].value);
               }}
               fullWidth
-            />
+            /> */}
 
             <div
               className="
@@ -632,16 +663,20 @@ export default function HouseholdForm() {
                 lg:grid-cols-[243px_243px]
               "
             >
-              {bedrooms.options.slice(1).map((option) => (
+              {/* {bedrooms.options.slice(1).map((option) => (
                 <SelectorOption
                   key={option.id}
                   label={option.label}
-                  selected={selectedBedrooms === option.value}
+                selected={selectedBedrooms === option.value}
                   onClick={() => {
                     setSelectedBedrooms(option.value);
                   }}
                 />
-              ))}
+              ))} */}
+              <CounterSelector
+                value={selectedBedrooms}
+                onChange={setSelectedBedrooms}
+              />
             </div>
           </div>
         </fieldset>
@@ -871,5 +906,132 @@ function SelectorOption({ label, selected, onClick, fullWidth = false }: Selecto
 
       <SelectionCircle selected={selected} />
     </button>
+  );
+}
+
+type CounterSelectorProps = {
+  value: number;
+  onChange: (value: number) => void;
+};
+
+function CounterSelector({ value, onChange }: CounterSelectorProps) {
+  const decrease = () => {
+    if (value > 1) {
+      onChange(value - 1);
+    }
+  };
+
+  const increase = () => {
+    if (value < 10) {
+      onChange(value + 1);
+    }
+  };
+
+  return (
+    <div
+      className="
+        flex
+        h-[52px]
+        w-full
+        items-center
+        justify-between
+
+        rounded-[14px]
+        border
+        border-[#D0D5DD]
+        bg-white
+
+        px-3
+
+        sm:h-[56px]
+        sm:rounded-[16px]
+        sm:px-4
+
+        lg:h-[61px]
+        lg:w-[500px]
+        lg:rounded-[16px]
+        lg:px-5
+      "
+    >
+      <button
+        type="button"
+        onClick={decrease}
+        disabled={value === 1}
+        aria-label="Decrease value"
+        className="
+          flex
+          h-9
+          w-9
+          items-center
+          justify-center
+
+          rounded-full
+          border
+          border-[#D0D5DD]
+
+          font-inter
+          text-[22px]
+          font-medium
+          leading-none
+          text-[#344054]
+
+          transition-colors
+
+          hover:border-[#00897B]
+          hover:text-[#00897B]
+
+          disabled:cursor-not-allowed
+          disabled:opacity-40
+        "
+      >
+        −
+      </button>
+
+      <span
+        className="
+          font-red-hat-display
+          text-[18px]
+          font-bold
+          leading-5
+          text-[#0D3B66]
+        "
+      >
+        {value}
+      </span>
+
+      <button
+        type="button"
+        onClick={increase}
+        disabled={value === 10}
+        aria-label="Increase value"
+        className="
+          flex
+          h-9
+          w-9
+          items-center
+          justify-center
+
+          rounded-full
+          border
+          border-[#D0D5DD]
+
+          font-inter
+          text-[22px]
+          font-medium
+          leading-none
+          text-[#344054]
+
+          transition-colors
+
+          hover:border-[#00897B]
+          hover:text-[#00897B]
+
+          disabled:cursor-not-allowed
+          disabled:opacity-40
+        "
+      >
+        +
+      </button>
+    </div>
   );
 }

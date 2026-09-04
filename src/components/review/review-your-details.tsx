@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useMemo, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,8 +15,12 @@ import {
   Wifi,
 } from 'lucide-react';
 
+import { capitalize } from '@/components/current-usage/preferences-panel';
 import type { StandardPlan } from '@/components/result/plan.types';
 import data from '@/data/content.json';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 import ReviewEditModal, { type EditableSection } from './review-edit-modal';
 
@@ -80,128 +84,212 @@ const EMPTY_STATE: ReviewState = {
    SESSION STORAGE HELPERS
 ========================================================= */
 
-function readJson<T>(key: string, fallback: T): T {
-  try {
-    const raw = sessionStorage.getItem(key);
+// function readJson<T>(key: string, fallback: T): T {
+//   try {
+//     const raw = sessionStorage.getItem(key);
 
-    if (!raw) {
-      return fallback;
-    }
+//     if (!raw) {
+//       return fallback;
+//     }
 
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
+//     return JSON.parse(raw) as T;
+//   } catch {
+//     return fallback;
+//   }
+// }
 
-/*
- * useSyncExternalStore requires a stable/cached snapshot.
- * Returning a primitive string gives us that.
- */
-function getReviewSnapshot(): string {
-  const { journey } = data;
+// /*
+//  * useSyncExternalStore requires a stable/cached snapshot.
+//  * Returning a primitive string gives us that.
+//  */
+// function getReviewSnapshot(): string {
+//   const { journey } = data;
 
-  return JSON.stringify({
-    compareFlowDetails: sessionStorage.getItem('compareFlowDetails') ?? '',
+//   return JSON.stringify({
+//     compareFlowDetails: sessionStorage.getItem('compareFlowDetails') ?? '',
 
-    personalDetails: sessionStorage.getItem('journeyPersonalDetails') ?? '',
+//     personalDetails: sessionStorage.getItem('journeyPersonalDetails') ?? '',
 
-    household: sessionStorage.getItem(journey.household.storageKey) ?? '',
+//     household: sessionStorage.getItem(journey.household.storageKey) ?? '',
 
-    paymentMethod: sessionStorage.getItem(journey.paymentMethod.storageKey) ?? '',
+//     paymentMethod: sessionStorage.getItem(journey.paymentMethod.storageKey) ?? '',
 
-    contractDetails: sessionStorage.getItem(journey.contractDetails.storageKey) ?? '',
+//     contractDetails: sessionStorage.getItem(journey.contractDetails.storageKey) ?? '',
 
-    broadbandProvider: sessionStorage.getItem(journey.broadbandProvider.storageKey) ?? '',
+//     broadbandProvider: sessionStorage.getItem(journey.broadbandProvider.storageKey) ?? '',
 
-    broadbandSpeed: sessionStorage.getItem(journey.broadbandSpeed.storageKey) ?? '',
+//     broadbandSpeed: sessionStorage.getItem(journey.broadbandSpeed.storageKey) ?? '',
 
-    broadbandContractLength:
-      sessionStorage.getItem(journey.broadbandContractLength.storageKey) ?? '',
+//     broadbandContractLength:
+//       sessionStorage.getItem(journey.broadbandContractLength.storageKey) ?? '',
 
-    selectedPlan: sessionStorage.getItem('journeySelectedPlan') ?? '',
-  });
-}
+//     selectedPlan: sessionStorage.getItem('journeySelectedPlan') ?? '',
+//   });
+// }
 
-function getReviewServerSnapshot(): string {
-  return '';
-}
+// function getReviewServerSnapshot(): string {
+//   return '';
+// }
 
-function subscribeToReviewData(callback: () => void) {
-  const handleStorage = () => {
-    callback();
-  };
+// function subscribeToReviewData(callback: () => void) {
+//   const handleStorage = () => {
+//     callback();
+//   };
 
-  const handleReviewUpdated = () => {
-    callback();
-  };
+//   const handleReviewUpdated = () => {
+//     callback();
+//   };
 
-  window.addEventListener('storage', handleStorage);
+//   window.addEventListener('storage', handleStorage);
 
-  window.addEventListener('journey-review-updated', handleReviewUpdated);
+//   window.addEventListener('journey-review-updated', handleReviewUpdated);
 
-  return () => {
-    window.removeEventListener('storage', handleStorage);
+//   return () => {
+//     window.removeEventListener('storage', handleStorage);
 
-    window.removeEventListener('journey-review-updated', handleReviewUpdated);
-  };
-}
+//     window.removeEventListener('journey-review-updated', handleReviewUpdated);
+//   };
+// }
 
-function buildReviewState(snapshot: string): ReviewState {
-  if (!snapshot) {
-    return EMPTY_STATE;
-  }
+// function buildReviewState(snapshot: string): ReviewState {
+//   if (!snapshot) {
+//     return EMPTY_STATE;
+//   }
 
-  const { journey } = data;
+//   const { journey } = data;
 
-  const compareFlow = readJson<{
-    service?: string;
-  }>('compareFlowDetails', {});
+//   const compareFlow = readJson<{
+//     service?: string;
+//   }>('compareFlowDetails', {});
 
-  const service: JourneyService = compareFlow.service === 'broadband' ? 'broadband' : 'energy';
+//   const service: JourneyService = compareFlow.service === 'broadband' ? 'broadband' : 'energy';
 
-  return {
-    service,
+//   return {
+//     service,
 
-    personalDetails: readJson<PersonalDetails>('journeyPersonalDetails', {}),
+//     personalDetails: readJson<PersonalDetails>('journeyPersonalDetails', {}),
 
-    household: readJson<HouseholdDetails>(journey.household.storageKey, {}),
+//     household: readJson<HouseholdDetails>(journey.household.storageKey, {}),
 
-    paymentMethod: sessionStorage.getItem(journey.paymentMethod.storageKey) ?? '',
+//     paymentMethod: sessionStorage.getItem(journey.paymentMethod.storageKey) ?? '',
 
-    contractDetails: readJson<ContractDetails>(journey.contractDetails.storageKey, {}),
+//     contractDetails: readJson<ContractDetails>(journey.contractDetails.storageKey, {}),
 
-    broadbandProvider:
-      readJson<{
-        provider?: string;
-      }>(journey.broadbandProvider.storageKey, {}).provider ?? '',
+//     broadbandProvider:
+//       readJson<{
+//         provider?: string;
+//       }>(journey.broadbandProvider.storageKey, {}).provider ?? '',
 
-    broadbandSpeed:
-      readJson<{
-        broadbandSpeed?: string;
-      }>(journey.broadbandSpeed.storageKey, {}).broadbandSpeed ?? '',
+//     broadbandSpeed:
+//       readJson<{
+//         broadbandSpeed?: string;
+//       }>(journey.broadbandSpeed.storageKey, {}).broadbandSpeed ?? '',
 
-    broadbandContractLength:
-      sessionStorage.getItem(journey.broadbandContractLength.storageKey) ?? '',
+//     broadbandContractLength:
+//       sessionStorage.getItem(journey.broadbandContractLength.storageKey) ?? '',
 
-    selectedPlan: readJson<StandardPlan | null>('journeySelectedPlan', null),
-  };
-}
+//     selectedPlan: readJson<StandardPlan | null>('journeySelectedPlan', null),
+//   };
+// }
 
 export default function ReviewYourDetails() {
   const router = useRouter();
+  const { journey, setJourney } = useJourneyStore();
+  const { journey: journeyData } = data;
 
-  const { journey } = data;
+  const [isConfirming, setIsConfirming] = useState(false);
 
-  const review = journey.reviewDetails;
+  const review = journeyData.reviewDetails;
 
-  const reviewSnapshot = useSyncExternalStore(
-    subscribeToReviewData,
-    getReviewSnapshot,
-    getReviewServerSnapshot,
-  );
+  const handleConfirm = async () => {
+    if (!journey || isConfirming) {
+      return;
+    }
 
-  const details = useMemo(() => buildReviewState(reviewSnapshot), [reviewSnapshot]);
+    try {
+      setIsConfirming(true);
+
+      const journeyId = journey.id || journey.journeyId || localStorage.getItem('journey-storage');
+
+      if (!journeyId) {
+        throw new Error('Journey ID is required');
+      }
+
+      const customer = {
+        ...journey.customer,
+      };
+
+      const response = await journeyApi.createJourney({
+        uuid: journeyId,
+        customer,
+        lastUrl: getCurrentRelativeUrl(),
+      });
+
+      if (!response?.data) {
+        throw new Error('No data received from API');
+      }
+
+      setJourney(response.data);
+
+      router.push('/payment');
+    } catch (error) {
+      console.error('Failed to confirm journey:', error);
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  // const reviewSnapshot = useSyncExternalStore(
+  //   subscribeToReviewData,
+  //   getReviewSnapshot,
+  //   getReviewServerSnapshot,
+  // );
+
+  // const details = useMemo(() => buildReviewState(reviewSnapshot), [reviewSnapshot]);
+
+  const details = useMemo<ReviewState>(() => {
+    if (!journey) {
+      return EMPTY_STATE;
+    }
+
+    return {
+      service: journey.serviceType,
+
+      personalDetails: {
+        title: journey.customer?.title ?? '',
+        firstName: journey.customer?.firstName ?? '',
+        lastName: journey.customer?.surname ?? '',
+        email: journey.customer?.emailAddress ?? '',
+        mobileNumber: journey.customer?.phoneNumber ?? '',
+        dateOfBirth: journey.customer?.dateOfBirth ?? '',
+      },
+
+      household: {
+        propertyType: journey.customer?.propertyType ?? '',
+        occupants:
+          journey.customer?.occupants !== null && journey.customer?.occupants !== undefined
+            ? String(journey.customer.occupants)
+            : '',
+        bedrooms:
+          journey.customer?.bedrooms !== null && journey.customer?.bedrooms !== undefined
+            ? String(journey.customer.bedrooms)
+            : '',
+      },
+
+      paymentMethod: journey.customer?.paymentPreference ?? '',
+
+      contractDetails: {
+        contractDate: journey.customer?.preferredStartDate ?? '',
+        acknowledged: false,
+      },
+
+      broadbandProvider: '',
+      broadbandSpeed: '',
+      broadbandContractLength: '',
+
+      selectedPlan: null,
+    };
+  }, [journey]);
 
   const [editingSection, setEditingSection] = useState<EditableSection | null>(null);
 
@@ -209,65 +297,57 @@ export default function ReviewYourDetails() {
      LABEL HELPERS
   ========================================================= */
 
-  const propertyLabel = useMemo(() => {
-    const option = journey.household.propertyType.options.find(
-      (item) => item.value === details.household.propertyType,
-    );
+  const propertyLabel = details.household.propertyType ?? '—';
 
-    return option?.label ?? details.household.propertyType ?? '—';
-  }, [details.household.propertyType, journey.household.propertyType.options]);
+  const occupantsLabel = details.household.occupants ?? '—';
 
-  const occupantsLabel = useMemo(() => {
-    return (
-      journey.household.occupants.options.find((item) => item.value === details.household.occupants)
-        ?.label ??
-      details.household.occupants ??
-      '—'
-    );
-  }, [details.household.occupants, journey.household.occupants.options]);
-
-  const bedroomsLabel = useMemo(() => {
-    return (
-      journey.household.bedrooms.options.find((item) => item.value === details.household.bedrooms)
-        ?.label ??
-      details.household.bedrooms ??
-      '—'
-    );
-  }, [details.household.bedrooms, journey.household.bedrooms.options]);
+  const bedroomsLabel = details.household.bedrooms ?? '—';
 
   const providerLabel = useMemo(() => {
-    return (
-      journey.broadbandProvider.providers.find((item) => item.value === details.broadbandProvider)
-        ?.label ??
-      details.broadbandProvider ??
-      '—'
-    );
-  }, [details.broadbandProvider, journey.broadbandProvider.providers]);
+    return details.broadbandProvider ?? '—';
+  }, [details.broadbandProvider]);
 
   const speedLabel = useMemo(() => {
-    return (
-      journey.broadbandSpeed.options.find((item) => item.value === details.broadbandSpeed)?.label ??
-      details.broadbandSpeed ??
-      '—'
-    );
-  }, [details.broadbandSpeed, journey.broadbandSpeed.options]);
+    return details.broadbandSpeed ?? '—';
+  }, [details.broadbandSpeed]);
 
   const contractLengthLabel = useMemo(() => {
-    return (
-      journey.broadbandContractLength.options.find(
-        (item) => item.value === details.broadbandContractLength,
-      )?.label ??
-      details.broadbandContractLength ??
-      '—'
-    );
-  }, [details.broadbandContractLength, journey.broadbandContractLength.options]);
+    return details.broadbandContractLength ?? '—';
+  }, [details.broadbandContractLength]);
 
-  const handleEditSaved = () => {
+  const handleEditSaved = (updatedData: ReviewState) => {
+    if (!journey) {
+      return;
+    }
+
+    const updatedJourney = {
+      ...journey,
+
+      customer: {
+        ...journey.customer,
+
+        title: updatedData.personalDetails.title ?? '',
+        firstName: updatedData.personalDetails.firstName ?? '',
+        surname: updatedData.personalDetails.lastName ?? '',
+        emailAddress: updatedData.personalDetails.email ?? '',
+        phoneNumber: updatedData.personalDetails.mobileNumber ?? '',
+        dateOfBirth: updatedData.personalDetails.dateOfBirth ?? '',
+
+        propertyType: updatedData.household.propertyType ?? '',
+        occupants:
+          updatedData.household.occupants !== '' ? Number(updatedData.household.occupants) : 0,
+        bedrooms:
+          updatedData.household.bedrooms !== '' ? Number(updatedData.household.bedrooms) : 0,
+
+        paymentPreference: updatedData.paymentMethod ?? '',
+
+        preferredStartDate: updatedData.contractDetails.contractDate ?? '',
+      },
+    };
+
+    setJourney(updatedJourney);
+
     setEditingSection(null);
-  };
-
-  const handleConfirm = () => {
-    router.push('/payment');
   };
 
   return (
@@ -426,67 +506,67 @@ export default function ReviewYourDetails() {
               {/* =================================================
                   ENERGY
               ================================================== */}
-              {details.service === 'energy' && (
-                <>
-                  <ReviewSection
-                    title={review.sections.household.title}
-                    icon={<Home />}
-                    onEdit={() => setEditingSection('household')}
-                  >
-                    <div
-                      className="
+              {/* {details.service === 'energy' && ( */}
+              <>
+                <ReviewSection
+                  title={review.sections.household.title}
+                  icon={<Home />}
+                  onEdit={() => setEditingSection('household')}
+                >
+                  <div
+                    className="
                         grid
                         grid-cols-1
                         gap-2
 
                         sm:grid-cols-3
                       "
-                    >
-                      <ReviewField
-                        label="House type"
-                        value={propertyLabel}
-                      />
-
-                      <ReviewField
-                        label="House size"
-                        value={occupantsLabel}
-                      />
-
-                      <ReviewField
-                        label="No. of bedrooms"
-                        value={bedroomsLabel}
-                      />
-                    </div>
-                  </ReviewSection>
-
-                  <ReviewSection
-                    title={review.sections.paymentMethod.title}
-                    icon={<CreditCard />}
-                    onEdit={() => setEditingSection('paymentMethod')}
                   >
                     <ReviewField
-                      label="Payment method"
-                      value={details.paymentMethod}
+                      label="House type"
+                      value={capitalize(propertyLabel)}
                     />
-                  </ReviewSection>
 
-                  {/* ===============================================
+                    <ReviewField
+                      label="House size"
+                      value={occupantsLabel}
+                    />
+
+                    <ReviewField
+                      label="No. of bedrooms"
+                      value={bedroomsLabel}
+                    />
+                  </div>
+                </ReviewSection>
+
+                <ReviewSection
+                  title={review.sections.paymentMethod.title}
+                  icon={<CreditCard />}
+                  onEdit={() => setEditingSection('paymentMethod')}
+                >
+                  <ReviewField
+                    label="Payment method"
+                    value={capitalize(details.paymentMethod)}
+                  />
+                </ReviewSection>
+
+                {/* ===============================================
                       CONTRACT DATES
                   ================================================ */}
-                  <ReviewSection
-                    title={review.sections.contractDates.title}
-                    icon={<CalendarDays />}
-                    onEdit={() => setEditingSection('contractDates')}
-                  >
-                    <ReviewField
-                      label="Contract start date"
-                      value={details.contractDetails.contractDate}
-                    />
+                <ReviewSection
+                  title={review.sections.contractDates.title}
+                  icon={<CalendarDays />}
+                  onEdit={() => setEditingSection('contractDates')}
+                >
+                  <ReviewField
+                    label="Contract start date"
+                    value={details.contractDetails.contractDate}
+                  />
 
-                    <ContractInformation />
-                  </ReviewSection>
-                </>
-              )}
+                  <ContractInformation />
+                </ReviewSection>
+              </>
+              {/* )} */}
 
               {/* =================================================
                   BROADBAND
@@ -516,8 +596,8 @@ export default function ReviewYourDetails() {
                   </ReviewSection>
 
                   {/* ===============================================
-                      CONTRACT LENGTH
-                  ================================================ */}
+                        CONTRACT LENGTH
+                    ================================================ */}
                   <ReviewSection
                     title={review.sections.contractLength.title}
                     icon={<CalendarDays />}
@@ -543,6 +623,7 @@ export default function ReviewYourDetails() {
               <SummaryCard
                 plan={details.selectedPlan}
                 onConfirm={handleConfirm}
+                isConfirming={isConfirming}
               />
             </aside>
           </div>
@@ -1114,7 +1195,15 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
    SUMMARY
 ========================================================= */
 
-function SummaryCard({ plan, onConfirm }: { plan: StandardPlan | null; onConfirm: () => void }) {
+function SummaryCard({
+  plan,
+  onConfirm,
+  isConfirming,
+}: {
+  plan: StandardPlan | null;
+  onConfirm: () => void;
+  isConfirming: boolean;
+}) {
   const { summary } = data.journey.reviewDetails;
 
   return (
@@ -1267,6 +1356,7 @@ function SummaryCard({ plan, onConfirm }: { plan: StandardPlan | null; onConfirm
         <button
           type="button"
           onClick={onConfirm}
+          disabled={isConfirming}
           className="
             mt-3
 
@@ -1292,10 +1382,13 @@ function SummaryCard({ plan, onConfirm }: { plan: StandardPlan | null; onConfirm
 
             hover:bg-[#00796D]
 
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+
             md:text-[14px]
           "
         >
-          {summary.confirmButton} →
+          {isConfirming ? 'Confirming...' : `${summary.confirmButton} →`}
         </button>
 
         {/* =================================================

@@ -12,6 +12,54 @@ type UpdateConsumptionModalProps = {
   onSubmit: (values: ConsumptionFormValues) => void;
 };
 
+export type GasConsumptionPayload =
+  | {
+      method: 'mprn';
+      mprn: string;
+    }
+  | {
+      method: 'usage';
+      usageKwh: number;
+      usagePeriod: 'monthly' | 'yearly';
+    }
+  | {
+      method: 'estimateBand';
+      estimateBand: string;
+    };
+
+export type UpdateConsumptionPayload = {
+  uuid: string;
+  consumption: {
+    gas: GasConsumptionPayload;
+  };
+};
+
+export function buildGasConsumptionPayload(
+  uuid: string,
+  values: ConsumptionFormValues,
+): UpdateConsumptionPayload {
+  const gas: GasConsumptionPayload = values.knowsMprn
+    ? {
+        method: 'mprn',
+        mprn: values.mprn,
+      }
+    : values.knowsUsage
+      ? {
+          method: 'usage',
+          usageKwh: Number(values.gasUsage),
+          usagePeriod: values.usagePeriod,
+        }
+      : {
+          method: 'estimateBand',
+          estimateBand: values.usageEstimate,
+        };
+
+  return {
+    uuid,
+    consumption: { gas },
+  };
+}
+
 export type ConsumptionFormValues =
   | {
       knowsMprn: true;

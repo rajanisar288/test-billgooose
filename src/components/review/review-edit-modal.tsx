@@ -22,7 +22,7 @@ type ReviewEditModalProps = {
   service: 'energy' | 'broadband';
   currentData: ReviewState;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (updatedData: ReviewState) => void;
 };
 
 function getInitialFormData(
@@ -102,7 +102,7 @@ type ReviewEditModalContentProps = {
   service: 'energy' | 'broadband';
   currentData: ReviewState;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (updatedData: ReviewState) => void;
 };
 
 function ReviewEditModalContent({
@@ -127,73 +127,57 @@ function ReviewEditModalContent({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const updatedData: ReviewState = {
+      ...currentData,
+    };
+
     switch (section) {
       case 'personalDetails':
-        sessionStorage.setItem('journeyPersonalDetails', JSON.stringify(formData));
-
+        updatedData.personalDetails = {
+          ...currentData.personalDetails,
+          title: formData.title ?? '',
+          firstName: formData.firstName ?? '',
+          lastName: formData.lastName ?? '',
+          email: formData.email ?? '',
+          mobileNumber: formData.mobileNumber ?? '',
+          dateOfBirth: formData.dateOfBirth ?? '',
+        };
         break;
 
       case 'household':
-        sessionStorage.setItem(journey.household.storageKey, JSON.stringify(formData));
-
+        updatedData.household = {
+          ...currentData.household,
+          propertyType: formData.propertyType ?? '',
+          occupants: formData.occupants ?? '',
+          bedrooms: formData.bedrooms ?? '',
+        };
         break;
 
       case 'paymentMethod':
-        sessionStorage.setItem(journey.paymentMethod.storageKey, formData.paymentMethod ?? '');
-
+        updatedData.paymentMethod = formData.paymentMethod ?? '';
         break;
 
       case 'contractDates':
-        sessionStorage.setItem(
-          journey.contractDetails.storageKey,
-          JSON.stringify({
-            ...currentData.contractDetails,
-
-            contractDate: formData.contractDate ?? '',
-          }),
-        );
-
+        updatedData.contractDetails = {
+          ...currentData.contractDetails,
+          contractDate: formData.contractDate ?? '',
+        };
         break;
 
       case 'provider':
-        sessionStorage.setItem(
-          journey.broadbandProvider.storageKey,
-          JSON.stringify({
-            provider: formData.provider ?? '',
-          }),
-        );
-
+        updatedData.broadbandProvider = formData.provider ?? '';
         break;
 
       case 'broadbandSpeed':
-        sessionStorage.setItem(
-          journey.broadbandSpeed.storageKey,
-          JSON.stringify({
-            broadbandSpeed: formData.broadbandSpeed ?? '',
-          }),
-        );
-
+        updatedData.broadbandSpeed = formData.broadbandSpeed ?? '';
         break;
 
       case 'contractLength':
-        sessionStorage.setItem(
-          journey.broadbandContractLength.storageKey,
-          formData.contractLength ?? '',
-        );
-
+        updatedData.broadbandContractLength = formData.contractLength ?? '';
         break;
     }
 
-    /*
-     * sessionStorage does not fire a storage event
-     * in the same browser tab.
-     *
-     * Emit our own event so ReviewYourDetails
-     * immediately reads the updated values.
-     */
-    window.dispatchEvent(new Event('journey-review-updated'));
-
-    onSaved();
+    onSaved(updatedData);
   };
 
   return (

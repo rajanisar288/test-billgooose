@@ -6,10 +6,12 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
 
 export default function UsageFooter() {
   const router = useRouter();
   const { footer } = data.currentUsage;
+  const { journey } = useJourneyStore();
 
   return (
     <footer
@@ -122,7 +124,7 @@ export default function UsageFooter() {
 
           {/* Compare */}
           <Link
-            href="/result"
+            href={`/result?service=${journey?.serviceType || ''}`}
             className="
               ml-auto
               inline-flex h-11
@@ -288,7 +290,7 @@ export default function UsageFooter() {
 
         {/* Compare */}
         <Link
-          href="/result"
+          href={`/result?service=${journey?.serviceType || ''}`}
           className="
             ml-3
             inline-flex h-12

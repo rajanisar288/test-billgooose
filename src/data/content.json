@@ -835,33 +835,33 @@
         "serviceType": {
           "label": "Services",
           "placeholder": "Select your services",
-          "defaultValue": "dual-fuel",
+          "defaultValue": "dualFuel",
           "options": [
             {
-              "id": "dual-fuel",
+              "id": "dualFuel",
               "label": "Gas & Electricity (Dual Fuel)",
-              "value": "dual-fuel"
+              "value": "dualFuel"
             },
             {
-              "id": "electricity-only",
+              "id": "electricityOnly",
               "label": "Electricity only",
-              "value": "electricity-only"
+              "value": "electricityOnly"
             }
           ]
         },
         "paymentMethod": {
           "label": "Select how you'd like to pay",
-          "defaultValue": "prepayment",
+          "defaultValue": "prePayment",
           "options": [
             {
-              "id": "monthly-direct-debit",
+              "id": "monthlyDirectDebit",
               "label": "Monthly direct debit",
-              "value": "monthly-direct-debit"
+              "value": "monthlyDirectDebit"
             },
             {
-              "id": "prepayment",
+              "id": "prePayment",
               "label": "Pre Payment",
-              "value": "prepayment"
+              "value": "prePayment"
             }
           ]
         }
@@ -910,25 +910,60 @@
           ]
         },
         "contractStatus": {
-          "label": "Are you still in contract?",
+          "label": "Are you already in the property?",
           "helperText": "Select No if you're not sure",
-          "defaultValue": "yes",
+          "defaultValue": "alreadyMovedIn",
           "options": [
             {
-              "id": "yes",
+              "id": "alreadyMovedIn",
               "label": "Yes",
-              "value": "yes"
+              "value": "alreadyMovedIn"
             },
             {
-              "id": "no",
+              "id": "movingIn",
               "label": "No",
-              "value": "no"
+              "value": "movingIn"
             }
           ]
         }
       },
       "continueButton": {
         "label": "Continue"
+      },
+      "email": {
+        "label": "Email address",
+        "placeholder": "Enter your email",
+        "emptyError": "Please enter your email address",
+        "invalidError": "Please enter a valid email address"
+      },
+      "insurance": {
+        "insuranceType": {
+          "label": "Select your insurance type",
+          "placeholder": "Select",
+          "defaultValue": "life-insurance",
+          "options": [
+            {
+              "id": "life-insurance",
+              "label": "Life Insurance",
+              "value": "life-insurance"
+            },
+            {
+              "id": "home-insurance",
+              "label": "Home Insurance",
+              "value": "home-insurance"
+            },
+            {
+              "id": "vehicle-insurance",
+              "label": "Vehicle Insurance",
+              "value": "vehicle-insurance"
+            },
+            {
+              "id": "health-insurance",
+              "label": "Health Insurance",
+              "value": "health-insurance"
+            }
+          ]
+        }
       }
     }
   },
@@ -1278,7 +1313,7 @@
         "description": "Include all residents, even kids, to match your allowance to actual use.",
         "icon": "/images/occupants-icon.png",
         "iconAlt": "",
-        "defaultValue": "4-6",
+        "defaultValue": "3",
         "options": [
           {
             "id": "2-to-3",
@@ -1302,7 +1337,7 @@
         "description": "Used to estimate the household’s base energy allowance.",
         "icon": "/images/rooms-icon.png",
         "iconAlt": "",
-        "defaultValue": "2-3",
+        "defaultValue": "2",
         "options": [
           {
             "id": "1-bedroom",
@@ -1562,7 +1597,7 @@
       "heading": "Your Current Usage",
       "description": "Your details were used to estimate energy usage; please verify if needed.",
       "periods": {
-        "defaultValue": "monthly",
+        "defaultValue": "annual",
         "options": [
           {
             "id": "monthly",
@@ -1935,10 +1970,7 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Price locked for 12 months",
-            "24/7 chat support"
-          ],
+          "features": ["Price locked for 12 months", "24/7 chat support"],
           "priceLabel": "Estimated Price",
           "price": "£284.90",
           "pricePeriod": "/mo",
@@ -1984,10 +2016,7 @@
           "logoAlt": "British Gas",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Longest price lock available",
-            "Exit fee applies before term end"
-          ],
+          "features": ["Longest price lock available", "Exit fee applies before term end"],
           "priceLabel": "Estimated Price",
           "price": "£249.99",
           "pricePeriod": "/mo",
@@ -2049,11 +2078,7 @@
           "logoAlt": "E.ON",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Same price every month",
-            "No usage surprises",
-            "Smart meter included"
-          ],
+          "features": ["Same price every month", "No usage surprises", "Smart meter included"],
           "priceLabel": "Estimated Price",
           "price": "£353.30",
           "pricePeriod": "/mo",
@@ -2071,10 +2096,7 @@
           "logoAlt": "SSE Energy Solutions",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -2092,10 +2114,7 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -2113,10 +2132,7 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -2136,10 +2152,7 @@
           "logoAlt": "Vodafone",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "New Vodafone customers only",
-            "No setup cost"
-          ],
+          "features": ["New Vodafone customers only", "No setup cost"],
           "priceLabel": "Monthly cost",
           "price": "£25.00",
           "pricePeriod": "/mo",
@@ -2160,10 +2173,7 @@
           "logoAlt": "TalkTalk",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "No setup fees",
-            "Smart meter required"
-          ],
+          "features": ["No setup fees", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -2184,10 +2194,7 @@
           "logoAlt": "Virgin Media",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Free installation",
-            "Smart meter not required"
-          ],
+          "features": ["Free installation", "Smart meter not required"],
           "priceLabel": "Monthly cost",
           "price": "£50.00",
           "pricePeriod": "/mo",
@@ -2208,10 +2215,7 @@
           "logoAlt": "EE",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "Free setup and router",
-            "Smart meter required"
-          ],
+          "features": ["Free setup and router", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£26.00",
           "pricePeriod": "/mo",
@@ -2232,10 +2236,7 @@
           "logoAlt": "Sky Broadband",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Free WiFi Hub included",
-            "Smart meter required"
-          ],
+          "features": ["Free WiFi Hub included", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£27.50",
           "pricePeriod": "/mo",
@@ -2256,10 +2257,7 @@
           "logoAlt": "Plusnet",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Price lock guarantee",
-            "Smart meter required"
-          ],
+          "features": ["Price lock guarantee", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£33.33",
           "pricePeriod": "/mo",
@@ -2280,10 +2278,7 @@
           "logoAlt": "BT",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Includes free router",
-            "No smart meter needed"
-          ],
+          "features": ["Includes free router", "No smart meter needed"],
           "priceLabel": "Monthly cost",
           "price": "£35.00",
           "pricePeriod": "/mo",
@@ -2304,10 +2299,7 @@
           "logoAlt": "BeFibre",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Award-winning service",
-            "No smart meter needed"
-          ],
+          "features": ["Award-winning service", "No smart meter needed"],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -2328,10 +2320,7 @@
           "logoAlt": "Brsk",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Renewable energy powered",
-            "Smart meter recommended"
-          ],
+          "features": ["Renewable energy powered", "Smart meter recommended"],
           "priceLabel": "Monthly cost",
           "price": "£32.50",
           "pricePeriod": "/mo",

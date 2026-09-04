@@ -1,41 +1,112 @@
 'use client';
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import { CalendarDays, Check, ChevronDown } from 'lucide-react';
+
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
-import { CustomerDetails } from '@/interfaces/shared';
+import { type CustomerDetails } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
-import { CalendarDays, Check, ChevronDown } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
-export default function PersonalDetailsForm() {
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+(?:\.[A-Za-z]{2,10})+$/;
+const UK_MOBILE_REGEX = /^(?:07\d{9}|\+447\d{9})$/;
+const MIN_AGE = 18;
+
+function calculateAge(dob: string): number | null {
+  const birthDate = new Date(dob);
+  if (Number.isNaN(birthDate.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const hadBirthdayThisYear =
+    today.getMonth() > birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+
+  if (!hadBirthdayThisYear) age -= 1;
+  return age;
+}
+
+export function useUpdateJourney() {
   const { journey, setJourney } = useJourneyStore();
   const { showSuccess, showError } = useToast();
   const router = useRouter();
 
+  const updateJourney = async (
+    payload: Record<string, any>,
+    nextRoute: string,
+    lastUrl: string,
+  ) => {
+    try {
+      const journeyId = journey?.id || journey?.journeyId || localStorage.getItem(storeJourney);
+
+      if (!journeyId) {
+        showError('Journey ID is required');
+        return false;
+      }
+
+      const updatedJourney = await journeyApi.createJourney({
+        uuid: journeyId,
+        ...payload,
+        lastUrl,
+      });
+
+      if (!updatedJourney?.data) {
+        throw new Error('No data received from API');
+      }
+
+      setJourney(updatedJourney.data);
+      showSuccess('🎉 Great!');
+      localStorage.setItem('journey-storage', JSON.stringify(updatedJourney.data));
+      router.push(nextRoute);
+      return true;
+    } catch (error) {
+      console.error('Failed to update journey:', error);
+      showError('Failed to update journey. Please try again.');
+      return false;
+    }
+  };
+
+  return { updateJourney };
+}
+
+export default function PersonalDetailsForm() {
   const { personalDetails } = data.journey;
+  const { journey } = useJourneyStore();
+  console.log('🚀 ~ PersonalDetailsForm ~ journey:', journey);
 
   const { fields, terms } = personalDetails;
 
-  const [title, setTitle] = useState<string>(fields.title.defaultValue);
-
+  const [title, setTitle] = useState<string>(
+    journey?.customer ? journey?.customer?.title : fields.title.defaultValue,
+  );
   const [titleDropdownOpen, setTitleDropdownOpen] = useState(false);
-
-  const [firstName, setFirstName] = useState(fields.firstName.defaultValue);
-
-  const [lastName, setLastName] = useState(fields.lastName.defaultValue);
-
-  const [email, setEmail] = useState('');
-
-  const [mobileNumber, setMobileNumber] = useState('');
-
-  const [dateOfBirth, setDateOfBirth] = useState('');
-
-  const [acceptedTerms, setAcceptedTerms] = useState(terms.acceptedTermsDefault);
-
-  const [marketingConsent, setMarketingConsent] = useState(terms.marketingConsentDefault);
+  const [firstName, setFirstName] = useState(
+    journey?.customer ? journey?.customer?.firstName : fields.firstName.defaultValue,
+  );
+  const [lastName, setLastName] = useState(
+    journey?.customer ? journey?.customer?.surname : fields.lastName.defaultValue,
+  );
+  const [email, setEmail] = useState(journey?.customer ? journey?.customer?.emailAddress : '');
+  const [mobileNumber, setMobileNumber] = useState(
+    journey?.customer ? journey?.customer?.phoneNumber : '',
+  );
+  const [dateOfBirth, setDateOfBirth] = useState(
+    journey?.customer ? journey?.customer?.dateOfBirth : '',
+  );
+  const [acceptedTerms, setAcceptedTerms] = useState(
+    journey?.customer ? journey?.customer?.privacyConsentAccepted : terms.acceptedTermsDefault,
+  );
+  const [marketingConsent, setMarketingConsent] = useState(
+    journey?.customer ? journey?.customer?.marketingConsent : terms.marketingConsentDefault,
+  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { updateJourney } = useUpdateJourney();
 
   const titleDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,57 +127,50 @@ export default function PersonalDetailsForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (
-      !title ||
-      !firstName.trim() ||
-      !lastName.trim() ||
-      !email.trim() ||
-      !mobileNumber.trim() ||
-      !dateOfBirth ||
-      !acceptedTerms
-    ) {
+    const nextErrors: Record<string, string> = {};
+
+    if (!title) nextErrors.title = 'Please select a title.';
+    if (!firstName.trim()) nextErrors.firstName = 'First name is required.';
+    if (!lastName.trim()) nextErrors.lastName = 'Last name is required.';
+
+    if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+
+    if (!mobileNumber.trim() || !UK_MOBILE_REGEX.test(mobileNumber.trim())) {
+      nextErrors.mobileNumber = 'Enter a valid UK mobile number.';
+    }
+
+    const age = dateOfBirth ? calculateAge(dateOfBirth) : null;
+    if (!dateOfBirth || age === null) {
+      nextErrors.dateOfBirth = 'Enter your date of birth.';
+    } else if (age < MIN_AGE) {
+      nextErrors.dateOfBirth = `You must be at least ${MIN_AGE} years old.`;
+    } else if (age > 120) {
+      nextErrors.dateOfBirth = 'Enter a valid date of birth.';
+    }
+
+    if (!acceptedTerms) nextErrors.acceptedTerms = 'You must accept the terms to continue.';
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
     const userDetailObject: CustomerDetails = {
       title: title || null,
-      firstName: firstName || null,
-      surname: lastName || null,
-      emailAddress: email || null,
-      phoneNumber: mobileNumber || null,
+      firstName: firstName.trim() || null,
+      surname: lastName.trim() || null,
+      emailAddress: email.trim() || null,
+      phoneNumber: mobileNumber.trim() || null,
       dateOfBirth: dateOfBirth || null,
       privacyConsentAccepted: acceptedTerms || false,
       marketingConsent: marketingConsent || false,
     };
-    updateJourney(userDetailObject);
+
+    updateJourney({ customer: userDetailObject }, JOURNEY_ROUTES[2], getCurrentRelativeUrl());
   }
-
-  const updateJourney = async (userObject: CustomerDetails) => {
-    try {
-      const journeyId = journey?.id || journey?.journeyId || localStorage.getItem(storeJourney);
-      if (!journeyId) {
-        showError('Journey ID iS required');
-        return;
-      }
-      const updatedJourney = await journeyApi.createJourney({
-        uuid: journeyId,
-        customer: userObject,
-        lastUrl: '/steps/personal-details-form/',
-      });
-
-      if (!updatedJourney?.data) {
-        throw new Error('No data received from API');
-      }
-
-      setJourney(updatedJourney.data);
-      showSuccess('🎉 Great!');
-      router.push(JOURNEY_ROUTES[2]);
-    } catch (error) {
-      console.error(' Failed to update journey:', error);
-    } finally {
-      // setIsLoading(false);
-    }
-  };
 
   return (
     <div className="w-full">
@@ -365,12 +429,42 @@ export default function PersonalDetailsForm() {
             type="email"
             value={email}
             onChange={(event) => {
-              setEmail(event.target.value);
+              let value = event.target.value;
+
+              // Remove spaces and invalid characters
+              value = value.replace(/\s/g, '').replace(/[^a-zA-Z0-9.!#$%&'*+/=?^_`{|}~@-]/g, '');
+
+              // Allow only one @
+              const atIndex = value.indexOf('@');
+
+              if (atIndex !== -1) {
+                const localPart = value.slice(0, atIndex);
+                let domain = value.slice(atIndex + 1);
+
+                // Prevent another @
+                domain = domain.replace(/@/g, '');
+
+                // Restrict TLD to maximum 10 characters
+                const lastDotIndex = domain.lastIndexOf('.');
+
+                if (lastDotIndex !== -1) {
+                  const domainName = domain.slice(0, lastDotIndex + 1);
+                  const tld = domain.slice(lastDotIndex + 1, lastDotIndex + 11);
+
+                  domain = domainName + tld;
+                }
+
+                value = `${localPart}@${domain}`;
+              }
+
+              setEmail(value);
             }}
             placeholder={fields.email.placeholder}
             autoComplete="email"
+            aria-invalid={!!errors.email}
             className={inputClasses}
           />
+          {errors.email && <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.email}</p>}
         </FormField>
 
         <FormField label={fields.mobileNumber.label}>
@@ -378,12 +472,45 @@ export default function PersonalDetailsForm() {
             type="tel"
             value={mobileNumber}
             onChange={(event) => {
-              setMobileNumber(event.target.value);
+              let value = event.target.value;
+
+              // Allow only digits and +
+              value = value.replace(/[^\d+]/g, '');
+
+              // + can only appear at the beginning
+              if (value.includes('+')) {
+                value = `+${value.replace(/\+/g, '')}`;
+              }
+
+              if (value.startsWith('+44')) {
+                // +44 + 10 mobile digits
+                value = `+44${value.slice(3).replace(/\D/g, '').slice(0, 10)}`;
+              } else if (value.startsWith('0')) {
+                // 0 + 10 mobile digits
+                value = `0${value.slice(1).replace(/\D/g, '').slice(0, 10)}`;
+              } else {
+                // Don't allow invalid starting values to grow
+                value = value.replace(/\D/g, '').slice(0, 11);
+              }
+
+              setMobileNumber(value);
+
+              // Clear error once the value becomes valid
+              if (UK_MOBILE_REGEX.test(value)) {
+                setErrors((current) => ({
+                  ...current,
+                  mobileNumber: '',
+                }));
+              }
             }}
             placeholder={fields.mobileNumber.placeholder}
             autoComplete="tel"
+            aria-invalid={!!errors.mobileNumber}
             className={inputClasses}
           />
+          {errors.mobileNumber && (
+            <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.mobileNumber}</p>
+          )}
         </FormField>
 
         <FormField label={fields.dateOfBirth.label}>
@@ -396,6 +523,12 @@ export default function PersonalDetailsForm() {
                 setDateOfBirth(event.target.value);
               }}
               autoComplete="bday"
+              max={
+                new Date(new Date().setFullYear(new Date().getFullYear() - MIN_AGE))
+                  .toISOString()
+                  .split('T')[0]
+              }
+              aria-invalid={!!errors.dateOfBirth}
               className={`
                 ${inputClasses}
 
@@ -456,6 +589,9 @@ export default function PersonalDetailsForm() {
               />
             </button>
           </div>
+          {errors.dateOfBirth && (
+            <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.dateOfBirth}</p>
+          )}
         </FormField>
 
         <div

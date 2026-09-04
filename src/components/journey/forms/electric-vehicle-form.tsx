@@ -2,52 +2,46 @@
 
 import { type FormEvent, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import { Check } from 'lucide-react';
 
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
+
+const EV_VALUE_MAP: Record<string, number> = {
+  yes: 1,
+  no: 2,
+  considering: 3,
+};
 
 export default function ElectricVehicleForm() {
-  const router = useRouter();
+  const { updateJourney } = useUpdateJourney();
+  const { journey } = useJourneyStore();
 
   const { electricVehicle } = data.journey;
 
-  const [selectedOption, setSelectedOption] = useState(electricVehicle.defaultValue);
+  const [selectedOption, setSelectedOption] = useState(
+    journey?.customer ? journey?.customer?.hasEvCar : electricVehicle.defaultValue,
+  );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!selectedOption) {
-      return;
-    }
+    const isValidOption = electricVehicle.options.some((option) => option.value === selectedOption);
+    if (!selectedOption || !isValidOption) return;
+
+    const hasEvCar = EV_VALUE_MAP[selectedOption.toLowerCase()];
 
     sessionStorage.setItem(electricVehicle.storageKey, selectedOption);
-
     const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
 
-    /* =====================================================
-       BUNDLE
+    const targetRoute =
+      journeyFlow === 'bundle'
+        ? `${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`
+        : '/review-your-details?service=energy';
 
-       Bundle stays exactly as before:
-       Step 4 -> Payment Method Type Step 5.
-    ====================================================== */
-
-    if (journeyFlow === 'bundle') {
-      router.push(`${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`);
-
-      return;
-    }
-
-    /* =====================================================
-       NORMAL ENERGY
-
-       Energy now has only 4 forms.
-       Step 4 -> Review Details.
-    ====================================================== */
-
-    router.push('/review-your-details?service=energy');
+    await updateJourney({ customer: { hasEvCar } }, targetRoute, journey?.lastUrl);
   }
 
   return (

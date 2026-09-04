@@ -1,4 +1,4 @@
-import { Journey } from '@/interfaces/shared';
+import { type Journey } from '@/interfaces/shared';
 import { apiClient } from '@/lib/api/client';
 
 export const journeyApi = {
@@ -6,6 +6,14 @@ export const journeyApi = {
 
   // Create a Journey
   createJourney: (payload: Journey) => apiClient.post('/api/v1/journeys', payload),
+
+  // Check Consumption (energy service)
+  prepareConsumption: (journeyId: string, payload: { forceRefresh: boolean }) =>
+    apiClient.post(`/api/v1/journeys/${journeyId}/consumption/prepare`, payload),
+
+  // Get Quote
+  getQuote: (journeyId: string, payload: {}) =>
+    apiClient.post(`/api/v1/journeys/${journeyId}/quotes`, payload),
 
   // update a Journey
   updateJourney: (journeyId: string, payload: {}) =>

@@ -1,7 +1,5 @@
 import Image from 'next/image';
 
-import { ArrowRight } from 'lucide-react';
-
 import data from '@/data/content.json';
 
 export default function ImportantNotice() {
@@ -16,7 +14,7 @@ export default function ImportantNotice() {
         bg-[#FFFCF5]
         p-4
 
-        lg:min-h-[128px]
+        lg:min-h-[100px]
       "
     >
       <div className="flex items-start gap-3">
@@ -59,7 +57,7 @@ export default function ImportantNotice() {
             {importantNotice.description}
           </p>
 
-          <button
+          {/* <button
             type="button"
             className="
               mt-3 inline-flex
@@ -82,7 +80,7 @@ export default function ImportantNotice() {
               className="h-3.5 w-3.5 shrink-0"
               strokeWidth={1.67}
             />
-          </button>
+          </button> */}
         </div>
       </div>
     </section>

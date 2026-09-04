@@ -1,19 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { ArrowRight } from 'lucide-react';
 
+import {
+  formatKwhValue,
+  kwhForPeriod,
+  periodUnitLabel,
+  type UsagePeriod,
+} from '@/components/current-usage/current-usage-header';
 import UpdateConsumptionModal, {
   type ConsumptionFormValues,
 } from '@/components/journey/modal/update-consumption-modal';
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
 
-export default function CurrentUsageSummary() {
+type CurrentUsageSummaryProps = {
+  period: UsagePeriod;
+};
+
+export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps) {
   const { summary } = data.currentUsage;
+  const { journey } = useJourneyStore();
+  const energyUsage = localStorage.getItem('energyUsage')
+    ? JSON.parse(localStorage.getItem('energyUsage') || '{}')
+    : null;
 
   const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
 
@@ -26,6 +41,20 @@ export default function CurrentUsageSummary() {
 
     setIsUpdateConsumptionOpen(false);
   };
+
+  const { amountLabel, periodLabel } = useMemo(() => {
+    const electricityAnnual = energyUsage?.electricity?.isAvailable
+      ? energyUsage.electricity.annualConsumptionKwh
+      : 0;
+    const gasAnnual = energyUsage?.gas?.isAvailable ? energyUsage.gas.annualConsumptionKwh : 0;
+
+    const totalKwh = kwhForPeriod(electricityAnnual, period) + kwhForPeriod(gasAnnual, period);
+
+    return {
+      amountLabel: formatKwhValue(totalKwh),
+      periodLabel: periodUnitLabel(period),
+    };
+  }, [energyUsage, period]);
 
   return (
     <>
@@ -98,7 +127,7 @@ export default function CurrentUsageSummary() {
                 lg:leading-[66.94px]
               "
             >
-              {summary.amount}
+              {amountLabel}
             </span>
 
             <span
@@ -118,7 +147,7 @@ export default function CurrentUsageSummary() {
                 lg:leading-[29.89px]
               "
             >
-              {summary.period}
+              {periodLabel}
             </span>
           </div>
 
@@ -157,7 +186,7 @@ export default function CurrentUsageSummary() {
               md:mt-[10px]
             "
           >
-            <span
+            {/* <span
               className="
                 inline-flex
                 h-5
@@ -180,7 +209,7 @@ export default function CurrentUsageSummary() {
               "
             >
               {summary.totalUsage}
-            </span>
+            </span> */}
 
             <span
               className="
@@ -247,7 +276,7 @@ export default function CurrentUsageSummary() {
           >
             {/* Compare - unchanged */}
             <Link
-              href="/result"
+              href={`/result?service=${journey?.serviceType || ''}`}
               className="
                 inline-flex
                 h-12
@@ -319,12 +348,13 @@ export default function CurrentUsageSummary() {
             </Link>
 
             {/* Update consumption */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsUpdateConsumptionOpen(true);
-              }}
-              className="
+            {energyUsage?.gas?.isAvailable && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsUpdateConsumptionOpen(true);
+                }}
+                className="
                 inline-flex
                 h-12
                 w-full
@@ -372,9 +402,10 @@ export default function CurrentUsageSummary() {
                 lg:font-extrabold
                 lg:leading-[26px]
               "
-            >
-              {summary.updateButton}
-            </button>
+              >
+                {summary.updateButton}
+              </button>
+            )}
           </div>
         </div>
 

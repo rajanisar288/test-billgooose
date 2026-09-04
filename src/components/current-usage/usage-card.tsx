@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
+import { formatKwhValue, kwhForPeriod } from '@/components/current-usage/current-usage-header';
 import UpdateConsumptionModal, {
   type ConsumptionFormValues,
 } from '@/components/journey/modal/update-consumption-modal';
@@ -11,13 +12,20 @@ import UpdateConsumptionModal, {
 type UsageCardProps = {
   title: string;
   address: string;
-  usage: string;
   unit: string;
+
+  /**
+   * Price is not currently returned by the API. Kept as a prop so the
+   * caller/content.json shape doesn't need to change, but it is not
+   * rendered right now - see the commented-out block below.
+   */
   price: string;
+
   buttonLabel: string;
   icon: string;
   iconAlt: string;
   borderColor: string;
+  period: UsagePeriod;
 
   /**
    * Keeps the existing behavior for buttons such as
@@ -29,19 +37,31 @@ type UsageCardProps = {
 export default function UsageCard({
   title,
   address,
-  usage,
   unit,
-  price,
   buttonLabel,
   icon,
   iconAlt,
+  period,
   onButtonClick,
 }: UsageCardProps) {
   const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
+  const energyUsage = localStorage.getItem('energyUsage')
+    ? JSON.parse(localStorage.getItem('energyUsage') || '{}')
+    : null;
 
   const isGas = title.toLowerCase().includes('gas');
 
   const isUpdateConsumptionButton = buttonLabel.toLowerCase().includes('update');
+
+  // Pick the matching fuel out of the energyUsage response cached in
+  // localStorage, and derive the figure for the selected Monthly/Annual
+  // period. This card only ever renders when the parent has confirmed
+  // this fuel is available, so there's no static fallback here.
+  const displayedUsage = useMemo(() => {
+    const fuel = isGas ? energyUsage?.gas : energyUsage?.electricity;
+
+    return formatKwhValue(kwhForPeriod(fuel?.annualConsumptionKwh, period));
+  }, [energyUsage, isGas, period]);
 
   const cardBackground = isGas
     ? `
@@ -138,7 +158,7 @@ export default function UsageCard({
         "
       >
         {/* Header */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <Image
             src={icon}
             alt={iconAlt}
@@ -172,7 +192,7 @@ export default function UsageCard({
               {title}
             </h2>
 
-            <p
+            {/* <p
               className="
                 mt-1.5
                 truncate
@@ -189,7 +209,7 @@ export default function UsageCard({
               "
             >
               {address}
-            </p>
+            </p> */}
           </div>
         </div>
 
@@ -220,7 +240,7 @@ export default function UsageCard({
                 lg:leading-[38px]
               "
             >
-              {usage}
+              {displayedUsage}
             </span>
 
             <span
@@ -239,24 +259,29 @@ export default function UsageCard({
             </span>
           </div>
 
-          <span
-            className="
-              shrink-0
+          {/*
+            Price is not currently returned by the API - hidden until
+            pricing data is wired up.
 
-              font-red-hat-display
-              text-[20px]
-              font-medium
-              leading-[30px]
-              text-[#667085]
+            <span
+              className="
+                shrink-0
 
-              sm:text-[20px]
+                font-red-hat-display
+                text-[20px]
+                font-medium
+                leading-[30px]
+                text-[#667085]
 
-              lg:text-[20px]
-              lg:leading-[30px]
-            "
-          >
-            {price}
-          </span>
+                sm:text-[20px]
+
+                lg:text-[20px]
+                lg:leading-[30px]
+              "
+            >
+              {price}
+            </span>
+          */}
         </div>
 
         {/* Button */}

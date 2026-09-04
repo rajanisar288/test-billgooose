@@ -1,17 +1,79 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
 import { ChevronDown } from 'lucide-react';
 
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
 
 export default function PreferencesPanel() {
   const { preferences } = data.currentUsage;
+  const { journey } = useJourneyStore();
 
   const [isOpen, setIsOpen] = useState(false);
+
+  const preferenceItems = useMemo(() => {
+    if (!journey) return [];
+
+    const customer = journey.customer;
+    const address = journey.address;
+
+    const serviceLabel =
+      journey.serviceType === 'energy'
+        ? customer?.energySupplyType === 'dualFuel'
+          ? 'Gas & Electricity (Dual Fuel)'
+          : customer?.energySupplyType === 'electricityOnly'
+            ? 'Electricity'
+            : customer?.energySupplyType === 'gasOnly'
+              ? 'Gas'
+              : 'Energy'
+        : journey.serviceType;
+
+    const houseType = customer?.propertyType
+      ? `${capitalize(customer.propertyType)}${
+          customer?.bedrooms != null ? ` · Bedrooms: ${customer.bedrooms}` : ''
+        }`
+      : '';
+
+    const contractDate = customer?.preferredStartDate
+      ? formatDate(customer.preferredStartDate)
+      : '';
+
+    return preferences.items.map((item) => {
+      switch (item.id) {
+        case 'address':
+          return {
+            ...item,
+            description: address?.fullAddress ?? '',
+          };
+
+        case 'service':
+          return {
+            ...item,
+            description: serviceLabel,
+          };
+
+        case 'house-type':
+          return {
+            ...item,
+            description: houseType,
+          };
+
+        case 'contract-date':
+          return {
+            ...item,
+            title: contractDate,
+            description: 'Estimated Contract Starting',
+          };
+
+        default:
+          return item;
+      }
+    });
+  }, [journey, preferences.items]);
 
   return (
     <aside
@@ -25,7 +87,6 @@ export default function PreferencesPanel() {
         xl:min-h-[696px]
       "
     >
-      {/* Preferences heading / mobile dropdown trigger */}
       <button
         type="button"
         onClick={() => {
@@ -75,7 +136,6 @@ export default function PreferencesPanel() {
           {preferences.heading}
         </h2>
 
-        {/* Mobile dropdown arrow */}
         <ChevronDown
           aria-hidden="true"
           strokeWidth={2}
@@ -94,7 +154,6 @@ export default function PreferencesPanel() {
         />
       </button>
 
-      {/* Mobile dropdown content */}
       <div
         className={`
           grid
@@ -108,7 +167,7 @@ export default function PreferencesPanel() {
       >
         <div className="overflow-hidden">
           <div className="space-y-3 p-3 sm:p-4">
-            {preferences.items.map((preference) => (
+            {preferenceItems.map((preference) => (
               <PreferenceItem
                 key={preference.id}
                 title={preference.title}
@@ -235,7 +294,7 @@ function PreferenceItem({
           focus-visible:ring-[#D5F2EE]
         "
       >
-        <Image
+        {/* <Image
           src={editIcon}
           alt={editIconAlt}
           width={15}
@@ -248,8 +307,26 @@ function PreferenceItem({
             shrink-0
             object-contain
           "
-        />
+        /> */}
       </button>
     </div>
   );
+}
+
+export function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 }

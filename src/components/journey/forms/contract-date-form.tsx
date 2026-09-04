@@ -3,12 +3,14 @@
 import { type FormEvent, type ReactNode, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
 import { CalendarDays, Check } from 'lucide-react';
 
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 type JourneyService = 'energy' | 'broadband';
 
@@ -53,10 +55,10 @@ function subscribeToJourneyService(callback: () => void) {
 }
 
 export default function ContractDateForm() {
-  const router = useRouter();
+  const { journey } = useJourneyStore();
+  const { updateJourney } = useUpdateJourney();
 
   const { contractDetails, broadbandProvider } = data.journey;
-
   const { fields, information, warning, acknowledgement } = contractDetails;
 
   const service = useSyncExternalStore(
@@ -68,16 +70,25 @@ export default function ContractDateForm() {
   /*
    * ENERGY
    */
-  const [contractDate, setContractDate] = useState('');
+  const [contractDate, setContractDate] = useState(
+    journey?.customer ? journey?.customer?.preferredStartDate : '',
+  );
 
-  const [acknowledged, setAcknowledged] = useState(acknowledgement.defaultValue);
+  const [acknowledged, setAcknowledged] = useState(
+    journey?.customer
+      ? journey?.customer?.supplierDataSharingConsentAccepted
+      : acknowledgement.defaultValue,
+  );
 
+  const [contractDateError, setContractDateError] = useState('');
   /*
    * BROADBAND
    */
-  const [selectedProvider, setSelectedProvider] = useState(broadbandProvider.defaultValue);
+  const [selectedProvider, setSelectedProvider] = useState(
+    journey?.customer ? journey?.customer?.provider : broadbandProvider.defaultValue,
+  );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     /*
@@ -88,14 +99,11 @@ export default function ContractDateForm() {
         return;
       }
 
-      sessionStorage.setItem(
-        broadbandProvider.storageKey,
-        JSON.stringify({
-          provider: selectedProvider,
-        }),
+      await updateJourney(
+        { customer: selectedProvider },
+        JOURNEY_ROUTES[3],
+        getCurrentRelativeUrl(),
       );
-
-      router.push(JOURNEY_ROUTES[3]);
 
       return;
     }
@@ -103,18 +111,33 @@ export default function ContractDateForm() {
     /*
      * ENERGY
      */
-    if (!contractDate || !acknowledged) {
+    const parsedContractDate = new Date(contractDate);
+    const isValidContractDate =
+      !!contractDate &&
+      !Number.isNaN(parsedContractDate.getTime()) &&
+      parsedContractDate >= new Date(new Date().toDateString());
+
+    if (!isValidContractDate) {
+      setContractDateError('Enter a contract start date that is today or later.');
       return;
     }
 
+    if (!acknowledged) {
+      return;
+    }
+
+    setContractDateError('');
+
     const contractDetailsData = {
-      contractDate,
-      acknowledged,
+      preferredStartDate: contractDate,
+      supplierDataSharingConsentAccepted: acknowledged,
     };
 
-    sessionStorage.setItem(contractDetails.storageKey, JSON.stringify(contractDetailsData));
-
-    router.push(JOURNEY_ROUTES[3]);
+    await updateJourney(
+      { customer: contractDetailsData },
+      JOURNEY_ROUTES[3],
+      getCurrentRelativeUrl(),
+    );
   }
 
   /*
@@ -185,8 +208,11 @@ export default function ContractDateForm() {
               value={contractDate}
               onChange={(event) => {
                 setContractDate(event.target.value);
+                setContractDateError('');
               }}
               autoComplete="off"
+              min={new Date().toISOString().split('T')[0]}
+              aria-invalid={!!contractDateError}
               className={`
                 ${inputClasses}
 
@@ -252,6 +278,9 @@ export default function ContractDateForm() {
               />
             </button>
           </div>
+          {contractDateError && (
+            <p className="mt-1.5 text-[12px] text-[#D92D20]">{contractDateError}</p>
+          )}
         </FormField>
 
         <div className="space-y-3 lg:space-y-4">

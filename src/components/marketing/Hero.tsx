@@ -29,12 +29,15 @@ export default function Hero() {
   function handleServiceSelect(service: ServiceType) {
     setSelectedService(service);
 
-    if (service === 'bundle-bills') {
-      router.push('/compare?service=energy&flow=bundle');
+    // if (service === 'bundle-bills') {
+    //   router.push('/compare?service=energy&flow=bundle');
+    //   return;
+    // }
+    if (['energy', 'insurance', 'bundle-bills']?.includes(service)) {
+      router.push(`/compare?service=${service}`);
       return;
     }
-
-    router.push(`/compare?service=${service}`);
+    router.push(`/result?service=${service}`);
   }
 
   return (
