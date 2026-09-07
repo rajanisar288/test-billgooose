@@ -8,6 +8,7 @@ import { CalendarDays, Check } from 'lucide-react';
 
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
@@ -88,6 +89,19 @@ export default function ContractDateForm() {
     journey?.customer ? journey?.customer?.provider : broadbandProvider.defaultValue,
   );
 
+  const parsedContractDate = new Date(contractDate);
+  const isValidContractDate =
+    !!contractDate &&
+    !Number.isNaN(parsedContractDate.getTime()) &&
+    parsedContractDate >= new Date(new Date().toDateString());
+
+  useJourneyStepStatus(
+    'journey-step-form-2',
+    service === 'broadband'
+      ? Boolean(selectedProvider)
+      : isValidContractDate && Boolean(acknowledged),
+  );
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -111,12 +125,6 @@ export default function ContractDateForm() {
     /*
      * ENERGY
      */
-    const parsedContractDate = new Date(contractDate);
-    const isValidContractDate =
-      !!contractDate &&
-      !Number.isNaN(parsedContractDate.getTime()) &&
-      parsedContractDate >= new Date(new Date().toDateString());
-
     if (!isValidContractDate) {
       setContractDateError('Enter a contract start date that is today or later.');
       return;

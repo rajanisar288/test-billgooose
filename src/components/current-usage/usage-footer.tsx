@@ -2,10 +2,9 @@
 
 import { useMemo } from 'react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Loader2 } from 'lucide-react';
 
 import {
   formatKwhValue,
@@ -13,15 +12,25 @@ import {
   periodUnitLabel,
 } from '@/components/current-usage/current-usage-header';
 import data from '@/data/content.json';
-import { useJourneyStore } from '@/store/journeyStore';
 
-export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }) {
+type UsageFooterProps = {
+  period: 'monthly' | 'annual';
+  energyUsage: {
+    gas?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+    electricity?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+  } | null;
+  onCompare: () => void;
+  isComparing: boolean;
+};
+
+export default function UsageFooter({
+  period,
+  energyUsage,
+  onCompare,
+  isComparing,
+}: UsageFooterProps) {
   const router = useRouter();
   const { footer } = data.currentUsage;
-  const { journey } = useJourneyStore();
-  const energyUsage = localStorage.getItem('energyUsage')
-    ? JSON.parse(localStorage.getItem('energyUsage') || '{}')
-    : null;
 
   const { amountLabel, periodLabel } = useMemo(() => {
     const electricityAnnual = energyUsage?.electricity?.isAvailable
@@ -147,8 +156,11 @@ export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }
           </button>
 
           {/* Compare */}
-          <Link
-            href={`/result?service=${journey?.serviceType || ''}`}
+          <button
+            type="button"
+            onClick={onCompare}
+            disabled={isComparing}
+            aria-busy={isComparing}
             className="
               ml-auto
               inline-flex h-11
@@ -177,6 +189,9 @@ export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }
 
               hover:bg-[#00796D]
 
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+
               focus-visible:outline-none
               focus-visible:ring-4
               focus-visible:ring-[#B7E6DF]
@@ -186,16 +201,20 @@ export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }
           >
             {footer.compareButton}
 
-            <ArrowRight
-              aria-hidden="true"
-              className="
-                h-4
-                w-4
-                shrink-0
-              "
-              strokeWidth={2}
-            />
-          </Link>
+            {isComparing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowRight
+                aria-hidden="true"
+                className="
+                  h-4
+                  w-4
+                  shrink-0
+                "
+                strokeWidth={2}
+              />
+            )}
+          </button>
         </div>
       </div>
 
@@ -313,8 +332,11 @@ export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }
         </div>
 
         {/* Compare */}
-        <Link
-          href={`/result?service=${journey?.serviceType || ''}`}
+        <button
+          type="button"
+          onClick={onCompare}
+          disabled={isComparing}
+          aria-busy={isComparing}
           className="
             ml-3
             inline-flex h-12
@@ -344,6 +366,9 @@ export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }
 
             hover:bg-[#00796D]
 
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+
             focus-visible:outline-none
             focus-visible:ring-4
             focus-visible:ring-[#B7E6DF]
@@ -357,19 +382,23 @@ export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }
         >
           {footer.compareButton}
 
-          <ArrowRight
-            aria-hidden="true"
-            className="
-              h-4
-              w-4
-              shrink-0
+          {isComparing ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ArrowRight
+              aria-hidden="true"
+              className="
+                h-4
+                w-4
+                shrink-0
 
-              lg:h-[18px]
-              lg:w-[18px]
-            "
-            strokeWidth={2}
-          />
-        </Link>
+                lg:h-[18px]
+                lg:w-[18px]
+              "
+              strokeWidth={2}
+            />
+          )}
+        </button>
       </div>
     </footer>
   );

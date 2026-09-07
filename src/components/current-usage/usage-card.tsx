@@ -4,9 +4,14 @@ import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
-import { formatKwhValue, kwhForPeriod } from '@/components/current-usage/current-usage-header';
+import {
+  formatKwhValue,
+  kwhForPeriod,
+  type UsagePeriod,
+} from '@/components/current-usage/current-usage-header';
 import UpdateConsumptionModal, {
   type ConsumptionFormValues,
+  type ConsumptionFuel,
 } from '@/components/journey/modal/update-consumption-modal';
 
 type UsageCardProps = {
@@ -26,6 +31,11 @@ type UsageCardProps = {
   iconAlt: string;
   borderColor: string;
   period: UsagePeriod;
+  energyUsage: {
+    gas?: { annualConsumptionKwh?: number };
+    electricity?: { annualConsumptionKwh?: number };
+  } | null;
+  onConsumptionSubmit: (fuel: ConsumptionFuel, values: ConsumptionFormValues) => void;
 
   /**
    * Keeps the existing behavior for buttons such as
@@ -36,18 +46,16 @@ type UsageCardProps = {
 
 export default function UsageCard({
   title,
-  address,
   unit,
   buttonLabel,
   icon,
   iconAlt,
   period,
+  energyUsage,
+  onConsumptionSubmit,
   onButtonClick,
 }: UsageCardProps) {
   const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
-  const energyUsage = localStorage.getItem('energyUsage')
-    ? JSON.parse(localStorage.getItem('energyUsage') || '{}')
-    : null;
 
   const isGas = title.toLowerCase().includes('gas');
 
@@ -129,7 +137,7 @@ export default function UsageCard({
      * We DO NOT navigate anywhere here because the
      * user is already on the Current Usage/Summary page.
      */
-    sessionStorage.setItem('journeyConsumptionDetails', JSON.stringify(values));
+    onConsumptionSubmit(isGas ? 'gas' : 'electricity', values);
 
     setIsUpdateConsumptionOpen(false);
   };
@@ -288,40 +296,43 @@ export default function UsageCard({
         <button
           type="button"
           onClick={handleButtonClick}
+          disabled={!isGas}
           className="
             mt-auto
             inline-flex h-11
-            w-full
-            shrink-0
-            items-center
-            justify-center
+          w-full
+          shrink-0
+          items-center
+          justify-center
 
-            whitespace-nowrap
-            rounded-[100px]
+          whitespace-nowrap
+          rounded-[100px]
 
-            border border-[#D0D5DD]
-            bg-white
+          border border-[#D0D5DD]
+          bg-white
 
-            px-4
+          px-4
 
-            font-red-hat-display
-            text-[16px]
-            font-bold
-            leading-6
-            text-[#0C3354]
+          font-red-hat-display
+          text-[16px]
+          font-bold
+          leading-6
+          text-[#0C3354]
 
-            transition-colors
+          transition-colors
 
-            hover:bg-[#F9FAFB]
+          disabled:opacity-60
 
-            lg:h-[52px]
-            lg:w-[382px]
-            lg:max-w-full
-            lg:px-6
-            lg:text-[16px]
-            lg:font-extrabold
-            lg:leading-[26px]
-          "
+          hover:bg-[#F9FAFB]
+
+          lg:h-[52px]
+          lg:w-[382px]
+          lg:max-w-full
+          lg:px-6
+          lg:text-[16px]
+          lg:font-extrabold
+          lg:leading-[26px]
+        "
         >
           {buttonLabel}
         </button>
@@ -331,6 +342,7 @@ export default function UsageCard({
       <UpdateConsumptionModal
         isOpen={isUpdateConsumptionOpen}
         onClose={handleCloseUpdateConsumption}
+        fuel={isGas ? 'gas' : 'electricity'}
         onSubmit={handleConsumptionSubmit}
       />
     </>

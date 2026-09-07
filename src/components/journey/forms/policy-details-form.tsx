@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { Check, ChevronDown } from 'lucide-react';
 
+import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 
 export default function PolicyDetailsForm() {
@@ -24,6 +25,8 @@ export default function PolicyDetailsForm() {
   const [coverStartOpen, setCoverStartOpen] = useState(false);
 
   const coverStartRef = useRef<HTMLDivElement>(null);
+
+  useJourneyStepStatus('journey-step-form-2', Boolean(ownership && coverStart && paymentFrequency));
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {

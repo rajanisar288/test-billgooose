@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 
 export default function HouseDetailsForm() {
@@ -20,6 +21,8 @@ export default function HouseDetailsForm() {
   const [smokeDetectors, setSmokeDetectors] = useState(
     insuranceHouseDetails.smokeDetectors.defaultValue,
   );
+
+  useJourneyStepStatus('journey-step-form-3', Boolean(homeType && houseStyle && smokeDetectors));
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

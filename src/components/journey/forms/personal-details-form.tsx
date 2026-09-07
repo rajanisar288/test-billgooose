@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
 import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
@@ -106,6 +107,21 @@ export default function PersonalDetailsForm() {
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { updateJourney } = useUpdateJourney();
+
+  useJourneyStepStatus(
+    'journey-step-form-1',
+    Boolean(
+      title &&
+      firstName.trim() &&
+      lastName.trim() &&
+      EMAIL_REGEX.test(email.trim()) &&
+      UK_MOBILE_REGEX.test(mobileNumber.trim()) &&
+      dateOfBirth &&
+      (calculateAge(dateOfBirth) ?? 0) >= MIN_AGE &&
+      (calculateAge(dateOfBirth) ?? 0) <= 120 &&
+      acceptedTerms,
+    ),
+  );
 
   const titleDropdownRef = useRef<HTMLDivElement>(null);
 

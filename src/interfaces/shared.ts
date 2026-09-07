@@ -32,7 +32,21 @@ export interface Journey {
   journeyId?: string;
   customer?: CustomerDetails | null;
   serviceType?: string;
+  consumption?: {
+    gas?: GasConsumption;
+    electricity?: ElectricityConsumption;
+  };
 }
+
+export type GasConsumption =
+  | { method: 'mprn'; mprn: string }
+  | { method: 'usage'; usageKwh: number; usagePeriod: 'monthly' | 'yearly' }
+  | { method: 'estimateBand'; estimateBand: string };
+
+export type ElectricityConsumption =
+  | { method: 'mpan'; mpan: string }
+  | { method: 'usage'; usageKwh: number; usagePeriod: 'monthly' | 'yearly' }
+  | { method: 'estimateBand'; estimateBand: string };
 
 //address
 export interface Address {

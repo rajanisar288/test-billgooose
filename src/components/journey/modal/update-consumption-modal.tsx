@@ -9,8 +9,11 @@ import data from '@/data/content.json';
 type UpdateConsumptionModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  fuel?: ConsumptionFuel;
   onSubmit: (values: ConsumptionFormValues) => void;
 };
+
+export type ConsumptionFuel = 'gas' | 'electricity';
 
 export type GasConsumptionPayload =
   | {
@@ -30,67 +33,98 @@ export type GasConsumptionPayload =
 export type UpdateConsumptionPayload = {
   uuid: string;
   consumption: {
-    gas: GasConsumptionPayload;
+    gas?: GasConsumptionPayload;
+    electricity?: ElectricityConsumptionPayload;
   };
 };
+
+export type ElectricityConsumptionPayload =
+  | {
+      method: 'mpan';
+      mpan: string;
+    }
+  | {
+      method: 'usage';
+      usageKwh: number;
+      usagePeriod: 'monthly' | 'yearly';
+    }
+  | {
+      method: 'estimateBand';
+      estimateBand: string;
+    };
+
+export type ConsumptionFormValues =
+  | {
+      knowsMeterNumber: true;
+      meterNumber: string;
+    }
+  | {
+      knowsMeterNumber: false;
+      knowsUsage: true;
+      usage: string;
+      usagePeriod: 'monthly' | 'yearly';
+    }
+  | {
+      knowsMeterNumber: false;
+      knowsUsage: false;
+      usageEstimate: string;
+    };
+
+export function buildConsumptionPayload(
+  uuid: string,
+  fuel: ConsumptionFuel,
+  values: ConsumptionFormValues,
+): UpdateConsumptionPayload {
+  if (fuel === 'gas') {
+    const gas: GasConsumptionPayload = values.knowsMeterNumber
+      ? { method: 'mprn', mprn: values.meterNumber }
+      : values.knowsUsage
+        ? {
+            method: 'usage',
+            usageKwh: Number(values.usage),
+            usagePeriod: values.usagePeriod,
+          }
+        : { method: 'estimateBand', estimateBand: values.usageEstimate };
+
+    return { uuid, consumption: { gas } };
+  }
+
+  const electricity: ElectricityConsumptionPayload = values.knowsMeterNumber
+    ? { method: 'mpan', mpan: values.meterNumber }
+    : values.knowsUsage
+      ? {
+          method: 'usage',
+          usageKwh: Number(values.usage),
+          usagePeriod: values.usagePeriod,
+        }
+      : { method: 'estimateBand', estimateBand: values.usageEstimate };
+
+  return { uuid, consumption: { electricity } };
+}
 
 export function buildGasConsumptionPayload(
   uuid: string,
   values: ConsumptionFormValues,
 ): UpdateConsumptionPayload {
-  const gas: GasConsumptionPayload = values.knowsMprn
-    ? {
-        method: 'mprn',
-        mprn: values.mprn,
-      }
-    : values.knowsUsage
-      ? {
-          method: 'usage',
-          usageKwh: Number(values.gasUsage),
-          usagePeriod: values.usagePeriod,
-        }
-      : {
-          method: 'estimateBand',
-          estimateBand: values.usageEstimate,
-        };
-
-  return {
-    uuid,
-    consumption: { gas },
-  };
+  return buildConsumptionPayload(uuid, 'gas', values);
 }
-
-export type ConsumptionFormValues =
-  | {
-      knowsMprn: true;
-      mprn: string;
-    }
-  | {
-      knowsMprn: false;
-      knowsUsage: true;
-      gasUsage: string;
-      usagePeriod: 'monthly' | 'yearly';
-    }
-  | {
-      knowsMprn: false;
-      knowsUsage: false;
-      usageEstimate: string;
-    };
 
 export default function UpdateConsumptionModal({
   isOpen,
   onClose,
+  fuel = 'gas',
   onSubmit,
 }: UpdateConsumptionModalProps) {
   const modal = data.journey.updateConsumptionModal;
 
   const [knowsMprn, setKnowsMprn] = useState(modal.defaultKnowsMprn);
 
-  const [mprn, setMprn] = useState('');
+  const [meterNumber, setMeterNumber] = useState('');
+  const [meterNumberError, setMeterNumberError] = useState('');
 
   const [knowsUsage, setKnowsUsage] = useState(modal.defaultKnowsUsage);
 
-  const [gasUsage, setGasUsage] = useState('');
+  const [usage, setUsage] = useState('');
 
   const [usagePeriod, setUsagePeriod] = useState<'monthly' | 'yearly'>(
     modal.defaultUsagePeriod as 'monthly' | 'yearly',
@@ -140,27 +174,30 @@ export default function UpdateConsumptionModal({
     event.preventDefault();
 
     if (knowsMprn) {
-      if (!mprn.trim()) {
+      const trimmedMeterNumber = meterNumber.trim();
+
+      if (trimmedMeterNumber.length < 6 || trimmedMeterNumber.length > 20) {
+        setMeterNumberError('Enter a meter number between 6 and 20 characters.');
         return;
       }
 
       onSubmit({
-        knowsMprn: true,
-        mprn: mprn.trim(),
+        knowsMeterNumber: true,
+        meterNumber: trimmedMeterNumber,
       });
 
       return;
     }
 
     if (knowsUsage) {
-      if (!gasUsage.trim()) {
+      if (!usage.trim() || Number.isNaN(Number(usage)) || Number(usage) <= 0) {
         return;
       }
 
       onSubmit({
-        knowsMprn: false,
+        knowsMeterNumber: false,
         knowsUsage: true,
-        gasUsage: gasUsage.trim(),
+        usage: usage.trim(),
         usagePeriod,
       });
 
@@ -172,7 +209,7 @@ export default function UpdateConsumptionModal({
     }
 
     onSubmit({
-      knowsMprn: false,
+      knowsMeterNumber: false,
       knowsUsage: false,
       usageEstimate,
     });
@@ -269,7 +306,7 @@ export default function UpdateConsumptionModal({
           onSubmit={handleSubmit}
           className="mt-5"
         >
-          {/* MPRN question */}
+          {/* Meter number question */}
           <div
             className="
               flex min-h-[48px] w-full
@@ -300,7 +337,7 @@ export default function UpdateConsumptionModal({
                 lg:text-[14px]
               "
             >
-              {modal.mprnQuestion}
+              {fuel === 'gas' ? modal.mprnQuestion : modal.mprnQuestion.replace('MPRN', 'MPAN')}
             </p>
 
             <YesNoToggle
@@ -314,7 +351,7 @@ export default function UpdateConsumptionModal({
           {knowsMprn ? (
             <div className="mt-4">
               <label
-                htmlFor="mprn-number"
+                htmlFor="meter-number"
                 className="
                   mb-2 block
                   font-inter text-[12px]
@@ -327,22 +364,28 @@ export default function UpdateConsumptionModal({
                   lg:leading-5
                 "
               >
-                {modal.mprnLabel}
+                {fuel === 'gas' ? modal.mprnLabel : modal.mprnLabel.replace('MPRN', 'MPAN')}
               </label>
 
               <input
-                id="mprn-number"
+                id="meter-number"
                 type="text"
                 inputMode="numeric"
-                value={mprn}
+                value={meterNumber}
                 onChange={(event) => {
-                  setMprn(event.target.value);
+                  setMeterNumber(event.target.value);
+                  setMeterNumberError('');
                 }}
+                minLength={6}
+                maxLength={20}
+                aria-invalid={Boolean(meterNumberError)}
+                aria-describedby={meterNumberError ? 'meter-number-error' : undefined}
                 placeholder={modal.mprnPlaceholder}
                 className="
                   h-12 w-full
                   rounded-[100px]
-                  border border-[#D0D5DD]
+                  border
+                  border-[#D0D5DD]
                   bg-white
                   px-4 py-3
 
@@ -370,6 +413,15 @@ export default function UpdateConsumptionModal({
                   lg:leading-6
                 "
               />
+
+              {meterNumberError ? (
+                <p
+                  id="meter-number-error"
+                  className="mt-2 font-inter text-[12px] leading-[18px] text-[#D92D20]"
+                >
+                  {meterNumberError}
+                </p>
+              ) : null}
             </div>
           ) : (
             <div className="mt-5">
@@ -466,12 +518,12 @@ export default function UpdateConsumptionModal({
 
                     <div className="relative">
                       <input
-                        id="gas-usage"
+                        id={`${fuel}-usage`}
                         type="text"
                         inputMode="decimal"
-                        value={gasUsage}
+                        value={usage}
                         onChange={(event) => {
-                          setGasUsage(event.target.value);
+                          setUsage(event.target.value);
                         }}
                         placeholder={modal.gasUsagePlaceholder}
                         className="
@@ -670,6 +722,13 @@ export default function UpdateConsumptionModal({
 
             <button
               type="submit"
+              disabled={
+                knowsMprn
+                  ? meterNumber?.trim()?.length <= 5
+                  : knowsUsage
+                    ? !usage.trim()
+                    : !usageEstimate
+              }
               className="
                 inline-flex h-9 min-w-[72px]
                 items-center justify-center
@@ -689,6 +748,7 @@ export default function UpdateConsumptionModal({
                 focus-visible:outline-none
                 focus-visible:ring-4
                 focus-visible:ring-[#D5F2EE]
+                disabled:opacity-60
 
                 sm:h-10
                 sm:min-w-[80px]

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 
 import GasWarningModal from '../modal/gas-warning-modal';
@@ -90,6 +91,11 @@ export default function PaymentMethodForm() {
 
   const [selectedContractLength, setSelectedContractLength] = useState(
     broadbandContractLength.defaultValue,
+  );
+
+  useJourneyStepStatus(
+    service === 'broadband' ? 'journey-step-form-4' : 'journey-step-form-5',
+    Boolean(service === 'broadband' ? selectedContractLength : selectedPaymentMethod),
   );
 
   /* =========================================================

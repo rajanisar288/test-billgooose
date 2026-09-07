@@ -6,6 +6,7 @@ import { Check } from 'lucide-react';
 
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 import { useJourneyStore } from '@/store/journeyStore';
 
@@ -23,6 +24,13 @@ export default function ElectricVehicleForm() {
 
   const [selectedOption, setSelectedOption] = useState(
     journey?.customer ? journey?.customer?.hasEvCar : electricVehicle.defaultValue,
+  );
+
+  useJourneyStepStatus(
+    'journey-step-form-4',
+    Boolean(
+      selectedOption && electricVehicle.options.some((option) => option.value === selectedOption),
+    ),
   );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

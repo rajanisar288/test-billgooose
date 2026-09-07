@@ -9,6 +9,7 @@ import { Check } from 'lucide-react';
 
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute } from '@/components/journey/journey-routes';
+import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
 import { useJourneyStore } from '@/store/journeyStore';
@@ -99,6 +100,21 @@ export default function HouseholdForm() {
     journey?.customer ? journey?.customer?.broadbandSpeed : broadbandSpeed.defaultValue,
   );
 
+  const isValidHousehold =
+    propertyType.options.some((option) => option.value === selectedPropertyType) &&
+    selectedOccupants >= 0 &&
+    selectedOccupants <= 10 &&
+    selectedBedrooms >= 0 &&
+    selectedBedrooms <= 10;
+  const isValidBroadbandSpeed = broadbandSpeed.options.some(
+    (option) => option.value === selectedBroadbandSpeed,
+  );
+
+  useJourneyStepStatus(
+    'journey-step-form-3',
+    service === 'broadband' ? isValidBroadbandSpeed : isValidHousehold,
+  );
+
   /* =========================================================
      SUBMIT
   ========================================================= */
@@ -114,10 +130,6 @@ export default function HouseholdForm() {
     ======================================================== */
 
     if (service === 'broadband') {
-      const isValidBroadbandSpeed = broadbandSpeed.options.some(
-        (option) => option.value === selectedBroadbandSpeed,
-      );
-
       if (!isValidBroadbandSpeed) {
         return;
       }
@@ -138,13 +150,7 @@ export default function HouseholdForm() {
        → Step 4 Electric Vehicle
     ======================================================== */
 
-    const isValidPropertyType = propertyType.options.some(
-      (option) => option.value === selectedPropertyType,
-    );
-    const isValidOccupants = selectedOccupants >= 0 && selectedOccupants <= 10;
-    const isValidBedrooms = selectedBedrooms >= 0 && selectedBedrooms <= 10;
-
-    if (!isValidPropertyType || !isValidOccupants || !isValidBedrooms) {
+    if (!isValidHousehold) {
       return;
     }
 

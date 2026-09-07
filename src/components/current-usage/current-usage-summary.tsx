@@ -3,9 +3,8 @@
 import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
-import Link from 'next/link';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 
 import {
   formatKwhValue,
@@ -17,18 +16,28 @@ import UpdateConsumptionModal, {
   type ConsumptionFormValues,
 } from '@/components/journey/modal/update-consumption-modal';
 import data from '@/data/content.json';
-import { useJourneyStore } from '@/store/journeyStore';
+
+type EnergyUsage = {
+  gas?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+  electricity?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+};
 
 type CurrentUsageSummaryProps = {
   period: UsagePeriod;
+  energyUsage: EnergyUsage | null;
+  onCompare: () => void;
+  isComparing: boolean;
+  onConsumptionSubmit: (fuel: 'gas' | 'electricity', values: ConsumptionFormValues) => void;
 };
 
-export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps) {
+export default function CurrentUsageSummary({
+  period,
+  energyUsage,
+  onCompare,
+  isComparing,
+  onConsumptionSubmit,
+}: CurrentUsageSummaryProps) {
   const { summary } = data.currentUsage;
-  const { journey } = useJourneyStore();
-  const energyUsage = localStorage.getItem('energyUsage')
-    ? JSON.parse(localStorage.getItem('energyUsage') || '{}')
-    : null;
 
   const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
 
@@ -37,8 +46,7 @@ export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps
   };
 
   const handleConsumptionSubmit = (values: ConsumptionFormValues) => {
-    sessionStorage.setItem('journeyConsumptionDetails', JSON.stringify(values));
-
+    onConsumptionSubmit('gas', values);
     setIsUpdateConsumptionOpen(false);
   };
 
@@ -275,8 +283,11 @@ export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps
             "
           >
             {/* Compare - unchanged */}
-            <Link
-              href={`/result?service=${journey?.serviceType || ''}`}
+            <button
+              type="button"
+              onClick={onCompare}
+              disabled={isComparing}
+              aria-busy={isComparing}
               className="
                 inline-flex
                 h-12
@@ -307,6 +318,9 @@ export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps
 
                 hover:bg-[#00796D]
 
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+
                 focus-visible:outline-none
                 focus-visible:ring-4
                 focus-visible:ring-[#B7E6DF]
@@ -330,9 +344,12 @@ export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps
             >
               {summary.compareButton}
 
-              <ArrowRight
-                aria-hidden="true"
-                className="
+              {isComparing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRight
+                  aria-hidden="true"
+                  className="
                   h-4
                   w-4
                   shrink-0
@@ -343,9 +360,10 @@ export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps
                   lg:h-[18px]
                   lg:w-[18px]
                 "
-                strokeWidth={2}
-              />
-            </Link>
+                  strokeWidth={2}
+                />
+              )}
+            </button>
 
             {/* Update consumption */}
             {energyUsage?.gas?.isAvailable && (
@@ -511,6 +529,7 @@ export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps
       <UpdateConsumptionModal
         isOpen={isUpdateConsumptionOpen}
         onClose={handleCloseUpdateConsumption}
+        fuel="gas"
         onSubmit={handleConsumptionSubmit}
       />
     </>

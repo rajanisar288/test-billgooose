@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useRouter } from 'next/navigation';
 
 import CurrentUsageHeader, {
   type UsagePeriod,
@@ -12,13 +14,45 @@ import PreferencesPanel from '@/components/current-usage/preferences-panel';
 import StatusBar from '@/components/current-usage/status-bar';
 import UsageCard from '@/components/current-usage/usage-card';
 import UsageFooter from '@/components/current-usage/usage-footer';
+import {
+  buildConsumptionPayload,
+  type ConsumptionFormValues,
+  type ConsumptionFuel,
+} from '@/components/journey/modal/update-consumption-modal';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
+
+type EnergyUsage = {
+  gas?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+  electricity?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+  [key: string]: unknown;
+};
 
 export default function CurrentUsagePage() {
   const { currentUsage } = data;
-  const energyUsage = localStorage.getItem('energyUsage')
-    ? JSON.parse(localStorage.getItem('energyUsage') || '{}')
-    : null;
+  const router = useRouter();
+  const { showError, showSuccess } = useToast();
+  const { journey, setJourney } = useJourneyStore();
+  const [energyUsage, setEnergyUsage] = useState<EnergyUsage | null>(null);
+  const [editedConsumption, setEditedConsumption] = useState<
+    Partial<Record<ConsumptionFuel, ConsumptionFormValues>>
+  >({});
+  const [isComparing, setIsComparing] = useState(false);
+
+  useEffect(() => {
+    const storedUsage = localStorage.getItem('energyUsage');
+
+    if (storedUsage) {
+      try {
+        setEnergyUsage(JSON.parse(storedUsage) as EnergyUsage);
+      } catch {
+        setEnergyUsage(null);
+      }
+    }
+  }, []);
 
   // Shared between the Monthly/Annual toggle in the header and every
   // component that renders a usage figure (summary + the two usage cards).
@@ -35,6 +69,97 @@ export default function CurrentUsagePage() {
 
     return fuel?.isAvailable === true;
   });
+
+  const handleConsumptionSubmit = (fuel: ConsumptionFuel, values: ConsumptionFormValues) => {
+    setEditedConsumption((current) => ({ ...current, [fuel]: values }));
+
+    if (values.knowsMeterNumber || !values.knowsUsage) {
+      return;
+    }
+
+    const annualConsumptionKwh = Number(values.usage) * (values.usagePeriod === 'monthly' ? 12 : 1);
+
+    setEnergyUsage((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const currentFuel = current[fuel] as Record<string, unknown> | undefined;
+
+      return {
+        ...current,
+        [fuel]: {
+          ...currentFuel,
+          annualConsumptionKwh,
+        },
+      };
+    });
+  };
+
+  const handleCompare = async () => {
+    if (isComparing) {
+      return;
+    }
+
+    const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
+
+    if (!journeyId) {
+      showError('Journey ID is required. Please try again.');
+      return;
+    }
+
+    setIsComparing(true);
+
+    try {
+      const consumption = Object.entries(editedConsumption).reduce<Record<string, unknown>>(
+        (current, [fuel, values]) => {
+          if (values) {
+            Object.assign(
+              current,
+              buildConsumptionPayload(journeyId, fuel as ConsumptionFuel, values).consumption,
+            );
+          }
+
+          return current;
+        },
+        {},
+      );
+      const journeyPayload = { ...(journey || {}) };
+
+      delete journeyPayload.consumption;
+
+      const updatedJourney = await journeyApi.createJourney({
+        ...journeyPayload,
+        journeyId,
+        uuid: journeyId,
+        lastUrl: getCurrentRelativeUrl(),
+        ...(Object.keys(consumption).length > 0 ? { consumption } : {}),
+      });
+
+      if (updatedJourney?.data) {
+        setJourney(updatedJourney.data);
+        showSuccess('Consumption details updated successfully.');
+      } else {
+        showError('We could not update your consumption details. Please try again.');
+        return;
+      }
+
+      localStorage.setItem('energyUsage', JSON.stringify(energyUsage || {}));
+      router.push(`/result?service=${journey?.serviceType || 'energy'}`);
+    } catch (error) {
+      const backendMessage =
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof error.message === 'string'
+          ? error.message
+          : 'We could not update your consumption details. Please try again.';
+
+      showError(backendMessage);
+    } finally {
+      setIsComparing(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#F8F9FA] pb-[94px]">
@@ -68,7 +193,13 @@ export default function CurrentUsagePage() {
           "
         >
           <div className="min-w-0">
-            <CurrentUsageSummary period={period} />
+            <CurrentUsageSummary
+              period={period}
+              energyUsage={energyUsage}
+              onCompare={handleCompare}
+              isComparing={isComparing}
+              onConsumptionSubmit={handleConsumptionSubmit}
+            />
 
             <div
               className="
@@ -92,6 +223,8 @@ export default function CurrentUsagePage() {
                   icon={card.icon}
                   iconAlt={card.iconAlt}
                   borderColor={card.borderColor}
+                  energyUsage={energyUsage}
+                  onConsumptionSubmit={handleConsumptionSubmit}
                 />
               ))}
             </div>
@@ -105,7 +238,12 @@ export default function CurrentUsagePage() {
         </div>
       </div>
 
-      <UsageFooter period={period} />
+      <UsageFooter
+        period={period}
+        energyUsage={energyUsage}
+        onCompare={handleCompare}
+        isComparing={isComparing}
+      />
     </main>
   );
 }
