@@ -21,7 +21,6 @@ type CompareService = 'energy' | 'broadband';
 export default function CompareFlow() {
   const { compareFlow } = data;
   const { journey, setJourney } = useJourneyStore();
-  console.log('🚀 ~ CompareFlow ~ journey:', journey);
   const { showSuccess, showError } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
