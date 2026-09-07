@@ -124,7 +124,11 @@ function subscribeToLocationSearch(callback: () => void) {
     HEADER
   ========================================================= */
 
-export default function Header() {
+type HeaderProps = {
+  variant?: 'default' | 'dark';
+};
+
+export default function Header({ variant = 'default' }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -177,9 +181,11 @@ export default function Header() {
   const userEmail = signedInUser?.email ?? '';
 
   /*
-   * Only My Info uses the dark navbar.
+   * My Info and explicit dark variant use the dark navbar.
    */
   const isMyInfoPage = pathname === '/my-info' || pathname.startsWith('/my-info/');
+
+  const isDarkHeader = variant === 'dark' || isMyInfoPage;
 
   /*
    * Compare-flow journey icon.
@@ -362,7 +368,7 @@ export default function Header() {
           z-50
           w-full
 
-          ${isMyInfoPage ? 'bg-[#0B2B43]' : 'bg-white'}
+          ${isDarkHeader ? 'bg-[#0B2B43]' : 'bg-white'}
         `}
     >
       <div className="mx-auto w-full max-w-[1440px]">
@@ -396,7 +402,7 @@ export default function Header() {
               "
             >
               <Image
-                src={isMyInfoPage ? '/images/logo-white.png' : header.logo.src}
+                src={isDarkHeader ? '/images/logo-white.png' : header.logo.src}
                 alt={header.logo.alt}
                 width={266}
                 height={82}
@@ -496,7 +502,7 @@ export default function Header() {
                   shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
                   ${
-                    isMyInfoPage
+                    isDarkHeader
                       ? `
                         border-white/10
                         bg-white/10
@@ -509,7 +515,7 @@ export default function Header() {
                 `}
             >
               {header.navigation.map((item) => {
-                const navigationText = isMyInfoPage ? 'text-white' : 'text-[#355E87]';
+                const navigationText = isDarkHeader ? 'text-white' : 'text-[#355E87]';
 
                 if (item.hasDropdown) {
                   return (
@@ -547,7 +553,7 @@ export default function Header() {
                               ${navigationText}
 
                               ${
-                                isMyInfoPage
+                                isDarkHeader
                                   ? 'hover:bg-white/10'
                                   : 'hover:bg-white hover:text-[#00897B]'
                               }
@@ -574,56 +580,293 @@ export default function Header() {
                         <div
                           role="menu"
                           className="
-                                absolute
-                                right-0
-                                top-[calc(100%+10px)]
-                                z-[100]
+                            absolute
+                            right-0
+                            top-[calc(100%+16px)]
+                            z-[100]
 
-                                w-[220px]
+                            h-[480px]
+                            w-[324px]
 
-                                overflow-hidden
+                            overflow-hidden
 
-                                rounded-[12px]
+                            rounded-[16px]
+                            border-t-2
+                            border-[#EAECF0]
 
-                                border
-                                border-[#EAECF0]
+                            bg-white
 
-                                bg-white
+                            pb-[14px]
+                            pl-[6px]
+                            pr-[6px]
+                            pt-[6px]
 
-                                p-2
-
-                                shadow-[0px_12px_30px_rgba(16,24,40,0.16)]
-                              "
+                            shadow-[0px_11px_24px_0px_rgba(38,38,38,0.11),0px_44px_44px_0px_rgba(38,38,38,0.10),0px_98px_59px_0px_rgba(38,38,38,0.06),0px_175px_70px_0px_rgba(38,38,38,0.02),0px_273px_77px_0px_rgba(38,38,38,0)]
+                          "
                         >
-                          {header.compareMenu.map((menuItem) => (
-                            <Link
-                              key={menuItem.id}
-                              href={menuItem.href}
-                              role="menuitem"
-                              onClick={closeMenus}
-                              className="
-                                      block
+                          <div className="flex h-full flex-col">
+                            {/* =========================================
+                                AVAILABLE SERVICES
+                            ========================================== */}
+                            <div className="flex flex-col gap-[2px]">
+                              {header.compareMenu
+                                .filter(
+                                  (menuItem) =>
+                                    menuItem.label === 'Energy' ||
+                                    menuItem.label === 'Broadband' ||
+                                    menuItem.label === 'Mobile' ||
+                                    menuItem.label === 'Insurance',
+                                )
+                                .map((menuItem) => {
+                                  const isEnergyItem = menuItem.href === '/compare?service=energy';
+
+                                  const isBroadbandItem =
+                                    menuItem.href === '/compare?service=broadband';
+
+                                  const isInsuranceItem =
+                                    menuItem.href === '/compare?service=insurance';
+
+                                  const isMobileItem = menuItem.href === '/result?service=mobile';
+
+                                  const isActiveItem =
+                                    (pathname === '/compare' &&
+                                      ((compareService === 'energy' &&
+                                        compareFlow !== 'bundle' &&
+                                        isEnergyItem) ||
+                                        (compareService === 'broadband' && isBroadbandItem) ||
+                                        (compareService === 'insurance' && isInsuranceItem))) ||
+                                    (pathname === '/result' &&
+                                      compareService === 'mobile' &&
+                                      isMobileItem);
+
+                                  return (
+                                    <Link
+                                      key={menuItem.id}
+                                      href={menuItem.href}
+                                      role="menuitem"
+                                      onClick={closeMenus}
+                                      className={`
+                                        group
+
+                                        flex
+                                        h-[86px]
+                                        w-[312px]
+                                        items-center
+                                        justify-between
+
+                                        rounded-[12px]
+
+                                        p-2
+
+                                        transition-colors
+
+                                        ${
+                                          isActiveItem
+                                            ? `
+                                              bg-[linear-gradient(0deg,rgba(0,137,123,0.05),rgba(0,137,123,0.05)),linear-gradient(0deg,rgba(255,255,255,0.95),rgba(255,255,255,0.95))]
+                                            `
+                                            : `
+                                              bg-white
+                                              hover:bg-[#F9FAFB]
+                                            `
+                                        }
+                                      `}
+                                    >
+                                      <div className="flex min-w-0 items-center gap-3">
+                                        <div
+                                          className="
+                                            flex
+                                            h-[70px]
+                                            w-[70px]
+                                            shrink-0
+                                            items-center
+                                            justify-center
+
+                                            overflow-hidden
+
+                                            rounded-[12px]
+
+                                            border-[0.5px]
+                                            border-[#EAECF0]
+
+                                            bg-white
+
+                                            shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+                                          "
+                                        >
+                                          <Image
+                                            src={menuItem.icon}
+                                            alt={menuItem.iconAlt}
+                                            width={52}
+                                            height={52}
+                                            className="
+                                              h-[52px]
+                                              w-[52px]
+                                              object-contain
+                                            "
+                                          />
+                                        </div>
+
+                                        <div className="min-w-0">
+                                          <p
+                                            className="
+                                              font-red-hat-display
+                                              text-[16px]
+                                              font-[645]
+                                              leading-[18px]
+                                              tracking-[0]
+
+                                              text-black
+                                            "
+                                          >
+                                            {menuItem.label}
+                                          </p>
+
+                                          {'description' in menuItem && menuItem.description && (
+                                            <p
+                                              className="
+                                                  mt-1
+                                                  max-w-[180px]
+
+                                                  font-inter
+                                                  text-[13px]
+                                                  font-normal
+                                                  leading-[13px]
+                                                  tracking-[0]
+
+                                                  text-[#667085]
+                                                "
+                                            >
+                                              {menuItem.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <span
+                                        aria-hidden="true"
+                                        className="
+                                          shrink-0
+
+                                          font-inter
+                                          text-[18px]
+                                          font-normal
+                                          leading-none
+
+                                          text-[#98A2B3]
+
+                                          transition-colors
+
+                                          group-hover:text-[#00897B]
+                                        "
+                                      >
+                                        ›
+                                      </span>
+                                    </Link>
+                                  );
+                                })}
+                            </div>
+
+                            {/* =========================================
+                                COMING SOON
+                            ========================================== */}
+                            <div className="mt-auto">
+                              <div className="relative mb-[10px] flex items-center justify-center">
+                                <span
+                                  aria-hidden="true"
+                                  className="
+                                    absolute
+                                    left-0
+                                    right-0
+                                    top-1/2
+
+                                    border-t
+                                    border-dashed
+                                    border-[#EAECF0]
+                                  "
+                                />
+
+                                <span
+                                  className="
+                                    relative
+                                    z-10
+
+                                    rounded-full
+                                    border
+                                    border-[#D1E9FF]
+
+                                    bg-[#EFF8FF]
+
+                                    px-2
+                                    py-[2px]
+
+                                    font-inter
+                                    text-[9px]
+                                    font-medium
+                                    leading-[12px]
+
+                                    text-[#1570EF]
+                                  "
+                                >
+                                  Coming Soon
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                {data.compare.comingSoonItems.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="
+                                      flex
+                                      h-[70px]
+                                      w-[144px]
+                                      items-center
+                                      justify-center
+                                      gap-2
 
                                       rounded-[8px]
 
+                                      border
+                                      border-[#EAECF0]
+                                      border-t-[#F2F4F7]
+
+                                      bg-white
+
                                       px-3
-                                      py-2.5
 
-                                      font-inter
-                                      text-[13px]
-                                      font-medium
-
-                                      text-[#344054]
-
-                                      transition-colors
-
-                                      hover:bg-[#F9FAFB]
-                                      hover:text-[#00897B]
+                                      shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
                                     "
-                            >
-                              {menuItem.label}
-                            </Link>
-                          ))}
+                                  >
+                                    <Image
+                                      src={item.icon}
+                                      alt={item.title}
+                                      width={38}
+                                      height={38}
+                                      className="
+                                        h-[38px]
+                                        w-[38px]
+                                        shrink-0
+                                        object-contain
+                                      "
+                                    />
+
+                                    <span
+                                      className="
+                                        font-red-hat-display
+                                        text-[11px]
+                                        font-[645]
+                                        leading-[14px]
+
+                                        text-[#101828]
+                                      "
+                                    >
+                                      {item.title}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -654,7 +897,7 @@ export default function Header() {
                           ${navigationText}
 
                           ${
-                            isMyInfoPage
+                            isDarkHeader
                               ? 'hover:bg-white/10'
                               : 'hover:bg-white hover:text-[#00897B]'
                           }
@@ -694,7 +937,7 @@ export default function Header() {
                       shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
 
                       ${
-                        isMyInfoPage
+                        isDarkHeader
                           ? `
                             border-white/30
                             bg-transparent
@@ -723,7 +966,7 @@ export default function Header() {
                         transition-colors
 
                         ${
-                          isMyInfoPage
+                          isDarkHeader
                             ? 'text-white hover:text-[#8CCAC3]'
                             : 'text-[#0D3B66] hover:text-[#00897B]'
                         }
@@ -796,38 +1039,50 @@ export default function Header() {
                 href="/sign-in"
                 aria-label="Sign In"
                 onClick={handleSignInClick}
-                className="
-                    inline-flex
-                    h-[50px]
+                className={`
+                  inline-flex
+                  h-[50px]
 
-                    items-center
-                    gap-2.5
+                  items-center
+                  gap-2.5
 
-                    rounded-full
+                  rounded-full
 
-                    border
-                    border-[#EAECF0]
+                  border
 
-                    bg-[#F9FAFB]
+                  py-[6px]
+                  pl-5
+                  pr-[6px]
 
-                    py-[6px]
-                    pl-5
-                    pr-[6px]
+                  font-red-hat-display
+                  text-[15px]
+                  font-bold
+                  leading-6
 
-                    font-red-hat-display
-                    text-[15px]
-                    font-bold
-                    leading-6
+                  shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
 
-                    text-[#355E87]
+                  transition-colors
 
-                    shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
+                  ${
+                    isDarkHeader
+                      ? `
+                        border-[#0D3B66]
+                        bg-[#0D3B66]
+                        text-white
 
-                    transition-colors
+                        hover:bg-[#102F4A]
+                        hover:text-white
+                      `
+                      : `
+                        border-[#EAECF0]
+                        bg-[#F9FAFB]
+                        text-[#355E87]
 
-                    hover:bg-white
-                    hover:text-[#00897B]
-                  "
+                        hover:bg-white
+                        hover:text-[#00897B]
+                      `
+                  }
+                `}
               >
                 <span>Sign In</span>
 
@@ -896,7 +1151,7 @@ export default function Header() {
                   min-[390px]:pr-[6px]
 
                   ${
-                    isMyInfoPage
+                    isDarkHeader
                       ? `
                         border-white/30
                         bg-transparent
@@ -929,7 +1184,7 @@ export default function Header() {
                     items-center
                     justify-center
 
-                    ${isMyInfoPage ? 'text-white' : 'text-[#0D3B66]'}
+                    ${isDarkHeader ? 'text-white' : 'text-[#0D3B66]'}
                   `}
               >
                 {!isSignedIn && isMobileNavigationOpen ? (
@@ -1095,7 +1350,7 @@ export default function Header() {
                           transition-colors
 
                           ${
-                            isMyInfoPage
+                            isDarkHeader
                               ? 'text-white hover:bg-white/10'
                               : 'text-[#344054] hover:bg-[#F9FAFB]'
                           }
@@ -1216,7 +1471,7 @@ export default function Header() {
                       font-medium
 
                       ${
-                        isMyInfoPage
+                        isDarkHeader
                           ? 'text-white hover:bg-white/10'
                           : 'text-[#344054] hover:bg-[#F9FAFB]'
                       }
