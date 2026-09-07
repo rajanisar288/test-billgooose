@@ -51,7 +51,7 @@ export default function CurrentUsageSummary({ period }: CurrentUsageSummaryProps
     const totalKwh = kwhForPeriod(electricityAnnual, period) + kwhForPeriod(gasAnnual, period);
 
     return {
-      amountLabel: formatKwhValue(totalKwh),
+      amountLabel: formatKwhValue(totalKwh, true),
       periodLabel: periodUnitLabel(period),
     };
   }, [energyUsage, period]);

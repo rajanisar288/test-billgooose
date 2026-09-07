@@ -105,7 +105,7 @@ export default function CurrentUsagePage() {
         </div>
       </div>
 
-      <UsageFooter />
+      <UsageFooter period={period} />
     </main>
   );
 }

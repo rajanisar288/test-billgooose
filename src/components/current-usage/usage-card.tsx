@@ -60,7 +60,7 @@ export default function UsageCard({
   const displayedUsage = useMemo(() => {
     const fuel = isGas ? energyUsage?.gas : energyUsage?.electricity;
 
-    return formatKwhValue(kwhForPeriod(fuel?.annualConsumptionKwh, period));
+    return formatKwhValue(kwhForPeriod(fuel?.annualConsumptionKwh, period), false);
   }, [energyUsage, isGas, period]);
 
   const cardBackground = isGas

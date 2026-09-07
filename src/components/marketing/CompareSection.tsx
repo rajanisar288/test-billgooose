@@ -189,9 +189,11 @@ export default function Compare() {
           "
         >
           {activeItems.map((item) => {
-            const isBundleBills = item.title.toLowerCase().includes('bundle');
+            const compareServices = ['energy', 'insurance', 'bundle-bills', 'broadband'];
 
-            const itemHref = isBundleBills ? '/compare?service=energy&flow=bundle' : item.href;
+            const itemHref = compareServices.includes(item.id)
+              ? `/compare?service=${item.id}`
+              : `/result?service=${item.id}`;
 
             return (
               <article

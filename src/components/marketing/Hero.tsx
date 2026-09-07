@@ -33,7 +33,7 @@ export default function Hero() {
     //   router.push('/compare?service=energy&flow=bundle');
     //   return;
     // }
-    if (['energy', 'insurance', 'bundle-bills']?.includes(service)) {
+    if (['energy', 'insurance', 'bundle-bills', 'broadband']?.includes(service)) {
       router.push(`/compare?service=${service}`);
       return;
     }

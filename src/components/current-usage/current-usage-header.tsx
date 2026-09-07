@@ -14,12 +14,12 @@ const numberFormatter = new Intl.NumberFormat('en-GB', {
   maximumFractionDigits: 0,
 });
 
-export function formatKwhValue(value: number): string {
-  return `${numberFormatter.format(Math.round(value))} kWh`;
+export function formatKwhValue(value: number, displayUnit?: boolean): string {
+  return `${numberFormatter.format(Math.round(value))} ${displayUnit ? 'kWh' : ''}`;
 }
 
 export function formatKwh(value: number): string {
-  return `${formatKwhValue(value)} kWh`;
+  return `${formatKwhValue(value, true)}`;
 }
 
 export function periodUnitLabel(period: UsagePeriod): string {

@@ -78,7 +78,6 @@ export function useUpdateJourney() {
 export default function PersonalDetailsForm() {
   const { personalDetails } = data.journey;
   const { journey } = useJourneyStore();
-  console.log('🚀 ~ PersonalDetailsForm ~ journey:', journey);
 
   const { fields, terms } = personalDetails;
 

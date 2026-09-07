@@ -236,7 +236,7 @@ export default function ResultHeader() {
                             shadow-xl
                           "
                         >
-                          <Link
+                          {/* <Link
                             href={item.href}
                             role="menuitem"
                             onClick={closeMenus}
@@ -258,7 +258,7 @@ export default function ResultHeader() {
                             "
                           >
                             View all comparisons
-                          </Link>
+                          </Link> */}
 
                           {header.compareMenu.map((menuItem) => (
                             <Link
@@ -592,7 +592,7 @@ export default function ResultHeader() {
                             pl-3
                           "
                         >
-                          <Link
+                          {/* <Link
                             href={item.href}
                             onClick={closeMenus}
                             className="
@@ -613,7 +613,7 @@ export default function ResultHeader() {
                             "
                           >
                             View all comparisons
-                          </Link>
+                          </Link> */}
 
                           {header.compareMenu.map((menuItem) => (
                             <Link

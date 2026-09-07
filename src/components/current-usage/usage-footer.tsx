@@ -1,17 +1,41 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 
+import {
+  formatKwhValue,
+  kwhForPeriod,
+  periodUnitLabel,
+} from '@/components/current-usage/current-usage-header';
 import data from '@/data/content.json';
 import { useJourneyStore } from '@/store/journeyStore';
 
-export default function UsageFooter() {
+export default function UsageFooter({ period }: { period: 'monthly' | 'annual' }) {
   const router = useRouter();
   const { footer } = data.currentUsage;
   const { journey } = useJourneyStore();
+  const energyUsage = localStorage.getItem('energyUsage')
+    ? JSON.parse(localStorage.getItem('energyUsage') || '{}')
+    : null;
+
+  const { amountLabel, periodLabel } = useMemo(() => {
+    const electricityAnnual = energyUsage?.electricity?.isAvailable
+      ? energyUsage.electricity.annualConsumptionKwh
+      : 0;
+    const gasAnnual = energyUsage?.gas?.isAvailable ? energyUsage.gas.annualConsumptionKwh : 0;
+
+    const totalKwh = kwhForPeriod(electricityAnnual, period) + kwhForPeriod(gasAnnual, period);
+
+    return {
+      amountLabel: formatKwhValue(totalKwh, true),
+      periodLabel: periodUnitLabel(period),
+    };
+  }, [energyUsage, period]);
 
   return (
     <footer
@@ -67,7 +91,7 @@ export default function UsageFooter() {
               text-[#101828]
             "
           >
-            {footer.estimatedCost}
+            {amountLabel} {periodLabel}
           </p>
         </div>
 
@@ -284,7 +308,7 @@ export default function UsageFooter() {
               lg:leading-6
             "
           >
-            {footer.estimatedCost}
+            {amountLabel} {periodLabel}
           </p>
         </div>
 
