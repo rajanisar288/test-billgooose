@@ -138,7 +138,8 @@ export default function CurrentUsagePage() {
 
       if (updatedJourney?.data) {
         setJourney(updatedJourney.data);
-        showSuccess('Consumption details updated successfully.');
+        Object.keys(consumption).length > 0 &&
+          showSuccess('Consumption details updated successfully.');
       } else {
         showError('We could not update your consumption details. Please try again.');
         return;

@@ -208,21 +208,21 @@ export default function CompareFlow() {
         serviceType: requestedService == 'bundle-bills' ? 'billPackage' : (requestedService ?? ''),
         address: selectedAddress,
         customer: {
-          ...(['billPackage']?.includes(journey?.serviceType) && {
+          ...(['billPackage']?.includes(requestedService) && {
             moveStatus:
               alreadyInProperty === MoveStatus.ALREADY_MOVED_IN
                 ? MoveStatus.ALREADY_MOVED_IN
                 : MoveStatus.MOVING_IN,
           }),
           ...(alreadyInProperty === MoveStatus.MOVING_IN && { moveInDate: moveInDate }),
-          ...(['energy', 'billPackage']?.includes(journey?.serviceType) && {
+          ...(['energy', 'billPackage']?.includes(requestedService) && {
             paymentPreference: paymentMethod,
             energySupplyType: energyServiceType,
           }),
-          ...(['billPackage']?.includes(journey?.serviceType) && {
+          ...(['billPackage']?.includes(requestedService) && {
             renterHomeOwner: renterHomeOwner,
           }),
-          ...(['broadband']?.includes(journey?.serviceType) && {
+          ...(['broadband']?.includes(requestedService) && {
             currentBroadbandProvider: currentProvider,
           }),
         },

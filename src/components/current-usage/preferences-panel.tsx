@@ -42,37 +42,51 @@ export default function PreferencesPanel() {
       ? formatDate(customer.preferredStartDate)
       : '';
 
-    return preferences.items.map((item) => {
-      switch (item.id) {
-        case 'address':
-          return {
-            ...item,
-            description: address?.fullAddress ?? '',
-          };
+    return preferences.items
+      .map((item) => {
+        switch (item.id) {
+          case 'address':
+            return {
+              ...item,
+              description: address?.fullAddress ?? '',
+            };
 
-        case 'service':
-          return {
-            ...item,
-            description: serviceLabel,
-          };
+          case 'service':
+            return {
+              ...item,
+              description: serviceLabel,
+            };
 
-        case 'house-type':
-          return {
-            ...item,
-            description: houseType,
-          };
+          case 'house-type':
+            return {
+              ...item,
+              description: houseType,
+            };
 
-        case 'contract-date':
-          return {
-            ...item,
-            title: contractDate,
-            description: 'Estimated Contract Starting',
-          };
+          case 'contract-date':
+            return {
+              ...item,
+              title: contractDate,
+              description: 'Estimated Contract Starting',
+            };
 
-        default:
-          return item;
-      }
-    });
+          default:
+            return item;
+        }
+      })
+      .filter((item) => {
+        // Don't display house type if there is no house type
+        if (item.id === 'house-type' && !houseType) {
+          return false;
+        }
+
+        // Don't display contract date if there is no contract start date
+        if (item.id === 'contract-date' && !contractDate) {
+          return false;
+        }
+
+        return true;
+      });
   }, [journey, preferences.items]);
 
   return (

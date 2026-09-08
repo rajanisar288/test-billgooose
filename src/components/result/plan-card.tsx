@@ -14,6 +14,7 @@ type PlanCardProps = {
 
   onSelectPlan: (plan: StandardPlan) => void;
   isSelecting?: boolean;
+  showSaving?: boolean;
 };
 
 const STAR_COUNT = 5;
@@ -24,6 +25,7 @@ export default function PlanCard({
   onViewDetails,
   onSelectPlan,
   isSelecting = false,
+  showSaving = true,
 }: PlanCardProps) {
   const { plans } = data.resultPage;
 
@@ -211,8 +213,9 @@ export default function PlanCard({
               </div>
             )}
 
-            <span
-              className="
+            {showSaving && (
+              <span
+                className="
                 mt-1
 
                 inline-flex
@@ -231,9 +234,10 @@ export default function PlanCard({
 
                 text-[#027A48]
               "
-            >
-              {plan.saving}
-            </span>
+              >
+                {plan.saving}
+              </span>
+            )}
           </div>
         </div>
 
@@ -698,8 +702,9 @@ export default function PlanCard({
               xl:gap-5
             "
           >
-            <div
-              className="
+            {showSaving && (
+              <div
+                className="
     flex
     h-[72px]
     w-[72px]
@@ -717,20 +722,21 @@ export default function PlanCard({
 
     bg-[#EAF2F8]
   "
-            >
-              <Image
-                src={plan.logo}
-                alt={plan.logoAlt}
-                width={72}
-                height={72}
-                className="
+              >
+                <Image
+                  src={plan.logo}
+                  alt={plan.logoAlt}
+                  width={72}
+                  height={72}
+                  className="
       h-full
       w-full
 
       object-contain
     "
-              />
-            </div>
+                />
+              </div>
+            )}
 
             <div className="min-w-0 flex-1">
               <h3
@@ -887,8 +893,9 @@ export default function PlanCard({
               gap-5
             "
           >
-            <div
-              className="
+            {!['energy', 'bundle-bills']?.includes(plan.service as string) && (
+              <div
+                className="
                 flex
                 w-[125px]
                 shrink-0
@@ -906,9 +913,9 @@ export default function PlanCard({
                 px-3
                 py-2.5
               "
-            >
-              <p
-                className="
+              >
+                <p
+                  className="
                   font-red-hat-display
 
                   text-[20px]
@@ -917,12 +924,12 @@ export default function PlanCard({
 
                   text-[#12B76A]
                 "
-              >
-                {plan.saving}
-              </p>
+                >
+                  {plan.saving}
+                </p>
 
-              <p
-                className="
+                <p
+                  className="
                   mt-[2px]
 
                   font-red-hat-display
@@ -933,10 +940,11 @@ export default function PlanCard({
 
                   text-[#054F31]
                 "
-              >
-                Annual saving at today&apos;s rates
-              </p>
-            </div>
+                >
+                  Annual saving at today&apos;s rates
+                </p>
+              </div>
+            )}
 
             <div
               className="

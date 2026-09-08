@@ -3,7 +3,7 @@
 import { type ReactNode, useMemo, useState } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import {
   CalendarDays,
@@ -199,6 +199,9 @@ export default function ReviewYourDetails() {
   const { journey, setJourney } = useJourneyStore();
   const { showError } = useToast();
   const { journey: journeyData } = data;
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
 
   const [isConfirming, setIsConfirming] = useState(false);
   const [isPrepaymentComplete, setIsPrepaymentComplete] = useState(false);
@@ -326,7 +329,7 @@ export default function ReviewYourDetails() {
       broadbandSpeed: '',
       broadbandContractLength: '',
 
-      selectedPlan: null,
+      selectedPlan: journey?.cart[0],
     };
   }, [journey]);
 
@@ -501,7 +504,9 @@ export default function ReviewYourDetails() {
               <ReviewSection
                 title={review.sections.personalDetails.title}
                 icon={<UserRound />}
-                onEdit={() => setEditingSection('personalDetails')}
+                onEdit={() =>
+                  router.push(`/steps/personal-details-form?service=${requestedService}`)
+                }
               >
                 <div
                   className="
@@ -554,7 +559,7 @@ export default function ReviewYourDetails() {
                 <ReviewSection
                   title={review.sections.household.title}
                   icon={<Home />}
-                  onEdit={() => setEditingSection('household')}
+                  onEdit={() => router.push(`/steps/household-form`)}
                 >
                   <div
                     className="
@@ -585,7 +590,11 @@ export default function ReviewYourDetails() {
                 <ReviewSection
                   title={review.sections.paymentMethod.title}
                   icon={<CreditCard />}
-                  onEdit={() => setEditingSection('paymentMethod')}
+                  onEdit={() =>
+                    requestedService == 'bundle-bills'
+                      ? router.push(`/steps/payment-details-form?service=${requestedService}`)
+                      : router.push(`/compare?service=${requestedService}`)
+                  }
                 >
                   <ReviewField
                     label="Payment method"
@@ -599,7 +608,7 @@ export default function ReviewYourDetails() {
                 <ReviewSection
                   title={review.sections.contractDates.title}
                   icon={<CalendarDays />}
-                  onEdit={() => setEditingSection('contractDates')}
+                  onEdit={() => router.push(`/steps/contract-date-form`)}
                 >
                   <ReviewField
                     label="Contract start date"
@@ -619,7 +628,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.provider.title}
                     icon={<Wifi />}
-                    onEdit={() => setEditingSection('provider')}
+                    onEdit={() => router.push(`/compare?service=${requestedService}`)}
                   >
                     <ReviewField
                       label="Current broadband provider"
@@ -630,7 +639,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.broadbandSpeed.title}
                     icon={<SlidersHorizontal />}
-                    onEdit={() => setEditingSection('broadbandSpeed')}
+                    onEdit={() => router.push(`/compare?service=${requestedService}`)}
                   >
                     <ReviewField
                       label="Broadband speed"
@@ -644,7 +653,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.contractLength.title}
                     icon={<CalendarDays />}
-                    onEdit={() => setEditingSection('contractLength')}
+                    onEdit={() => router.push(`/compare?service=${requestedService}`)}
                   >
                     <ReviewField
                       label="Preferred contract length"
@@ -664,6 +673,7 @@ export default function ReviewYourDetails() {
               <SelectedPlanCard plan={details.selectedPlan} />
 
               <SummaryCard
+                paymentMethod={humanizeLabel(details.paymentMethod, '—')}
                 plan={details.selectedPlan}
                 onConfirm={handleConfirm}
                 isConfirming={isConfirming}
@@ -1215,7 +1225,7 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
                   text-[#101828]
                 "
               >
-                {plan.price}
+                {plan?.annualPrice ?? plan?.price}
               </p>
 
               <span
@@ -1253,10 +1263,12 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
 ========================================================= */
 
 function SummaryCard({
+  paymentMethod,
   plan,
   onConfirm,
   isConfirming,
 }: {
+  paymentMethod?: string;
   plan: StandardPlan | null;
   onConfirm: () => void;
   isConfirming: boolean;
@@ -1318,11 +1330,11 @@ function SummaryCard({
 
       <div className="p-4">
         <SummaryRow
-          label="Energy (Dual Fuel)"
-          value={plan?.price ?? '—'}
+          label={plan?.provider ?? ''}
+          value={plan?.annualPrice ? plan?.annualPrice : (plan?.price ?? '—')}
         />
 
-        <SummaryRow
+        {/* <SummaryRow
           label="Broadband"
           value="£25.90"
         />
@@ -1335,7 +1347,7 @@ function SummaryCard({
         <SummaryRow
           label="Platform fee"
           value="£1.90"
-        />
+        /> */}
 
         <div
           className="
@@ -1355,7 +1367,7 @@ function SummaryCard({
                 text-[#667085]
               "
             >
-              {summary.totalLabel}
+              {summary.totalLabel} {paymentMethod}
             </p>
 
             <p
@@ -1372,7 +1384,7 @@ function SummaryCard({
             </p>
           </div>
 
-          <div
+          {/* <div
             className="
               rounded-[6px]
 
@@ -1407,7 +1419,7 @@ function SummaryCard({
             >
               {summary.annualSavingLabel}
             </p>
-          </div>
+          </div> */}
         </div>
 
         <button
@@ -1445,7 +1457,11 @@ function SummaryCard({
             md:text-[14px]
           "
         >
-          {isConfirming ? 'Confirming...' : `${summary.confirmButton} →`}
+          {isConfirming
+            ? 'Confirming...'
+            : paymentMethod == 'prepayment'
+              ? `Confirm`
+              : `${summary.confirmButton} →`}
         </button>
 
         {/* =================================================

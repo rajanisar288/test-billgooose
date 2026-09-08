@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
 import type { StandardPlan } from '@/components/result/plan.types';
+import { humanizeLabel } from '@/components/result/result-labels';
+import { useJourneyStore } from '@/store/journeyStore';
 
 /* =========================================================
    TYPES
@@ -156,6 +158,13 @@ export default function FinalThankYou() {
   const maskedSortCode = maskSortCode(paymentDetails.sortCode || '12-34-56');
 
   const maskedAccountNumber = maskAccountNumber(paymentDetails.accountNumber || '12345678');
+
+  const { journey } = useJourneyStore();
+
+  const handleRoute = (route: string) => {
+    localStorage.clear();
+    router.push(route);
+  };
 
   return (
     <main
@@ -393,9 +402,9 @@ export default function FinalThankYou() {
               lg:leading-[25px]
             "
           >
-            Your energy switch to Octopus Energy is confirmed and your
+            Your {journey?.serviceType} switch to {journey?.cart[0]?.provider} is confirmed and your
             <br className="hidden sm:block" />
-            Direct Debit is set up.
+            {humanizeLabel(journey?.customer?.paymentPreference)} is set up.
           </p>
 
           {/* =====================================================
@@ -411,28 +420,27 @@ export default function FinalThankYou() {
               grid-cols-1
               gap-3
 
-              min-[420px]:grid-cols-2
-
               lg:mt-7
               lg:max-w-[495px]
             "
           >
             <ReferenceCard
               label="Application ref"
-              value={CONFIRMATION_DETAILS.applicationReference}
+              value={journey?.journeyId}
             />
 
-            <ReferenceCard
+            {/* <ReferenceCard
               label="DD mandate ref"
               value={CONFIRMATION_DETAILS.mandateReference}
-            />
+            /> */}
           </div>
 
           {/* =====================================================
               DIRECT DEBIT CONFIRMED
           ====================================================== */}
-          <section
-            className="
+          {['monthlyDirectDebit']?.includes(journey?.customer?.paymentPreference) && (
+            <section
+              className="
               mt-8
               w-full
               max-w-[820px]
@@ -453,10 +461,10 @@ export default function FinalThankYou() {
 
               lg:mt-10
             "
-          >
-            {/* Header */}
-            <div
-              className="
+            >
+              {/* Header */}
+              <div
+                className="
                 flex
                 min-h-[54px]
                 items-center
@@ -473,14 +481,14 @@ export default function FinalThankYou() {
                 lg:min-h-[64px]
                 lg:px-6
               "
-            >
-              <Image
-                src="/images/thanks-card-direct.png"
-                alt=""
-                width={24}
-                height={24}
-                aria-hidden="true"
-                className="
+              >
+                <Image
+                  src="/images/thanks-card-direct.png"
+                  alt=""
+                  width={24}
+                  height={24}
+                  aria-hidden="true"
+                  className="
                   h-[18px]
                   w-[18px]
                   shrink-0
@@ -493,10 +501,10 @@ export default function FinalThankYou() {
                   lg:h-6
                   lg:w-6
                 "
-              />
+                />
 
-              <h2
-                className="
+                <h2
+                  className="
                   font-red-hat-display
                   text-[16px]
                   font-[645]
@@ -511,23 +519,23 @@ export default function FinalThankYou() {
                   lg:text-[20px]
                   lg:leading-6
                 "
-              >
-                Direct Debit Confirmed
-              </h2>
-            </div>
+                >
+                  Direct Debit Confirmed
+                </h2>
+              </div>
 
-            {/* Body */}
-            <div
-              className="
+              {/* Body */}
+              <div
+                className="
                 p-4
 
                 sm:p-5
 
                 lg:p-6
               "
-            >
-              <div
-                className="
+              >
+                <div
+                  className="
                   grid
                   grid-cols-1
                   gap-3
@@ -536,51 +544,51 @@ export default function FinalThankYou() {
 
                   lg:gap-3.5
                 "
-              >
-                <ConfirmedField
-                  label="Account holder"
-                  value={accountHolder}
-                />
+                >
+                  <ConfirmedField
+                    label="Account holder"
+                    value={accountHolder}
+                  />
 
-                <ConfirmedField
-                  label="Bank"
-                  value={bankName}
-                />
+                  <ConfirmedField
+                    label="Bank"
+                    value={bankName}
+                  />
 
-                <ConfirmedField
-                  label="Sort code"
-                  value={maskedSortCode}
-                />
+                  <ConfirmedField
+                    label="Sort code"
+                    value={maskedSortCode}
+                  />
 
-                <ConfirmedField
-                  label="Account number"
-                  value={maskedAccountNumber}
-                />
+                  <ConfirmedField
+                    label="Account number"
+                    value={maskedAccountNumber}
+                  />
 
-                <ConfirmedField
-                  label="Monthly amount"
-                  value={monthlyAmount}
-                />
+                  <ConfirmedField
+                    label="Monthly amount"
+                    value={monthlyAmount}
+                  />
 
-                <ConfirmedField
-                  label="First payment"
-                  value={CONFIRMATION_DETAILS.firstPaymentDate}
-                />
+                  {/* <ConfirmedField
+                    label="First payment"
+                    value={CONFIRMATION_DETAILS.firstPaymentDate}
+                  /> */}
 
-                <ConfirmedField
-                  label="Collection day"
-                  value={CONFIRMATION_DETAILS.collectionDay}
-                />
+                  <ConfirmedField
+                    label="Collection day"
+                    value={CONFIRMATION_DETAILS.collectionDay}
+                  />
 
-                <ConfirmedField
-                  label="Mandate ref"
-                  value={CONFIRMATION_DETAILS.mandateReference}
-                />
-              </div>
+                  {/* <ConfirmedField
+                    label="Mandate ref"
+                    value={CONFIRMATION_DETAILS.mandateReference}
+                  /> */}
+                </div>
 
-              {/* Guarantee */}
-              <div
-                className="
+                {/* Guarantee */}
+                <div
+                  className="
                   mt-4
 
                   flex
@@ -610,14 +618,14 @@ export default function FinalThankYou() {
                   lg:rounded-[12px]
                   lg:p-4
                 "
-              >
-                <Image
-                  src="/images/thanks-span-icon.png"
-                  alt=""
-                  width={20}
-                  height={20}
-                  aria-hidden="true"
-                  className="
+                >
+                  <Image
+                    src="/images/thanks-span-icon.png"
+                    alt=""
+                    width={20}
+                    height={20}
+                    aria-hidden="true"
+                    className="
                     mt-[1px]
                     h-4
                     w-4
@@ -632,10 +640,10 @@ export default function FinalThankYou() {
                     lg:h-5
                     lg:w-5
                   "
-                />
+                  />
 
-                <p
-                  className="
+                  <p
+                    className="
                     font-inter
                     text-[11px]
                     font-semibold
@@ -650,12 +658,13 @@ export default function FinalThankYou() {
                     lg:text-[14px]
                     lg:leading-5
                   "
-                >
-                  Protected by the Direct Debit Guarantee. Full refund if any error occurs
-                </p>
+                  >
+                    Protected by the Direct Debit Guarantee. Full refund if any error occurs
+                  </p>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* =====================================================
               WHAT HAPPENS NEXT
@@ -917,6 +926,7 @@ export default function FinalThankYou() {
             {/* Primary */}
             <button
               type="button"
+              onClick={() => handleRoute('/sign-in')}
               className="
                 flex
                 h-[46px]
@@ -979,6 +989,7 @@ export default function FinalThankYou() {
             >
               <button
                 type="button"
+                onClick={() => handleRoute('/')}
                 className="
                   flex
                   h-[44px]
@@ -1019,6 +1030,7 @@ export default function FinalThankYou() {
 
               <button
                 type="button"
+                disabled
                 className="
                   flex
                   h-[44px]
@@ -1034,6 +1046,8 @@ export default function FinalThankYou() {
                   border-[#D0D5DD]
 
                   bg-white
+
+                  disabled:opacity-60
 
                   px-4
 

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
 
 import type { StandardPlan } from '@/components/result/plan.types';
+import { humanizeLabel } from '@/components/result/result-labels';
 import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
@@ -163,7 +164,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
 
     try {
       const journeyResponse = await journeyApi.createJourney({
-        ...journey,
+        // ...journey,
         journeyId,
         uuid: journeyId,
         lastUrl: getCurrentRelativeUrl(),
@@ -1126,10 +1127,10 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                 >
                   <SummaryRow
                     label={providerLabel}
-                    value={energyPrice}
+                    value={selectedPlan?.annualPrice ?? energyPrice}
                   />
 
-                  <SummaryRow
+                  {/* <SummaryRow
                     label="Broadband"
                     value="£25.90"
                   />
@@ -1142,7 +1143,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                   <SummaryRow
                     label="Platform fee"
                     value="£1.90"
-                  />
+                  /> */}
 
                   {/* TOTAL */}
                   <div
@@ -1178,7 +1179,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                           lg:leading-4
                         "
                       >
-                        Your total monthly Direct Debit
+                        Your total {humanizeLabel(journey?.customer?.paymentPreference)}
                       </p>
 
                       <div
@@ -1224,7 +1225,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       </div>
                     </div>
 
-                    <div
+                    {/* <div
                       className="
                         flex
                         min-h-[50px]
@@ -1281,7 +1282,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       >
                         annual saving
                       </span>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* CONFIRM */}

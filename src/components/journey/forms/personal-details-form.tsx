@@ -19,6 +19,24 @@ export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+(?:\.[A-Za-z]{2,10})+$/;
 const UK_MOBILE_REGEX = /^(?:07\d{9}|\+447\d{9})$/;
 const MIN_AGE = 18;
 
+export function normalizeUkMobile(value: string): string {
+  const compact = value.replace(/[\s()-]/g, '');
+
+  if (compact.startsWith('0044')) {
+    return `+${compact.slice(2)}`;
+  }
+
+  if (compact.startsWith('447')) {
+    return `+${compact}`;
+  }
+
+  return compact;
+}
+
+export function isValidUkMobile(value: string): boolean {
+  return UK_MOBILE_REGEX.test(normalizeUkMobile(value));
+}
+
 function calculateAge(dob: string): number | null {
   const birthDate = new Date(dob);
   if (Number.isNaN(birthDate.getTime())) return null;
@@ -112,21 +130,22 @@ export default function PersonalDetailsForm() {
       : terms.marketingConsentDefault,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
-  console.log('🚀 ~ PersonalDetailsForm ~ errors:', errors);
   const { updateJourney } = useUpdateJourney();
 
   useJourneyStepStatus(
     'journey-step-form-1',
     Boolean(
+      // Boolean(
       title &&
       firstName.trim() &&
       lastName.trim() &&
-      EMAIL_REGEX.test(email.trim()) &&
-      UK_MOBILE_REGEX.test(mobileNumber.trim()) &&
+      email.trim() &&
+      isValidUkMobile(mobileNumber.trim()) &&
       dateOfBirth &&
       (calculateAge(dateOfBirth) ?? 0) >= MIN_AGE &&
       (calculateAge(dateOfBirth) ?? 0) <= 120 &&
       acceptedTerms,
+      // ),
     ),
   );
 
@@ -159,7 +178,7 @@ export default function PersonalDetailsForm() {
       nextErrors.email = 'Enter a valid email address.';
     }
 
-    if (!mobileNumber.trim() || !UK_MOBILE_REGEX.test(mobileNumber.trim())) {
+    if (!mobileNumber.trim() || !isValidUkMobile(mobileNumber.trim())) {
       nextErrors.mobileNumber = 'Enter a valid UK mobile number.';
     }
 
@@ -504,21 +523,12 @@ export default function PersonalDetailsForm() {
                 value = `+${value.replace(/\+/g, '')}`;
               }
 
-              if (value.startsWith('+44')) {
-                // +44 + 10 mobile digits
-                value = `+44${value.slice(3).replace(/\D/g, '').slice(0, 10)}`;
-              } else if (value.startsWith('0')) {
-                // 0 + 10 mobile digits
-                value = `0${value.slice(1).replace(/\D/g, '').slice(0, 10)}`;
-              } else {
-                // Don't allow invalid starting values to grow
-                value = value.replace(/\D/g, '').slice(0, 11);
-              }
+              value = value.slice(0, 14);
 
               setMobileNumber(value);
 
               // Clear error once the value becomes valid
-              if (UK_MOBILE_REGEX.test(value)) {
+              if (isValidUkMobile(value)) {
                 setErrors((current) => ({
                   ...current,
                   mobileNumber: '',

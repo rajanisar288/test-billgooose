@@ -213,7 +213,7 @@ export default function ResultPlans({
   const { journey, setJourney } = useJourneyStore();
   const { filters: appliedFilters } = useResultFilters();
   const { showError } = useToast();
-  const [isSelectingPlan, setIsSelectingPlan] = useState(false);
+  const [selectingPlanId, setSelectingPlanId] = useState<string | null>(null);
 
   const { plans, resultsStatus } = data.resultPage;
 
@@ -304,7 +304,7 @@ export default function ResultPlans({
     const isJourneyPlan = service === 'energy' || service === 'bundle-bills';
 
     if (isJourneyPlan) {
-      if (isSelectingPlan) {
+      if (selectingPlanId) {
         return;
       }
 
@@ -315,7 +315,7 @@ export default function ResultPlans({
         return;
       }
 
-      setIsSelectingPlan(true);
+      setSelectingPlanId(plan.id);
 
       try {
         const response = await journeyApi.createJourney({
@@ -340,7 +340,7 @@ export default function ResultPlans({
             ? error.message
             : 'We could not save your selected plan. Please try again.',
         );
-        setIsSelectingPlan(false);
+        setSelectingPlanId(null);
         return;
       }
     }
@@ -581,7 +581,7 @@ export default function ResultPlans({
           plan={plan}
           onViewDetails={handleViewDetails}
           onSelectPlan={handleSelectPlan}
-          isSelecting={isSelectingPlan}
+          isSelecting={selectingPlanId === plan.id}
           service="broadband"
         />
       ));
@@ -605,7 +605,8 @@ export default function ResultPlans({
             plan={plan}
             onViewDetails={handleViewDetails}
             onSelectPlan={handleSelectPlan}
-            isSelecting={isSelectingPlan}
+            isSelecting={selectingPlanId === plan.id}
+            showSaving={!quotePlans}
             service={service === 'bundle-bills' ? 'bundle-bills' : 'energy'}
           />
         );

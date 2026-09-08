@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 export const JOURNEY_STEP_STATUS_EVENT = 'billgoose-journey-step-status-changed';
+export const JOURNEY_STEP_SUBMIT_FAILED_EVENT = 'billgoose-journey-step-submit-failed';
 
 export function useJourneyStepStatus(formId: string, isValid: boolean) {
   useEffect(() => {

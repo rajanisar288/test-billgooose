@@ -870,7 +870,7 @@
         "currentProvider": {
           "label": "Select your current provider",
           "placeholder": "Select",
-          "defaultValue": "",
+          "defaultValue": "bt",
           "options": [
             {
               "id": "bt",
@@ -1487,7 +1487,7 @@
       "summary": {
         "heading": "Summary",
         "estimatedPriceLabel": "ESTIMATED PRICE",
-        "totalLabel": "Your total monthly Direct Debit",
+        "totalLabel": "Your total",
         "annualSavingLabel": "annual saving",
         "confirmButton": "Confirm & Set Up Payment",
         "confirmationNotice": "By continuing, you confirm that all details above are correct and you authorise BillGoose to set up a Direct Debit on your behalf. You have a 14-day right to cancel. Prices are estimates; final amounts confirmed by Octopus Energy before your first payment."
