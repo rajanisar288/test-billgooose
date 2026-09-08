@@ -304,6 +304,76 @@ export default function ReviewYourDetails() {
     setEditingSection(null);
   };
 
+  /*
+   * Energy + Bundle Bills:
+   * Edit takes the user back to the original journey screen
+   * where that information was entered. From there the normal
+   * journey continues forward again.
+   *
+   * Broadband keeps its existing edit modal behavior.
+   */
+  const handleEditSection = (section: EditableSection) => {
+    if (details.service !== 'energy') {
+      setEditingSection(section);
+      return;
+    }
+
+    let journeyFlow = '';
+
+    try {
+      journeyFlow = sessionStorage.getItem('billgooseJourneyFlow') ?? '';
+
+      if (!journeyFlow) {
+        const compareFlow = readJson<{
+          flow?: string;
+        }>('compareFlowDetails', {});
+
+        journeyFlow = compareFlow.flow ?? '';
+      }
+    } catch {
+      journeyFlow = '';
+    }
+
+    const isBundleFlow = journeyFlow === 'bundle';
+
+    switch (section) {
+      case 'personalDetails':
+        router.push(
+          isBundleFlow
+            ? '/steps/personal-details-form?service=energy&flow=bundle'
+            : '/steps/personal-details-form?service=energy',
+        );
+        return;
+
+      case 'contractDates':
+        router.push(
+          isBundleFlow
+            ? '/steps/contract-date-form?service=energy&flow=bundle'
+            : '/steps/contract-date-form?service=energy',
+        );
+        return;
+
+      case 'household':
+        router.push(
+          isBundleFlow
+            ? '/steps/household-form?service=energy&flow=bundle'
+            : '/steps/household-form?service=energy',
+        );
+        return;
+
+      case 'paymentMethod':
+        router.push(
+          isBundleFlow
+            ? '/steps/payment-details-form?service=energy&flow=bundle'
+            : '/compare?service=energy',
+        );
+        return;
+
+      default:
+        setEditingSection(section);
+    }
+  };
+
   const handleConfirm = () => {
     router.push('/payment');
   };
@@ -416,7 +486,7 @@ export default function ReviewYourDetails() {
               <ReviewSection
                 title={review.sections.personalDetails.title}
                 icon={<UserRound />}
-                onEdit={() => setEditingSection('personalDetails')}
+                onEdit={() => handleEditSection('personalDetails')}
               >
                 <div
                   className="
@@ -469,7 +539,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.household.title}
                     icon={<Home />}
-                    onEdit={() => setEditingSection('household')}
+                    onEdit={() => handleEditSection('household')}
                   >
                     <div
                       className="
@@ -500,7 +570,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.paymentMethod.title}
                     icon={<CreditCard />}
-                    onEdit={() => setEditingSection('paymentMethod')}
+                    onEdit={() => handleEditSection('paymentMethod')}
                   >
                     <ReviewField
                       label="Payment method"
@@ -514,7 +584,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.contractDates.title}
                     icon={<CalendarDays />}
-                    onEdit={() => setEditingSection('contractDates')}
+                    onEdit={() => handleEditSection('contractDates')}
                   >
                     <ReviewField
                       label="Contract start date"
@@ -534,7 +604,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.provider.title}
                     icon={<Wifi />}
-                    onEdit={() => setEditingSection('provider')}
+                    onEdit={() => handleEditSection('provider')}
                   >
                     <ReviewField
                       label="Current broadband provider"
@@ -545,7 +615,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.broadbandSpeed.title}
                     icon={<SlidersHorizontal />}
-                    onEdit={() => setEditingSection('broadbandSpeed')}
+                    onEdit={() => handleEditSection('broadbandSpeed')}
                   >
                     <ReviewField
                       label="Broadband speed"
@@ -559,7 +629,7 @@ export default function ReviewYourDetails() {
                   <ReviewSection
                     title={review.sections.contractLength.title}
                     icon={<CalendarDays />}
-                    onEdit={() => setEditingSection('contractLength')}
+                    onEdit={() => handleEditSection('contractLength')}
                   >
                     <ReviewField
                       label="Preferred contract length"
