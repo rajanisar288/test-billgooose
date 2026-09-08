@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
 import { Check, ChevronUp, Minus, Plus } from 'lucide-react';
 
+import { useResultFilters } from '@/components/result/result-filter-context';
 import data from '@/data/content.json';
 
 const FILTER_BANNER_IMAGE = '/images/result-filter-banner.png';
@@ -204,6 +205,7 @@ export default function ResultFilterSidebar({
   mobilePanel = false,
 }: ResultFilterSidebarProps) {
   const searchParams = useSearchParams();
+  const { filters: appliedFilters, setFilters, resetFilters } = useResultFilters();
 
   const isSimOnly = searchParams.get('service') === 'sim-only';
 
@@ -235,6 +237,18 @@ export default function ResultFilterSidebar({
 
   const [selectedSimValues, setSelectedSimValues] = useState<Record<string, string[]>>({});
 
+  useEffect(() => {
+    const syncTimer = window.setTimeout(() => {
+      setSelectedValues((current) => ({ ...current, ...appliedFilters.values }));
+      setOnlyBillGoose(appliedFilters.onlyBillGoose);
+      setIncludeSupplier(appliedFilters.includeSupplier);
+      setSelectedNetworks(appliedFilters.networks);
+      setSelectedSimValues(appliedFilters.simValues);
+    }, 0);
+
+    return () => window.clearTimeout(syncTimer);
+  }, [appliedFilters]);
+
   function toggleNetwork(network: string) {
     setSelectedNetworks((previous) =>
       previous.includes(network)
@@ -265,6 +279,7 @@ export default function ResultFilterSidebar({
     if (isSimOnly) {
       setSelectedNetworks([]);
       setSelectedSimValues({});
+      resetFilters();
 
       return;
     }
@@ -273,22 +288,34 @@ export default function ResultFilterSidebar({
 
     setOnlyBillGoose(false);
     setIncludeSupplier(false);
+    setFilters({
+      values: defaultValues,
+      onlyBillGoose: false,
+      includeSupplier: false,
+      networks: [],
+      simValues: {},
+    });
   };
 
   const handleApply = () => {
     if (isSimOnly) {
-      console.log('Applied SIM-only filters:', {
+      setFilters({
+        values: {},
+        onlyBillGoose: false,
+        includeSupplier: false,
         networks: selectedNetworks,
-        ...selectedSimValues,
+        simValues: selectedSimValues,
       });
 
       return;
     }
 
-    console.log('Applied result filters:', {
-      ...selectedValues,
+    setFilters({
+      values: selectedValues,
       onlyBillGoose,
       includeSupplier,
+      networks: [],
+      simValues: {},
     });
   };
 

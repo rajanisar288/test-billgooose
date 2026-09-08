@@ -10,9 +10,10 @@ import data from '@/data/content.json';
 type ResultsStatusProps = {
   heading?: string;
   description?: string;
+  resultCount?: number;
 };
 
-export default function ResultsStatus({ heading, description }: ResultsStatusProps) {
+export default function ResultsStatus({ heading, description, resultCount }: ResultsStatusProps) {
   const { resultsStatus } = data.resultPage;
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(resultsStatus.planTabs.defaultValue);
@@ -115,7 +116,9 @@ export default function ResultsStatus({ heading, description }: ResultsStatusPro
                 description
               ) : (
                 <>
-                  <strong className="font-normal">{resultsStatus.descriptionStart}</strong>{' '}
+                  <strong className="font-normal">
+                    {resultCount ?? resultsStatus.descriptionStart}
+                  </strong>{' '}
                   {resultsStatus.descriptionRest}
                 </>
               )}

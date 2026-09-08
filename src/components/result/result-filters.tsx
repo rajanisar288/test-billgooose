@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { humanizeLabel } from '@/components/result/result-labels';
 import data from '@/data/content.json';
 
 type CompareService = 'energy' | 'broadband' | 'insurance';
@@ -77,32 +78,6 @@ function subscribeToCompareFlow(callback: () => void) {
 /* =========================================================
    LABEL HELPERS
 ========================================================= */
-
-function getEnergyServiceLabel(value?: string): string {
-  switch (value) {
-    case 'electricity-only':
-      return 'Electricity only';
-
-    case 'dual-fuel':
-      return 'Gas & Electricity (Dual Fuel)';
-
-    default:
-      return value || 'Gas & Electricity (Dual Fuel)';
-  }
-}
-
-function getPaymentMethodLabel(value?: string): string {
-  switch (value) {
-    case 'monthly-direct-debit':
-      return 'Monthly Direct Debit';
-
-    case 'prepayment':
-      return 'Pre Payment';
-
-    default:
-      return value || 'Pre Payment';
-  }
-}
 
 function getProviderLabel(value?: string): string {
   if (!value) {
@@ -806,7 +781,7 @@ export default function ResultFilters() {
             ) : (
               <ResultInformationCard
                 title="Selected service"
-                value={getEnergyServiceLabel(details.serviceType)}
+                value={humanizeLabel(details.serviceType, 'Dual Fuel')}
                 onEdit={handleEdit}
               />
             )}
@@ -827,7 +802,7 @@ export default function ResultFilters() {
             ) : (
               <ResultInformationCard
                 title="Payment method"
-                value={getPaymentMethodLabel(details.paymentMethod)}
+                value={humanizeLabel(details.paymentMethod, 'Pre Payment')}
                 onEdit={handleEdit}
               />
             )}

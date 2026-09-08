@@ -8,7 +8,6 @@ import { ArrowRight, LoaderCircle } from 'lucide-react';
 
 import data from '@/data/content.json';
 
-import { getPreviousJourneyRoute } from './journey-routes';
 import { JOURNEY_STEP_STATUS_EVENT } from './journey-step-status';
 
 type JourneyService = 'energy' | 'broadband';
@@ -66,7 +65,8 @@ export default function JourneyNavigation({
   const { navigation } = data.journey;
 
   const handleBack = () => {
-    router.push(getPreviousJourneyRoute(currentStep, service));
+    // router.push(getPreviousJourneyRoute(currentStep, service));
+    router.back();
   };
 
   const continueLabel =

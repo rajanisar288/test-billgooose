@@ -19,8 +19,9 @@ type JourneyShellProps = {
   children: ReactNode;
 };
 
-export type JourneyService = 'energy' | 'broadband';
-export type JourneyFlow = 'energy' | 'broadband' | 'bundle';
+export type JourneyService =
+  'energy' | 'broadband' | 'bundle-bills' | 'sim-only' | 'insurance' | 'mobile';
+export type JourneyFlow = 'energy' | 'broadband' | 'bundle-bills';
 
 /* =========================================================
    JOURNEY SERVICE
@@ -29,33 +30,39 @@ export type JourneyFlow = 'energy' | 'broadband' | 'bundle';
 function getJourneyServiceSnapshot(): JourneyService {
   try {
     const storedService = sessionStorage.getItem('billgooseJourneyService');
+    const serviceType = localStorage.getItem('journey-storage')
+      ? JSON.parse(localStorage.getItem('journey-storage') as string)?.state?.journey?.serviceType
+      : null;
+    // if (storedService === 'broadband') {
+    //   return 'broadband';
+    // }
 
-    if (storedService === 'broadband') {
-      return 'broadband';
-    }
+    // if (storedService === 'energy') {
+    //   return 'energy';
+    // }
 
-    if (storedService === 'energy') {
-      return 'energy';
-    }
+    // const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
 
-    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
+    // if (!storedCompareFlow) {
+    //   return 'energy';
+    // }
 
-    if (!storedCompareFlow) {
-      return 'energy';
-    }
+    // const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
+    //   service?: string;
+    // };
 
-    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
-      service?: string;
-    };
-
-    return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
+    // return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
+    return serviceType == 'billPackage' ? 'bundle-bills' : serviceType;
   } catch {
     return 'energy';
   }
 }
 
 function getJourneyServiceServerSnapshot(): JourneyService {
-  return 'energy';
+  const serviceType = localStorage.getItem('journey-storage')
+    ? JSON.parse(localStorage.getItem('journey-storage') as string)?.state?.journey?.serviceType
+    : null;
+  return serviceType == 'billPackage' ? 'bundle-bills' : serviceType;
 }
 
 /* =========================================================
@@ -65,46 +72,52 @@ function getJourneyServiceServerSnapshot(): JourneyService {
 function getJourneyFlowSnapshot(): JourneyFlow {
   try {
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+    const serviceType = localStorage.getItem('journey-storage')
+      ? JSON.parse(localStorage.getItem('journey-storage') as string)?.serviceType
+      : null;
 
-    if (storedFlow === 'bundle') {
-      return 'bundle';
-    }
+    // if (storedFlow === 'bundle') {
+    //   return 'bundle';
+    // }
 
-    if (storedFlow === 'broadband') {
-      return 'broadband';
-    }
+    // if (storedFlow === 'broadband') {
+    //   return 'broadband';
+    // }
 
-    if (storedFlow === 'energy') {
-      return 'energy';
-    }
+    // if (storedFlow === 'energy') {
+    //   return 'energy';
+    // }
 
-    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
+    // const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
 
-    if (!storedCompareFlow) {
-      return 'energy';
-    }
+    // if (!storedCompareFlow) {
+    //   return 'energy';
+    // }
 
-    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
-      service?: string;
-      flow?: string;
-    };
+    // const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
+    //   service?: string;
+    //   flow?: string;
+    // };
 
-    if (parsedCompareFlow.flow === 'bundle') {
-      return 'bundle';
-    }
+    // if (parsedCompareFlow.flow === 'bundle') {
+    //   return 'bundle';
+    // }
 
-    if (parsedCompareFlow.service === 'broadband') {
-      return 'broadband';
-    }
+    // if (parsedCompareFlow.service === 'broadband') {
+    //   return 'broadband';
+    // }
 
-    return 'energy';
+    return serviceType == 'billPackage' ? 'bundle-bills' : serviceType;
   } catch {
     return 'energy';
   }
 }
 
 function getJourneyFlowServerSnapshot(): JourneyFlow {
-  return 'energy';
+  const serviceType = localStorage.getItem('journey-storage')
+    ? JSON.parse(localStorage.getItem('journey-storage') as string)?.serviceType
+    : null;
+  return serviceType == 'billPackage' ? 'bundle-bills' : serviceType;
 }
 
 /* =========================================================
@@ -203,7 +216,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
   const steps =
     service === 'broadband'
       ? sidebar.broadbandSteps
-      : journeyFlow === 'bundle'
+      : journeyFlow === 'bundle-bills'
         ? sidebar.bundleSteps
         : sidebar.energySteps;
 

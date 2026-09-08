@@ -8,6 +8,10 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
 
 import type { StandardPlan } from '@/components/result/plan.types';
+import { useToast } from '@/hooks/useToast';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 /* =========================================================
    TYPES
@@ -73,6 +77,8 @@ const DIRECT_DEBIT_GUARANTEE_ITEMS = [
 
 export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProps) {
   const router = useRouter();
+  const { journey, setJourney } = useJourneyStore();
+  const { showError, showSuccess } = useToast();
 
   const [form, setForm] = useState<PaymentForm>({
     accountHolderName: '',
@@ -83,6 +89,8 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
   });
 
   const [guaranteeOpen, setGuaranteeOpen] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof PaymentForm, string>>>({});
 
   const selectedPlan = useMemo<StandardPlan | null>(() => {
     if (typeof window === 'undefined') {
@@ -102,35 +110,97 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
     }
   }, []);
 
-  const energyPrice = selectedPlan?.price ?? '£284.90';
+  const energyPrice = selectedPlan?.price ?? '£0.00';
+  const providerLabel = selectedPlan?.provider ?? 'Energy plan';
 
   function updateField<K extends keyof PaymentForm>(field: K, value: PaymentForm[K]) {
     setForm((current) => ({
       ...current,
       [field]: value,
     }));
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (
-      !form.accountHolderName ||
-      !form.bankName ||
-      !form.sortCode ||
-      !form.accountNumber ||
-      !form.acceptedGuarantee
-    ) {
+    if (isSubmitting) {
       return;
     }
 
-    sessionStorage.setItem('journeyPaymentDetails', JSON.stringify(form));
+    const accountHolderName = form.accountHolderName.trim();
+    const bankName = form.bankName.trim();
+    const sortCode = form.sortCode.replace(/\D/g, '');
+    const accountNumber = form.accountNumber.replace(/\D/g, '');
 
-    /*
-     * Switch /payment from the payment form
-     * to the FinalThankYou component.
-     */
-    onSuccess();
+    const nextErrors: Partial<Record<keyof PaymentForm, string>> = {};
+
+    if (accountHolderName.length < 2)
+      nextErrors.accountHolderName = 'Enter the account holder name.';
+    if (bankName.length < 2) nextErrors.bankName = 'Enter your bank or building society.';
+    if (sortCode.length !== 6) nextErrors.sortCode = 'Sort code must contain exactly 6 digits.';
+    if (accountNumber.length !== 8)
+      nextErrors.accountNumber = 'Account number must contain exactly 8 digits.';
+    if (!form.acceptedGuarantee)
+      nextErrors.acceptedGuarantee = 'Accept the Direct Debit Guarantee.';
+
+    setFieldErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      showError('Enter valid bank details and accept the Direct Debit Guarantee.');
+      return;
+    }
+
+    const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
+    const orderId = sessionStorage.getItem('journeyOrderId');
+
+    if (!journeyId || !orderId) {
+      showError('Your journey order is missing. Please return to review and try again.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const journeyResponse = await journeyApi.createJourney({
+        ...journey,
+        journeyId,
+        uuid: journeyId,
+        lastUrl: getCurrentRelativeUrl(),
+      });
+
+      if (!journeyResponse?.data) {
+        throw new Error('We could not update your journey. Please try again.');
+      }
+
+      setJourney(journeyResponse.data);
+
+      await journeyApi.submitJourneyOrderBankDetails(journeyId, orderId, {
+        accountHolderName,
+        bankNameOrBuildingSociety: bankName,
+        accountNumber,
+        sortCode,
+        directDebitConsentAccepted: form.acceptedGuarantee,
+      });
+
+      sessionStorage.setItem(
+        'journeyPaymentDetails',
+        JSON.stringify({ ...form, accountHolderName, bankName, sortCode, accountNumber }),
+      );
+      showSuccess('Your payment details were submitted successfully.');
+      onSuccess();
+    } catch (error) {
+      showError(
+        error &&
+          typeof error === 'object' &&
+          'message' in error &&
+          typeof error.message === 'string'
+          ? error.message
+          : 'We could not submit your payment details. Please try again.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -604,6 +674,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                     helperText="As they appear on your bank statements"
                     value={form.accountHolderName}
                     onChange={(value) => updateField('accountHolderName', value)}
+                    error={fieldErrors.accountHolderName}
                   />
 
                   <PaymentField
@@ -613,6 +684,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                     helperText="Name of your bank or building society"
                     value={form.bankName}
                     onChange={(value) => updateField('bankName', value)}
+                    error={fieldErrors.bankName}
                   />
 
                   <div
@@ -634,6 +706,9 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       helperText="6-digit sort code"
                       value={form.sortCode}
                       onChange={(value) => updateField('sortCode', value)}
+                      inputMode="numeric"
+                      maxLength={8}
+                      error={fieldErrors.sortCode}
                     />
 
                     <PaymentField
@@ -643,6 +718,9 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       helperText="8-digit account number"
                       value={form.accountNumber}
                       onChange={(value) => updateField('accountNumber', value)}
+                      inputMode="numeric"
+                      maxLength={8}
+                      error={fieldErrors.accountNumber}
                     />
                   </div>
 
@@ -1047,7 +1125,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                   "
                 >
                   <SummaryRow
-                    label="Energy (Dual Fuel)"
+                    label={providerLabel}
                     value={energyPrice}
                   />
 
@@ -1210,6 +1288,8 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                   <button
                     type="submit"
                     form="direct-debit-form"
+                    disabled={isSubmitting}
+                    aria-busy={isSubmitting}
                     className="
                       mt-4
 
@@ -1239,13 +1319,16 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
 
                       hover:bg-[#00796D]
 
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+
                       sm:text-[14px]
 
                       lg:h-[50px]
                       lg:text-[14px]
                     "
                   >
-                    <span>Confirm Direct Debit</span>
+                    <span>{isSubmitting ? 'Submitting...' : 'Confirm Direct Debit'}</span>
 
                     <ArrowRight
                       aria-hidden="true"
@@ -1427,9 +1510,22 @@ type PaymentFieldProps = {
   helperText: string;
   value: string;
   onChange: (value: string) => void;
+  inputMode?: 'text' | 'numeric';
+  maxLength?: number;
+  error?: string;
 };
 
-function PaymentField({ id, label, placeholder, helperText, value, onChange }: PaymentFieldProps) {
+function PaymentField({
+  id,
+  label,
+  placeholder,
+  helperText,
+  value,
+  onChange,
+  inputMode = 'text',
+  maxLength,
+  error,
+}: PaymentFieldProps) {
   return (
     <div>
       <label
@@ -1462,6 +1558,10 @@ function PaymentField({ id, label, placeholder, helperText, value, onChange }: P
         type="text"
         value={value}
         placeholder={placeholder}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-error` : undefined}
         onChange={(event) => onChange(event.target.value)}
         className="
           h-[46px]
@@ -1505,6 +1605,15 @@ function PaymentField({ id, label, placeholder, helperText, value, onChange }: P
           lg:leading-5
         "
       />
+
+      {error ? (
+        <p
+          id={`${id}-error`}
+          className="mt-1.5 font-inter text-[11px] leading-[17px] text-[#D92D20]"
+        >
+          {error}
+        </p>
+      ) : null}
 
       <p
         className="

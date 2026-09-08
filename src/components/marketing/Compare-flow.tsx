@@ -60,11 +60,13 @@ export default function CompareFlow() {
      ENERGY STATE
   ========================================================= */
   const [energyServiceType, setEnergyServiceType] = useState(
-    compareFlow.form.energy.serviceType.defaultValue,
+    journey?.customer?.energySupplyType
+      ? journey?.customer?.energySupplyType
+      : compareFlow.form.energy.serviceType.defaultValue,
   );
   const [energyServiceDropdownOpen, setEnergyServiceDropdownOpen] = useState(false);
   const [insuranceType, setInsuranceType] = useState(
-    journey?.insuranceType ?? compareFlow.form.insurance.insuranceType.defaultValue,
+    journey?.customer?.insuranceType ?? compareFlow.form.insurance.insuranceType.defaultValue,
   );
   const [insuranceTypeDropdownOpen, setInsuranceTypeDropdownOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(
@@ -203,17 +205,26 @@ export default function CompareFlow() {
         journeyId,
         uuid: journeyId,
         lastUrl: getCurrentRelativeUrl(),
-        serviceType: requestedService ?? '',
+        serviceType: requestedService == 'bundle-bills' ? 'billPackage' : (requestedService ?? ''),
         address: selectedAddress,
         customer: {
-          energySupplyType: energyServiceType,
-          moveStatus:
-            alreadyInProperty === MoveStatus.ALREADY_MOVED_IN
-              ? MoveStatus.ALREADY_MOVED_IN
-              : MoveStatus.MOVING_IN,
-          moveInDate: alreadyInProperty === MoveStatus.MOVING_IN ? moveInDate : null,
-          paymentPreference: paymentMethod,
-          renterHomeOwner: renterHomeOwner,
+          ...(['billPackage']?.includes(journey?.serviceType) && {
+            moveStatus:
+              alreadyInProperty === MoveStatus.ALREADY_MOVED_IN
+                ? MoveStatus.ALREADY_MOVED_IN
+                : MoveStatus.MOVING_IN,
+          }),
+          ...(alreadyInProperty === MoveStatus.MOVING_IN && { moveInDate: moveInDate }),
+          ...(['energy', 'billPackage']?.includes(journey?.serviceType) && {
+            paymentPreference: paymentMethod,
+            energySupplyType: energyServiceType,
+          }),
+          ...(['billPackage']?.includes(journey?.serviceType) && {
+            renterHomeOwner: renterHomeOwner,
+          }),
+          ...(['broadband']?.includes(journey?.serviceType) && {
+            currentBroadbandProvider: currentProvider,
+          }),
         },
       };
 
@@ -314,7 +325,7 @@ export default function CompareFlow() {
       } else if (requestedService === 'energy') {
         router.push(`/current-usage/?service=${requestedService}`);
       } else {
-        router.push(`/steps/personal-details-form/?service=${requestedService ?? ''}`);
+        router.push(`/steps/personal-details-form/?service=${requestedService}`);
       }
     } catch (error) {
       console.error('Unexpected compare flow error:', error);
@@ -923,7 +934,7 @@ export default function CompareFlow() {
             </fieldset> */}
 
             {/* ENERGY */}
-            {requestedService === 'energy' && (
+            {['energy', 'bundle-bills']?.includes(requestedService) && (
               <>
                 <div>
                   <label
@@ -1041,7 +1052,7 @@ export default function CompareFlow() {
                   </div>
                 </div>
 
-                {!isBundleFlow && (
+                {['energy']?.includes(requestedService) && (
                   <fieldset>
                     <legend
                       className="

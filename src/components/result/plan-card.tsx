@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, LoaderCircle } from 'lucide-react';
 
 import type { CompareResultService, StandardPlan } from '@/components/result/plan.types';
 import data from '@/data/content.json';
@@ -13,11 +13,18 @@ type PlanCardProps = {
   onViewDetails: (plan: StandardPlan) => void;
 
   onSelectPlan: (plan: StandardPlan) => void;
+  isSelecting?: boolean;
 };
 
 const STAR_COUNT = 5;
 
-export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }: PlanCardProps) {
+export default function PlanCard({
+  plan,
+  service,
+  onViewDetails,
+  onSelectPlan,
+  isSelecting = false,
+}: PlanCardProps) {
   const { plans } = data.resultPage;
 
   const isBroadband = service === 'broadband';
@@ -344,6 +351,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
           <button
             type="button"
             onClick={handleSelectPlan}
+            disabled={isSelecting}
             className="
               inline-flex
               h-[42px]
@@ -369,9 +377,12 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               text-white
 
               hover:bg-[#00796D]
+
+              disabled:cursor-not-allowed
+              disabled:opacity-60
             "
           >
-            {plan.primaryButton}
+            {isSelecting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : plan.primaryButton}
           </button>
         </div>
       </article>
@@ -602,6 +613,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
           <button
             type="button"
             onClick={handleSelectPlan}
+            disabled={isSelecting}
             className="
               inline-flex
               h-[42px]
@@ -627,9 +639,12 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               text-white
 
               hover:bg-[#00796D]
+
+              disabled:cursor-not-allowed
+              disabled:opacity-60
             "
           >
-            {plan.primaryButton}
+            {isSelecting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : plan.primaryButton}
           </button>
         </div>
       </article>
@@ -937,6 +952,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               <button
                 type="button"
                 onClick={handleSelectPlan}
+                disabled={isSelecting}
                 className="
                   inline-flex
                   h-[40px]
@@ -962,9 +978,16 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
                   text-white
 
                   hover:bg-[#00796D]
+
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
                 "
               >
-                {plan.primaryButton}
+                {isSelecting ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  plan.primaryButton
+                )}
               </button>
 
               <button

@@ -32,6 +32,7 @@ export interface Journey {
   journeyId?: string;
   customer?: CustomerDetails | null;
   serviceType?: string;
+  cart?: Array<Record<string, unknown>> | null;
   consumption?: {
     gas?: GasConsumption;
     electricity?: ElectricityConsumption;

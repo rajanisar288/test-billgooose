@@ -1,4 +1,5 @@
-export type CompareResultService = 'energy' | 'broadband' | 'sim-only' | 'insurance';
+export type CompareResultService =
+  'energy' | 'bundle-bills' | 'broadband' | 'sim-only' | 'insurance';
 
 export type SelectPlan = {
   id: string;
@@ -18,6 +19,14 @@ export type SelectPlan = {
   averageSpeed?: string;
   upfrontCost?: string;
   providerUrl?: string;
+  quoteId?: string;
+  productReference?: string;
+  supplierCode?: string;
+  paymentMethod?: string;
+  annualPrice?: string;
+  productType?: string;
+  feeDetails?: unknown[];
+  priceIncreaseDetails?: unknown[];
   viewDetailsButton: string;
   primaryButton: string;
 };
@@ -40,6 +49,14 @@ export type ViewDealPlan = {
   averageSpeed?: string;
   upfrontCost?: string;
   providerUrl?: string;
+  quoteId?: string;
+  productReference?: string;
+  supplierCode?: string;
+  paymentMethod?: string;
+  annualPrice?: string;
+  productType?: string;
+  feeDetails?: unknown[];
+  priceIncreaseDetails?: unknown[];
   viewDetailsButton: string;
   primaryButton: string;
 };

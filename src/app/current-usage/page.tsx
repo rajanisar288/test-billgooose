@@ -129,7 +129,7 @@ export default function CurrentUsagePage() {
       delete journeyPayload.consumption;
 
       const updatedJourney = await journeyApi.createJourney({
-        ...journeyPayload,
+        // ...journeyPayload,
         journeyId,
         uuid: journeyId,
         lastUrl: getCurrentRelativeUrl(),

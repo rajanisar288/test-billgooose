@@ -83,29 +83,36 @@ export default function PersonalDetailsForm() {
   const { fields, terms } = personalDetails;
 
   const [title, setTitle] = useState<string>(
-    journey?.customer ? journey?.customer?.title : fields.title.defaultValue,
+    journey?.customer?.title ? journey?.customer?.title : fields.title.defaultValue,
   );
   const [titleDropdownOpen, setTitleDropdownOpen] = useState(false);
   const [firstName, setFirstName] = useState(
-    journey?.customer ? journey?.customer?.firstName : fields.firstName.defaultValue,
+    journey?.customer?.firstName ? journey?.customer?.firstName : fields.firstName.defaultValue,
   );
   const [lastName, setLastName] = useState(
-    journey?.customer ? journey?.customer?.surname : fields.lastName.defaultValue,
+    journey?.customer?.surname ? journey?.customer?.surname : fields.lastName.defaultValue,
   );
-  const [email, setEmail] = useState(journey?.customer ? journey?.customer?.emailAddress : '');
+  const [email, setEmail] = useState(
+    journey?.customer?.emailAddress ? journey?.customer?.emailAddress : '',
+  );
   const [mobileNumber, setMobileNumber] = useState(
-    journey?.customer ? journey?.customer?.phoneNumber : '',
+    journey?.customer?.phoneNumber ? journey?.customer?.phoneNumber : '',
   );
   const [dateOfBirth, setDateOfBirth] = useState(
-    journey?.customer ? journey?.customer?.dateOfBirth : '',
+    journey?.customer?.dateOfBirth ? journey?.customer?.dateOfBirth : '',
   );
   const [acceptedTerms, setAcceptedTerms] = useState(
-    journey?.customer ? journey?.customer?.privacyConsentAccepted : terms.acceptedTermsDefault,
+    journey?.customer?.privacyConsentAccepted
+      ? journey?.customer?.privacyConsentAccepted
+      : terms.acceptedTermsDefault,
   );
   const [marketingConsent, setMarketingConsent] = useState(
-    journey?.customer ? journey?.customer?.marketingConsent : terms.marketingConsentDefault,
+    journey?.customer?.marketingConsent
+      ? journey?.customer?.marketingConsent
+      : terms.marketingConsentDefault,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  console.log('🚀 ~ PersonalDetailsForm ~ errors:', errors);
   const { updateJourney } = useUpdateJourney();
 
   useJourneyStepStatus(

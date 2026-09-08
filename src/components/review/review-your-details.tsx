@@ -15,9 +15,11 @@ import {
   Wifi,
 } from 'lucide-react';
 
-import { capitalize } from '@/components/current-usage/preferences-panel';
+import FinalThankYou from '@/components/payment/final-thank-you';
 import type { StandardPlan } from '@/components/result/plan.types';
+import { humanizeLabel } from '@/components/result/result-labels';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
@@ -195,9 +197,11 @@ const EMPTY_STATE: ReviewState = {
 export default function ReviewYourDetails() {
   const router = useRouter();
   const { journey, setJourney } = useJourneyStore();
+  const { showError } = useToast();
   const { journey: journeyData } = data;
 
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isPrepaymentComplete, setIsPrepaymentComplete] = useState(false);
 
   const review = journeyData.reviewDetails;
 
@@ -229,11 +233,46 @@ export default function ReviewYourDetails() {
         throw new Error('No data received from API');
       }
 
-      setJourney(response.data);
+      const selectedPlan = readStoredSelectedPlan();
+      const quoteId = selectedPlan?.quoteId;
+      const productReference = selectedPlan?.productReference;
 
-      router.push('/payment');
+      if (!quoteId || !productReference) {
+        throw new Error('Selected quote details are missing. Please select a plan again.');
+      }
+
+      const orderResponse = await journeyApi.createJourneyOrder(journeyId, {
+        quoteId,
+        productReferences: [productReference],
+      });
+      const orderId = orderResponse?.data?.orderId;
+
+      if (!orderId) {
+        throw new Error('No order ID received from API');
+      }
+
+      setJourney(response.data);
+      sessionStorage.setItem('journeyOrderId', orderId);
+
+      const normalizedPaymentMethod = (customer.paymentPreference ?? '')
+        .toLowerCase()
+        .replace(/[-_\s]/g, '');
+
+      if (normalizedPaymentMethod === 'prepayment') {
+        setIsPrepaymentComplete(true);
+      } else {
+        router.push('/payment');
+      }
     } catch (error) {
       console.error('Failed to confirm journey:', error);
+      showError(
+        error &&
+          typeof error === 'object' &&
+          'message' in error &&
+          typeof error.message === 'string'
+          ? error.message
+          : 'We could not create your order. Please try again.',
+      );
     } finally {
       setIsConfirming(false);
     }
@@ -297,7 +336,7 @@ export default function ReviewYourDetails() {
      LABEL HELPERS
   ========================================================= */
 
-  const propertyLabel = details.household.propertyType ?? '—';
+  const propertyLabel = humanizeLabel(details.household.propertyType, '—');
 
   const occupantsLabel = details.household.occupants ?? '—';
 
@@ -314,6 +353,10 @@ export default function ReviewYourDetails() {
   const contractLengthLabel = useMemo(() => {
     return details.broadbandContractLength ?? '—';
   }, [details.broadbandContractLength]);
+
+  if (isPrepaymentComplete) {
+    return <FinalThankYou />;
+  }
 
   const handleEditSaved = (updatedData: ReviewState) => {
     if (!journey) {
@@ -524,7 +567,7 @@ export default function ReviewYourDetails() {
                   >
                     <ReviewField
                       label="House type"
-                      value={capitalize(propertyLabel)}
+                      value={propertyLabel}
                     />
 
                     <ReviewField
@@ -546,7 +589,7 @@ export default function ReviewYourDetails() {
                 >
                   <ReviewField
                     label="Payment method"
-                    value={capitalize(details.paymentMethod)}
+                    value={humanizeLabel(details.paymentMethod, '—')}
                   />
                 </ReviewSection>
 
@@ -639,6 +682,20 @@ export default function ReviewYourDetails() {
       />
     </>
   );
+}
+
+function readStoredSelectedPlan(): StandardPlan | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storedPlan = sessionStorage.getItem('journeySelectedPlan');
+
+    return storedPlan ? (JSON.parse(storedPlan) as StandardPlan) : null;
+  } catch {
+    return null;
+  }
 }
 
 /* =========================================================

@@ -24,4 +24,23 @@ export const journeyApi = {
       params: params,
     });
   },
+
+  // Create a Journey Order
+  createJourneyOrder: (
+    journeyId: string,
+    payload: { quoteId: string; productReferences: string[] },
+  ) => apiClient.post(`/api/v1/journeys/${journeyId}/orders`, payload),
+
+  // Submit Journey Order Bank Details
+  submitJourneyOrderBankDetails: (
+    journeyId: string,
+    orderId: string,
+    payload: {
+      accountHolderName: string;
+      bankNameOrBuildingSociety: string;
+      accountNumber: string;
+      sortCode: string;
+      directDebitConsentAccepted: boolean;
+    },
+  ) => apiClient.post(`/api/v1/journeys/${journeyId}/orders/${orderId}/bank-details`, payload),
 };

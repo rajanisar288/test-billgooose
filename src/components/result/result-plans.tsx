@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ExternalLink,
   Globe2,
+  LoaderCircle,
   X,
 } from 'lucide-react';
 
@@ -24,10 +25,16 @@ import type {
   SimOnlyPlan,
   StandardPlan,
 } from '@/components/result/plan.types';
+import { useResultFilters } from '@/components/result/result-filter-context';
 import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
+import type { ResultFilterState } from '@/components/result/result-filter.types';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
-type CompareService = 'energy' | 'broadband' | 'sim-only' | 'insurance';
+type CompareService = 'energy' | 'bundle-bills' | 'broadband' | 'sim-only' | 'insurance';
 
 type RedirectOrigin = 'sim-only' | 'mobile-details';
 
@@ -36,6 +43,10 @@ type ResultPlansProps = {
   description?: string;
   serviceOverride?: CompareService;
   redirectOrigin?: RedirectOrigin;
+  quotePlans?: ResultPlan[];
+  quoteLoading?: boolean;
+  quoteError?: string;
+  resultCount?: number;
 };
 
 type CompareFlowDetails = {
@@ -69,6 +80,90 @@ function isFeaturedBroadbandPlan(plan: ResultPlan): plan is FeaturedBroadbandPla
 
 function isStandardPlan(plan: ResultPlan): plan is StandardPlan {
   return plan.type === 'select-plan' || plan.type === 'view-deal';
+}
+
+function filterStandardPlans<T extends StandardPlan>(plans: T[], filters: ResultFilterState): T[] {
+  return plans.filter((plan) => {
+    const searchableText = [
+      plan.provider,
+      plan.description,
+      plan.contract,
+      ...plan.features,
+      plan.price,
+      plan.saving,
+      (plan as StandardPlan & { paymentMethod?: string }).paymentMethod,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    if (filters.onlyBillGoose && !searchableText.includes('billgoose')) {
+      return false;
+    }
+
+    return Object.entries(filters.values).every(([field, value]) => {
+      if (!value || value === 'all') {
+        return true;
+      }
+
+      const normalizedValue = value.replace(/-/g, ' ').toLowerCase();
+
+      if (field === 'plan-type' && value === 'dual-fuel') {
+        return (
+          searchableText.includes('dual') ||
+          searchableText.includes('gas') ||
+          searchableText.includes('electric')
+        );
+      }
+
+      if (field === 'contract-length') {
+        return (
+          searchableText.includes(normalizedValue) ||
+          searchableText.includes(value.replace('-months', ' months'))
+        );
+      }
+
+      return searchableText.includes(normalizedValue);
+    });
+  });
+}
+
+function filterSimOnlyPlans(plans: SimOnlyPlan[], filters: ResultFilterState): SimOnlyPlan[] {
+  return plans.filter((plan) => {
+    const searchableText = [
+      plan.provider,
+      plan.networkDescription,
+      plan.data,
+      plan.roamingText,
+      ...plan.badges,
+    ]
+      .join(' ')
+      .toLowerCase();
+    const price = Number(plan.price.replace(/[^\d.-]/g, ''));
+
+    if (
+      filters.networks.length &&
+      !filters.networks.some((network) => searchableText.includes(network.toLowerCase()))
+    ) {
+      return false;
+    }
+
+    return Object.entries(filters.simValues).every(([field, values]) =>
+      values.some((value) => {
+        if (field === 'monthly-cost') {
+          if (value === '40-plus') return price >= 40;
+          const [minimum, maximum] = value.split('-').map(Number);
+          return price >= minimum && price <= maximum;
+        }
+
+        if (field === 'data' && value === 'unlimited') {
+          return searchableText.includes('unlimited');
+        }
+
+        return searchableText.includes(value.replace(/-/g, ' ').toLowerCase());
+      }),
+    );
+  });
 }
 
 /* =========================================================
@@ -108,9 +203,17 @@ export default function ResultPlans({
   description,
   serviceOverride,
   redirectOrigin = 'sim-only',
+  quotePlans,
+  quoteLoading = false,
+  quoteError = '',
+  resultCount,
 }: ResultPlansProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { journey, setJourney } = useJourneyStore();
+  const { filters: appliedFilters } = useResultFilters();
+  const { showError } = useToast();
+  const [isSelectingPlan, setIsSelectingPlan] = useState(false);
 
   const { plans, resultsStatus } = data.resultPage;
 
@@ -128,7 +231,9 @@ export default function ResultPlans({
         ? 'sim-only'
         : queryService === 'insurance'
           ? 'insurance'
-          : 'energy');
+          : queryService === 'bundle-bills'
+            ? 'bundle-bills'
+            : 'energy');
 
   const isSimOnly = service === 'sim-only';
   const isInsurance = service === 'insurance';
@@ -137,7 +242,7 @@ export default function ResultPlans({
      PLAN DATA
   ========================================================= */
 
-  const energyPlanItems = plans.items as ResultPlan[];
+  const energyPlanItems = (quotePlans ?? plans.items) as ResultPlan[];
 
   const broadbandPlanItems = (plans.broadbandItems ?? []) as StandardPlan[];
 
@@ -151,6 +256,14 @@ export default function ResultPlans({
   ========================================================= */
 
   const insurancePlanItems = (plans.insuranceItems ?? []) as InsurancePlan[];
+
+  const filteredEnergyPlanItems = energyPlanItems.filter(
+    (plan) =>
+      isFeaturedBroadbandPlan(plan) || filterStandardPlans([plan], appliedFilters).length > 0,
+  );
+  const filteredBroadbandPlanItems = filterStandardPlans(broadbandPlanItems, appliedFilters);
+  const filteredSimOnlyPlanItems = filterSimOnlyPlans(simOnlyPlanItems, appliedFilters);
+  const filteredInsurancePlanItems = filterStandardPlans(insurancePlanItems, appliedFilters);
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(
     isInsurance ? 'monthly' : resultsStatus.planTabs.defaultValue,
@@ -181,12 +294,56 @@ export default function ResultPlans({
      ENERGY / BROADBAND SELECT PLAN
   ========================================================= */
 
-  const handleSelectPlan = (plan: StandardPlan) => {
+  const handleSelectPlan = async (plan: StandardPlan) => {
     const queryFlow = searchParams.get('flow');
 
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
 
     const isBundleFlow = queryFlow === 'bundle' || storedFlow === 'bundle';
+
+    const isJourneyPlan = service === 'energy' || service === 'bundle-bills';
+
+    if (isJourneyPlan) {
+      if (isSelectingPlan) {
+        return;
+      }
+
+      const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
+
+      if (!journeyId) {
+        showError('Journey ID is required. Please try again.');
+        return;
+      }
+
+      setIsSelectingPlan(true);
+
+      try {
+        const response = await journeyApi.createJourney({
+          // ...journey,
+          journeyId,
+          uuid: journeyId,
+          lastUrl: getCurrentRelativeUrl(),
+          cart: [{ ...plan }],
+        });
+
+        if (!response?.data) {
+          throw new Error('We could not save your selected plan. Please try again.');
+        }
+
+        setJourney(response.data);
+      } catch (error) {
+        showError(
+          error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            typeof error.message === 'string'
+            ? error.message
+            : 'We could not save your selected plan. Please try again.',
+        );
+        setIsSelectingPlan(false);
+        return;
+      }
+    }
 
     /* =====================================================
        INSURANCE
@@ -220,7 +377,10 @@ export default function ResultPlans({
        BUNDLE
     ====================================================== */
 
-    if (service === 'energy' && isBundleFlow) {
+    if (
+      (service === 'energy' || service === 'bundle-bills') &&
+      (isBundleFlow || service === 'bundle-bills')
+    ) {
       sessionStorage.setItem(
         'journeySelectedPlan',
         JSON.stringify({
@@ -404,7 +564,7 @@ export default function ResultPlans({
 
   const renderNormalCards = () => {
     if (service === 'insurance') {
-      return insurancePlanItems.map((plan) => (
+      return filteredInsurancePlanItems.map((plan) => (
         <InsurancePlanCard
           key={plan.id}
           plan={plan}
@@ -415,18 +575,19 @@ export default function ResultPlans({
     }
 
     if (service === 'broadband') {
-      return broadbandPlanItems.map((plan) => (
+      return filteredBroadbandPlanItems.map((plan) => (
         <PlanCard
           key={plan.id}
           plan={plan}
           onViewDetails={handleViewDetails}
           onSelectPlan={handleSelectPlan}
+          isSelecting={isSelectingPlan}
           service="broadband"
         />
       ));
     }
 
-    return energyPlanItems.map((plan) => {
+    return filteredEnergyPlanItems.map((plan) => {
       if (isFeaturedBroadbandPlan(plan)) {
         return (
           <FeaturedBroadbandCard
@@ -444,7 +605,8 @@ export default function ResultPlans({
             plan={plan}
             onViewDetails={handleViewDetails}
             onSelectPlan={handleSelectPlan}
-            service="energy"
+            isSelecting={isSelectingPlan}
+            service={service === 'bundle-bills' ? 'bundle-bills' : 'energy'}
           />
         );
       }
@@ -459,7 +621,7 @@ export default function ResultPlans({
 
   const renderCards = () => {
     if (isSimOnly) {
-      return simOnlyPlanItems.map((plan) => (
+      return filteredSimOnlyPlanItems.map((plan) => (
         <SimOnlyCard
           key={plan.id}
           plan={plan}
@@ -473,7 +635,33 @@ export default function ResultPlans({
       ));
     }
 
-    return renderNormalCards();
+    if (quoteLoading) {
+      return (
+        <div className="flex bg-white justify-center items-center h-[200px] w-full">
+          <p className="flex rounded-[16px] p-6 text-[#667085]">
+            <LoaderCircle className="w-8 h-8 animate-spin" />
+          </p>
+        </div>
+      );
+    }
+
+    if (quoteError) {
+      return (
+        <div className="flex bg-white justify-center items-center h-[200px] w-full">
+          <p className="rounded-[16px] bg-white p-6 text-[#D92D20]">{quoteError}</p>
+        </div>
+      );
+    }
+
+    const cards = renderNormalCards();
+
+    return cards.length > 0 ? (
+      cards
+    ) : (
+      <div className="flex bg-white justify-center items-center h-[200px] w-full">
+        <p className="rounded-[16px] bg-white p-6 text-[#667085]">No plans match your filters.</p>
+      </div>
+    );
   };
 
   return (
@@ -599,7 +787,9 @@ export default function ResultPlans({
                     </>
                   ) : (
                     <>
-                      <strong className="font-normal">{resultsStatus.descriptionStart}</strong>{' '}
+                      <strong className="font-normal">
+                        {resultCount ?? resultsStatus.descriptionStart}
+                      </strong>{' '}
                       {resultsStatus.descriptionRest}
                     </>
                   )}

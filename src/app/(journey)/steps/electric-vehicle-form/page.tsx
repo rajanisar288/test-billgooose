@@ -6,28 +6,35 @@ import ElectricVehicleForm from '@/components/journey/forms/electric-vehicle-for
 import JourneyMobileStepHeader from '@/components/journey/forms/journey-mobile-step-header';
 import data from '@/data/content.json';
 
-type JourneyFlow = 'energy' | 'bundle' | 'broadband';
+type JourneyFlow = 'energy' | 'bundle-bills' | 'broadband';
 
 function getJourneyFlowSnapshot(): JourneyFlow {
   try {
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+    const serviceType = localStorage.getItem('journey-storage')
+      ? JSON.parse(localStorage.getItem('journey-storage') as string)?.state?.journey?.serviceType
+      : null;
 
-    if (storedFlow === 'bundle') {
-      return 'bundle';
-    }
+    // if (storedFlow === 'bundle') {
+    //   return 'bundle';
+    // }
 
-    if (storedFlow === 'broadband') {
-      return 'broadband';
-    }
+    // if (storedFlow === 'broadband') {
+    //   return 'broadband';
+    // }
 
-    return 'energy';
+    return serviceType == 'billPackage' ? 'bundle-bills' : serviceType;
   } catch {
     return 'energy';
   }
 }
 
 function getJourneyFlowServerSnapshot(): JourneyFlow {
-  return 'energy';
+  const serviceType = localStorage.getItem('journey-storage')
+    ? JSON.parse(localStorage.getItem('journey-storage') as string)?.state?.journey?.serviceType
+    : null;
+
+  return serviceType == 'billPackage' ? 'bundle-bills' : serviceType;
 }
 
 function subscribeToJourneyFlow(callback: () => void) {
@@ -60,9 +67,10 @@ export default function ElectricVehiclePage() {
     getJourneyFlowSnapshot,
     getJourneyFlowServerSnapshot,
   );
+  console.log('🚀 ~ ElectricVehiclePage ~ journeyFlow:', journeyFlow);
 
   const steps =
-    journeyFlow === 'bundle'
+    journeyFlow === 'bundle-bills'
       ? sidebar.bundleSteps
       : journeyFlow === 'broadband'
         ? sidebar.broadbandSteps
