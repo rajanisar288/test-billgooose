@@ -84,7 +84,7 @@ export default function HouseholdForm() {
   ========================================================= */
 
   const [selectedPropertyType, setSelectedPropertyType] = useState(
-    journey?.customer ? journey?.customer?.propertyType : propertyType.options[0].value,
+    journey?.customer?.propertyType ?? propertyType.options[0].value,
   );
 
   const [selectedOccupants, setSelectedOccupants] = useState(
@@ -852,7 +852,6 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
     </span>
   );
 }
-
 
 type CounterSelectorProps = {
   value: number;

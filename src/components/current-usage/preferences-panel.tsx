@@ -22,15 +22,17 @@ export default function PreferencesPanel() {
     const address = journey.address;
 
     const serviceLabel =
-      journey.serviceType === 'energy'
-        ? customer?.energySupplyType === 'dualFuel'
-          ? 'Gas & Electricity (Dual Fuel)'
-          : customer?.energySupplyType === 'electricityOnly'
-            ? 'Electricity'
-            : customer?.energySupplyType === 'gasOnly'
-              ? 'Gas'
-              : 'Energy'
-        : journey.serviceType;
+      journey.serviceType === 'billPackage'
+        ? 'Bundle Bills'
+        : journey.serviceType === 'energy'
+          ? customer?.energySupplyType === 'dualFuel'
+            ? 'Gas & Electricity (Dual Fuel)'
+            : customer?.energySupplyType === 'electricityOnly'
+              ? 'Electricity'
+              : customer?.energySupplyType === 'gasOnly'
+                ? 'Gas'
+                : 'Energy'
+          : journey.serviceType;
 
     const houseType = customer?.propertyType
       ? `${capitalize(customer.propertyType)}${

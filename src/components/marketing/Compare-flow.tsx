@@ -217,7 +217,7 @@ export default function CompareFlow() {
             paymentPreference: paymentMethod,
             energySupplyType: energyServiceType,
           }),
-          ...(['billPackage']?.includes(requestedService) && {
+          ...(isBundleFlow && {
             renterHomeOwner: renterHomeOwner,
           }),
           ...(['broadband']?.includes(requestedService) && {
@@ -253,7 +253,7 @@ export default function CompareFlow() {
       // =========================================================
       let energyUsage;
 
-      if (requestedService === 'energy') {
+      if (requestedService === 'energy' && !isBundleFlow) {
         try {
           energyUsage = await journeyApi.prepareConsumption(journeyId, {
             forceRefresh: true,

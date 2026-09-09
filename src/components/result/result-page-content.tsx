@@ -28,8 +28,9 @@ export default function ResultPageContent() {
   const quoteRequestKeyRef = useRef<string | null>(null);
 
   const service = searchParams.get('service');
+  const flow = searchParams.get('flow');
 
-  const isQuoteService = service === 'energy' || service === 'bundle-bills';
+  const isQuoteService = service === 'energy';
   const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function ResultPageContent() {
         const response = await journeyApi.getQuote(journeyId, {});
         const mappedPlans = mapQuoteResponseToPlans(
           response.data as QuoteResponse,
-          service === 'bundle-bills' ? 'bundle-bills' : 'energy',
+          flow === 'bundle' ? 'bundle-bills' : 'energy',
         ) as ResultPlan[];
 
         setQuotePlans(mappedPlans);
@@ -101,12 +102,12 @@ export default function ResultPageContent() {
 
   if (service === 'mobile') {
     return (
-      // <ResultFilterProvider>
-      <main className="min-h-screen bg-[#F8F9FA]">
-        <MobileResults />
-        <Footer2 />
-      </main>
-      // </ResultFilterProvider>
+      <ResultFilterProvider>
+        <main className="min-h-screen bg-[#F8F9FA]">
+          <MobileResults />
+          <Footer2 />
+        </main>
+      </ResultFilterProvider>
     );
   }
 

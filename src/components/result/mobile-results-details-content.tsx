@@ -2,7 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 
-import MobileResultsDetails from '../../components/result/mobile-results-details';
+import MobileResultsDetails from '@/components/result/mobile-results-details';
+import { ResultFilterProvider } from '@/components/result/result-filter-context';
 
 export default function MobileResultsDetailsContent() {
   const searchParams = useSearchParams();
@@ -12,10 +13,12 @@ export default function MobileResultsDetailsContent() {
   const id = searchParams.get('id') ?? '';
 
   return (
-    <MobileResultsDetails
-      brand={brand}
-      itemType={type === 'featured' ? 'featured' : 'deal'}
-      itemId={id}
-    />
+    <ResultFilterProvider>
+      <MobileResultsDetails
+        brand={brand}
+        itemType={type === 'featured' ? 'featured' : 'deal'}
+        itemId={id}
+      />
+    </ResultFilterProvider>
   );
 }

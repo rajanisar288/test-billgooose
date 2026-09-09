@@ -3,18 +3,21 @@
 import { useState } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
 import { ChevronRight } from 'lucide-react';
 
+import {
+  type HomepageService,
+  useServiceJourneyNavigation,
+} from '@/components/marketing/use-service-journey-navigation';
 import data from '@/data/content.json';
 import { useJourneyStore } from '@/store/journeyStore';
 
-type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only' | 'insurance' | 'bundle-bills';
+type ServiceType = HomepageService;
 
 export default function Hero() {
   const { journey } = useJourneyStore();
-  const router = useRouter();
+  const { navigateToService } = useServiceJourneyNavigation();
 
   const { hero } = data;
   // partnerConfigApi
@@ -28,16 +31,7 @@ export default function Hero() {
 
   function handleServiceSelect(service: ServiceType) {
     setSelectedService(service);
-
-    if (service === 'bundle-bills') {
-      router.push('/compare?service=energy&flow=bundle');
-      return;
-    }
-    if (['energy', 'insurance', 'broadband']?.includes(service)) {
-      router.push(`/compare?service=${service}`);
-      return;
-    }
-    router.push(`/result?service=${service}`);
+    void navigateToService(service);
   }
 
   return (

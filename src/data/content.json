@@ -1519,21 +1519,21 @@
       "heading": "Payment method type",
       "description": "Select how you’d like to pay.",
       "storageKey": "journeyPaymentMethod",
-      "defaultValue": "monthly-direct-debit",
+      "defaultValue": "monthlyDirectDebit",
       "options": [
         {
-          "id": "monthly-direct-debit",
+          "id": "monthlyDirectDebit",
           "label": "Monthly direct debit",
           "description": "Your monthly payment will be gently deducted from your card automatically.",
-          "value": "monthly-direct-debit",
+          "value": "monthlyDirectDebit",
           "icon": "/images/step-4-1.png",
           "iconAlt": ""
         },
         {
-          "id": "pre-payment",
+          "id": "prePayment",
           "label": "Pre Payment",
           "description": "Your monthly payment will be securely deducted from your account on the agreed date.",
-          "value": "pre-payment",
+          "value": "prePayment",
           "icon": "/images/step-4-2.png",
           "iconAlt": ""
         }
@@ -2838,19 +2838,19 @@
           "defaultValue": "monthly-direct-debit",
           "options": [
             {
-              "id": "monthly-direct-debit",
+              "id": "monthlyDirectDebit",
               "label": "Monthly direct debit",
-              "value": "monthly-direct-debit"
+              "value": "monthlyDirectDebit"
             },
             {
-              "id": "quarterly-direct-debit",
+              "id": "quarterlyDirectDebit",
               "label": "Quarterly direct debit",
-              "value": "quarterly-direct-debit"
+              "value": "quarterlyDirectDebit"
             },
             {
-              "id": "prepayment",
+              "id": "prePayment",
               "label": "Prepayment",
-              "value": "prepayment"
+              "value": "prePayment"
             },
             {
               "id": "pay-on-receipt",
