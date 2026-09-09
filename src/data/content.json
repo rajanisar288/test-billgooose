@@ -304,7 +304,7 @@
         "description": "All your essential services in one bundle",
         "icon": "/images/bundles-card-icon.png",
         "linkText": "Compare Now",
-        "href": "/compare?service=bundle-bills"
+        "href": "/compare?service=energy&flow=bundle"
       }
     ],
     "comingSoonItems": [
@@ -1113,7 +1113,24 @@
       "footer": {
         "copyright": "© BillGoose 2026",
         "email": "query@billgoose.com"
-      }
+      },
+      "insuranceSteps": [
+        {
+          "number": 1,
+          "title": "Personal Details",
+          "description": "Tell us about your details"
+        },
+        {
+          "number": 2,
+          "title": "Policy Details",
+          "description": "Tell us about policy details"
+        },
+        {
+          "number": 3,
+          "title": "House Details",
+          "description": "Tell us about your house details"
+        }
+      ]
     },
     "navigation": {
       "backButton": "Back",
@@ -1597,6 +1614,75 @@
             "description": "e.g. Large house or general high usage",
             "value": "high"
           }
+        ]
+      }
+    },
+    "insurancePolicyDetails": {
+      "heading": "Policy details",
+      "description": "Please enter your policy details below.",
+      "storageKey": "journeyInsurancePolicyDetails",
+      "ownership": {
+        "label": "Do you own or rent your home?",
+        "defaultValue": "mortgage",
+        "options": [
+          { "id": "mortgage", "label": "I have a mortgage", "value": "mortgage" },
+          { "id": "ownOutright", "label": "I own my home outright", "value": "ownOutright" },
+          { "id": "renting", "label": "I'm renting", "value": "renting" }
+        ]
+      },
+      "coverStart": {
+        "label": "When, within 30 days, would you like your cover to start?",
+        "placeholder": "Select start date",
+        "defaultValue": "today",
+        "options": [
+          { "id": "today", "label": "Today", "value": "today" },
+          { "id": "within7days", "label": "Within 7 days", "value": "within7days" },
+          { "id": "within14days", "label": "Within 14 days", "value": "within14days" },
+          { "id": "within30days", "label": "Within 30 days", "value": "within30days" }
+        ]
+      },
+      "paymentFrequency": {
+        "label": "How do you want to pay for your home insurance?",
+        "description": "One annual payment is typically the cheaper option, since paying monthly means you could be entering into a credit agreement and charged interest.",
+        "defaultValue": "monthly",
+        "options": [
+          { "id": "annual", "label": "Annual", "value": "annual" },
+          { "id": "monthly", "label": "Monthly", "value": "monthly" }
+        ]
+      }
+    },
+    "insuranceHouseDetails": {
+      "heading": "House Details",
+      "description": "Tell us about house type and household size.",
+      "storageKey": "journeyInsuranceHouseDetails",
+      "homeType": {
+        "label": "What type of home do you want to insure?",
+        "defaultValue": "house",
+        "options": [
+          { "id": "house", "label": "House", "value": "house" },
+          { "id": "flat", "label": "Flat", "value": "flat" },
+          { "id": "townhouse", "label": "Townhouse", "value": "townhouse" },
+          { "id": "maisonette", "label": "Maisonette", "value": "maisonette" },
+          { "id": "bungalow", "label": "Bungalow", "value": "bungalow" },
+          { "id": "roomOnlyOrBedsit", "label": "Room only or bedsit", "value": "roomOnlyOrBedsit" }
+        ]
+      },
+      "houseStyle": {
+        "label": "What type of house is it?",
+        "defaultValue": "semiDetached",
+        "options": [
+          { "id": "detached", "label": "Detached", "value": "detached" },
+          { "id": "semiDetached", "label": "Semi-detached", "value": "semiDetached" },
+          { "id": "midTerrace", "label": "Mid-Terrace", "value": "midTerrace" },
+          { "id": "endTerrace", "label": "End-Terrace", "value": "endTerrace" }
+        ]
+      },
+      "smokeDetectors": {
+        "label": "Do you have working smoke detectors?",
+        "defaultValue": "yes",
+        "options": [
+          { "id": "yes", "label": "Yes", "value": "yes" },
+          { "id": "no", "label": "No", "value": "no" }
         ]
       }
     }

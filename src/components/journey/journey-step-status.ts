@@ -17,3 +17,10 @@ export function useJourneyStepStatus(formId: string, isValid: boolean) {
     window.dispatchEvent(new Event(JOURNEY_STEP_STATUS_EVENT));
   }, [formId, isValid]);
 }
+
+export function notifyJourneyStepFailed() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(JOURNEY_STEP_SUBMIT_FAILED_EVENT));
+  }
+}
+

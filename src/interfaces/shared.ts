@@ -108,4 +108,11 @@ export interface CustomerDetails {
   supplierDataSharingConsentAccepted?: boolean;
   surname?: string | null;
   title?: string | null;
+  insuranceType?: string;
+  insuranceHomeOwnershipStatus?: string;
+  insuranceCoverStartWindow?: string;
+  insurancePaymentFrequency?: string;
+  insuredHomeType?: string;
+  insuranceHouseStyle?: string;
+  hasWorkingSmokeDetectors?: boolean;
 }

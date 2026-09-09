@@ -1,12 +1,15 @@
 'use client';
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 
-import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
-import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
+import { getNextJourneyRoute, type JourneyService } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
@@ -66,6 +69,7 @@ export function useUpdateJourney() {
 
       if (!journeyId) {
         showError('Journey ID is required');
+        notifyJourneyStepFailed();
         return false;
       }
 
@@ -87,6 +91,7 @@ export function useUpdateJourney() {
     } catch (error) {
       console.error('Failed to update journey:', error);
       showError('Failed to update journey. Please try again.');
+      notifyJourneyStepFailed();
       return false;
     }
   };
@@ -97,6 +102,10 @@ export function useUpdateJourney() {
 export default function PersonalDetailsForm() {
   const { personalDetails } = data.journey;
   const { journey } = useJourneyStore();
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
 
   const { fields, terms } = personalDetails;
 
@@ -135,17 +144,13 @@ export default function PersonalDetailsForm() {
   useJourneyStepStatus(
     'journey-step-form-1',
     Boolean(
-      // Boolean(
       title &&
       firstName.trim() &&
       lastName.trim() &&
       email.trim() &&
-      isValidUkMobile(mobileNumber.trim()) &&
+      mobileNumber.trim() &&
       dateOfBirth &&
-      (calculateAge(dateOfBirth) ?? 0) >= MIN_AGE &&
-      (calculateAge(dateOfBirth) ?? 0) <= 120 &&
       acceptedTerms,
-      // ),
     ),
   );
 
@@ -196,6 +201,7 @@ export default function PersonalDetailsForm() {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
+      notifyJourneyStepFailed();
       return;
     }
 
@@ -210,7 +216,19 @@ export default function PersonalDetailsForm() {
       marketingConsent: marketingConsent || false,
     };
 
-    updateJourney({ customer: userDetailObject }, JOURNEY_ROUTES[2], getCurrentRelativeUrl());
+    const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
+    const resolvedService: JourneyService =
+      requestedService === 'insurance'
+        ? 'insurance'
+        : requestedService === 'broadband'
+          ? 'broadband'
+          : isBundle
+            ? 'bundle-bills'
+            : 'energy';
+
+    const nextRoute = getNextJourneyRoute(1, resolvedService, isBundle ? 'bundle' : undefined);
+
+    updateJourney({ customer: userDetailObject }, nextRoute, getCurrentRelativeUrl());
   }
 
   return (

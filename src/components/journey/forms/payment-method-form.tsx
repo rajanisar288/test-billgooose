@@ -7,7 +7,10 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
-import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 
 import GasWarningModal from '../modal/gas-warning-modal';
@@ -111,6 +114,7 @@ export default function PaymentMethodForm() {
 
     if (service === 'broadband') {
       if (!selectedContractLength) {
+        notifyJourneyStepFailed();
         return;
       }
 
@@ -126,6 +130,7 @@ export default function PaymentMethodForm() {
     ====================================================== */
 
     if (!selectedPaymentMethod) {
+      notifyJourneyStepFailed();
       return;
     }
 

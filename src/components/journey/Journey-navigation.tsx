@@ -8,9 +8,12 @@ import { ArrowRight, LoaderCircle } from 'lucide-react';
 
 import data from '@/data/content.json';
 
-import { JOURNEY_STEP_STATUS_EVENT } from './journey-step-status';
+import {
+  JOURNEY_STEP_STATUS_EVENT,
+  JOURNEY_STEP_SUBMIT_FAILED_EVENT,
+} from './journey-step-status';
 
-type JourneyService = 'energy' | 'broadband';
+type JourneyService = 'energy' | 'broadband' | 'insurance' | 'bundle-bills';
 
 type JourneyNavigationProps = {
   currentStep: number;
@@ -47,6 +50,18 @@ export default function JourneyNavigation({
   }, [currentStep]);
 
   useEffect(() => {
+    const handleFailed = () => {
+      setIsSubmitting(false);
+    };
+
+    window.addEventListener(JOURNEY_STEP_SUBMIT_FAILED_EVENT, handleFailed);
+
+    return () => {
+      window.removeEventListener(JOURNEY_STEP_SUBMIT_FAILED_EVENT, handleFailed);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleSubmit = (event: Event) => {
       const form = event.target as HTMLFormElement;
 
@@ -61,6 +76,18 @@ export default function JourneyNavigation({
       document.removeEventListener('submit', handleSubmit, true);
     };
   }, [formId]);
+
+  // Safety timeout to prevent button getting permanently stuck in loading state
+  useEffect(() => {
+    if (!isSubmitting) return;
+
+    const timeout = setTimeout(() => {
+      setIsSubmitting(false);
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [isSubmitting]);
+
 
   const { navigation } = data.journey;
 

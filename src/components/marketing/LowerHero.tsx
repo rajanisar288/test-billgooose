@@ -23,7 +23,11 @@ export default function LowerHero() {
   function handleServiceSelect(service: ServiceType) {
     setSelectedService(service);
 
-    if (['energy', 'insurance', 'bundle-bills', 'broadband']?.includes(service)) {
+    if (service === 'bundle-bills') {
+      router.push('/compare?service=energy&flow=bundle');
+      return;
+    }
+    if (['energy', 'insurance', 'broadband']?.includes(service)) {
       router.push(`/compare?service=${service}`);
       return;
     }

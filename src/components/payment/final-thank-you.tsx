@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
+import { storeJourney } from '@/constants/shared';
 import { useJourneyStore } from '@/store/journeyStore';
 
 /* =========================================================
@@ -159,10 +160,32 @@ export default function FinalThankYou() {
 
   const maskedAccountNumber = maskAccountNumber(paymentDetails.accountNumber || '12345678');
 
-  const { journey } = useJourneyStore();
+  const { journey, clearJourney } = useJourneyStore();
 
   const handleRoute = (route: string) => {
-    localStorage.clear();
+    // Reset in-memory Zustand store
+    clearJourney();
+
+    // Clear journey-related localStorage keys
+    localStorage.removeItem('journeyId');
+    localStorage.removeItem(storeJourney);
+    localStorage.removeItem('journey-storage');
+    localStorage.removeItem('energyUsage');
+    localStorage.removeItem('billgooseJourneyService');
+
+    // Clear journey-related sessionStorage keys
+    sessionStorage.removeItem('compareFlowDetails');
+    sessionStorage.removeItem('billgooseJourneyService');
+    sessionStorage.removeItem('billgooseJourneyFlow');
+    sessionStorage.removeItem('billgooseJourneyProgress');
+    sessionStorage.removeItem('journeySelectedPlan');
+    sessionStorage.removeItem('journeyPaymentDetails');
+
+    // Notify subscribers so UI resets (JourneyShell, etc.)
+    window.dispatchEvent(new Event('billgoose-compare-flow-changed'));
+    window.dispatchEvent(new Event('billgoose-journey-service-changed'));
+    window.dispatchEvent(new Event('billgoose-journey-progress-changed'));
+
     router.push(route);
   };
 

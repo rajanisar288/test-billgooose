@@ -2,24 +2,50 @@
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Check, ChevronDown } from 'lucide-react';
 
-import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
+import { getNextJourneyRoute, type JourneyService } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
+import { type CustomerDetails } from '@/interfaces/shared';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
+
+type OptionItem = {
+  id: string;
+  label: string;
+  value: string;
+};
 
 export default function PolicyDetailsForm() {
   const router = useRouter();
+  const { journey } = useJourneyStore();
+  const { updateJourney } = useUpdateJourney();
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
 
   const { insurancePolicyDetails } = data.journey;
 
-  const [ownership, setOwnership] = useState(insurancePolicyDetails.ownership.defaultValue);
+  const [ownership, setOwnership] = useState(
+    journey?.customer?.insuranceHomeOwnershipStatus ??
+      insurancePolicyDetails.ownership.defaultValue,
+  );
 
-  const [coverStart, setCoverStart] = useState(insurancePolicyDetails.coverStart.defaultValue);
+  const [coverStart, setCoverStart] = useState(
+    journey?.customer?.insuranceCoverStartWindow ?? insurancePolicyDetails.coverStart.defaultValue,
+  );
 
   const [paymentFrequency, setPaymentFrequency] = useState(
-    insurancePolicyDetails.paymentFrequency.defaultValue,
+    journey?.customer?.insurancePaymentFrequency ??
+      insurancePolicyDetails.paymentFrequency.defaultValue,
   );
 
   const [coverStartOpen, setCoverStartOpen] = useState(false);
@@ -46,6 +72,7 @@ export default function PolicyDetailsForm() {
     event.preventDefault();
 
     if (!ownership || !coverStart || !paymentFrequency) {
+      notifyJourneyStepFailed();
       return;
     }
 
@@ -58,7 +85,25 @@ export default function PolicyDetailsForm() {
       }),
     );
 
-    router.push('/steps/house-details?service=insurance');
+    const userDetailObject: CustomerDetails = {
+      insuranceHomeOwnershipStatus: ownership,
+      insuranceCoverStartWindow: coverStart,
+      insurancePaymentFrequency: paymentFrequency,
+    };
+
+    const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
+    const resolvedService: JourneyService =
+      requestedService === 'insurance'
+        ? 'insurance'
+        : requestedService === 'broadband'
+          ? 'broadband'
+          : isBundle
+            ? 'bundle-bills'
+            : 'energy';
+
+    const nextRoute = getNextJourneyRoute(2, resolvedService, isBundle ? 'bundle' : undefined);
+
+    updateJourney({ customer: userDetailObject }, nextRoute, getCurrentRelativeUrl());
   }
 
   return (

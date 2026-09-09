@@ -104,11 +104,9 @@ export default function CompareFlow() {
   const isEmailValid = email !== '' && EMAIL_REGEX.test(email.trim());
 
   const isFormValid =
-    isPostcodeValid &&
-    selectedAddress &&
-    occupancyType.length > 0 &&
-    alreadyInProperty.length > 0 &&
-    (requestedService !== 'insurance' || isEmailValid);
+    isPostcodeValid && selectedAddress && occupancyType.length > 0 && alreadyInProperty.length > 0;
+  //  &&
+  // (requestedService !== 'insurance' || isEmailValid);
 
   /* =========================================================
      API FUNCTIONS
@@ -205,7 +203,7 @@ export default function CompareFlow() {
         journeyId,
         uuid: journeyId,
         lastUrl: getCurrentRelativeUrl(),
-        serviceType: requestedService == 'bundle-bills' ? 'billPackage' : (requestedService ?? ''),
+        serviceType: isBundleFlow ? 'billPackage' : (requestedService ?? ''),
         address: selectedAddress,
         customer: {
           ...(['billPackage']?.includes(requestedService) && {
@@ -224,6 +222,9 @@ export default function CompareFlow() {
           }),
           ...(['broadband']?.includes(requestedService) && {
             currentBroadbandProvider: currentProvider,
+          }),
+          ...(['insurance']?.includes(requestedService) && {
+            insuranceType: insuranceType,
           }),
         },
       };
@@ -322,6 +323,8 @@ export default function CompareFlow() {
 
       if (requestedService === 'broadband') {
         router.push(`/result?service=${requestedService}`);
+      } else if (isBundleFlow) {
+        router.push('/steps/personal-details-form?service=energy&flow=bundle');
       } else if (requestedService === 'energy') {
         router.push(`/current-usage/?service=${requestedService}`);
       } else {
@@ -344,7 +347,20 @@ export default function CompareFlow() {
     }
 
     // Preserve session storage items
-    if (selectedService === 'energy') {
+    if (requestedService === 'insurance') {
+      sessionStorage.setItem(
+        'compareFlowDetails',
+        JSON.stringify({
+          service: 'insurance',
+          flow: 'insurance',
+          postcode: postcode.trim(),
+          address: selectedAddress,
+          insuranceType,
+        }),
+      );
+      sessionStorage.setItem('billgooseJourneyService', 'insurance');
+      sessionStorage.setItem('billgooseJourneyFlow', 'insurance');
+    } else if (selectedService === 'energy') {
       sessionStorage.setItem(
         'compareFlowDetails',
         JSON.stringify({
@@ -934,7 +950,7 @@ export default function CompareFlow() {
             </fieldset> */}
 
             {/* ENERGY */}
-            {['energy', 'bundle-bills']?.includes(requestedService) && (
+            {['energy']?.includes(requestedService) && (
               <>
                 <div>
                   <label
@@ -1051,8 +1067,85 @@ export default function CompareFlow() {
                     )}
                   </div>
                 </div>
+                {isBundleFlow ? (
+                  <>
+                    <fieldset>
+                      <legend
+                        className="
+                        mb-2
+                        font-inter
+                        text-[13px] font-[500]
+                        leading-5
+                        text-[#344054]
+                        lg:text-[14px]
+                      "
+                      >
+                        {compareFlow.form.bundleBills.renterHomeOwner.label}
+                      </legend>
 
-                {['energy']?.includes(requestedService) && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {compareFlow.form.bundleBills.renterHomeOwner.options.map((option) => (
+                          <ChoicePill
+                            key={option.id}
+                            label={option.label}
+                            selected={renterHomeOwner === option.value}
+                            onClick={() => {
+                              setRenterHomeOwner(option.value);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </fieldset>
+                    <fieldset>
+                      <legend className="sr-only">
+                        {compareFlow.form.broadband.contractStatus.label}
+                      </legend>
+
+                      <div
+                        className="
+                          flex min-h-12 w-full
+                          items-center justify-between
+                          gap-[18px]
+                          rounded-full
+                          border border-[#D0D5DD]
+                          bg-white
+                          py-[9px] pl-4 pr-2
+                          shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                          min-[390px]:pl-6
+                          md:h-[50px] md:min-h-[50px] md:pl-5
+                          lg:h-[52px] lg:min-h-[52px]
+                        "
+                      >
+                        <span
+                          className="
+                            font-inter
+                            text-[12px] font-medium
+                            leading-5
+                            text-[#344054]
+                            min-[390px]:text-[13px]
+                            lg:text-[14px]
+                          "
+                        >
+                          {compareFlow.form.broadband.contractStatus.label}
+                        </span>
+
+                        <div className="flex h-[34px] shrink-0 items-center">
+                          {compareFlow.form.broadband.contractStatus.options.map((option) => (
+                            <PropertyOption
+                              key={option.id}
+                              label={option.label}
+                              selected={alreadyInProperty === option.value}
+                              onClick={() => {
+                                // setStillInContract(option.value);
+                                setAlreadyInProperty(option.value as MoveStatus);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </fieldset>
+                  </>
+                ) : (
                   <fieldset>
                     <legend
                       className="
@@ -1203,89 +1296,12 @@ export default function CompareFlow() {
                 </div>
               </>
             )}
-            {requestedService == 'bundle-bills' && (
-              <>
-                <fieldset>
-                  <legend
-                    className="
-                      mb-2
-                      font-inter
-                      text-[13px] font-[500]
-                      leading-5
-                      text-[#344054]
-                      lg:text-[14px]
-                    "
-                  >
-                    {compareFlow.form.bundleBills.renterHomeOwner.label}
-                  </legend>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    {compareFlow.form.bundleBills.renterHomeOwner.options.map((option) => (
-                      <ChoicePill
-                        key={option.id}
-                        label={option.label}
-                        selected={renterHomeOwner === option.value}
-                        onClick={() => {
-                          setRenterHomeOwner(option.value);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <legend className="sr-only">
-                    {compareFlow.form.broadband.contractStatus.label}
-                  </legend>
-
-                  <div
-                    className="
-                        flex min-h-12 w-full
-                        items-center justify-between
-                        gap-[18px]
-                        rounded-full
-                        border border-[#D0D5DD]
-                        bg-white
-                        py-[9px] pl-4 pr-2
-                        shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-                        min-[390px]:pl-6
-                        md:h-[50px] md:min-h-[50px] md:pl-5
-                        lg:h-[52px] lg:min-h-[52px]
-                      "
-                  >
-                    <span
-                      className="
-                          font-inter
-                          text-[12px] font-medium
-                          leading-5
-                          text-[#344054]
-                          min-[390px]:text-[13px]
-                          lg:text-[14px]
-                        "
-                    >
-                      {compareFlow.form.broadband.contractStatus.label}
-                    </span>
-
-                    <div className="flex h-[34px] shrink-0 items-center">
-                      {compareFlow.form.broadband.contractStatus.options.map((option) => (
-                        <PropertyOption
-                          key={option.id}
-                          label={option.label}
-                          selected={alreadyInProperty === option.value}
-                          onClick={() => {
-                            // setStillInContract(option.value);
-                            setAlreadyInProperty(option.value as MoveStatus);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </fieldset>
-              </>
-            )}
+            {/* {requestedService == 'bundle-bills' && (
+            )} */}
 
             {requestedService == 'insurance' && (
               <>
-                <FormField label={compareFlow.form.email.label}>
+                {/* <FormField label={compareFlow.form.email.label}>
                   <input
                     type="email"
                     value={email}
@@ -1349,7 +1365,7 @@ export default function CompareFlow() {
                   {errors.email && (
                     <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.email}</p>
                   )}
-                </FormField>
+                </FormField> */}
                 <div>
                   <label
                     id="energy-service-label"

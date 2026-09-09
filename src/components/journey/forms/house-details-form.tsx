@@ -2,24 +2,43 @@
 
 import { type FormEvent, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
-import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
+import { getNextJourneyRoute, type JourneyService } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
+import { type CustomerDetails } from '@/interfaces/shared';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 export default function HouseDetailsForm() {
   const router = useRouter();
+  const { journey } = useJourneyStore();
+  const { updateJourney } = useUpdateJourney();
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
 
   const { insuranceHouseDetails } = data.journey;
 
-  const [homeType, setHomeType] = useState(insuranceHouseDetails.homeType.defaultValue);
+  const [homeType, setHomeType] = useState(
+    journey?.customer?.insuredHomeType ?? insuranceHouseDetails.homeType.defaultValue,
+  );
 
-  const [houseStyle, setHouseStyle] = useState(insuranceHouseDetails.houseStyle.defaultValue);
+  const [houseStyle, setHouseStyle] = useState(
+    journey?.customer?.insuranceHouseStyle ?? insuranceHouseDetails.houseStyle.defaultValue,
+  );
 
   const [smokeDetectors, setSmokeDetectors] = useState(
-    insuranceHouseDetails.smokeDetectors.defaultValue,
+    journey?.customer?.hasWorkingSmokeDetectors ??
+      insuranceHouseDetails.smokeDetectors.defaultValue,
   );
 
   useJourneyStepStatus('journey-step-form-3', Boolean(homeType && houseStyle && smokeDetectors));
@@ -28,6 +47,7 @@ export default function HouseDetailsForm() {
     event.preventDefault();
 
     if (!homeType || !houseStyle || !smokeDetectors) {
+      notifyJourneyStepFailed();
       return;
     }
 
@@ -43,7 +63,25 @@ export default function HouseDetailsForm() {
     sessionStorage.setItem('billgooseJourneyService', 'insurance');
     sessionStorage.setItem('billgooseJourneyFlow', 'insurance');
 
-    router.push('/result?service=insurance');
+    const userDetailObject: CustomerDetails = {
+      insuredHomeType: homeType,
+      insuranceHouseStyle: houseStyle,
+      hasWorkingSmokeDetectors: smokeDetectors == 'yes' ? true : false,
+    };
+
+    const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
+    const resolvedService: JourneyService =
+      requestedService === 'insurance'
+        ? 'insurance'
+        : requestedService === 'broadband'
+          ? 'broadband'
+          : isBundle
+            ? 'bundle-bills'
+            : 'energy';
+
+    const nextRoute = getNextJourneyRoute(3, resolvedService, isBundle ? 'bundle' : undefined);
+
+    updateJourney({ customer: userDetailObject }, nextRoute, getCurrentRelativeUrl());
   }
 
   return (

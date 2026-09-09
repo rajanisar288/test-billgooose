@@ -6,9 +6,14 @@ import Image from 'next/image';
 
 import { CalendarDays, Check } from 'lucide-react';
 
+import { useSearchParams } from 'next/navigation';
+
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
-import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
-import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
+import { getNextJourneyRoute } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
@@ -58,6 +63,11 @@ function subscribeToJourneyService(callback: () => void) {
 export default function ContractDateForm() {
   const { journey } = useJourneyStore();
   const { updateJourney } = useUpdateJourney();
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
+  const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
 
   const { contractDetails, broadbandProvider } = data.journey;
   const { fields, information, warning, acknowledgement } = contractDetails;
@@ -110,14 +120,20 @@ export default function ContractDateForm() {
      */
     if (service === 'broadband') {
       if (!selectedProvider) {
+        notifyJourneyStepFailed();
         return;
       }
 
-      await updateJourney(
+      const nextRoute = getNextJourneyRoute(2, 'broadband');
+      const success = await updateJourney(
         { customer: selectedProvider },
-        JOURNEY_ROUTES[3],
+        nextRoute,
         getCurrentRelativeUrl(),
       );
+
+      if (!success) {
+        notifyJourneyStepFailed();
+      }
 
       return;
     }
@@ -127,10 +143,12 @@ export default function ContractDateForm() {
      */
     if (!isValidContractDate) {
       setContractDateError('Enter a contract start date that is today or later.');
+      notifyJourneyStepFailed();
       return;
     }
 
     if (!acknowledged) {
+      notifyJourneyStepFailed();
       return;
     }
 
@@ -141,11 +159,21 @@ export default function ContractDateForm() {
       supplierDataSharingConsentAccepted: acknowledged,
     };
 
-    await updateJourney(
+    const nextRoute = getNextJourneyRoute(
+      2,
+      isBundle ? 'bundle-bills' : 'energy',
+      isBundle ? 'bundle' : undefined,
+    );
+
+    const success = await updateJourney(
       { customer: contractDetailsData },
-      JOURNEY_ROUTES[3],
+      nextRoute,
       getCurrentRelativeUrl(),
     );
+
+    if (!success) {
+      notifyJourneyStepFailed();
+    }
   }
 
   /*

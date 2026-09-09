@@ -4,9 +4,14 @@ import { type FormEvent, useState } from 'react';
 
 import { Check } from 'lucide-react';
 
+import { useSearchParams } from 'next/navigation';
+
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
-import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 import { useJourneyStore } from '@/store/journeyStore';
 
@@ -19,6 +24,7 @@ const EV_VALUE_MAP: Record<string, number> = {
 export default function ElectricVehicleForm() {
   const { updateJourney } = useUpdateJourney();
   const { journey } = useJourneyStore();
+  const searchParams = useSearchParams();
 
   const { electricVehicle } = data.journey;
 
@@ -37,19 +43,30 @@ export default function ElectricVehicleForm() {
     event.preventDefault();
 
     const isValidOption = electricVehicle.options.some((option) => option.value === selectedOption);
-    if (!selectedOption || !isValidOption) return;
+    if (!selectedOption || !isValidOption) {
+      notifyJourneyStepFailed();
+      return;
+    }
 
     const hasEvCar = EV_VALUE_MAP[selectedOption.toLowerCase()];
 
     sessionStorage.setItem(electricVehicle.storageKey, selectedOption);
-    const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
+    const requestedFlow = searchParams.get('flow');
+    const requestedService = searchParams.get('service');
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+    const isBundle =
+      requestedFlow === 'bundle' ||
+      storedFlow === 'bundle' ||
+      requestedService === 'bundle-bills';
 
-    const targetRoute =
-      journeyFlow === 'bundle'
-        ? `${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`
-        : '/review-your-details?service=energy';
+    const targetRoute = isBundle
+      ? `${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`
+      : '/review-your-details?service=energy';
 
-    await updateJourney({ customer: { hasEvCar } }, targetRoute, journey?.lastUrl);
+    const success = await updateJourney({ customer: { hasEvCar } }, targetRoute, journey?.lastUrl);
+    if (!success) {
+      notifyJourneyStepFailed();
+    }
   }
 
   return (

@@ -101,12 +101,12 @@ export default function ResultPageContent() {
 
   if (service === 'mobile') {
     return (
-      <ResultFilterProvider>
-        <main className="min-h-screen bg-[#F8F9FA]">
-          <MobileResults />
-          <Footer2 />
-        </main>
-      </ResultFilterProvider>
+      // <ResultFilterProvider>
+      <main className="min-h-screen bg-[#F8F9FA]">
+        <MobileResults />
+        <Footer2 />
+      </main>
+      // </ResultFilterProvider>
     );
   }
 

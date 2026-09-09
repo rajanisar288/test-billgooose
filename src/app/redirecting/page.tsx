@@ -1,37 +1,179 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 /* =========================================================
-   STORAGE
+   TYPES
 ========================================================= */
 
-function getProviderSnapshot() {
+type RedirectService = 'broadband' | 'sim-only' | 'insurance';
+
+type RedirectOrigin = 'sim-only' | 'mobile-details';
+
+/* =========================================================
+   CURRENT SERVICE
+========================================================= */
+
+function resolveRedirectService(value: string | null): RedirectService {
+  if (value === 'sim-only') {
+    return 'sim-only';
+  }
+
+  if (value === 'insurance') {
+    return 'insurance';
+  }
+
+  return 'broadband';
+}
+
+/* =========================================================
+   PROVIDER STORAGE
+========================================================= */
+
+function getProviderForService(service: RedirectService): string {
   try {
+    if (service === 'sim-only') {
+      return (
+        sessionStorage.getItem('externalRedirectProvider') ??
+        sessionStorage.getItem('simOnlyRedirectProvider') ??
+        ''
+      );
+    }
+
+    if (service === 'insurance') {
+      return sessionStorage.getItem('insuranceRedirectProvider') ?? '';
+    }
+
     return sessionStorage.getItem('broadbandRedirectProvider') ?? '';
   } catch {
     return '';
   }
 }
 
+function getUrlForService(service: RedirectService): string {
+  try {
+    if (service === 'sim-only') {
+      return (
+        sessionStorage.getItem('externalRedirectUrl') ??
+        sessionStorage.getItem('simOnlyRedirectUrl') ??
+        ''
+      );
+    }
+
+    if (service === 'insurance') {
+      return sessionStorage.getItem('insuranceRedirectUrl') ?? '';
+    }
+
+    return sessionStorage.getItem('broadbandRedirectUrl') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/* =========================================================
+   REDIRECT ORIGIN
+
+   Only relevant for SIM-only.
+
+   Normal SIM page:
+   externalRedirectOrigin = sim-only
+
+   SIM deal clicked from mobile detail:
+   externalRedirectOrigin = mobile-details
+========================================================= */
+
+function getRedirectOrigin(service: RedirectService): RedirectOrigin {
+  if (service !== 'sim-only') {
+    return 'sim-only';
+  }
+
+  try {
+    const value = sessionStorage.getItem('externalRedirectOrigin');
+
+    return value === 'mobile-details' ? 'mobile-details' : 'sim-only';
+  } catch {
+    return 'sim-only';
+  }
+}
+
+/* =========================================================
+   OPENED STATE STORAGE
+========================================================= */
+
+function getOpenedStorageKey(service: RedirectService) {
+  if (service === 'sim-only') {
+    return 'simOnlyRedirectOpened';
+  }
+
+  if (service === 'insurance') {
+    return 'insuranceRedirectOpened';
+  }
+
+  return 'broadbandRedirectOpened';
+}
+
+/* =========================================================
+   REACTIVE STORAGE SNAPSHOT
+========================================================= */
+
+function createProviderSnapshot(service: RedirectService) {
+  return () => {
+    return getProviderForService(service);
+  };
+}
+
+function createOpenedSnapshot(service: RedirectService) {
+  return () => {
+    try {
+      return sessionStorage.getItem(getOpenedStorageKey(service)) === 'true';
+    } catch {
+      return false;
+    }
+  };
+}
+
+function createOriginSnapshot(service: RedirectService) {
+  return () => {
+    return getRedirectOrigin(service);
+  };
+}
+
 function getProviderServerSnapshot() {
   return '';
 }
 
+function getOpenedServerSnapshot() {
+  return false;
+}
+
+function getOriginServerSnapshot(): RedirectOrigin {
+  return 'sim-only';
+}
+
+/* =========================================================
+   SUBSCRIPTION
+========================================================= */
+
 function subscribe(callback: () => void) {
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key === 'broadbandRedirectProvider') {
-      callback();
-    }
-  };
+  function handleStorage() {
+    callback();
+  }
+
+  function handleRedirectUpdated() {
+    callback();
+  }
 
   window.addEventListener('storage', handleStorage);
 
+  window.addEventListener('billgoose-redirect-updated', handleRedirectUpdated);
+
   return () => {
     window.removeEventListener('storage', handleStorage);
+
+    window.removeEventListener('billgoose-redirect-updated', handleRedirectUpdated);
   };
 }
 
@@ -39,29 +181,88 @@ function subscribe(callback: () => void) {
    PAGE
 ========================================================= */
 
-export default function RedirectingPage() {
+function RedirectingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const provider = useSyncExternalStore(subscribe, getProviderSnapshot, getProviderServerSnapshot);
+  const service = resolveRedirectService(searchParams.get('service'));
 
-  const [hasOpenedProvider, setHasOpenedProvider] = useState(false);
+  const provider = useSyncExternalStore(
+    subscribe,
+    createProviderSnapshot(service),
+    getProviderServerSnapshot,
+  );
+
+  const hasOpenedProvider = useSyncExternalStore(
+    subscribe,
+    createOpenedSnapshot(service),
+    getOpenedServerSnapshot,
+  );
+
+  const redirectOrigin = useSyncExternalStore(
+    subscribe,
+    createOriginSnapshot(service),
+    getOriginServerSnapshot,
+  );
+
+  /* =========================================================
+     MOBILE DETAILS REDIRECT?
+  ========================================================= */
+
+  const isMobileDetailsRedirect = service === 'sim-only' && redirectOrigin === 'mobile-details';
+
+  /* =========================================================
+     REDIRECT
+  ========================================================= */
 
   useEffect(() => {
-    let providerUrl = '';
+    const providerUrl = getUrlForService(service);
 
+    const openedStorageKey = getOpenedStorageKey(service);
+
+    /*
+     * Reset opened state every
+     * time redirect page loads.
+     */
     try {
-      providerUrl = sessionStorage.getItem('broadbandRedirectUrl') ?? '';
+      sessionStorage.setItem(openedStorageKey, 'false');
+
+      window.dispatchEvent(new Event('billgoose-redirect-updated'));
     } catch {
-      providerUrl = '';
+      // Ignore storage failure.
     }
 
     /* =====================================================
-       NO REDIRECT URL
+       NO URL
     ====================================================== */
 
     if (!providerUrl) {
       const fallbackTimer = window.setTimeout(() => {
-        router.replace('/result?service=broadband');
+        /*
+         * Mobile-details SIM redirect
+         * returns to MOBILE deals.
+         *
+         * Normal SIM-only stays exactly
+         * as before.
+         *
+         * Broadband stays exactly
+         * as before.
+         */
+        if (service === 'sim-only' && getRedirectOrigin(service) === 'mobile-details') {
+          router.replace('/result?service=mobile');
+
+          return;
+        }
+
+        if (service === 'insurance') {
+          router.replace('/result?service=insurance');
+
+          return;
+        }
+
+        router.replace(
+          service === 'sim-only' ? '/result?service=sim-only' : '/result?service=broadband',
+        );
       }, 1200);
 
       return () => {
@@ -76,13 +277,61 @@ export default function RedirectingPage() {
     const redirectTimer = window.setTimeout(() => {
       window.open(providerUrl, '_blank', 'noopener,noreferrer');
 
-      setHasOpenedProvider(true);
+      try {
+        sessionStorage.setItem(openedStorageKey, 'true');
+
+        window.dispatchEvent(new Event('billgoose-redirect-updated'));
+      } catch {
+        // Ignore storage failure.
+      }
     }, 1500);
 
     return () => {
       window.clearTimeout(redirectTimer);
     };
-  }, [router]);
+  }, [router, service]);
+
+  /* =========================================================
+     CONTENT
+  ========================================================= */
+
+  const serviceName =
+    service === 'sim-only' ? 'SIM-only' : service === 'insurance' ? 'insurance' : 'broadband';
+
+  /* =========================================================
+     BACK BUTTON
+
+     BROADBAND:
+     Back to broadband deals
+
+     NORMAL SIM:
+     Back to SIM-only deals
+
+     MOBILE DETAILS SIM:
+     Back to mobile deals
+  ========================================================= */
+
+  let backButtonLabel = 'Back to broadband deals';
+
+  let resultRoute = '/result?service=broadband';
+
+  if (service === 'sim-only') {
+    if (isMobileDetailsRedirect) {
+      backButtonLabel = 'Back to mobile deals';
+
+      resultRoute = '/result?service=mobile';
+    } else {
+      backButtonLabel = 'Back to SIM-only deals';
+
+      resultRoute = '/result?service=sim-only';
+    }
+  }
+
+  if (service === 'insurance') {
+    backButtonLabel = 'Back to insurance deals';
+
+    resultRoute = '/result?service=insurance';
+  }
 
   return (
     <main
@@ -128,6 +377,7 @@ export default function RedirectingPage() {
         {/* =====================================================
             LOGO
         ====================================================== */}
+
         <Image
           src="/images/updated-logo.png"
           alt="BillGoose"
@@ -143,8 +393,9 @@ export default function RedirectingPage() {
         />
 
         {/* =====================================================
-            LOADER
+            LOADER / COMPLETE ICON
         ====================================================== */}
+
         {!hasOpenedProvider ? (
           <div
             className="
@@ -191,11 +442,11 @@ export default function RedirectingPage() {
               bg-[#ECFDF3]
             "
           >
-            {/* Replace this with your uploaded icon */}
             <span
               className="
-                text-[22px]
+                font-red-hat-display
 
+                text-[22px]
                 font-bold
 
                 text-[#00897B]
@@ -209,6 +460,7 @@ export default function RedirectingPage() {
         {/* =====================================================
             HEADING
         ====================================================== */}
+
         <h1
           className="
             mt-6
@@ -230,11 +482,12 @@ export default function RedirectingPage() {
         {/* =====================================================
             DESCRIPTION
         ====================================================== */}
+
         <p
           className="
             mt-2
 
-            max-w-[340px]
+            max-w-[350px]
 
             font-inter
 
@@ -246,9 +499,13 @@ export default function RedirectingPage() {
           "
         >
           {hasOpenedProvider
-            ? 'Continue on the provider website in the newly opened tab to complete your broadband order.'
-            : 'We’re preparing the provider website for you. It will open in a new tab.'}
+            ? `Continue on the ${provider || 'provider'} website in the newly opened tab to complete your ${serviceName} order.`
+            : `We’re preparing the ${provider || 'provider'} website for you. It will open in a new tab.`}
         </p>
+
+        {/* =====================================================
+            WAITING TEXT
+        ====================================================== */}
 
         {!hasOpenedProvider && (
           <p
@@ -259,6 +516,7 @@ export default function RedirectingPage() {
 
               text-[12px]
               font-medium
+              leading-[18px]
 
               text-[#98A2B3]
             "
@@ -268,13 +526,31 @@ export default function RedirectingPage() {
         )}
 
         {/* =====================================================
-            BACK TO RESULTS
+            BACK TO CORRECT RESULTS
         ====================================================== */}
+
         {hasOpenedProvider && (
           <button
             type="button"
             onClick={() => {
-              router.push('/result?service=broadband');
+              /*
+               * Clear origin after it
+               * has served its purpose.
+               *
+               * This prevents a future
+               * normal SIM redirect from
+               * accidentally inheriting
+               * mobile-details.
+               */
+              if (service === 'sim-only') {
+                try {
+                  sessionStorage.removeItem('externalRedirectOrigin');
+                } catch {
+                  // Ignore storage failure.
+                }
+              }
+
+              router.push(resultRoute);
             }}
             className="
               mt-7
@@ -294,22 +570,50 @@ export default function RedirectingPage() {
 
               px-6
 
-              font-inter
+              font-red-hat-display
 
               text-[13px]
-              font-semibold
+              font-bold
+              leading-5
 
               text-[#344054]
 
               transition-colors
 
               hover:bg-[#F9FAFB]
+
+              focus-visible:outline-none
+              focus-visible:ring-4
+              focus-visible:ring-[#F2F4F7]
             "
           >
-            Back to broadband deals
+            {backButtonLabel}
           </button>
         )}
       </section>
     </main>
+  );
+}
+function RedirectingFallback() {
+  return (
+    <main
+      className="
+        flex
+        min-h-screen
+        w-full
+        items-center
+        justify-center
+        bg-[#F9FAFB]
+        px-5
+      "
+    />
+  );
+}
+
+export default function RedirectingPage() {
+  return (
+    <Suspense fallback={<RedirectingFallback />}>
+      <RedirectingContent />
+    </Suspense>
   );
 }

@@ -3,15 +3,17 @@
 import { type FormEvent, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute } from '@/components/journey/journey-routes';
-import { useJourneyStepStatus } from '@/components/journey/journey-step-status';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -58,15 +60,18 @@ function subscribeToJourneyService(callback: () => void) {
 }
 
 export default function HouseholdForm() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
+  const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
+
   const { updateJourney } = useUpdateJourney();
 
   const { household, broadbandSpeed } = data.journey;
 
   const { propertyType, occupants, bedrooms } = household;
 
-  const { journey, setJourney } = useJourneyStore();
-  const { showSuccess, showError } = useToast();
+  const { journey } = useJourneyStore();
 
   const service = useSyncExternalStore(
     subscribeToJourneyService,
@@ -131,14 +136,20 @@ export default function HouseholdForm() {
 
     if (service === 'broadband') {
       if (!isValidBroadbandSpeed) {
+        notifyJourneyStepFailed();
         return;
       }
 
-      await updateJourney(
+      const nextRoute = getNextJourneyRoute(3, 'broadband');
+      const success = await updateJourney(
         { customer: selectedBroadbandSpeed },
-        getNextJourneyRoute(3, 'broadband'),
+        nextRoute,
         getCurrentRelativeUrl(),
       );
+
+      if (!success) {
+        notifyJourneyStepFailed();
+      }
 
       return;
     }
@@ -151,6 +162,7 @@ export default function HouseholdForm() {
     ======================================================== */
 
     if (!isValidHousehold) {
+      notifyJourneyStepFailed();
       return;
     }
 
@@ -160,11 +172,21 @@ export default function HouseholdForm() {
       bedrooms: selectedBedrooms,
     };
 
-    await updateJourney(
+    const nextRoute = getNextJourneyRoute(
+      3,
+      isBundle ? 'bundle-bills' : 'energy',
+      isBundle ? 'bundle' : undefined,
+    );
+
+    const success = await updateJourney(
       { customer: householdData },
-      getNextJourneyRoute(3, 'energy'),
+      nextRoute,
       getCurrentRelativeUrl(),
     );
+
+    if (!success) {
+      notifyJourneyStepFailed();
+    }
   }
 
   /* =========================================================
@@ -831,89 +853,6 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
   );
 }
 
-/* =========================================================
-   ENERGY SELECTOR OPTION
-========================================================= */
-
-type SelectorOptionProps = {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-  fullWidth?: boolean;
-};
-
-function SelectorOption({ label, selected, onClick, fullWidth = false }: SelectorOptionProps) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={`
-        flex
-        h-[52px]
-        w-full
-
-        items-center
-        justify-between
-
-        gap-3
-
-        rounded-[14px]
-
-        border
-
-        bg-white
-
-        px-4
-
-        text-left
-
-        transition-colors
-
-        sm:h-[56px]
-        sm:rounded-[16px]
-        sm:px-[18px]
-
-        md:h-[54px]
-        md:rounded-[14px]
-        md:px-4
-
-        lg:h-[61px]
-        lg:gap-4
-        lg:rounded-[16px]
-        lg:px-5
-
-        ${fullWidth ? 'lg:w-[500px]' : ''}
-
-        ${selected ? 'border-[#00897B]' : 'border-[#D0D5DD]'}
-      `}
-    >
-      <span
-        className="
-          min-w-0
-
-          font-red-hat-display
-          text-[13px]
-          font-bold
-          leading-none
-          tracking-[0]
-
-          text-[#0D3B66]
-
-          sm:text-[14px]
-
-          md:text-[14px]
-
-          lg:text-[16px]
-        "
-      >
-        {label}
-      </span>
-
-      <SelectionCircle selected={selected} />
-    </button>
-  );
-}
 
 type CounterSelectorProps = {
   value: number;
