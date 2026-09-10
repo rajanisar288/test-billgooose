@@ -40,6 +40,13 @@ const SERVICE_USER_ADDRESS = '25 Victoria Street, London, SW1H 0EX';
 
 const REFERENCE_NUMBER = 'DD-BG-XMKNAY';
 
+function formatSortCode(value: string): string {
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 6)
+    .replace(/(\d{2})(?=\d)/g, '$1-');
+}
+
 const SECURITY_ITEMS = [
   {
     id: 'ssl',
@@ -706,7 +713,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       placeholder="12-34-56"
                       helperText="6-digit sort code"
                       value={form.sortCode}
-                      onChange={(value) => updateField('sortCode', value)}
+                      onChange={(value) => updateField('sortCode', formatSortCode(value))}
                       inputMode="numeric"
                       maxLength={8}
                       error={fieldErrors.sortCode}
@@ -718,7 +725,9 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       placeholder="12345678"
                       helperText="8-digit account number"
                       value={form.accountNumber}
-                      onChange={(value) => updateField('accountNumber', value)}
+                      onChange={(value) =>
+                        updateField('accountNumber', value.replace(/\D/g, '').slice(0, 8))
+                      }
                       inputMode="numeric"
                       maxLength={8}
                       error={fieldErrors.accountNumber}

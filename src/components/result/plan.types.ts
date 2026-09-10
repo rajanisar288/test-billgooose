@@ -21,6 +21,7 @@ export type SelectPlan = {
   providerUrl?: string;
   quoteId?: string;
   productReference?: string;
+  productReferences?: string[];
   supplierCode?: string;
   paymentMethod?: string;
   annualPrice?: string;
@@ -51,6 +52,7 @@ export type ViewDealPlan = {
   providerUrl?: string;
   quoteId?: string;
   productReference?: string;
+  productReferences?: string[];
   supplierCode?: string;
   paymentMethod?: string;
   annualPrice?: string;

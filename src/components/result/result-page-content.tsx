@@ -60,7 +60,7 @@ export default function ResultPageContent() {
       return;
     }
 
-    const quoteRequestKey = `${service}:${journeyId}`;
+    const quoteRequestKey = `${service}:${flow ?? ''}:${journeyId}`;
 
     if (quoteRequestKeyRef.current === quoteRequestKey) {
       return;
@@ -98,7 +98,7 @@ export default function ResultPageContent() {
     };
 
     void loadQuote();
-  }, [isQuoteService, journeyId, service]);
+  }, [flow, isQuoteService, journeyId, service]);
 
   if (service === 'mobile') {
     return (
@@ -127,6 +127,7 @@ export default function ResultPageContent() {
           heading={isInsurance ? 'Results summary' : undefined}
           description={isInsurance ? insuranceDescription : undefined}
           resultCount={isQuoteService ? quoteProductCount : undefined}
+          isLoading={isQuoteService && quoteLoading}
         />
 
         <section

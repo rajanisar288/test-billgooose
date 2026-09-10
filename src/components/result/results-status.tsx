@@ -11,9 +11,15 @@ type ResultsStatusProps = {
   heading?: string;
   description?: string;
   resultCount?: number;
+  isLoading?: boolean;
 };
 
-export default function ResultsStatus({ heading, description, resultCount }: ResultsStatusProps) {
+export default function ResultsStatus({
+  heading,
+  description,
+  resultCount,
+  isLoading = false,
+}: ResultsStatusProps) {
   const { resultsStatus } = data.resultPage;
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(resultsStatus.planTabs.defaultValue);
@@ -96,8 +102,9 @@ export default function ResultsStatus({ heading, description, resultCount }: Res
               {heading ?? resultsStatus.heading}
             </h2>
 
-            <p
-              className="
+            {!isLoading && (
+              <p
+                className="
                 mt-1
 
                 font-inter
@@ -111,18 +118,19 @@ export default function ResultsStatus({ heading, description, resultCount }: Res
                 sm:text-[12px]
                 sm:leading-[18px]
               "
-            >
-              {description ? (
-                description
-              ) : (
-                <>
-                  <strong className="font-normal">
-                    {resultCount ?? resultsStatus.descriptionStart}
-                  </strong>{' '}
-                  {resultsStatus.descriptionRest}
-                </>
-              )}
-            </p>
+              >
+                {description ? (
+                  description
+                ) : (
+                  <>
+                    <strong className="font-normal">
+                      {resultCount ?? resultsStatus.descriptionStart}
+                    </strong>{' '}
+                    {resultsStatus.descriptionRest}
+                  </>
+                )}
+              </p>
+            )}
           </div>
 
           {/* =================================================

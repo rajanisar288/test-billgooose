@@ -203,7 +203,11 @@ export default function ReviewYourDetails() {
   const searchParams = useSearchParams();
 
   const requestedService = searchParams.get('service');
-  const isBundle = requestedService === 'bundle-bills' || journey?.serviceType === 'billPackage';
+  const requestedFlow = searchParams.get('flow');
+  const isBundle =
+    requestedFlow === 'bundle' ||
+    requestedService === 'bundle-bills' ||
+    journey?.serviceType === 'billPackage';
   const serviceFields = useServiceFields(isBundle ? 'billPackage' : journey?.serviceType);
 
   const [isConfirming, setIsConfirming] = useState(false);
@@ -241,15 +245,17 @@ export default function ReviewYourDetails() {
 
       const selectedPlan = readStoredSelectedPlan();
       const quoteId = selectedPlan?.quoteId;
-      const productReference = selectedPlan?.productReference;
+      const productReferences =
+        selectedPlan?.productReferences ??
+        (selectedPlan?.productReference ? [selectedPlan.productReference] : []);
 
-      if (!quoteId || !productReference) {
+      if (!quoteId || productReferences.length === 0) {
         throw new Error('Selected quote details are missing. Please select a plan again.');
       }
 
       const orderResponse = await journeyApi.createJourneyOrder(journeyId, {
         quoteId,
-        productReferences: [productReference],
+        productReferences,
       });
       const orderId = orderResponse?.data?.orderId;
 

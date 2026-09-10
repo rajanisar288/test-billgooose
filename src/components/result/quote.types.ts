@@ -78,7 +78,7 @@ export function mapQuoteResponseToPlans(
         return {
           id: `${supplier.supplierCode || supplier.supplierId}-${product.productReference}`,
           type: 'select-plan' as const,
-          service: 'energy' as const,
+          service,
           quoteId: response.quoteId,
           provider,
           description: product.description || planName || supplier.supplierName,
@@ -98,6 +98,7 @@ export function mapQuoteResponseToPlans(
           paymentMethod: product.paymentMethod ?? product.rateType,
           supplierCode: supplier.supplierCode,
           productReference: product.productReference,
+          productReferences: [product.productReference],
           productType: product.productType,
           feeDetails: product.fees,
           priceIncreaseDetails: product.priceIncreases,

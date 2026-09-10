@@ -213,6 +213,7 @@ export default function ResultPlans({
   ========================================================= */
 
   const queryService = searchParams.get('service');
+  const queryFlow = searchParams.get('flow');
 
   const service: CompareService =
     serviceOverride ??
@@ -222,7 +223,7 @@ export default function ResultPlans({
         ? 'sim-only'
         : queryService === 'insurance'
           ? 'insurance'
-          : queryService === 'bundle-bills'
+          : queryService === 'bundle-bills' || queryFlow === 'bundle'
             ? 'bundle-bills'
             : 'energy');
 
@@ -747,8 +748,9 @@ export default function ResultPlans({
                   {heading ?? resultsStatus.heading}
                 </h2>
 
-                <p
-                  className="
+                {!quoteLoading && (
+                  <p
+                    className="
                     mt-1
 
                     font-inter
@@ -759,33 +761,34 @@ export default function ResultPlans({
 
                     text-[#667085]
                   "
-                >
-                  {description ? (
-                    description
-                  ) : isSimOnly ? (
-                    <>
-                      <strong className="font-normal">{simOnlyPlanItems.length} deals</strong>{' '}
-                      available, starting with the lowest monthly cost.
-                    </>
-                  ) : service === 'insurance' ? (
-                    <>
-                      <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
-                      found, starting with the lowest monthly cost.
-                    </>
-                  ) : isInsurance ? (
-                    <>
-                      <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
-                      sorted with lowest first.
-                    </>
-                  ) : (
-                    <>
-                      <strong className="font-normal">
-                        {resultCount ?? resultsStatus.descriptionStart}
-                      </strong>{' '}
-                      {resultsStatus.descriptionRest}
-                    </>
-                  )}
-                </p>
+                  >
+                    {description ? (
+                      description
+                    ) : isSimOnly ? (
+                      <>
+                        <strong className="font-normal">{simOnlyPlanItems.length} deals</strong>{' '}
+                        available, starting with the lowest monthly cost.
+                      </>
+                    ) : service === 'insurance' ? (
+                      <>
+                        <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
+                        found, starting with the lowest monthly cost.
+                      </>
+                    ) : isInsurance ? (
+                      <>
+                        <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
+                        sorted with lowest first.
+                      </>
+                    ) : (
+                      <>
+                        <strong className="font-normal">
+                          {resultCount ?? resultsStatus.descriptionStart}
+                        </strong>{' '}
+                        {resultsStatus.descriptionRest}
+                      </>
+                    )}
+                  </p>
+                )}
 
                 {!isSimOnly && (
                   <div className="mt-3 flex items-center gap-2">

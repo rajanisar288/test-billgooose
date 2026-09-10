@@ -1123,7 +1123,7 @@ export default function PlanCard({
           <div
             className="
               grid
-              grid-cols-4
+              grid-cols-3
 
               gap-3
 
@@ -1151,10 +1151,11 @@ export default function PlanCard({
               value={plan.contract}
             />
 
-            <ResultMetric
-              label="Exit fee"
-              value="£190"
-            />
+            {/*  <ResultMetric
+               label="Exit fee"
+               value="£190"
+             />
+              */}
           </div>
         )}
       </article>
