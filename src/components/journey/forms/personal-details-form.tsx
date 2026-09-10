@@ -15,6 +15,7 @@ import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
 import { type CustomerDetails } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -106,6 +107,9 @@ export default function PersonalDetailsForm() {
 
   const requestedService = searchParams.get('service');
   const requestedFlow = searchParams.get('flow');
+  const serviceFields = useServiceFields(
+    requestedFlow === 'bundle' ? 'billPackage' : requestedService || journey?.serviceType,
+  );
 
   const { fields, terms } = personalDetails;
 
@@ -144,13 +148,13 @@ export default function PersonalDetailsForm() {
   useJourneyStepStatus(
     'journey-step-form-1',
     Boolean(
-      title &&
-      firstName.trim() &&
-      lastName.trim() &&
-      email.trim() &&
-      mobileNumber.trim() &&
-      dateOfBirth &&
-      acceptedTerms,
+      (!serviceFields.isRequired('title') || title) &&
+      (!serviceFields.isRequired('firstName') || firstName.trim()) &&
+      (!serviceFields.isRequired('surname') || lastName.trim()) &&
+      (!serviceFields.isRequired('emailAddress') || email.trim()) &&
+      (!serviceFields.isRequired('phoneNumber') || mobileNumber.trim()) &&
+      (!serviceFields.isRequired('dateOfBirth') || dateOfBirth) &&
+      (!serviceFields.isRequired('supplierDataSharingConsentAccepted') || acceptedTerms),
     ),
   );
 
@@ -175,28 +179,37 @@ export default function PersonalDetailsForm() {
 
     const nextErrors: Record<string, string> = {};
 
-    if (!title) nextErrors.title = 'Please select a title.';
-    if (!firstName.trim()) nextErrors.firstName = 'First name is required.';
-    if (!lastName.trim()) nextErrors.lastName = 'Last name is required.';
+    if (serviceFields.isRequired('title') && !title) nextErrors.title = 'Please select a title.';
+    if (serviceFields.isRequired('firstName') && !firstName.trim())
+      nextErrors.firstName = 'First name is required.';
+    if (serviceFields.isRequired('surname') && !lastName.trim())
+      nextErrors.lastName = 'Last name is required.';
 
-    if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
+    if (
+      serviceFields.isRequired('emailAddress') &&
+      (!email.trim() || !EMAIL_REGEX.test(email.trim()))
+    ) {
       nextErrors.email = 'Enter a valid email address.';
     }
 
-    if (!mobileNumber.trim() || !isValidUkMobile(mobileNumber.trim())) {
+    if (
+      serviceFields.isRequired('phoneNumber') &&
+      (!mobileNumber.trim() || !isValidUkMobile(mobileNumber.trim()))
+    ) {
       nextErrors.mobileNumber = 'Enter a valid UK mobile number.';
     }
 
     const age = dateOfBirth ? calculateAge(dateOfBirth) : null;
-    if (!dateOfBirth || age === null) {
+    if (serviceFields.isRequired('dateOfBirth') && !dateOfBirth) {
       nextErrors.dateOfBirth = 'Enter your date of birth.';
-    } else if (age < MIN_AGE) {
-      nextErrors.dateOfBirth = `You must be at least ${MIN_AGE} years old.`;
-    } else if (age > 120) {
+    } else if (dateOfBirth && (age === null || age > 120)) {
       nextErrors.dateOfBirth = 'Enter a valid date of birth.';
+    } else if (age !== null && age < MIN_AGE) {
+      nextErrors.dateOfBirth = `You must be at least ${MIN_AGE} years old.`;
     }
 
-    if (!acceptedTerms) nextErrors.acceptedTerms = 'You must accept the terms to continue.';
+    if (serviceFields.isRequired('supplierDataSharingConsentAccepted') && !acceptedTerms)
+      nextErrors.acceptedTerms = 'You must accept the terms to continue.';
 
     setErrors(nextErrors);
 
@@ -281,7 +294,10 @@ export default function PersonalDetailsForm() {
         noValidate
       >
         {/* Title */}
-        <FormField label={fields.title.label}>
+        <FormField
+          label={fields.title.label}
+          visible={serviceFields.isVisible('title')}
+        >
           <div
             ref={titleDropdownRef}
             className="relative w-full"
@@ -456,7 +472,10 @@ export default function PersonalDetailsForm() {
             lg:grid-cols-[241px_241px]
           "
         >
-          <FormField label={fields.firstName.label}>
+          <FormField
+            label={fields.firstName.label}
+            visible={serviceFields.isVisible('firstName')}
+          >
             <input
               type="text"
               value={firstName}
@@ -469,7 +488,10 @@ export default function PersonalDetailsForm() {
             />
           </FormField>
 
-          <FormField label={fields.lastName.label}>
+          <FormField
+            label={fields.lastName.label}
+            visible={serviceFields.isVisible('surname')}
+          >
             <input
               type="text"
               value={lastName}
@@ -483,7 +505,10 @@ export default function PersonalDetailsForm() {
           </FormField>
         </div>
 
-        <FormField label={fields.email.label}>
+        <FormField
+          label={fields.email.label}
+          visible={serviceFields.isVisible('emailAddress')}
+        >
           <input
             type="email"
             value={email}
@@ -526,7 +551,10 @@ export default function PersonalDetailsForm() {
           {errors.email && <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.email}</p>}
         </FormField>
 
-        <FormField label={fields.mobileNumber.label}>
+        <FormField
+          label={fields.mobileNumber.label}
+          visible={serviceFields.isVisible('phoneNumber')}
+        >
           <input
             type="tel"
             value={mobileNumber}
@@ -563,7 +591,10 @@ export default function PersonalDetailsForm() {
           )}
         </FormField>
 
-        <FormField label={fields.dateOfBirth.label}>
+        <FormField
+          label={fields.dateOfBirth.label}
+          visible={serviceFields.isVisible('dateOfBirth')}
+        >
           <div className="relative w-full">
             <input
               id="date-of-birth"
@@ -650,19 +681,23 @@ export default function PersonalDetailsForm() {
             pt-1
           "
         >
-          <CustomCheckbox
-            checked={acceptedTerms}
-            onChange={setAcceptedTerms}
-          >
-            {terms.acceptedTermsText}
-          </CustomCheckbox>
+          {serviceFields.isVisible('supplierDataSharingConsentAccepted') && (
+            <CustomCheckbox
+              checked={acceptedTerms}
+              onChange={setAcceptedTerms}
+            >
+              {terms.acceptedTermsText}
+            </CustomCheckbox>
+          )}
 
-          <CustomCheckbox
-            checked={marketingConsent}
-            onChange={setMarketingConsent}
-          >
-            {terms.marketingConsentText}
-          </CustomCheckbox>
+          {serviceFields.isVisible('marketingConsent') && (
+            <CustomCheckbox
+              checked={marketingConsent}
+              onChange={setMarketingConsent}
+            >
+              {terms.marketingConsentText}
+            </CustomCheckbox>
+          )}
         </div>
       </form>
     </div>
@@ -672,9 +707,11 @@ export default function PersonalDetailsForm() {
 type FormFieldProps = {
   label: string;
   children: ReactNode;
+  visible?: boolean;
 };
 
-function FormField({ label, children }: FormFieldProps) {
+function FormField({ label, children, visible = true }: FormFieldProps) {
+  if (!visible) return null;
   return (
     <div className="block w-full">
       <label

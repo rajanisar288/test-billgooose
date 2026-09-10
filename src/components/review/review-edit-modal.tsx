@@ -323,17 +323,15 @@ function ReviewEditModalContent({
                 onChange={(value) => setValue('propertyType', value)}
               />
 
-              <EditSelect
+              <EditCounter
                 label="House size"
                 value={formData.occupants ?? ''}
-                options={journey.household.occupants.options}
                 onChange={(value) => setValue('occupants', value)}
               />
 
-              <EditSelect
+              <EditCounter
                 label="No. of bedrooms"
                 value={formData.bedrooms ?? ''}
-                options={journey.household.bedrooms.options}
                 onChange={(value) => setValue('bedrooms', value)}
               />
             </>
@@ -496,6 +494,47 @@ function EditInput({ label, value, type = 'text', onChange }: EditInputProps) {
         "
       />
     </label>
+  );
+}
+
+type EditCounterProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function EditCounter({ label, value, onChange }: EditCounterProps) {
+  const numericValue = Math.min(10, Math.max(1, Number(value) || 1));
+
+  return (
+    <div>
+      <span className="mb-1.5 block font-inter text-[12px] font-medium text-[#344054]">
+        {label}
+      </span>
+      <div className="flex h-[48px] w-full items-center justify-between rounded-full border border-[#D0D5DD] bg-white px-3">
+        <button
+          type="button"
+          aria-label={`Decrease ${label}`}
+          disabled={numericValue <= 1}
+          onClick={() => onChange(String(numericValue - 1))}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#D0D5DD] text-xl text-[#344054] hover:border-[#00897B] hover:text-[#00897B] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          −
+        </button>
+        <span className="font-red-hat-display text-[18px] font-bold text-[#0D3B66]">
+          {numericValue}
+        </span>
+        <button
+          type="button"
+          aria-label={`Increase ${label}`}
+          disabled={numericValue >= 10}
+          onClick={() => onChange(String(numericValue + 1))}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#D0D5DD] text-xl text-[#344054] hover:border-[#00897B] hover:text-[#00897B] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          +
+        </button>
+      </div>
+    </div>
   );
 }
 

@@ -21,6 +21,7 @@ import { humanizeLabel } from '@/components/result/result-labels';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -48,7 +49,7 @@ type ContractDetails = {
   acknowledged?: boolean;
 };
 
-type ReviewState = {
+export type ReviewState = {
   service: JourneyService;
 
   personalDetails: PersonalDetails;
@@ -202,6 +203,8 @@ export default function ReviewYourDetails() {
   const searchParams = useSearchParams();
 
   const requestedService = searchParams.get('service');
+  const isBundle = requestedService === 'bundle-bills' || journey?.serviceType === 'billPackage';
+  const serviceFields = useServiceFields(isBundle ? 'billPackage' : journey?.serviceType);
 
   const [isConfirming, setIsConfirming] = useState(false);
   const [isPrepaymentComplete, setIsPrepaymentComplete] = useState(false);
@@ -329,11 +332,19 @@ export default function ReviewYourDetails() {
       broadbandSpeed: '',
       broadbandContractLength: '',
 
-      selectedPlan: journey?.cart[0],
+      selectedPlan: journey?.cart?.[0],
     };
   }, [journey]);
 
   const [editingSection, setEditingSection] = useState<EditableSection | null>(null);
+
+  const editSection = (section: EditableSection, fieldKeys: string[], route: string) => {
+    if (serviceFields.requiresQuoteRefresh(fieldKeys)) {
+      router.push(route);
+    } else {
+      setEditingSection(section);
+    }
+  };
 
   /* =========================================================
      LABEL HELPERS
@@ -505,7 +516,11 @@ export default function ReviewYourDetails() {
                 title={review.sections.personalDetails.title}
                 icon={<UserRound />}
                 onEdit={() =>
-                  router.push(`/steps/personal-details-form?service=${requestedService}`)
+                  editSection(
+                    'personalDetails',
+                    ['title', 'firstName', 'surname', 'emailAddress', 'phoneNumber', 'dateOfBirth'],
+                    `/steps/personal-details-form?service=${requestedService}`,
+                  )
                 }
               >
                 <div
@@ -519,35 +534,47 @@ export default function ReviewYourDetails() {
                     lg:grid-cols-3
                   "
                 >
-                  <ReviewField
-                    label="Title"
-                    value={details.personalDetails.title}
-                  />
+                  {serviceFields.isVisible('title') && (
+                    <ReviewField
+                      label="Title"
+                      value={details.personalDetails.title}
+                    />
+                  )}
 
-                  <ReviewField
-                    label="Firstname"
-                    value={details.personalDetails.firstName}
-                  />
+                  {serviceFields.isVisible('firstName') && (
+                    <ReviewField
+                      label="Firstname"
+                      value={details.personalDetails.firstName}
+                    />
+                  )}
 
-                  <ReviewField
-                    label="Lastname"
-                    value={details.personalDetails.lastName}
-                  />
+                  {serviceFields.isVisible('surname') && (
+                    <ReviewField
+                      label="Lastname"
+                      value={details.personalDetails.lastName}
+                    />
+                  )}
 
-                  <ReviewField
-                    label="Email address"
-                    value={details.personalDetails.email}
-                  />
+                  {serviceFields.isVisible('emailAddress') && (
+                    <ReviewField
+                      label="Email address"
+                      value={details.personalDetails.email}
+                    />
+                  )}
 
-                  <ReviewField
-                    label="Mobile number"
-                    value={details.personalDetails.mobileNumber}
-                  />
+                  {serviceFields.isVisible('phoneNumber') && (
+                    <ReviewField
+                      label="Mobile number"
+                      value={details.personalDetails.mobileNumber}
+                    />
+                  )}
 
-                  <ReviewField
-                    label="Date of birth"
-                    value={details.personalDetails.dateOfBirth}
-                  />
+                  {serviceFields.isVisible('dateOfBirth') && (
+                    <ReviewField
+                      label="Date of birth"
+                      value={details.personalDetails.dateOfBirth}
+                    />
+                  )}
                 </div>
               </ReviewSection>
 
@@ -559,7 +586,13 @@ export default function ReviewYourDetails() {
                 <ReviewSection
                   title={review.sections.household.title}
                   icon={<Home />}
-                  onEdit={() => router.push(`/steps/household-form`)}
+                  onEdit={() =>
+                    editSection(
+                      'household',
+                      ['propertyType', 'occupants', 'bedrooms'],
+                      '/steps/household-form',
+                    )
+                  }
                 >
                   <div
                     className="
@@ -570,20 +603,26 @@ export default function ReviewYourDetails() {
                         sm:grid-cols-3
                       "
                   >
-                    <ReviewField
-                      label="House type"
-                      value={propertyLabel}
-                    />
+                    {serviceFields.isVisible('propertyType') && (
+                      <ReviewField
+                        label="House type"
+                        value={propertyLabel}
+                      />
+                    )}
 
-                    <ReviewField
-                      label="House size"
-                      value={occupantsLabel}
-                    />
+                    {serviceFields.isVisible('occupants') && (
+                      <ReviewField
+                        label="House size"
+                        value={occupantsLabel}
+                      />
+                    )}
 
-                    <ReviewField
-                      label="No. of bedrooms"
-                      value={bedroomsLabel}
-                    />
+                    {serviceFields.isVisible('bedrooms') && (
+                      <ReviewField
+                        label="No. of bedrooms"
+                        value={bedroomsLabel}
+                      />
+                    )}
                   </div>
                 </ReviewSection>
 
@@ -591,9 +630,13 @@ export default function ReviewYourDetails() {
                   title={review.sections.paymentMethod.title}
                   icon={<CreditCard />}
                   onEdit={() =>
-                    requestedService == 'bundle-bills'
-                      ? router.push(`/steps/payment-details-form?service=${requestedService}`)
-                      : router.push(`/compare?service=${requestedService}`)
+                    editSection(
+                      'paymentMethod',
+                      ['paymentPreference'],
+                      requestedService == 'bundle-bills'
+                        ? `/steps/payment-details-form?service=${requestedService}`
+                        : `/compare?service=${requestedService}`,
+                    )
                   }
                 >
                   <ReviewField
@@ -608,7 +651,13 @@ export default function ReviewYourDetails() {
                 <ReviewSection
                   title={review.sections.contractDates.title}
                   icon={<CalendarDays />}
-                  onEdit={() => router.push(`/steps/contract-date-form`)}
+                  onEdit={() =>
+                    editSection(
+                      'contractDates',
+                      ['preferredStartDate', 'coolingOffPeriodWaiverAccepted'],
+                      '/steps/contract-date-form',
+                    )
+                  }
                 >
                   <ReviewField
                     label="Contract start date"
@@ -1598,5 +1647,3 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-export type { ReviewState };

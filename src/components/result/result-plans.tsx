@@ -5,16 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import {
-  ArrowDownUp,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  ExternalLink,
-  Globe2,
-  LoaderCircle,
-  X,
-} from 'lucide-react';
+import { Check, ChevronRight, ExternalLink, Globe2, LoaderCircle, X } from 'lucide-react';
 
 import FeaturedBroadbandCard from '@/components/result/featured-broadband-card';
 import PlanCard from '@/components/result/plan-card';
@@ -803,7 +794,8 @@ export default function ResultPlans({
                           { id: 'monthly', label: 'Monthly', value: 'monthly' },
                           { id: 'annual', label: 'Annual', value: 'annual' },
                         ]
-                      : resultsStatus.planTabs.options
+                      : // : resultsStatus.planTabs.options
+                        []
                     ).map((option) => {
                       const isSelected = selectedPlanTab === option.value;
 
@@ -816,33 +808,33 @@ export default function ResultPlans({
                             setSelectedPlanTab(option.value);
                           }}
                           className={`
-                              inline-flex
-                              h-[28px]
-                              items-center
-                              justify-center
-                              rounded-[6px]
-                              border
-                              px-3
-                              font-[660]
-                              font-red-hat-display
-                              text-[13px]
+                            inline-flex
+                            h-[28px]
+                            items-center
+                            justify-center
+                            rounded-[6px]
+                            border
+                            px-3
+                            font-[660]
+                            font-red-hat-display
+                            text-[13px]
 
-                              ${
-                                isSelected
-                                  ? `
-                                    border-[#00897B]
-                                    bg-[#00897B]
-                                    font-extrabold
-                                    text-white
-                                  `
-                                  : `
-                                    border-[#EAECF0]
-                                    bg-white
-                                    font-medium
-                                    text-[#344054]
-                                  `
-                              }
-                            `}
+                            ${
+                              isSelected
+                                ? `
+                                  border-[#00897B]
+                                  bg-[#00897B]
+                                  font-extrabold
+                                  text-white
+                                `
+                                : `
+                                  border-[#EAECF0]
+                                  bg-white
+                                  font-medium
+                                  text-[#344054]
+                                `
+                            }
+                          `}
                         >
                           {option.label}
                         </button>
@@ -853,7 +845,7 @@ export default function ResultPlans({
               </div>
 
               {/* SORT */}
-              <div className="flex shrink-0 items-center gap-2">
+              {/* <div className="flex shrink-0 items-center gap-2">
                 <div className="flex items-center gap-1.5">
                   <ArrowDownUp
                     aria-hidden="true"
@@ -911,7 +903,7 @@ export default function ResultPlans({
                     strokeWidth={1.8}
                   />
                 </button>
-              </div>
+              </div> */}
             </div>
 
             <div className="min-w-0 space-y-3">{renderCards()}</div>

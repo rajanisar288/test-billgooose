@@ -3,10 +3,9 @@
 import { type FormEvent, type ReactNode, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
 import { CalendarDays, Check } from 'lucide-react';
-
-import { useSearchParams } from 'next/navigation';
 
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute } from '@/components/journey/journey-routes';
@@ -81,14 +80,10 @@ export default function ContractDateForm() {
   /*
    * ENERGY
    */
-  const [contractDate, setContractDate] = useState(
-    journey?.customer ? journey?.customer?.preferredStartDate : '',
-  );
+  const [contractDate, setContractDate] = useState(journey?.customer?.preferredStartDate ?? '');
 
   const [acknowledged, setAcknowledged] = useState(
-    journey?.customer
-      ? journey?.customer?.supplierDataSharingConsentAccepted
-      : acknowledgement.defaultValue,
+    journey?.customer?.coolingOffPeriodWaiverAccepted ?? false,
   );
 
   const [contractDateError, setContractDateError] = useState('');
@@ -156,7 +151,7 @@ export default function ContractDateForm() {
 
     const contractDetailsData = {
       preferredStartDate: contractDate,
-      supplierDataSharingConsentAccepted: acknowledged,
+      coolingOffPeriodWaiverAccepted: acknowledged,
     };
 
     const nextRoute = getNextJourneyRoute(

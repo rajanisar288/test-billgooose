@@ -104,7 +104,7 @@ export function LoadConfig() {
   return null;
 }
 
-function getDefaultJourney(): Journey {
+export function getDefaultJourney(): Journey {
   return {
     address: null,
     lastUrl: '',

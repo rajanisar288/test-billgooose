@@ -2,6 +2,11 @@ import { type Journey } from '@/interfaces/shared';
 import { apiClient } from '@/lib/api/client';
 
 export const journeyApi = {
+  getServiceTypes: () => apiClient.get('/api/v1/service-types'),
+
+  getServiceTypeFields: (serviceTypeId: number) =>
+    apiClient.get('/api/v1/service-types/fields', { params: { serviceTypeId } }),
+
   getJourney: (journeyId: string) => apiClient.get(`/api/v1/journeys/${journeyId}`),
 
   // Create a Journey

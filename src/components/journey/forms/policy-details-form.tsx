@@ -14,6 +14,7 @@ import {
 } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 import { type CustomerDetails } from '@/interfaces/shared';
+import { useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -31,6 +32,7 @@ export default function PolicyDetailsForm() {
 
   const requestedService = searchParams.get('service');
   const requestedFlow = searchParams.get('flow');
+  const serviceFields = useServiceFields('insurance');
 
   const { insurancePolicyDetails } = data.journey;
 
@@ -52,7 +54,12 @@ export default function PolicyDetailsForm() {
 
   const coverStartRef = useRef<HTMLDivElement>(null);
 
-  useJourneyStepStatus('journey-step-form-2', Boolean(ownership && coverStart && paymentFrequency));
+  const isComplete =
+    (!serviceFields.isRequired('insuranceHomeOwnershipStatus') || ownership) &&
+    (!serviceFields.isRequired('insuranceCoverStartWindow') || coverStart) &&
+    (!serviceFields.isRequired('insurancePaymentFrequency') || paymentFrequency);
+
+  useJourneyStepStatus('journey-step-form-2', Boolean(isComplete));
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
@@ -71,7 +78,7 @@ export default function PolicyDetailsForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!ownership || !coverStart || !paymentFrequency) {
+    if (!isComplete) {
       notifyJourneyStepFailed();
       return;
     }
@@ -143,7 +150,7 @@ export default function PolicyDetailsForm() {
         className="space-y-6"
         noValidate
       >
-        <fieldset>
+        <fieldset hidden={!serviceFields.isVisible('insuranceHomeOwnershipStatus')}>
           <legend
             className="
               mb-3
@@ -213,7 +220,7 @@ export default function PolicyDetailsForm() {
 
         <div className="h-px w-full bg-[#EAECF0]" />
 
-        <div>
+        <div hidden={!serviceFields.isVisible('insuranceCoverStartWindow')}>
           <label
             id="cover-start-label"
             className="
@@ -356,7 +363,7 @@ export default function PolicyDetailsForm() {
 
         <div className="h-px w-full bg-[#EAECF0]" />
 
-        <fieldset>
+        <fieldset hidden={!serviceFields.isVisible('insurancePaymentFrequency')}>
           <legend
             className="
               font-inter

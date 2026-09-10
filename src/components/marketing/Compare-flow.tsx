@@ -8,11 +8,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, CalendarDays, Check, ChevronDown } from 'lucide-react';
 
 import { EMAIL_REGEX } from '@/components/journey/forms/personal-details-form';
-import { storeJourney } from '@/constants/shared';
+import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
 import { MoveStatus, type Address, type Journey } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { serviceRequiresConsumption, useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -30,6 +31,8 @@ export default function CompareFlow() {
 
   const selectedService: CompareService = requestedService === 'broadband' ? 'broadband' : 'energy';
   const isBundleFlow = requestedFlow === 'bundle';
+  const apiServiceType = isBundleFlow ? 'billPackage' : requestedService;
+  const serviceFields = useServiceFields(apiServiceType);
   const serviceContent = compareFlow.services[selectedService];
 
   /* =========================================================
@@ -73,7 +76,7 @@ export default function CompareFlow() {
     journey?.customer?.paymentPreference ?? compareFlow.form.energy.paymentMethod.defaultValue,
   );
   const [renterHomeOwner, setRenterHomeOwner] = useState(
-    journey?.customer?.renterHomeOwner ?? compareFlow.form.bundleBills.renterHomeOwner.defaultValue,
+    journey?.customer?.occupancyStatus ?? compareFlow.form.bundleBills.renterHomeOwner.defaultValue,
   );
 
   /* =========================================================
@@ -103,10 +106,28 @@ export default function CompareFlow() {
   const isPostcodeValid = ukPostcodePattern.test(postcode.trim());
   const isEmailValid = email !== '' && EMAIL_REGEX.test(email.trim());
 
-  const isFormValid =
-    isPostcodeValid && selectedAddress && occupancyType.length > 0 && alreadyInProperty.length > 0;
-  //  &&
-  // (requestedService !== 'insurance' || isEmailValid);
+  const hasRequiredValue = (fieldKey: string, value: unknown, valid = true) =>
+    !serviceFields.isVisible(fieldKey) ||
+    !serviceFields.isRequired(fieldKey) ||
+    (Boolean(value) && valid);
+  const hasValidAddress = hasRequiredValue('address', selectedAddress, isPostcodeValid);
+  const isFormValid = Boolean(
+    requestedService &&
+    hasValidAddress &&
+    (isBundleFlow
+      ? hasRequiredValue('energySupplyType', energyServiceType) &&
+        hasRequiredValue('occupancyStatus', renterHomeOwner) &&
+        hasRequiredValue('moveStatus', alreadyInProperty) &&
+        hasRequiredValue('moveInDate', moveInDate)
+      : requestedService === 'energy'
+        ? hasRequiredValue('energySupplyType', energyServiceType) &&
+          hasRequiredValue('paymentPreference', paymentMethod)
+        : requestedService === 'broadband'
+          ? hasRequiredValue('currentBroadbandProvider', currentProvider)
+          : requestedService === 'insurance'
+            ? hasRequiredValue('insuranceType', insuranceType)
+            : false),
+  );
 
   /* =========================================================
      API FUNCTIONS
@@ -206,24 +227,24 @@ export default function CompareFlow() {
         serviceType: isBundleFlow ? 'billPackage' : (requestedService ?? ''),
         address: selectedAddress,
         customer: {
-          ...(['billPackage']?.includes(requestedService) && {
+          ...(alreadyInProperty === MoveStatus.MOVING_IN && { moveInDate: moveInDate }),
+          ...(['energy'].includes(requestedService ?? '') &&
+            !isBundleFlow && {
+              paymentPreference: paymentMethod,
+              energySupplyType: energyServiceType,
+            }),
+          ...(isBundleFlow && {
+            occupancyStatus: renterHomeOwner,
             moveStatus:
               alreadyInProperty === MoveStatus.ALREADY_MOVED_IN
                 ? MoveStatus.ALREADY_MOVED_IN
                 : MoveStatus.MOVING_IN,
-          }),
-          ...(alreadyInProperty === MoveStatus.MOVING_IN && { moveInDate: moveInDate }),
-          ...(['energy', 'billPackage']?.includes(requestedService) && {
-            paymentPreference: paymentMethod,
             energySupplyType: energyServiceType,
           }),
-          ...(isBundleFlow && {
-            renterHomeOwner: renterHomeOwner,
-          }),
-          ...(['broadband']?.includes(requestedService) && {
+          ...(['broadband'].includes(requestedService ?? '') && {
             currentBroadbandProvider: currentProvider,
           }),
-          ...(['insurance']?.includes(requestedService) && {
+          ...(['insurance'].includes(requestedService ?? '') && {
             insuranceType: insuranceType,
           }),
         },
@@ -253,7 +274,18 @@ export default function CompareFlow() {
       // =========================================================
       let energyUsage;
 
-      if (requestedService === 'energy' && !isBundleFlow) {
+      let partnerConfig: any = null;
+      try {
+        partnerConfig = JSON.parse(localStorage.getItem(storePartnerConfig) ?? 'null');
+      } catch {
+        partnerConfig = null;
+      }
+      const requiresConsumption = serviceRequiresConsumption(
+        partnerConfig,
+        isBundleFlow ? 'billPackage' : 'energy',
+      );
+
+      if (requestedService === 'energy' && !isBundleFlow && requiresConsumption) {
         try {
           energyUsage = await journeyApi.prepareConsumption(journeyId, {
             forceRefresh: true,
@@ -325,8 +357,10 @@ export default function CompareFlow() {
         router.push(`/result?service=${requestedService}`);
       } else if (isBundleFlow) {
         router.push('/steps/personal-details-form?service=energy&flow=bundle');
-      } else if (requestedService === 'energy') {
+      } else if (requestedService === 'energy' && requiresConsumption) {
         router.push(`/current-usage/?service=${requestedService}`);
+      } else if (requestedService === 'energy') {
+        router.push(`/result?service=${requestedService}`);
       } else {
         router.push(`/steps/personal-details-form/?service=${requestedService}`);
       }
@@ -950,7 +984,7 @@ export default function CompareFlow() {
             </fieldset> */}
 
             {/* ENERGY */}
-            {['energy']?.includes(requestedService) && (
+            {['energy'].includes(requestedService ?? '') && (
               <>
                 <div>
                   <label

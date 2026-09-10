@@ -18,8 +18,14 @@ export default function Footer() {
     setOpenColumnId((currentColumnId) => (currentColumnId === columnId ? null : columnId));
   };
 
-  const getFooterHref = (columnHeading: string) => {
+  const getFooterHref = (columnHeading: string, linkLabel: string) => {
     const normalizedHeading = columnHeading.trim().toLowerCase();
+    const normalizedLabel = linkLabel.trim().toLowerCase();
+
+    // Company > About
+    if (normalizedHeading.includes('company') && normalizedLabel === 'about us') {
+      return '/about';
+    }
 
     if (normalizedHeading.includes('compare')) {
       return '/compare';
@@ -41,7 +47,7 @@ export default function Footer() {
           {footer.columns.map((column) => {
             const isOpen = openColumnId === column.id;
 
-            const columnHref = getFooterHref(column.heading);
+            const getLinkHref = (linkLabel: string) => getFooterHref(column.heading, linkLabel);
 
             return (
               <div key={column.id}>
@@ -78,7 +84,7 @@ export default function Footer() {
                       {column.links.map((link) => (
                         <Link
                           key={link.id}
-                          href={columnHref}
+                          href={getLinkHref(link.label)}
                           className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[12px] font-[467] leading-[18px] tracking-[0] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-[360px]:text-[13px] min-[360px]:leading-[19px] min-[390px]:text-[14px] min-[390px]:leading-5"
                         >
                           <span>{link.label}</span>
@@ -125,7 +131,7 @@ export default function Footer() {
         {/* Footer links */}
         <div className="grid grid-cols-4 gap-16">
           {footer.columns.map((column) => {
-            const columnHref = getFooterHref(column.heading);
+            const getLinkHref = (linkLabel: string) => getFooterHref(column.heading, linkLabel);
 
             return (
               <div key={column.id}>
@@ -140,7 +146,7 @@ export default function Footer() {
                   {column.links.map((link) => (
                     <Link
                       key={link.id}
-                      href={columnHref}
+                      href={getLinkHref(link.label)}
                       className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[16px] font-semibold leading-[1.3] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     >
                       <span>{link.label}</span>

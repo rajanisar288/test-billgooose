@@ -14,6 +14,7 @@ import {
 } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
 import { type CustomerDetails } from '@/interfaces/shared';
+import { useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -25,6 +26,7 @@ export default function HouseDetailsForm() {
 
   const requestedService = searchParams.get('service');
   const requestedFlow = searchParams.get('flow');
+  const serviceFields = useServiceFields('insurance');
 
   const { insuranceHouseDetails } = data.journey;
 
@@ -41,12 +43,17 @@ export default function HouseDetailsForm() {
       insuranceHouseDetails.smokeDetectors.defaultValue,
   );
 
-  useJourneyStepStatus('journey-step-form-3', Boolean(homeType && houseStyle && smokeDetectors));
+  const isComplete =
+    (!serviceFields.isRequired('insuredHomeType') || homeType) &&
+    (!serviceFields.isRequired('insuranceHouseStyle') || houseStyle) &&
+    (!serviceFields.isRequired('hasWorkingSmokeDetectors', false) || smokeDetectors);
+
+  useJourneyStepStatus('journey-step-form-3', Boolean(isComplete));
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!homeType || !houseStyle || !smokeDetectors) {
+    if (!isComplete) {
       notifyJourneyStepFailed();
       return;
     }
@@ -122,6 +129,7 @@ export default function HouseDetailsForm() {
         noValidate
       >
         <OptionSection
+          visible={serviceFields.isVisible('insuredHomeType')}
           label={insuranceHouseDetails.homeType.label}
           options={insuranceHouseDetails.homeType.options}
           value={homeType}
@@ -131,6 +139,7 @@ export default function HouseDetailsForm() {
         <div className="h-px w-full bg-[#EAECF0]" />
 
         <OptionSection
+          visible={serviceFields.isVisible('insuranceHouseStyle')}
           label={insuranceHouseDetails.houseStyle.label}
           options={insuranceHouseDetails.houseStyle.options}
           value={houseStyle}
@@ -140,6 +149,7 @@ export default function HouseDetailsForm() {
         <div className="h-px w-full bg-[#EAECF0]" />
 
         <OptionSection
+          visible={serviceFields.isVisible('hasWorkingSmokeDetectors', false)}
           label={insuranceHouseDetails.smokeDetectors.label}
           options={insuranceHouseDetails.smokeDetectors.options}
           value={smokeDetectors}
@@ -157,13 +167,15 @@ type Option = {
 };
 
 type OptionSectionProps = {
+  visible?: boolean;
   label: string;
   options: Option[];
   value: string;
   onChange: (value: string) => void;
 };
 
-function OptionSection({ label, options, value, onChange }: OptionSectionProps) {
+function OptionSection({ label, options, value, onChange, visible = true }: OptionSectionProps) {
+  if (!visible) return null;
   return (
     <fieldset>
       <legend

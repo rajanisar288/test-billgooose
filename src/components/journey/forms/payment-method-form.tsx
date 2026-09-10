@@ -11,10 +11,11 @@ import {
   notifyJourneyStepFailed,
   useJourneyStepStatus,
 } from '@/components/journey/journey-step-status';
-import { storeJourney } from '@/constants/shared';
+import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { serviceRequiresConsumption, useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -76,6 +77,9 @@ export default function PaymentMethodForm() {
     getJourneyServiceSnapshot,
     getJourneyServiceServerSnapshot,
   );
+  const journeyFlow =
+    typeof window === 'undefined' ? null : sessionStorage.getItem('billgooseJourneyFlow');
+  const serviceFields = useServiceFields(journeyFlow === 'bundle' ? 'billPackage' : service);
 
   /* =========================================================
      ENERGY STATE
@@ -126,7 +130,7 @@ export default function PaymentMethodForm() {
        ENERGY — STEP 5
     ====================================================== */
 
-    if (!selectedPaymentMethod) {
+    if (serviceFields.isRequired('paymentPreference') && !selectedPaymentMethod) {
       notifyJourneyStepFailed();
       return;
     }
@@ -140,7 +144,6 @@ export default function PaymentMethodForm() {
     setIsSubmitting(true);
 
     try {
-      const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
       const journeyId = journey?.id || journey?.journeyId || localStorage.getItem(storeJourney);
 
       if (!journeyId) {
@@ -161,21 +164,32 @@ export default function PaymentMethodForm() {
         throw new Error('No data received from createJourney API');
       }
 
-      const energyUsage = await journeyApi.prepareConsumption(journeyId, {
-        forceRefresh: true,
-      });
-
-      if (!energyUsage?.data) {
-        throw new Error('No data received from prepareConsumption API');
+      let partnerConfig: any = null;
+      try {
+        partnerConfig = JSON.parse(localStorage.getItem(storePartnerConfig) ?? 'null');
+      } catch {
+        partnerConfig = null;
       }
+      const requiresConsumption = serviceRequiresConsumption(
+        partnerConfig,
+        journeyFlow === 'bundle' ? 'billPackage' : 'energy',
+      );
 
-      localStorage.setItem('energyUsage', JSON.stringify(energyUsage.data));
+      if (requiresConsumption) {
+        const energyUsage = await journeyApi.prepareConsumption(journeyId, {
+          forceRefresh: true,
+        });
+        if (!energyUsage?.data) throw new Error('No data received from prepareConsumption API');
+        localStorage.setItem('energyUsage', JSON.stringify(energyUsage.data));
+      }
       setJourney(updatedJourney.data);
 
       router.push(
-        journeyFlow === 'bundle'
-          ? '/current-usage?service=energy&flow=bundle'
-          : '/current-usage?service=energy',
+        requiresConsumption
+          ? journeyFlow === 'bundle'
+            ? '/current-usage?service=energy&flow=bundle'
+            : '/current-usage?service=energy'
+          : `/result?service=${journeyFlow === 'bundle' ? 'energy&flow=bundle' : 'energy'}`,
       );
     } catch (error) {
       console.error('Failed to complete payment method step:', error);

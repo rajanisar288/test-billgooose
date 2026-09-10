@@ -3,35 +3,42 @@
 import { useState } from 'react';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { ChevronRight } from 'lucide-react';
 
-import {
-  type HomepageService,
-  useServiceJourneyNavigation,
-} from '@/components/marketing/use-service-journey-navigation';
 import data from '@/data/content.json';
-import { useJourneyStore } from '@/store/journeyStore';
 
-type ServiceType = HomepageService;
+type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only' | 'insurance' | 'bundle-bills';
 
 export default function Hero() {
-  const { journey } = useJourneyStore();
-  const { navigateToService } = useServiceJourneyNavigation();
+  const router = useRouter();
 
   const { hero } = data;
-  // partnerConfigApi
 
-  console.log('journey', journey);
-  const [postcode, setPostcode] = useState('');
-  const [postcodeError, setPostcodeError] = useState('');
   const [selectedService, setSelectedService] = useState<ServiceType>(
     hero.serviceTabs.defaultValue as ServiceType,
   );
 
   function handleServiceSelect(service: ServiceType) {
     setSelectedService(service);
-    void navigateToService(service);
+
+    if (service === 'bundle-bills') {
+      router.push('/compare?service=energy&flow=bundle');
+      return;
+    }
+
+    if (service === 'sim-only') {
+      router.push('/result?service=sim-only');
+      return;
+    }
+
+    if (service === 'mobile') {
+      router.push('/result?service=mobile');
+      return;
+    }
+
+    router.push(`/compare?service=${service}`);
   }
 
   return (
@@ -66,7 +73,9 @@ export default function Hero() {
               lg:rounded-[29px]
             "
           >
-            {/* Background */}
+            {/* =================================================
+                BACKGROUND
+            ================================================== */}
             <div
               aria-hidden="true"
               className="
@@ -212,24 +221,24 @@ export default function Hero() {
                   ============================================== */}
                   <div
                     className="
-    mt-9
+                      mt-9
 
-    hidden
+                      hidden
 
-    h-[176px]
-    w-[568px]
-    max-w-full
+                      h-[176px]
+                      w-[568px]
+                      max-w-full
 
-    rounded-[24px]
+                      rounded-[24px]
 
-    bg-[linear-gradient(180deg,rgba(0,168,149,0.5)_0%,rgba(0,168,149,0)_100%)]
+                      bg-[linear-gradient(180deg,rgba(0,168,149,0.5)_0%,rgba(0,168,149,0)_100%)]
 
-    p-px
+                      p-px
 
-    shadow-[0px_19px_42px_0px_#B0B0B01A,0px_77px_77px_0px_#B0B0B017,0px_174px_104px_0px_#B0B0B00D,0px_309px_123px_0px_#B0B0B003]
+                      shadow-[0px_19px_42px_0px_#B0B0B01A,0px_77px_77px_0px_#B0B0B017,0px_174px_104px_0px_#B0B0B00D,0px_309px_123px_0px_#B0B0B003]
 
-    lg:block
-  "
+                      lg:block
+                    "
                   >
                     <HeroServiceGrid
                       selectedService={selectedService}
@@ -240,7 +249,7 @@ export default function Hero() {
               </div>
 
               {/* =================================================
-                  MOBILE/TABLET IMAGE
+                  MOBILE / TABLET IMAGE
               ================================================== */}
               <div
                 className="
@@ -321,7 +330,7 @@ export default function Hero() {
               </div>
 
               {/* =================================================
-                  MOBILE/TABLET SERVICE GRID
+                  MOBILE / TABLET SERVICE GRID
               ================================================== */}
               <div
                 className="
@@ -365,6 +374,9 @@ export default function Hero() {
         <div className="relative">
           <div className="absolute left-0 right-0 top-[17px] h-px bg-[#EAECF0] lg:top-[24px]" />
 
+          {/* =================================================
+              TRUST LABEL
+          ================================================== */}
           <div className="relative z-10 flex justify-center lg:justify-start">
             <div
               className="
@@ -396,36 +408,100 @@ export default function Hero() {
                   whitespace-nowrap
 
                   font-red-hat-display
-                  text-[10px]
+                  text-[14px]
                   font-[467]
 
                   text-secondary
 
-                  min-[390px]:text-[13px]
+                  min-[390px]:text-[13.7px]
                 "
               >
                 {hero.trust.startText}{' '}
-                <span className="font-[645]">{hero.trust.highlightedText}</span>{' '}
+                <span className="font-[665]">{hero.trust.highlightedText}</span>{' '}
                 {hero.trust.separator} {hero.trust.endText}
               </p>
             </div>
           </div>
 
-          <div className="provider-carousel mt-[18px] overflow-hidden lg:hidden">
-            <div className="provider-carousel-track flex w-max items-center">
-              <div className="flex shrink-0 items-center gap-3 pr-3">
+          {/* =================================================
+              PROVIDERS CONTINUOUS CAROUSEL
+
+              ALL SCREENS:
+              MOBILE
+              TABLET
+              LAPTOP
+              DESKTOP
+
+              1 → 2 → ... → 22 → 1 → ...
+          ================================================== */}
+          <div
+            className="
+              provider-carousel
+
+              mt-[18px]
+              w-full
+
+              overflow-hidden
+
+              sm:mt-5
+
+              lg:mt-6
+            "
+          >
+            <div
+              className="
+                provider-carousel-track
+
+                flex
+                w-max
+                items-center
+              "
+            >
+              {/* ===============================================
+                  ORIGINAL PROVIDER SET
+              ================================================ */}
+              <div
+                className="
+                  flex
+                  shrink-0
+                  items-center
+
+                  gap-[22px]
+                  pr-[22px]
+
+                  sm:gap-[28px]
+                  sm:pr-[28px]
+
+                  md:gap-[34px]
+                  md:pr-[34px]
+
+                  lg:gap-[42px]
+                  lg:pr-[42px]
+
+                  xl:gap-[48px]
+                  xl:pr-[48px]
+                "
+              >
                 {hero.providers.map((provider) => (
                   <div
                     key={provider.id}
                     className="
-                        flex
-                        h-[38px]
-                        w-[118px]
+                      flex
+                      h-[38px]
+                      shrink-0
 
-                        shrink-0
-                        items-center
-                        justify-center
-                      "
+                      items-center
+                      justify-center
+
+                      sm:h-[42px]
+
+                      md:h-[45px]
+
+                      lg:h-[49px]
+                    "
+                    style={{
+                      width: `${provider.width}px`,
+                    }}
                   >
                     <Image
                       src={provider.src}
@@ -433,32 +509,72 @@ export default function Hero() {
                       width={provider.width}
                       height={provider.height}
                       className="
-                          h-[24.84px]
-                          w-[110px]
+                        max-h-[32px]
+                        h-auto
+                        w-full
 
-                          object-contain
-                        "
+                        object-contain
+
+                        sm:max-h-[36px]
+
+                        md:max-h-[42px]
+
+                        lg:max-h-[49px]
+                      "
                     />
                   </div>
                 ))}
               </div>
 
+              {/* ===============================================
+                  DUPLICATE SET
+
+                  Needed for seamless:
+                  22 → 1
+              ================================================ */}
               <div
                 aria-hidden="true"
-                className="flex shrink-0 items-center gap-3 pr-3"
+                className="
+                  flex
+                  shrink-0
+                  items-center
+
+                  gap-[22px]
+                  pr-[22px]
+
+                  sm:gap-[28px]
+                  sm:pr-[28px]
+
+                  md:gap-[34px]
+                  md:pr-[34px]
+
+                  lg:gap-[42px]
+                  lg:pr-[42px]
+
+                  xl:gap-[48px]
+                  xl:pr-[48px]
+                "
               >
                 {hero.providers.map((provider) => (
                   <div
                     key={`duplicate-${provider.id}`}
                     className="
-                        flex
-                        h-[38px]
-                        w-[118px]
+                      flex
+                      h-[38px]
+                      shrink-0
 
-                        shrink-0
-                        items-center
-                        justify-center
-                      "
+                      items-center
+                      justify-center
+
+                      sm:h-[42px]
+
+                      md:h-[45px]
+
+                      lg:h-[49px]
+                    "
+                    style={{
+                      width: `${provider.width}px`,
+                    }}
                   >
                     <Image
                       src={provider.src}
@@ -466,44 +582,23 @@ export default function Hero() {
                       width={provider.width}
                       height={provider.height}
                       className="
-                          h-[24.84px]
-                          w-[110px]
+                        max-h-[32px]
+                        h-auto
+                        w-full
 
-                          object-contain
-                        "
+                        object-contain
+
+                        sm:max-h-[36px]
+
+                        md:max-h-[42px]
+
+                        lg:max-h-[49px]
+                      "
                     />
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-
-          <div className="mt-5 hidden grid-cols-7 items-center gap-5 lg:grid">
-            {hero.providers.map((provider) => (
-              <div
-                key={provider.id}
-                className="
-                    flex
-                    min-h-[49px]
-
-                    items-center
-                    justify-center
-                  "
-              >
-                <Image
-                  src={provider.src}
-                  alt={provider.alt}
-                  width={provider.width}
-                  height={provider.height}
-                  className="
-                      h-[49px]
-                      w-[126px]
-
-                      object-contain
-                    "
-                />
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -554,57 +649,57 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
                 onSelect(service.value as ServiceType);
               }}
               className={`
-                  group
+                group
 
-                  flex
-                  items-center
+                flex
+                items-center
 
-                  border-[#EAECF0]
+                border-[#EAECF0]
 
-                  text-left
+                text-left
 
-                  transition-colors
+                transition-colors
 
-                  ${
-                    compact
-                      ? `
-                        min-h-[64px]
-                        gap-2
-                        px-3
+                ${
+                  compact
+                    ? `
+                      min-h-[64px]
+                      gap-2
+                      px-3
 
-                        sm:min-h-[72px]
-                        sm:gap-2.5
-                        sm:px-4
-                      `
-                      : `
-                        min-h-[87px]
-                        gap-3
-                        px-5
-                      `
-                  }
+                      sm:min-h-[72px]
+                      sm:gap-2.5
+                      sm:px-4
+                    `
+                    : `
+                      min-h-[87px]
+                      gap-3
+                      px-5
+                    `
+                }
 
-                  ${index % 3 !== 2 ? 'sm:border-r' : ''}
+                ${index % 3 !== 2 ? 'sm:border-r' : ''}
 
-                  ${index < 3 ? 'sm:border-b' : ''}
+                ${index < 3 ? 'sm:border-b' : ''}
 
-                  ${index % 2 === 0 ? 'border-r sm:border-r-0' : ''}
+                ${index % 2 === 0 ? 'border-r sm:border-r-0' : ''}
 
-                  ${index < 4 ? 'border-b sm:border-b-0' : ''}
+                ${index < 4 ? 'border-b sm:border-b-0' : ''}
 
-                  ${
-                    isActive
-                      ? `
-                        bg-[#E7F6F5]
-                        text-[#00897B]
-                      `
-                      : `
-                        bg-white
-                        text-[#667085]
+                ${
+                  isActive
+                    ? `
+                      bg-[#E7F6F5]
+                      text-[#00897B]
+                    `
+                    : `
+                      bg-white
+                      text-[#667085]
 
-                        hover:bg-[#F9FAFB]
-                      `
-                  }
-                `}
+                      hover:bg-[#F9FAFB]
+                    `
+                }
+              `}
             >
               <Image
                 src={isActive ? service.activeIcon : service.icon}
@@ -612,50 +707,50 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
                 width={48}
                 height={48}
                 className={`
-                    shrink-0
-                    object-contain
+                  shrink-0
+                  object-contain
 
-                    ${
-                      compact
-                        ? `
-                          h-[20px]
-                          w-[20px]
+                  ${
+                    compact
+                      ? `
+                        h-[20px]
+                        w-[20px]
 
-                          sm:h-[24px]
-                          sm:w-[24px]
-                        `
-                        : `
-                          h-[28px]
-                          w-[28px]
-                        `
-                    }
-                  `}
+                        sm:h-[24px]
+                        sm:w-[24px]
+                      `
+                      : `
+                        h-[28px]
+                        w-[28px]
+                      `
+                  }
+                `}
               />
 
               <span
                 className={`
-                    min-w-0
-                    flex-1
+                  min-w-0
+                  flex-1
 
-                    font-red-hat-display
+                  font-red-hat-display
 
-                    ${isActive ? 'font-extrabold' : 'font-[550]'}
+                  ${isActive ? 'font-extrabold' : 'font-[550]'}
 
-                    ${
-                      compact
-                        ? `
-                          text-[12px]
+                  ${
+                    compact
+                      ? `
+                        text-[12px]
 
-                          min-[390px]:text-[13px]
+                        min-[390px]:text-[13px]
 
-                          sm:text-[15px]
-                        `
-                        : `
-                          text-[18px]
-                          leading-6
-                        `
-                    }
-                  `}
+                        sm:text-[15px]
+                      `
+                      : `
+                        text-[18px]
+                        leading-6
+                      `
+                  }
+                `}
               >
                 {service.label}
               </span>
@@ -664,12 +759,12 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
                 <ChevronRight
                   aria-hidden="true"
                   className="
-                      h-5
-                      w-5
-                      shrink-0
+                    h-5
+                    w-5
+                    shrink-0
 
-                      text-[#0C3354]
-                    "
+                    text-[#0C3354]
+                  "
                   strokeWidth={2}
                 />
               )}

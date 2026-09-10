@@ -7,9 +7,12 @@ import { useRouter } from 'next/navigation';
 
 import { ArrowLeft } from 'lucide-react';
 
+import { getDefaultJourney } from '@/components/loadConfig';
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
-import { storeJourney } from '@/constants/shared';
+import { storeJourney, storePartnerConfig } from '@/constants/shared';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { partnerConfigApi } from '@/lib/api/endpoints/partnerConfig';
 import { useJourneyStore } from '@/store/journeyStore';
 
 /* =========================================================
@@ -48,47 +51,6 @@ const CONFIRMATION_DETAILS: ConfirmationDetails = {
   firstPaymentDate: '1 September 2026',
   collectionDay: '1st of each month',
 };
-
-const NEXT_STEPS: NextStep[] = [
-  {
-    id: 'confirmation-email',
-    icon: '/images/thanks-mail.png',
-    iconAlt: 'Confirmation email',
-    heading: 'Confirmation email sent',
-    description:
-      'A confirmation with your application and DD mandate details has been sent to your email address.',
-  },
-  {
-    id: 'provider-contact',
-    icon: '/images/thanks-call.png',
-    iconAlt: 'Provider contact',
-    heading: 'Octopus Energy will contact you',
-    description:
-      'Your new provider will reach out within 2 working days to confirm your switch date.',
-  },
-  {
-    id: 'switch-begins',
-    icon: '/images/thanks-refresh.png',
-    iconAlt: 'Switch begins',
-    heading: 'Switch begins',
-    description:
-      'Your switch will be processed within 5–10 working days. Your current supply continues uninterrupted.',
-  },
-  {
-    id: 'first-direct-debit',
-    icon: '/images/thanks-card.png',
-    iconAlt: 'First Direct Debit',
-    heading: 'First Direct Debit: 1 September 2026',
-    description: '£71 will be collected from 3 on this date.',
-  },
-  {
-    id: 'start-saving',
-    icon: '/images/thanks-heart.png',
-    iconAlt: 'Start saving',
-    heading: 'Start saving!',
-    description: 'You could save £580 per year compared to the average tariff.',
-  },
-];
 
 /* =========================================================
    SESSION STORAGE HELPERS
@@ -160,9 +122,58 @@ export default function FinalThankYou() {
 
   const maskedAccountNumber = maskAccountNumber(paymentDetails.accountNumber || '12345678');
 
-  const { journey, clearJourney } = useJourneyStore();
+  const { journey, clearJourney, setJourney } = useJourneyStore();
+  const [isResettingJourney, setIsResettingJourney] = useState(false);
 
-  const handleRoute = (route: string) => {
+  const provider = journey?.cart?.[0]?.provider;
+
+  const nextSteps: NextStep[] = [
+    {
+      id: 'confirmation-email',
+      icon: '/images/thanks-mail.png',
+      iconAlt: 'Confirmation email',
+      heading: 'Confirmation email sent',
+      description:
+        'A confirmation with your application and Direct Debit details has been sent to your email address.',
+    },
+    {
+      id: 'provider-contact',
+      icon: '/images/thanks-call.png',
+      iconAlt: 'Provider contact',
+      heading: `${provider} will contact you`,
+      description:
+        'Your new provider will reach out within 2 working days to confirm your switch date.',
+    },
+    {
+      id: 'switch-begins',
+      icon: '/images/thanks-refresh.png',
+      iconAlt: 'Switch begins',
+      heading: 'Switch begins',
+      description:
+        'Your switch will be processed within 5–10 working days. Your current supply continues uninterrupted.',
+    },
+    {
+      id: 'first-direct-debit',
+      icon: '/images/thanks-card.png',
+      iconAlt: 'First Direct Debit',
+      heading: `First Direct Debit: ${CONFIRMATION_DETAILS.collectionDay}`,
+      description: `${monthlyAmount} will be collected from your selected payment account on this date.`,
+    },
+    // {
+    //   id: 'start-saving',
+    //   icon: '/images/thanks-heart.png',
+    //   iconAlt: 'Start saving',
+    //   heading: 'Start saving!',
+    //   description: selectedPlan?.annualSaving
+    //     ? `You could save £${selectedPlan.annualSaving} per year compared to the average tariff.`
+    //     : 'You could save money compared to the average tariff.',
+    // },
+  ];
+
+  const handleRoute = async (route: string) => {
+    if (isResettingJourney) return;
+    setIsResettingJourney(true);
+
     // Reset in-memory Zustand store
     clearJourney();
 
@@ -186,7 +197,25 @@ export default function FinalThankYou() {
     window.dispatchEvent(new Event('billgoose-journey-service-changed'));
     window.dispatchEvent(new Event('billgoose-journey-progress-changed'));
 
-    router.push(route);
+    try {
+      const [configResponse, journeyResponse] = await Promise.all([
+        partnerConfigApi.getConfig(),
+        journeyApi.createJourney(getDefaultJourney()),
+      ]);
+
+      localStorage.setItem(storePartnerConfig, JSON.stringify(configResponse.data));
+
+      const newJourney = journeyResponse.data;
+      const newJourneyId = newJourney?.id || newJourney?.journeyId;
+      if (!newJourney || !newJourneyId) throw new Error('No journey ID received from API');
+
+      localStorage.setItem(storeJourney, newJourneyId);
+      setJourney(newJourney);
+      router.push(route);
+    } catch (error) {
+      console.error('Failed to initialize a new journey:', error);
+      setIsResettingJourney(false);
+    }
   };
 
   return (
@@ -425,7 +454,8 @@ export default function FinalThankYou() {
               lg:leading-[25px]
             "
           >
-            Your {journey?.serviceType} switch to {journey?.cart[0]?.provider} is confirmed and your
+            Your {journey?.serviceType} switch to {journey?.cart?.[0]?.provider} is confirmed and
+            your
             <br className="hidden sm:block" />
             {humanizeLabel(journey?.customer?.paymentPreference)} is set up.
           </p>
@@ -770,8 +800,8 @@ export default function FinalThankYou() {
               "
             >
               <div>
-                {NEXT_STEPS.map((step, index) => {
-                  const isLast = index === NEXT_STEPS.length - 1;
+                {nextSteps?.map((step, index) => {
+                  const isLast = index === nextSteps?.length - 1;
 
                   return (
                     <div
