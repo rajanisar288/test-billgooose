@@ -18,20 +18,6 @@ export default function Footer() {
     setOpenColumnId((currentColumnId) => (currentColumnId === columnId ? null : columnId));
   };
 
-  const getFooterHref = (columnHeading: string) => {
-    const normalizedHeading = columnHeading.trim().toLowerCase();
-
-    if (normalizedHeading.includes('compare')) {
-      return '/compare';
-    }
-
-    if (normalizedHeading.includes('guide')) {
-      return '/#guides';
-    }
-
-    return '/';
-  };
-
   return (
     <footer className="w-full bg-white">
       {/* Mobile footer */}
@@ -40,8 +26,6 @@ export default function Footer() {
         <div>
           {footer.columns.map((column) => {
             const isOpen = openColumnId === column.id;
-
-            const columnHref = getFooterHref(column.heading);
 
             return (
               <div key={column.id}>
@@ -78,7 +62,7 @@ export default function Footer() {
                       {column.links.map((link) => (
                         <Link
                           key={link.id}
-                          href={columnHref}
+                          href={link.href}
                           className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[12px] font-[467] leading-[18px] tracking-[0] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-[360px]:text-[13px] min-[360px]:leading-[19px] min-[390px]:text-[14px] min-[390px]:leading-5"
                         >
                           <span>{link.label}</span>
@@ -124,38 +108,34 @@ export default function Footer() {
       <div className="mx-auto hidden min-h-[480px] w-full max-w-[1440px] flex-col px-20 pb-12 pt-16 lg:flex">
         {/* Footer links */}
         <div className="grid grid-cols-4 gap-16">
-          {footer.columns.map((column) => {
-            const columnHref = getFooterHref(column.heading);
+          {footer.columns.map((column) => (
+            <div key={column.id}>
+              <h2 className="font-red-hat-display text-[14px] font-medium leading-[1.4] text-[#667085]">
+                {column.heading}
+              </h2>
 
-            return (
-              <div key={column.id}>
-                <h2 className="font-red-hat-display text-[14px] font-medium leading-[1.4] text-[#667085]">
-                  {column.heading}
-                </h2>
+              <nav
+                className="mt-5 flex flex-col gap-4"
+                aria-label={`${column.heading} footer links`}
+              >
+                {column.links.map((link) => (
+                  <Link
+                    key={link.id}
+                    href={link.href}
+                    className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[16px] font-semibold leading-[1.3] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  >
+                    <span>{link.label}</span>
 
-                <nav
-                  className="mt-5 flex flex-col gap-4"
-                  aria-label={`${column.heading} footer links`}
-                >
-                  {column.links.map((link) => (
-                    <Link
-                      key={link.id}
-                      href={columnHref}
-                      className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[16px] font-semibold leading-[1.3] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    >
-                      <span>{link.label}</span>
-
-                      {link.badge && (
-                        <span className="inline-flex min-h-[20px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[11px] font-bold leading-none text-primary">
-                          {link.badge}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-            );
-          })}
+                    {link.badge && (
+                      <span className="inline-flex min-h-[20px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[11px] font-bold leading-none text-primary">
+                        {link.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          ))}
         </div>
 
         <div className="flex-1" />

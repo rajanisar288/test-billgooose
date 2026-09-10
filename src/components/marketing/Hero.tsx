@@ -405,16 +405,16 @@ export default function Hero() {
                   whitespace-nowrap
 
                   font-red-hat-display
-                  text-[10px]
+                  text-[14px]
                   font-[467]
 
                   text-secondary
 
-                  min-[390px]:text-[13px]
+                  min-[390px]:text-[13.7px]
                 "
               >
                 {hero.trust.startText}{' '}
-                <span className="font-[645]">{hero.trust.highlightedText}</span>{' '}
+                <span className="font-[665]">{hero.trust.highlightedText}</span>{' '}
                 {hero.trust.separator} {hero.trust.endText}
               </p>
             </div>

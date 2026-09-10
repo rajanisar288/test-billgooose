@@ -87,6 +87,208 @@
       "href": "/sign-in"
     }
   },
+  "aboutUs": {
+    "heading": "About BillGoose",
+    "breadcrumb": {
+      "home": {
+        "label": "Home",
+        "href": "/"
+      },
+      "current": "About"
+    },
+    "content": {
+      "heading": "A smarter way to manage your household",
+      "paragraphs": [
+        "BillGoose helps you compare, choose and manage the services that keep your home running. It brings household essentials together so they are easier to understand and easier to look after.",
+        "But comparison is only the start. With your permission, Bill will keep track of the information you choose to share, help you understand what you use and spend, what can be saved and made more efficient and remind you when it may be time to act."
+      ],
+      "bottomHeading": "Better informed means better outcomes."
+    },
+    "backgroundImage": {
+      "src": "/images/about-us-bg.png",
+      "alt": "BillGoose helping households manage their essential services"
+    },
+    "whyWeCreated": {
+      "heading": "Why we created BillGoose",
+      "paragraphs": [
+        "There is no doubt that running a home has become harder than it should be. Bills sit with different suppliers, prices and contracts regularly change, useful information is spread across emails, apps and online accounts and even after comparing prices, people are often left to manage everything themselves without proper support.",
+        "We created BillGoose to bring more common sense to the whole process. Our mission is to turn scattered household information into useful, insightful, actionable support, helping people save money, save time and avoid the headache."
+      ]
+    },
+    "permissionHelp": {
+      "heading": "With your permission, BillGoose can help you",
+      "items": [
+        {
+          "id": "compare",
+          "title": "Compare",
+          "description": "Review relevant products and services from participating providers and partners.",
+          "icon": "/images/card-about-1.png",
+          "iconAlt": "Compare"
+        },
+        {
+          "id": "inform",
+          "title": "Inform",
+          "description": "Understand the elements that matter, including price, service, allowances and contract terms.",
+          "icon": "/images/card-about-1.png",
+          "iconAlt": "Inform"
+        },
+        {
+          "id": "manage",
+          "title": "Manage",
+          "description": "Keep useful household information together and receive prompts when something may need attention.",
+          "icon": "/images/card-about-1.png",
+          "iconAlt": "Manage"
+        },
+        {
+          "id": "understand",
+          "title": "Understand",
+          "description": "Use your shared household data to see what you are spending and how coming changes may affect you.",
+          "icon": "/images/card-about-4.png",
+          "iconAlt": "Understand"
+        },
+        {
+          "id": "act",
+          "title": "Act",
+          "description": "Assist in switching a service, checking an unusual change or making better-informed household decisions on time.",
+          "icon": "/images/card-about-5.png",
+          "iconAlt": "Act"
+        }
+      ]
+    },
+    "essentialServices": {
+      "heading": "BillGoose looks at all essential services",
+      "goose": {
+        "src": "/images/about-essential.png",
+        "alt": "BillGoose mascot"
+      },
+      "comparisonInfo": {
+        "heading": "BillGoose is much more than a comparison service",
+        "description": "Most comparison sites help with one decision. BillGoose is designed to keep helping afterwards. BillGoose is the first of its kind a system that builds a connection between comparison, household information and ongoing support. Bill can help you see what has changed, understand why it matters and decide what to do next. It is not about sending more alerts; it is about sending more useful insights.",
+        "highlight": "BillGoose also knows that the cheapest option is not always the right one. Real value might mean a lower price but might also mean better service, clearer terms, less waste or a product that fits your household better."
+      },
+      "items": [
+        {
+          "id": "energy",
+          "label": "Energy",
+          "icon": "/images/energy-icon.png",
+          "iconAlt": "Energy"
+        },
+        {
+          "id": "broadband",
+          "label": "Broadband",
+          "icon": "/images/broadband.png",
+          "iconAlt": "Broadband"
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "icon": "/images/mobile-icon.png",
+          "iconAlt": "Mobile"
+        },
+        {
+          "id": "sim-only",
+          "label": "SIM only",
+          "icon": "/images/sim-icon.png",
+          "iconAlt": "SIM only"
+        },
+        {
+          "id": "insurance",
+          "label": "Insurance",
+          "icon": "/images/insurance.png",
+          "iconAlt": "Insurance"
+        },
+        {
+          "id": "loans",
+          "label": "Loans",
+          "icon": "/images/loans.png",
+          "iconAlt": "Loans"
+        }
+      ]
+    },
+    "realValue": {
+      "heading": "Real value for UK consumers",
+      "items": [
+        {
+          "id": "plain-language",
+          "title": "Plain language always",
+          "description": "We will always use plain language, explain important elements clearly and be fully transparent when a partner is providing part of a service.",
+          "icon": "/images/card-about-5.png",
+          "iconAlt": "Plain language"
+        },
+        {
+          "id": "no-hidden-surprises",
+          "title": "No hidden surprises",
+          "description": "We will not claim to compare every supplier unless that is genuinely the case. No hidden clauses, no unexpected surprises just clarity from day one.",
+          "icon": "/images/card-about-4.png",
+          "iconAlt": "No hidden surprises"
+        },
+        {
+          "id": "customers-first",
+          "title": "Customers come first",
+          "description": "Our UK-based support team are people like you consumers. We will always listen, explain things clearly and help you find the right next step.",
+          "icon": "/images/card-about-5.png",
+          "iconAlt": "Customers come first"
+        },
+        {
+          "id": "transparent-partnerships",
+          "title": "Transparent partnerships",
+          "description": "We choose partners based on quality, relevance and the way they look after customers and data. Commercial relationships are always disclosed openly.",
+          "icon": "/images/card-about-4.png",
+          "iconAlt": "Transparent partnerships"
+        }
+      ]
+    },
+    "howWeOperate": {
+      "heading": "How we operate and cover our costs",
+      "paragraphs": [
+        "Some of our services are provided directly through BillGoose; others use specialist comparison, technology or service partners – always with the aim of giving you access to the right expertise for each market. We choose partners based on the quality and relevance of their service and the way they look after customers and data.",
+        "BillGoose's comparison service is free to use, but if you choose a product or complete a switch through us, a supplier or partner may pay us a commission. This helps us run the system, provide additional services, support customers and keep developing the platform. We will always be open about these commercial relationships."
+      ],
+      "highlight": {
+        "icon": "/images/dwellr-icon.png",
+        "iconAlt": "Dwell Group Limited",
+        "textStrong": "BillGoose is part of Dwell Group Limited",
+        "textRest": "a British business with experience in consumer services, data, technology and regulated processes."
+      }
+    },
+    "howWeUseYourData": {
+      "heading": "How we use your data",
+      "description": "We use your personal information only with your consent and only to provide the services you have chosen. BillGoose is fully compliant with UK GDPR and is approved and regulated by the Energy Ombudsman, the Financial Conduct Authority and the Campaign for Clear English. We are a UK-based business with all customer data stored securely in the United Kingdom.",
+      "logos": [
+        {
+          "id": "gdpr",
+          "src": "/images/how-we-use-1.png",
+          "alt": "UK GDPR"
+        },
+        {
+          "id": "energy-ombudsman",
+          "src": "/images/how-we-use-2.png",
+          "alt": "Energy Ombudsman"
+        },
+        {
+          "id": "fca",
+          "src": "/images/how-we-use-3.png",
+          "alt": "Financial Conduct Authority"
+        }
+      ],
+      "footerText": {
+        "strong": "We will never sell your personal information.",
+        "rest": "We will only contact you with your permission and only when the message is relevant or needed. You can review or change your permissions at any time.",
+        "privacyLabel": "Our Privacy Notice",
+        "privacyHref": "/privacy",
+        "lastLine": "explains how we collect, use and protect your information."
+      }
+    },
+    "customersComeFirst": {
+      "heading": "Customers come first",
+      "description": "Our customers are the most important part of BillGoose. Our UK-based support team is made up of people like you, consumers. We will always listen, explain things clearly and help you find the right next step.",
+      "highlight": {
+        "logo": "/images/feefo.png",
+        "logoAlt": "Feefo",
+        "text": "We have partnered with Feefo to collect controlled customer feedback so we can keep improving. We will plant a tree for every review given."
+      }
+    }
+  },
   "hero": {
     "heading": {
       "firstLine": "Compare Household",
@@ -554,6 +756,192 @@
         "title": "Editorial standards",
         "description": "Guides written by our team, reviewed for accuracy.",
         "icon": "/images/star-standard.png"
+      }
+    ]
+  },
+  "suppliersSection": {
+    "badge": {
+      "text": "Suppliers",
+      "icon": "/images/supplier-badge-icon.png",
+      "iconAlt": ""
+    },
+    "heading": "Compare from leading suppliers",
+    "logos": [
+      {
+        "id": 1,
+        "name": "British Gas",
+        "src": "/images/supplier-1.svg",
+        "alt": "British Gas",
+        "width": 130,
+        "height": 60.76
+      },
+      {
+        "id": 2,
+        "name": "EDF",
+        "src": "/images/supplier-2.svg",
+        "alt": "EDF",
+        "width": 130,
+        "height": 60.76
+      },
+      {
+        "id": 3,
+        "name": "ScottishPower",
+        "src": "/images/supplier-3.svg",
+        "alt": "ScottishPower",
+        "width": 75,
+        "height": 61
+      },
+      {
+        "id": 4,
+        "name": "Gigaclear",
+        "src": "/images/supplier-4.svg",
+        "alt": "Gigaclear",
+        "width": 185,
+        "height": 61
+      },
+      {
+        "id": 5,
+        "name": "Sky",
+        "src": "/images/supplier-5.svg",
+        "alt": "Sky",
+        "width": 88,
+        "height": 61
+      },
+      {
+        "id": 6,
+        "name": "Virgin Mobile",
+        "src": "/images/supplier-6.svg",
+        "alt": "Virgin Mobile",
+        "width": 118,
+        "height": 61
+      },
+      {
+        "id": 7,
+        "name": "Fuse",
+        "src": "/images/supplier-7.svg",
+        "alt": "Fuse",
+        "width": 130,
+        "height": 60.76
+      },
+      {
+        "id": 8,
+        "name": "BT",
+        "src": "/images/supplier-8.svg",
+        "alt": "BT",
+        "width": 60,
+        "height": 61
+      },
+      {
+        "id": 9,
+        "name": "Vodafone",
+        "src": "/images/supplier-9.svg",
+        "alt": "Vodafone",
+        "width": 187,
+        "height": 61
+      },
+      {
+        "id": 10,
+        "name": "Utility Warehouse",
+        "src": "/images/supplier-10.svg",
+        "alt": "Utility Warehouse",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 11,
+        "name": "1st Central",
+        "src": "/images/supplier-11.svg",
+        "alt": "1st Central",
+        "width": 150,
+        "height": 61
+      },
+      {
+        "id": 12,
+        "name": "Lebara",
+        "src": "/images/supplier-12.svg",
+        "alt": "Lebara",
+        "width": 123,
+        "height": 61
+      },
+      {
+        "id": 13,
+        "name": "E.ON",
+        "src": "/images/supplier-13.svg",
+        "alt": "E.ON",
+        "width": 120,
+        "height": 61
+      },
+      {
+        "id": 14,
+        "name": "100Green",
+        "src": "/images/supplier-14.svg",
+        "alt": "100Green",
+        "width": 60.3,
+        "height": 59.33
+      },
+      {
+        "id": 15,
+        "name": "Aviva",
+        "src": "/images/supplier-15.svg",
+        "alt": "Aviva",
+        "width": 155,
+        "height": 61
+      },
+      {
+        "id": 16,
+        "name": "Admiral",
+        "src": "/images/supplier-16.svg",
+        "alt": "Admiral",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 17,
+        "name": "So Energy",
+        "src": "/images/supplier-17.svg",
+        "alt": "So Energy",
+        "width": 95,
+        "height": 61
+      },
+      {
+        "id": 18,
+        "name": "Adrian Flux",
+        "src": "/images/supplier-18.svg",
+        "alt": "Adrian Flux",
+        "width": 178,
+        "height": 61
+      },
+      {
+        "id": 19,
+        "name": "Hastings Direct",
+        "src": "/images/supplier-19.svg",
+        "alt": "Hastings Direct",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 20,
+        "name": "Huddle",
+        "src": "/images/supplier-20.svg",
+        "alt": "Huddle",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 21,
+        "name": "EE",
+        "src": "/images/supplier-21.svg",
+        "alt": "EE",
+        "width": 36,
+        "height": 61
+      },
+      {
+        "id": 22,
+        "name": "Three",
+        "src": "/images/supplier-22.svg",
+        "alt": "Three",
+        "width": 51,
+        "height": 61
       }
     ]
   },
