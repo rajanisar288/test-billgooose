@@ -374,6 +374,9 @@ export default function Hero() {
         <div className="relative">
           <div className="absolute left-0 right-0 top-[17px] h-px bg-[#EAECF0] lg:top-[24px]" />
 
+          {/* =================================================
+              TRUST LABEL
+          ================================================== */}
           <div className="relative z-10 flex justify-center lg:justify-start">
             <div
               className="
@@ -421,23 +424,84 @@ export default function Hero() {
           </div>
 
           {/* =================================================
-              MOBILE PROVIDER CAROUSEL
+              PROVIDERS CONTINUOUS CAROUSEL
+
+              ALL SCREENS:
+              MOBILE
+              TABLET
+              LAPTOP
+              DESKTOP
+
+              1 → 2 → ... → 22 → 1 → ...
           ================================================== */}
-          <div className="provider-carousel mt-[18px] overflow-hidden lg:hidden">
-            <div className="provider-carousel-track flex w-max items-center">
-              <div className="flex shrink-0 items-center gap-3 pr-3">
+          <div
+            className="
+              provider-carousel
+
+              mt-[18px]
+              w-full
+
+              overflow-hidden
+
+              sm:mt-5
+
+              lg:mt-6
+            "
+          >
+            <div
+              className="
+                provider-carousel-track
+
+                flex
+                w-max
+                items-center
+              "
+            >
+              {/* ===============================================
+                  ORIGINAL PROVIDER SET
+              ================================================ */}
+              <div
+                className="
+                  flex
+                  shrink-0
+                  items-center
+
+                  gap-[22px]
+                  pr-[22px]
+
+                  sm:gap-[28px]
+                  sm:pr-[28px]
+
+                  md:gap-[34px]
+                  md:pr-[34px]
+
+                  lg:gap-[42px]
+                  lg:pr-[42px]
+
+                  xl:gap-[48px]
+                  xl:pr-[48px]
+                "
+              >
                 {hero.providers.map((provider) => (
                   <div
                     key={provider.id}
                     className="
                       flex
                       h-[38px]
-                      w-[118px]
-
                       shrink-0
+
                       items-center
                       justify-center
+
+                      sm:h-[42px]
+
+                      md:h-[45px]
+
+                      lg:h-[49px]
                     "
+                    style={{
+                      width: `${provider.width}px`,
+                    }}
                   >
                     <Image
                       src={provider.src}
@@ -445,19 +509,51 @@ export default function Hero() {
                       width={provider.width}
                       height={provider.height}
                       className="
-                        h-[24.84px]
-                        w-[110px]
+                        max-h-[32px]
+                        h-auto
+                        w-full
 
                         object-contain
+
+                        sm:max-h-[36px]
+
+                        md:max-h-[42px]
+
+                        lg:max-h-[49px]
                       "
                     />
                   </div>
                 ))}
               </div>
 
+              {/* ===============================================
+                  DUPLICATE SET
+
+                  Needed for seamless:
+                  22 → 1
+              ================================================ */}
               <div
                 aria-hidden="true"
-                className="flex shrink-0 items-center gap-3 pr-3"
+                className="
+                  flex
+                  shrink-0
+                  items-center
+
+                  gap-[22px]
+                  pr-[22px]
+
+                  sm:gap-[28px]
+                  sm:pr-[28px]
+
+                  md:gap-[34px]
+                  md:pr-[34px]
+
+                  lg:gap-[42px]
+                  lg:pr-[42px]
+
+                  xl:gap-[48px]
+                  xl:pr-[48px]
+                "
               >
                 {hero.providers.map((provider) => (
                   <div
@@ -465,12 +561,20 @@ export default function Hero() {
                     className="
                       flex
                       h-[38px]
-                      w-[118px]
-
                       shrink-0
+
                       items-center
                       justify-center
+
+                      sm:h-[42px]
+
+                      md:h-[45px]
+
+                      lg:h-[49px]
                     "
+                    style={{
+                      width: `${provider.width}px`,
+                    }}
                   >
                     <Image
                       src={provider.src}
@@ -478,47 +582,23 @@ export default function Hero() {
                       width={provider.width}
                       height={provider.height}
                       className="
-                        h-[24.84px]
-                        w-[110px]
+                        max-h-[32px]
+                        h-auto
+                        w-full
 
                         object-contain
+
+                        sm:max-h-[36px]
+
+                        md:max-h-[42px]
+
+                        lg:max-h-[49px]
                       "
                     />
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* =================================================
-              DESKTOP PROVIDERS
-          ================================================== */}
-          <div className="mt-5 hidden grid-cols-7 items-center gap-5 lg:grid">
-            {hero.providers.map((provider) => (
-              <div
-                key={provider.id}
-                className="
-                  flex
-                  min-h-[49px]
-
-                  items-center
-                  justify-center
-                "
-              >
-                <Image
-                  src={provider.src}
-                  alt={provider.alt}
-                  width={provider.width}
-                  height={provider.height}
-                  className="
-                    h-[49px]
-                    w-[126px]
-
-                    object-contain
-                  "
-                />
-              </div>
-            ))}
           </div>
         </div>
       </div>

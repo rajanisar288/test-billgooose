@@ -877,3 +877,38 @@
     font-size: 16px;
   }
 }
+
+/* =========================================================
+   PROVIDER CAROUSEL ANIMATION
+========================================================= */
+
+@keyframes billgooseProviderCarousel {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.provider-carousel-track {
+  animation: billgooseProviderCarousel 55s linear infinite;
+  will-change: transform;
+}
+
+.provider-carousel:hover .provider-carousel-track {
+  animation-play-state: paused;
+}
+
+@media (max-width: 767px) {
+  .provider-carousel-track {
+    animation-duration: 42s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .provider-carousel-track {
+    animation: none;
+  }
+}
