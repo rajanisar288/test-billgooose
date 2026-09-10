@@ -759,6 +759,192 @@
       }
     ]
   },
+  "suppliersSection": {
+    "badge": {
+      "text": "Suppliers",
+      "icon": "/images/supplier-badge-icon.png",
+      "iconAlt": ""
+    },
+    "heading": "Compare from leading suppliers",
+    "logos": [
+      {
+        "id": 1,
+        "name": "British Gas",
+        "src": "/images/supplier-1.svg",
+        "alt": "British Gas",
+        "width": 130,
+        "height": 60.76
+      },
+      {
+        "id": 2,
+        "name": "EDF",
+        "src": "/images/supplier-2.svg",
+        "alt": "EDF",
+        "width": 130,
+        "height": 60.76
+      },
+      {
+        "id": 3,
+        "name": "ScottishPower",
+        "src": "/images/supplier-3.svg",
+        "alt": "ScottishPower",
+        "width": 75,
+        "height": 61
+      },
+      {
+        "id": 4,
+        "name": "Gigaclear",
+        "src": "/images/supplier-4.svg",
+        "alt": "Gigaclear",
+        "width": 185,
+        "height": 61
+      },
+      {
+        "id": 5,
+        "name": "Sky",
+        "src": "/images/supplier-5.svg",
+        "alt": "Sky",
+        "width": 88,
+        "height": 61
+      },
+      {
+        "id": 6,
+        "name": "Virgin Mobile",
+        "src": "/images/supplier-6.svg",
+        "alt": "Virgin Mobile",
+        "width": 118,
+        "height": 61
+      },
+      {
+        "id": 7,
+        "name": "Fuse",
+        "src": "/images/supplier-7.svg",
+        "alt": "Fuse",
+        "width": 130,
+        "height": 60.76
+      },
+      {
+        "id": 8,
+        "name": "BT",
+        "src": "/images/supplier-8.svg",
+        "alt": "BT",
+        "width": 60,
+        "height": 61
+      },
+      {
+        "id": 9,
+        "name": "Vodafone",
+        "src": "/images/supplier-9.svg",
+        "alt": "Vodafone",
+        "width": 187,
+        "height": 61
+      },
+      {
+        "id": 10,
+        "name": "Utility Warehouse",
+        "src": "/images/supplier-10.svg",
+        "alt": "Utility Warehouse",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 11,
+        "name": "1st Central",
+        "src": "/images/supplier-11.svg",
+        "alt": "1st Central",
+        "width": 150,
+        "height": 61
+      },
+      {
+        "id": 12,
+        "name": "Lebara",
+        "src": "/images/supplier-12.svg",
+        "alt": "Lebara",
+        "width": 123,
+        "height": 61
+      },
+      {
+        "id": 13,
+        "name": "E.ON",
+        "src": "/images/supplier-13.svg",
+        "alt": "E.ON",
+        "width": 120,
+        "height": 61
+      },
+      {
+        "id": 14,
+        "name": "100Green",
+        "src": "/images/supplier-14.svg",
+        "alt": "100Green",
+        "width": 60.3,
+        "height": 59.33
+      },
+      {
+        "id": 15,
+        "name": "Aviva",
+        "src": "/images/supplier-15.svg",
+        "alt": "Aviva",
+        "width": 155,
+        "height": 61
+      },
+      {
+        "id": 16,
+        "name": "Admiral",
+        "src": "/images/supplier-16.svg",
+        "alt": "Admiral",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 17,
+        "name": "So Energy",
+        "src": "/images/supplier-17.svg",
+        "alt": "So Energy",
+        "width": 95,
+        "height": 61
+      },
+      {
+        "id": 18,
+        "name": "Adrian Flux",
+        "src": "/images/supplier-18.svg",
+        "alt": "Adrian Flux",
+        "width": 178,
+        "height": 61
+      },
+      {
+        "id": 19,
+        "name": "Hastings Direct",
+        "src": "/images/supplier-19.svg",
+        "alt": "Hastings Direct",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 20,
+        "name": "Huddle",
+        "src": "/images/supplier-20.svg",
+        "alt": "Huddle",
+        "width": 176,
+        "height": 61
+      },
+      {
+        "id": 21,
+        "name": "EE",
+        "src": "/images/supplier-21.svg",
+        "alt": "EE",
+        "width": 36,
+        "height": 61
+      },
+      {
+        "id": 22,
+        "name": "Three",
+        "src": "/images/supplier-22.svg",
+        "alt": "Three",
+        "width": 51,
+        "height": 61
+      }
+    ]
+  },
   "lowerHero": {
     "heading": "Easily compare household bills",
     "description": "Quickly compare your household bills to find the best deals and save money effortlessly.",
