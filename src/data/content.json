@@ -397,58 +397,58 @@
       {
         "id": 1,
         "name": "British Gas",
-        "src": "/images/british-gas.png",
-        "alt": "British Gas logo",
-        "width": 126,
-        "height": 49
+        "src": "/images/supplier-1.svg",
+        "alt": "British Gas",
+        "width": 130,
+        "height": 60.76
       },
       {
         "id": 2,
-        "name": "Octopus Energy",
-        "src": "/images/octopus.png",
-        "alt": "Octopus Energy logo",
-        "width": 126,
-        "height": 49
+        "name": "EDF",
+        "src": "/images/supplier-2.svg",
+        "alt": "EDF",
+        "width": 130,
+        "height": 60.76
       },
       {
-        "id": 3,
-        "name": "EDF",
-        "src": "/images/edf.png",
-        "alt": "EDF logo",
-        "width": 126,
-        "height": 49
+        "id": 10,
+        "name": "Utility Warehouse",
+        "src": "/images/supplier-10.svg",
+        "alt": "Utility Warehouse",
+        "width": 176,
+        "height": 61
       },
       {
         "id": 4,
-        "name": "BT Energy",
-        "src": "/images/energy.png",
-        "alt": "BT Energy logo",
-        "width": 126,
-        "height": 49
+        "name": "Gigaclear",
+        "src": "/images/supplier-4.svg",
+        "alt": "Gigaclear",
+        "width": 185,
+        "height": 61
       },
       {
         "id": 5,
-        "name": "Vodafone",
-        "src": "/images/vodafone.png",
-        "alt": "Vodafone logo",
-        "width": 126,
-        "height": 49
+        "name": "Sky",
+        "src": "/images/supplier-5.svg",
+        "alt": "Sky",
+        "width": 88,
+        "height": 61
       },
       {
         "id": 6,
-        "name": "Aviva",
-        "src": "/images/aviva.png",
-        "alt": "Aviva logo",
-        "width": 126,
-        "height": 49
+        "name": "Virgin Mobile",
+        "src": "/images/supplier-6.svg",
+        "alt": "Virgin Mobile",
+        "width": 118,
+        "height": 61
       },
       {
         "id": 7,
-        "name": "Barclaycard",
-        "src": "/images/barclays.png",
-        "alt": "Barclaycard logo",
-        "width": 126,
-        "height": 49
+        "name": "Fuse",
+        "src": "/images/supplier-7.svg",
+        "alt": "Fuse",
+        "width": 130,
+        "height": 60.76
       }
     ]
   },
