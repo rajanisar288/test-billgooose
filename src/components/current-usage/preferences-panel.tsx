@@ -210,14 +210,7 @@ type PreferenceItemProps = {
   editIconAlt: string;
 };
 
-function PreferenceItem({
-  title,
-  description,
-  icon,
-  iconAlt,
-  editIcon,
-  editIconAlt,
-}: PreferenceItemProps) {
+function PreferenceItem({ title, description, icon, iconAlt }: PreferenceItemProps) {
   return (
     <div
       className="

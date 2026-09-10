@@ -3,21 +3,26 @@
 import { useState } from 'react';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { ChevronRight } from 'lucide-react';
 
-import {
-  type HomepageService,
-  useServiceJourneyNavigation,
-} from '@/components/marketing/use-service-journey-navigation';
 import data from '@/data/content.json';
 
-type ServiceType = HomepageService;
+type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only' | 'insurance' | 'bundle-bills';
 
-export default function LowerHero() {
-  const { navigateToService } = useServiceJourneyNavigation();
+type LowerHeroProps = {
+  heading?: string;
+  description?: string;
+};
+
+export default function LowerHero({ heading, description }: LowerHeroProps) {
+  const router = useRouter();
 
   const { lowerHero } = data;
+
+  const displayHeading = heading ?? lowerHero.heading;
+  const displayDescription = description ?? lowerHero.description;
 
   const [selectedService, setSelectedService] = useState<ServiceType>(
     lowerHero.serviceTabs.defaultValue as ServiceType,
@@ -25,7 +30,23 @@ export default function LowerHero() {
 
   function handleServiceSelect(service: ServiceType) {
     setSelectedService(service);
-    void navigateToService(service);
+
+    if (service === 'bundle-bills') {
+      router.push('/compare?service=energy&flow=bundle');
+      return;
+    }
+
+    if (service === 'sim-only') {
+      router.push('/result?service=sim-only');
+      return;
+    }
+
+    if (service === 'mobile') {
+      router.push('/result?service=mobile');
+      return;
+    }
+
+    router.push(`/compare?service=${service}`);
   }
 
   return (
@@ -229,7 +250,7 @@ export default function LowerHero() {
                 min-[390px]:leading-[41.88px]
               "
             >
-              {lowerHero.heading}
+              {displayHeading}
             </h2>
 
             <p
@@ -249,7 +270,7 @@ export default function LowerHero() {
                 min-[390px]:leading-[18px]
               "
             >
-              {lowerHero.description}
+              {displayDescription}
             </p>
 
             <div className="mt-5">
@@ -294,7 +315,7 @@ export default function LowerHero() {
                 text-white
               "
             >
-              {lowerHero.heading}
+              {displayHeading}
             </h2>
 
             <p
@@ -310,7 +331,7 @@ export default function LowerHero() {
                 text-white
               "
             >
-              {lowerHero.description}
+              {displayDescription}
             </p>
 
             <div className="mt-5 w-[430px]">
@@ -354,7 +375,7 @@ export default function LowerHero() {
                 text-white
               "
             >
-              {lowerHero.heading}
+              {displayHeading}
             </h2>
 
             <p
@@ -369,7 +390,7 @@ export default function LowerHero() {
                 text-white
               "
             >
-              {lowerHero.description}
+              {displayDescription}
             </p>
 
             <div className="mt-6 h-[176px] w-[560px]">
@@ -434,59 +455,59 @@ function LowerHeroServiceGrid({
                 onSelect(service.value as ServiceType);
               }}
               className={`
-                  group
+                group
 
-                  flex
-                  items-center
+                flex
+                items-center
 
-                  border-[#EAECF0]
+                border-[#EAECF0]
 
-                  text-left
+                text-left
 
-                  transition-colors
+                transition-colors
 
-                  ${
-                    compact
+                ${
+                  compact
+                    ? `
+                      min-h-[56px]
+                      gap-2
+                      px-3
+                    `
+                    : tablet
                       ? `
-                        min-h-[56px]
-                        gap-2
-                        px-3
-                      `
-                      : tablet
-                        ? `
-                          min-h-[64px]
-                          gap-2.5
-                          px-4
-                        `
-                        : `
-                          min-h-[87px]
-                          gap-3
-                          px-5
-                        `
-                  }
-
-                  ${index % 3 !== 2 ? 'sm:border-r' : ''}
-
-                  ${index < 3 ? 'sm:border-b' : ''}
-
-                  ${index % 2 === 0 ? 'border-r sm:border-r-0' : ''}
-
-                  ${index < 4 ? 'border-b sm:border-b-0' : ''}
-
-                  ${
-                    isActive
-                      ? `
-                        bg-[#E7F6F5]
-                        text-[#00897B]
+                        min-h-[64px]
+                        gap-2.5
+                        px-4
                       `
                       : `
-                        bg-white
-                        text-[#667085]
-
-                        hover:bg-[#F9FAFB]
+                        min-h-[87px]
+                        gap-3
+                        px-5
                       `
-                  }
-                `}
+                }
+
+                ${index % 3 !== 2 ? 'sm:border-r' : ''}
+
+                ${index < 3 ? 'sm:border-b' : ''}
+
+                ${index % 2 === 0 ? 'border-r sm:border-r-0' : ''}
+
+                ${index < 4 ? 'border-b sm:border-b-0' : ''}
+
+                ${
+                  isActive
+                    ? `
+                      bg-[#E7F6F5]
+                      text-[#00897B]
+                    `
+                    : `
+                      bg-white
+                      text-[#667085]
+
+                      hover:bg-[#F9FAFB]
+                    `
+                }
+              `}
             >
               <Image
                 src={isActive ? service.activeIcon : service.icon}
@@ -494,53 +515,53 @@ function LowerHeroServiceGrid({
                 width={48}
                 height={48}
                 className={`
-                    shrink-0
-                    object-contain
+                  shrink-0
+                  object-contain
 
-                    ${
-                      compact
+                  ${
+                    compact
+                      ? `
+                        h-[18px]
+                        w-[18px]
+                      `
+                      : tablet
                         ? `
-                          h-[18px]
-                          w-[18px]
+                          h-[22px]
+                          w-[22px]
                         `
-                        : tablet
-                          ? `
-                            h-[22px]
-                            w-[22px]
-                          `
-                          : `
-                            h-[26px]
-                            w-[26px]
-                          `
-                    }
-                  `}
+                        : `
+                          h-[26px]
+                          w-[26px]
+                        `
+                  }
+                `}
               />
 
               <span
                 className={`
-                    min-w-0
-                    flex-1
+                  min-w-0
+                  flex-1
 
-                    font-red-hat-display
+                  font-red-hat-display
 
-                    ${isActive ? 'font-extrabold' : 'font-[550]'}
+                  ${isActive ? 'font-extrabold' : 'font-[550]'}
 
-                    ${
-                      compact
+                  ${
+                    compact
+                      ? `
+                        text-[10px]
+
+                        min-[390px]:text-[11px]
+                      `
+                      : tablet
                         ? `
-                          text-[10px]
-
-                          min-[390px]:text-[11px]
+                          text-[13px]
                         `
-                        : tablet
-                          ? `
-                            text-[13px]
-                          `
-                          : `
-                            text-[16px]
-                          `
-                    }
-                  `}
+                        : `
+                          text-[16px]
+                        `
+                  }
+                `}
               >
                 {service.label}
               </span>
@@ -549,12 +570,12 @@ function LowerHeroServiceGrid({
                 <ChevronRight
                   aria-hidden="true"
                   className={`
-                      shrink-0
+                    shrink-0
 
-                      text-[#0C3354]
+                    text-[#0C3354]
 
-                      ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}
-                    `}
+                    ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}
+                  `}
                   strokeWidth={2}
                 />
               )}
