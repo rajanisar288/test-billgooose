@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getDefaultJourney } from '@/components/loadConfig';
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
+import { readStoredSelectedPlans, sumPlanPrices } from '@/components/result/selected-plans';
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { partnerConfigApi } from '@/lib/api/endpoints/partnerConfig';
@@ -56,24 +57,6 @@ const CONFIRMATION_DETAILS: ConfirmationDetails = {
    SESSION STORAGE HELPERS
 ========================================================= */
 
-function getStoredSelectedPlan(): StandardPlan | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const stored = sessionStorage.getItem('journeySelectedPlan');
-
-    if (!stored) {
-      return null;
-    }
-
-    return JSON.parse(stored) as StandardPlan;
-  } catch {
-    return null;
-  }
-}
-
 function getStoredPaymentDetails(): PaymentDetails {
   if (typeof window === 'undefined') {
     return {};
@@ -108,11 +91,11 @@ export default function FinalThankYou() {
    * We only need to read these values once when this screen
    * first appears.
    */
-  const [selectedPlan] = useState<StandardPlan | null>(getStoredSelectedPlan);
+  const [selectedPlans] = useState<StandardPlan[]>(readStoredSelectedPlans);
 
   const [paymentDetails] = useState<PaymentDetails>(getStoredPaymentDetails);
 
-  const monthlyAmount = selectedPlan?.price ?? '£71.00';
+  const monthlyAmount = sumPlanPrices(selectedPlans, 'price');
 
   const accountHolder = paymentDetails.accountHolderName || 'Gustavo Vetrovs';
 
@@ -125,7 +108,8 @@ export default function FinalThankYou() {
   const { journey, clearJourney, setJourney } = useJourneyStore();
   const [isResettingJourney, setIsResettingJourney] = useState(false);
 
-  const provider = journey?.cart?.[0]?.provider;
+  const provider =
+    selectedPlans.map((plan) => plan.provider).join(', ') || journey?.cart?.[0]?.provider;
 
   const nextSteps: NextStep[] = [
     {
@@ -188,6 +172,7 @@ export default function FinalThankYou() {
     sessionStorage.removeItem('compareFlowDetails');
     sessionStorage.removeItem('billgooseJourneyService');
     sessionStorage.removeItem('billgooseJourneyFlow');
+    sessionStorage.removeItem('journeySelectedPlans');
     sessionStorage.removeItem('billgooseJourneyProgress');
     sessionStorage.removeItem('journeySelectedPlan');
     sessionStorage.removeItem('journeyPaymentDetails');
@@ -622,6 +607,14 @@ export default function FinalThankYou() {
                     label="Monthly amount"
                     value={monthlyAmount}
                   />
+
+                  {selectedPlans.map((plan) => (
+                    <ConfirmedField
+                      key={plan.id}
+                      label={plan.groupDisplayName ?? plan.provider}
+                      value={plan.price}
+                    />
+                  ))}
 
                   {/* <ConfirmedField
                     label="First payment"

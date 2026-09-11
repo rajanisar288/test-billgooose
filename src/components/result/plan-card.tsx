@@ -14,6 +14,7 @@ type PlanCardProps = {
 
   onSelectPlan: (plan: StandardPlan) => void;
   isSelecting?: boolean;
+  isSelected?: boolean;
   showSaving?: boolean;
 };
 
@@ -25,6 +26,7 @@ export default function PlanCard({
   onViewDetails,
   onSelectPlan,
   isSelecting = false,
+  isSelected = false,
   showSaving = true,
 }: PlanCardProps) {
   const { plans } = data.resultPage;
@@ -386,7 +388,13 @@ export default function PlanCard({
               disabled:opacity-60
             "
           >
-            {isSelecting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : plan.primaryButton}
+            {isSelecting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : isSelected ? (
+              'Selected'
+            ) : (
+              plan.primaryButton
+            )}
           </button>
         </div>
       </article>
@@ -648,7 +656,13 @@ export default function PlanCard({
               disabled:opacity-60
             "
           >
-            {isSelecting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : plan.primaryButton}
+            {isSelecting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : isSelected ? (
+              'Selected'
+            ) : (
+              plan.primaryButton
+            )}
           </button>
         </div>
       </article>
@@ -993,6 +1007,8 @@ export default function PlanCard({
               >
                 {isSelecting ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : isSelected ? (
+                  'Selected'
                 ) : (
                   plan.primaryButton
                 )}

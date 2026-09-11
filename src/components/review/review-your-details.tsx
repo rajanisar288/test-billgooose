@@ -21,6 +21,7 @@ import {
 import FinalThankYou from '@/components/payment/final-thank-you';
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
+import { readStoredSelectedPlans, sumPlanPrices } from '@/components/result/selected-plans';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
@@ -68,6 +69,7 @@ export type ReviewState = {
   broadbandContractLength: string;
 
   selectedPlan: StandardPlan | null;
+  selectedPlans: StandardPlan[];
 };
 
 const EMPTY_STATE: ReviewState = {
@@ -84,6 +86,7 @@ const EMPTY_STATE: ReviewState = {
   broadbandContractLength: '',
 
   selectedPlan: null,
+  selectedPlans: [],
 };
 
 /* =========================================================
@@ -217,6 +220,8 @@ export default function ReviewYourDetails() {
   const serviceFields = useServiceFields(isBundle ? 'billPackage' : journey?.serviceType);
 
   const [isConfirming, setIsConfirming] = useState(false);
+  const [updatedCustomerFields, setUpdatedCustomerFields] = useState<Record<string, unknown>>({});
+  const [storedSelectedPlans] = useState<StandardPlan[]>(readStoredSelectedPlans);
   const [isPrepaymentComplete, setIsPrepaymentComplete] = useState(false);
 
   // Password state fields
@@ -266,11 +271,12 @@ export default function ReviewYourDetails() {
       broadbandSpeed: '',
       broadbandContractLength: '',
 
-      selectedPlan: journey?.cart?.[0],
+      selectedPlan: journey?.cart?.[0] ?? storedSelectedPlans[0] ?? null,
+      selectedPlans: journey?.cart?.length ? journey.cart : storedSelectedPlans,
     };
-  }, [journey]);
+  }, [journey, storedSelectedPlans]);
 
-  const showPasswordSection = requestedService === 'energy' && isBundle;
+  const showPasswordSection = Boolean(journey?.cartRequirements?.requiresSupplierAccountPassword);
 
   const handleConfirm = async () => {
     if (!journey || isConfirming) {
@@ -287,7 +293,7 @@ export default function ReviewYourDetails() {
       }
       if (!PASSWORD_REGEX.test(password)) {
         setPasswordError(
-          'Password must be 8-32 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+          'Password must be 7-8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.',
         );
         return;
       }
@@ -302,13 +308,9 @@ export default function ReviewYourDetails() {
         throw new Error('Journey ID is required');
       }
 
-      const customer = {
-        ...journey.customer,
-      };
-
       const response = await journeyApi.createJourney({
         uuid: journeyId,
-        customer,
+        ...(Object.keys(updatedCustomerFields).length > 0 && { customer: updatedCustomerFields }),
         lastUrl: getCurrentRelativeUrl(),
       });
 
@@ -330,7 +332,7 @@ export default function ReviewYourDetails() {
       const orderResponse = await journeyApi.createJourneyOrder(journeyId, {
         quoteId,
         productReferences,
-        ...(showPasswordSection && { password }),
+        ...(showPasswordSection && { supplierAccountPassword: password }),
       });
       const orderId = orderResponse?.data?.orderId;
 
@@ -340,8 +342,11 @@ export default function ReviewYourDetails() {
 
       setJourney(response.data);
       sessionStorage.setItem('journeyOrderId', orderId);
+      sessionStorage.setItem('journeyOrder', JSON.stringify(orderResponse.data));
 
-      const normalizedPaymentMethod = (customer.paymentPreference ?? '')
+      const normalizedPaymentMethod = String(
+        updatedCustomerFields.paymentPreference ?? journey.customer?.paymentPreference ?? '',
+      )
         .toLowerCase()
         .replace(/[-_\s]/g, '');
 
@@ -369,7 +374,8 @@ export default function ReviewYourDetails() {
 
   const editSection = (section: EditableSection, fieldKeys: string[], route: string) => {
     if (serviceFields.requiresQuoteRefresh(fieldKeys)) {
-      router.push(route);
+      const separator = route.includes('?') ? '&' : '?';
+      router.push(isBundle ? `${route}${separator}flow=bundle` : route);
     } else {
       setEditingSection(section);
     }
@@ -419,6 +425,30 @@ export default function ReviewYourDetails() {
     };
 
     setJourney(updatedJourney);
+    const customerUpdatesBySection: Partial<Record<EditableSection, Record<string, unknown>>> = {
+      personalDetails: {
+        title: updatedData.personalDetails.title ?? '',
+        firstName: updatedData.personalDetails.firstName ?? '',
+        surname: updatedData.personalDetails.lastName ?? '',
+        emailAddress: updatedData.personalDetails.email ?? '',
+        phoneNumber: updatedData.personalDetails.mobileNumber ?? '',
+        dateOfBirth: updatedData.personalDetails.dateOfBirth ?? '',
+      },
+      household: {
+        propertyType: updatedData.household.propertyType ?? '',
+        occupants: updatedData.household.occupants ? Number(updatedData.household.occupants) : 0,
+        bedrooms: updatedData.household.bedrooms ? Number(updatedData.household.bedrooms) : 0,
+      },
+      paymentMethod: { paymentPreference: updatedData.paymentMethod ?? '' },
+      contractDates: { preferredStartDate: updatedData.contractDetails.contractDate ?? '' },
+    };
+
+    if (editingSection && customerUpdatesBySection[editingSection]) {
+      setUpdatedCustomerFields((current) => ({
+        ...current,
+        ...customerUpdatesBySection[editingSection],
+      }));
+    }
     setEditingSection(null);
   };
 
@@ -600,7 +630,7 @@ export default function ReviewYourDetails() {
                         </button>
                       </div>
                       <p className="font-inter text-[11px] text-[#667085]">
-                        8-32 characters, must include uppercase, lowercase, number, and special
+                        7-8 characters, must include uppercase, lowercase, number, and special
                         character.
                       </p>
                       {passwordError && (
@@ -653,10 +683,10 @@ export default function ReviewYourDetails() {
             </div>
 
             <aside className="space-y-4">
-              <SelectedPlanCard plan={details.selectedPlan} />
+              <SelectedPlanCard selectedPlans={details.selectedPlans} />
               <SummaryCard
                 paymentMethod={humanizeLabel(details.paymentMethod, '—')}
-                plan={details.selectedPlan}
+                plans={details.selectedPlans}
                 onConfirm={handleConfirm}
                 isConfirming={isConfirming}
               />
@@ -1053,7 +1083,7 @@ function ContractInformation() {
    SELECTED PLAN
 ========================================================= */
 
-function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
+function SelectedPlanCard({ selectedPlans }: { selectedPlans: StandardPlan[] }) {
   const { plans } = data.resultPage;
   const { reviewDetails } = data.journey;
 
@@ -1111,16 +1141,21 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
       </div>
 
       <div className="p-3">
-        {!plan ? (
+        {selectedPlans.length === 0 ? (
           <p className="font-inter text-[12px] text-[#667085]">No plan selected.</p>
         ) : (
-          <div className="flex items-center gap-3">
-            <Image
-              src={plan.logo}
-              alt={plan.logoAlt}
-              width={54}
-              height={54}
-              className="
+          <div className="space-y-3">
+            {selectedPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className="flex items-center gap-3"
+              >
+                <Image
+                  src={plan.logo}
+                  alt={plan.logoAlt}
+                  width={54}
+                  height={54}
+                  className="
                 h-[54px]
                 w-[54px]
                 shrink-0
@@ -1129,11 +1164,11 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
 
                 object-contain
               "
-            />
+                />
 
-            <div className="min-w-0 flex-1">
-              <p
-                className="
+                <div className="min-w-0 flex-1">
+                  <p
+                    className="
                   truncate
 
                   font-red-hat-display
@@ -1141,12 +1176,12 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
                   font-extrabold
                   text-[#101828]
                 "
-              >
-                {plan.provider}
-              </p>
+                  >
+                    {plan.provider}
+                  </p>
 
-              <p
-                className="
+                  <p
+                    className="
                   mt-[2px]
                   truncate
 
@@ -1155,12 +1190,12 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
                   leading-[14px]
                   text-[#667085]
                 "
-              >
-                {plan.description}
-              </p>
+                  >
+                    {plan.description}
+                  </p>
 
-              <span
-                className="
+                  <span
+                    className="
                   mt-1
 
                   inline-flex
@@ -1178,38 +1213,38 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
                   font-bold
                   text-[#027A48]
                 "
-              >
-                <Image
-                  src={plans.savingIcon}
-                  alt=""
-                  width={10}
-                  height={10}
-                  aria-hidden="true"
-                  className="
+                  >
+                    <Image
+                      src={plans.savingIcon}
+                      alt=""
+                      width={10}
+                      height={10}
+                      aria-hidden="true"
+                      className="
                     h-[10px]
                     w-[10px]
                     object-contain
                   "
-                />
+                    />
 
-                {plan.saving}
-              </span>
-            </div>
+                    {plan.saving}
+                  </span>
+                </div>
 
-            <div className="shrink-0 text-right">
-              <p
-                className="
+                <div className="shrink-0 text-right">
+                  <p
+                    className="
                   font-red-hat-display
                   text-[15px]
                   font-extrabold
                   text-[#101828]
                 "
-              >
-                {plan?.annualPrice ?? plan?.price}
-              </p>
+                  >
+                    {plan?.annualPrice ?? plan?.price}
+                  </p>
 
-              <span
-                className="
+                  <span
+                    className="
                   mt-1
 
                   inline-flex
@@ -1227,10 +1262,12 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
                   font-semibold
                   text-[#00897B]
                 "
-              >
-                ✓ {reviewDetails.selectedPlan.selectedLabel}
-              </span>
-            </div>
+                  >
+                    ✓ {reviewDetails.selectedPlan.selectedLabel}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -1244,12 +1281,12 @@ function SelectedPlanCard({ plan }: { plan: StandardPlan | null }) {
 
 function SummaryCard({
   paymentMethod,
-  plan,
+  plans,
   onConfirm,
   isConfirming,
 }: {
   paymentMethod?: string;
-  plan: StandardPlan | null;
+  plans: StandardPlan[];
   onConfirm: () => void;
   isConfirming: boolean;
 }) {
@@ -1309,10 +1346,13 @@ function SummaryCard({
       </div>
 
       <div className="p-4">
-        <SummaryRow
-          label={plan?.provider ?? ''}
-          value={plan?.annualPrice ? plan?.annualPrice : (plan?.price ?? '—')}
-        />
+        {plans.map((plan) => (
+          <SummaryRow
+            key={plan.id}
+            label={plan.groupDisplayName ?? plan.provider}
+            value={plan.annualPrice ?? plan.price}
+          />
+        ))}
 
         {/* <SummaryRow
           label="Broadband"
@@ -1360,7 +1400,7 @@ function SummaryCard({
                 text-[#0C3354]
               "
             >
-              {plan?.price ?? '—'}
+              {sumPlanPrices(plans, 'price')}
             </p>
           </div>
 

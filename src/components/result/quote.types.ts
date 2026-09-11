@@ -18,6 +18,15 @@ export type QuoteSupplier = {
   status: number | string;
   eligibilityCode: string | null;
   message: string | null;
+  products?: QuoteProduct[];
+  productGroups?: QuoteProductGroup[];
+};
+
+export type QuoteProductGroup = {
+  groupType: string;
+  displayName: string;
+  selectionMode: 'single' | 'multiple' | string;
+  totalProducts: number;
   products: QuoteProduct[];
 };
 
@@ -25,12 +34,12 @@ export type QuoteProduct = {
   productReference: string;
   action: number | string;
   productType: string;
-  providerName: string;
-  providerImageUrl: string;
+  providerName: string | null;
+  providerImageUrl: string | null;
   planName: string;
-  variantName: string;
-  description: string;
-  rateType: string;
+  variantName: string | null;
+  description: string | null;
+  rateType: string | null;
   paymentMethod: string | null;
   contractLengthMonths: number;
   weeklyCost: number;
@@ -67,8 +76,15 @@ export function mapQuoteResponseToPlans(
   service: 'energy' | 'bundle-bills' = 'energy',
 ) {
   return response.suppliers
-    .flatMap((supplier) =>
-      supplier.products.map((product) => {
+    .flatMap((supplier) => {
+      const groupedProducts = supplier.productGroups?.flatMap((group) =>
+        group.products.map((product) => ({ product, group })),
+      );
+      const products =
+        groupedProducts ??
+        (supplier.products ?? []).map((product) => ({ product, group: undefined }));
+
+      return products.map(({ product, group }) => {
         const monthlyPrice = formatCurrency(product.monthlyCost, product.currency);
         const annualPrice = formatCurrency(product.annualCost, product.currency);
         const contract = formatContractLength(product.contractLengthMonths);
@@ -99,12 +115,15 @@ export function mapQuoteResponseToPlans(
           supplierCode: supplier.supplierCode,
           productReference: product.productReference,
           productReferences: [product.productReference],
+          groupType: group?.groupType ?? product.productType,
+          groupDisplayName: group?.displayName ?? product.productType,
+          selectionMode: group?.selectionMode ?? 'single',
           productType: product.productType,
           feeDetails: product.fees,
           priceIncreaseDetails: product.priceIncreases,
         };
-      }),
-    )
+      });
+    })
     .sort((firstPlan, secondPlan) => parsePrice(firstPlan.price) - parsePrice(secondPlan.price));
 }
 

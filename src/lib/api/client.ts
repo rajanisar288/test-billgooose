@@ -1,9 +1,10 @@
+import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+
 import { config } from '@/config';
 import { log } from '@/utils/logger';
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 interface ApiErrorResponse {
-  error?: string;
+  error?: { details: string };
   message?: string;
   details?: Record<string, string[]>;
   statusCode?: number;
@@ -84,7 +85,10 @@ class ApiClient {
       // Server responded with error status
       const errorData = {
         status: error.response.status,
-        message: error.response.data?.error || error.response.data?.message || 'An error occurred',
+        message:
+          error.response.data?.error?.details ||
+          error.response.data?.message ||
+          'An error occurred',
         details: error.response.data?.details,
         data: error.response.data,
         url: error.config?.url,

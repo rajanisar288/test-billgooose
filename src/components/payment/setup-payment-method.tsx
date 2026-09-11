@@ -9,6 +9,7 @@ import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, ShieldCheck } fro
 
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
+import { readStoredSelectedPlans, sumPlanPrices } from '@/components/result/selected-plans';
 import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
@@ -100,26 +101,8 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof PaymentForm, string>>>({});
 
-  const selectedPlan = useMemo<StandardPlan | null>(() => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-
-    try {
-      const stored = sessionStorage.getItem('journeySelectedPlan');
-
-      if (!stored) {
-        return null;
-      }
-
-      return JSON.parse(stored) as StandardPlan;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const energyPrice = selectedPlan?.price ?? '£0.00';
-  const providerLabel = selectedPlan?.provider ?? 'Energy plan';
+  const selectedPlans = useMemo<StandardPlan[]>(readStoredSelectedPlans, []);
+  const totalMonthlyPrice = sumPlanPrices(selectedPlans, 'price');
 
   function updateField<K extends keyof PaymentForm>(field: K, value: PaymentForm[K]) {
     setForm((current) => ({
@@ -1134,10 +1117,13 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                     lg:pb-5
                   "
                 >
-                  <SummaryRow
-                    label={providerLabel}
-                    value={selectedPlan?.annualPrice ?? energyPrice}
-                  />
+                  {selectedPlans.map((plan) => (
+                    <SummaryRow
+                      key={plan.id}
+                      label={plan.groupDisplayName ?? plan.provider}
+                      value={plan.annualPrice ?? plan.price}
+                    />
+                  ))}
 
                   {/* <SummaryRow
                     label="Broadband"
@@ -1214,7 +1200,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                             lg:leading-[30px]
                           "
                         >
-                          {energyPrice}
+                          {totalMonthlyPrice}
                         </span>
 
                         <span

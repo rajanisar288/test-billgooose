@@ -33,7 +33,7 @@ export const journeyApi = {
   // Create a Journey Order
   createJourneyOrder: (
     journeyId: string,
-    payload: { quoteId: string; productReferences: string[] },
+    payload: { quoteId: string; productReferences: string[]; supplierAccountPassword?: string },
   ) => apiClient.post(`/api/v1/journeys/${journeyId}/orders`, payload),
 
   // Submit Journey Order Bank Details

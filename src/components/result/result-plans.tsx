@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -19,6 +19,7 @@ import type {
 import { useResultFilters } from '@/components/result/result-filter-context';
 import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import type { ResultFilterState } from '@/components/result/result-filter.types';
+import { readStoredSelectedPlans } from '@/components/result/selected-plans';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
@@ -205,6 +206,7 @@ export default function ResultPlans({
   const { filters: appliedFilters } = useResultFilters();
   const { showError } = useToast();
   const [selectingPlanId, setSelectingPlanId] = useState<string | null>(null);
+  const [isContinuingBundle, setIsContinuingBundle] = useState(false);
 
   const { plans, resultsStatus } = data.resultPage;
 
@@ -227,6 +229,9 @@ export default function ResultPlans({
             ? 'bundle-bills'
             : 'energy');
 
+  const isBundleService = service === 'bundle-bills';
+  const [selectedBundlePlans, setSelectedBundlePlans] = useState<Record<string, StandardPlan>>({});
+
   const isSimOnly = service === 'sim-only';
   const isInsurance = service === 'insurance';
 
@@ -235,6 +240,28 @@ export default function ResultPlans({
   ========================================================= */
 
   const energyPlanItems = (quotePlans ?? plans.items) as ResultPlan[];
+
+  useEffect(() => {
+    if (!isBundleService || quoteLoading || !quotePlans) return;
+
+    const currentPlans = quotePlans.filter(isStandardPlan);
+    const currentQuoteId = currentPlans[0]?.quoteId;
+    const currentPlanIds = new Set(currentPlans.map((plan) => plan.id));
+    const validStoredPlans = readStoredSelectedPlans().filter(
+      (plan) => plan.quoteId === currentQuoteId && currentPlanIds.has(plan.id),
+    );
+    const nextSelections = validStoredPlans.reduce<Record<string, StandardPlan>>(
+      (selections, plan) => {
+        selections[plan.groupType ?? plan.productType ?? plan.id] = plan;
+        return selections;
+      },
+      {},
+    );
+
+    setSelectedBundlePlans(nextSelections);
+    sessionStorage.setItem('journeySelectedPlans', JSON.stringify(validStoredPlans));
+    if (validStoredPlans.length === 0) sessionStorage.removeItem('journeySelectedPlan');
+  }, [isBundleService, quoteLoading, quotePlans]);
 
   const broadbandPlanItems = (plans.broadbandItems ?? []) as StandardPlan[];
 
@@ -295,6 +322,42 @@ export default function ResultPlans({
 
     const isJourneyPlan = service === 'energy' || service === 'bundle-bills';
 
+    const groupKey = plan.groupType ?? plan.productType ?? plan.id;
+    const nextBundleSelections = { ...selectedBundlePlans };
+
+    if (isBundleFlow || isBundleService) {
+      if (nextBundleSelections[groupKey]?.id === plan.id) {
+        delete nextBundleSelections[groupKey];
+      } else {
+        nextBundleSelections[groupKey] = plan;
+      }
+    }
+
+    const bundlePlans = Object.values(nextBundleSelections);
+
+    if (isBundleFlow || isBundleService) {
+      setSelectedBundlePlans(nextBundleSelections);
+      sessionStorage.setItem('journeySelectedPlans', JSON.stringify(bundlePlans));
+
+      if (bundlePlans.length === 0) {
+        sessionStorage.removeItem('journeySelectedPlan');
+      } else {
+        const primaryPlan = bundlePlans[0];
+        sessionStorage.setItem(
+          'journeySelectedPlan',
+          JSON.stringify({
+            ...primaryPlan,
+            service: 'bundle-bills',
+            productReferences: bundlePlans.flatMap(
+              (item) =>
+                item.productReferences ?? (item.productReference ? [item.productReference] : []),
+            ),
+          }),
+        );
+      }
+      return;
+    }
+
     if (isJourneyPlan) {
       if (selectingPlanId) {
         return;
@@ -346,6 +409,7 @@ export default function ResultPlans({
         return;
       }
 
+      sessionStorage.removeItem('journeySelectedPlans');
       sessionStorage.setItem(
         'journeySelectedPlan',
         JSON.stringify({
@@ -369,27 +433,6 @@ export default function ResultPlans({
        BUNDLE
     ====================================================== */
 
-    if (
-      (service === 'energy' || service === 'bundle-bills') &&
-      (isBundleFlow || service === 'bundle-bills')
-    ) {
-      sessionStorage.setItem(
-        'journeySelectedPlan',
-        JSON.stringify({
-          ...plan,
-          service: 'energy',
-        }),
-      );
-
-      sessionStorage.setItem('billgooseJourneyService', 'energy');
-
-      sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
-
-      router.push('/review-your-details?service=energy&flow=bundle');
-
-      return;
-    }
-
     /* =====================================================
        BROADBAND
 
@@ -401,6 +444,7 @@ export default function ResultPlans({
         return;
       }
 
+      sessionStorage.removeItem('journeySelectedPlans');
       sessionStorage.setItem(
         'journeySelectedPlan',
         JSON.stringify({
@@ -430,6 +474,7 @@ export default function ResultPlans({
 
     const resolvedService = storedService ?? 'energy';
 
+    sessionStorage.removeItem('journeySelectedPlans');
     sessionStorage.setItem(
       'journeySelectedPlan',
       JSON.stringify({
@@ -443,6 +488,40 @@ export default function ResultPlans({
     sessionStorage.setItem('billgooseJourneyFlow', 'energy');
 
     router.push('/steps/personal-details-form?service=energy');
+  };
+
+  const handleBundleContinue = async () => {
+    const selectedPlans = Object.values(selectedBundlePlans);
+    const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
+
+    if (!journeyId || selectedPlans.length === 0 || isContinuingBundle) return;
+
+    setIsContinuingBundle(true);
+    try {
+      const response = await journeyApi.createJourney({
+        journeyId,
+        uuid: journeyId,
+        lastUrl: getCurrentRelativeUrl(),
+        cart: selectedPlans,
+      });
+      if (!response?.data) throw new Error('We could not save your selected products.');
+
+      setJourney(response.data);
+      sessionStorage.setItem('billgooseJourneyService', 'energy');
+      sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
+      router.push('/review-your-details?service=energy&flow=bundle');
+    } catch (error) {
+      showError(
+        error &&
+          typeof error === 'object' &&
+          'message' in error &&
+          typeof error.message === 'string'
+          ? error.message
+          : 'We could not save your selected products. Please try again.',
+      );
+    } finally {
+      setIsContinuingBundle(false);
+    }
   };
 
   /* =========================================================
@@ -598,6 +677,11 @@ export default function ResultPlans({
             onViewDetails={handleViewDetails}
             onSelectPlan={handleSelectPlan}
             isSelecting={selectingPlanId === plan.id}
+            isSelected={Boolean(
+              isBundleService &&
+              plan.groupType &&
+              selectedBundlePlans[plan.groupType]?.id === plan.id,
+            )}
             showSaving={!quotePlans}
             service={service === 'bundle-bills' ? 'bundle-bills' : 'energy'}
           />
@@ -689,6 +773,24 @@ export default function ResultPlans({
         ====================================================== */}
 
         <div className="lg:hidden">
+          {isBundleService && Object.keys(selectedBundlePlans).length > 0 && (
+            <button
+              type="button"
+              onClick={() => void handleBundleContinue()}
+              disabled={isContinuingBundle}
+              className="mb-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#00897B] px-6 font-red-hat-display text-sm font-bold text-white disabled:opacity-60"
+            >
+              {isContinuingBundle
+                ? 'Saving selections...'
+                : `Continue with ${Object.keys(selectedBundlePlans).length} selected ${
+                    Object.keys(selectedBundlePlans).length === 1 ? 'product' : 'products'
+                  }`}
+              <ChevronRight
+                className="ml-2 h-4 w-4"
+                aria-hidden="true"
+              />
+            </button>
+          )}
           <div
             className="
               space-y-4
@@ -908,6 +1010,26 @@ export default function ResultPlans({
                 </button>
               </div> */}
             </div>
+            {isBundleService && Object.keys(selectedBundlePlans).length > 0 && (
+              <div className="mt-6 flex justify-end mb-2">
+                <button
+                  type="button"
+                  onClick={() => void handleBundleContinue()}
+                  disabled={isContinuingBundle}
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-[#00897B] px-8 font-red-hat-display text-sm font-bold text-white hover:bg-[#00796D]"
+                >
+                  {isContinuingBundle
+                    ? 'Saving selections...'
+                    : `Continue with ${Object.keys(selectedBundlePlans).length} selected ${
+                        Object.keys(selectedBundlePlans).length === 1 ? 'product' : 'products'
+                      }`}
+                  <ChevronRight
+                    className="ml-2 h-4 w-4"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+            )}
 
             <div className="min-w-0 space-y-3">{renderCards()}</div>
           </div>
