@@ -84,19 +84,58 @@ export default function Footer() {
 
         {/* Mobile footer bottom */}
         <div className="mt-auto border-t border-[#EAECF0] pt-6 min-[360px]:pt-7 min-[390px]:pt-[30px]">
-          <Link
-            href="/"
-            aria-label={footer.logo.ariaLabel}
-            className="relative mx-auto block h-[25px] w-[126px] min-[360px]:h-[27px] min-[360px]:w-[136px] min-[390px]:h-7 min-[390px]:w-[142px]"
-          >
-            <Image
-              src={footer.logo.src}
-              alt={footer.logo.alt}
-              fill
-              sizes="142px"
-              className="object-contain object-center"
+          <div className="flex items-center justify-center">
+            <Link
+              href={footer.logo.href}
+              aria-label={footer.logo.ariaLabel}
+              className="relative block h-[25px] w-[126px] shrink-0 min-[360px]:h-[27px] min-[360px]:w-[136px] min-[390px]:h-7 min-[390px]:w-[142px]"
+            >
+              <Image
+                src={footer.logo.src}
+                alt={footer.logo.alt}
+                fill
+                sizes="142px"
+                className="object-contain object-center"
+              />
+            </Link>
+
+            <div
+              aria-hidden="true"
+              className="mx-4 h-[28px] w-px shrink-0 bg-[#D0D5DD]"
             />
-          </Link>
+
+            <div className="flex items-center gap-4">
+              {footer.socials.map((social) => (
+                <Link
+                  key={social.id}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="
+                    flex
+                    h-8
+                    w-8
+
+                    items-center
+                    justify-center
+
+                    transition-opacity
+
+                    hover:opacity-70
+                  "
+                >
+                  <Image
+                    src={social.icon}
+                    alt={social.iconAlt}
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 object-contain"
+                  />
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <p className="mx-auto mt-5 max-w-[300px] text-center font-red-hat-display text-[11px] font-[467] leading-[18px] tracking-[0] text-[#667085] min-[360px]:max-w-[325px] min-[360px]:text-[12px] min-[360px]:leading-5 min-[390px]:max-w-[360px] min-[390px]:text-[14px] min-[390px]:leading-6">
             {footer.copyright}
@@ -142,19 +181,77 @@ export default function Footer() {
 
         {/* Desktop footer bottom */}
         <div className="mx-auto flex min-h-[66px] w-full max-w-[1280px] items-end justify-between gap-8 border-t border-[#EAECF0] px-8 pt-5">
-          <Link
-            href="/"
-            aria-label={footer.logo.ariaLabel}
-            className="relative block h-11 w-[141px] shrink-0"
-          >
-            <Image
-              src={footer.logo.src}
-              alt={footer.logo.alt}
-              fill
-              sizes="141px"
-              className="object-contain object-left"
+          {/* LOGO + DIVIDER + SOCIALS */}
+          <div className="flex items-center">
+            <Link
+              href={footer.logo.href}
+              aria-label={footer.logo.ariaLabel}
+              className="relative block h-11 w-[141px] shrink-0"
+            >
+              <Image
+                src={footer.logo.src}
+                alt={footer.logo.alt}
+                fill
+                sizes="141px"
+                className="object-contain object-left"
+              />
+            </Link>
+
+            {/* Vertical divider */}
+            <div
+              aria-hidden="true"
+              className="
+                mx-5
+                h-[44px]
+                w-px
+                shrink-0
+
+                bg-[#D0D5DD]
+              "
             />
-          </Link>
+
+            {/* Social icons */}
+            <div className="flex items-center gap-5">
+              {footer.socials.map((social) => (
+                <Link
+                  key={social.id}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="
+                    flex
+                    h-8
+                    w-8
+
+                    items-center
+                    justify-center
+
+                    transition-opacity
+
+                    hover:opacity-70
+
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-primary
+                    focus-visible:ring-offset-2
+                  "
+                >
+                  <Image
+                    src={social.icon}
+                    alt={social.iconAlt}
+                    width={20}
+                    height={20}
+                    className="
+                      h-5
+                      w-5
+                      object-contain
+                    "
+                  />
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <p className="text-right font-red-hat-display text-[16px] leading-[1.5] text-[#667085]">
             {footer.copyright}
