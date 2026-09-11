@@ -8,8 +8,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CalendarDays,
   CreditCard,
+  Eye,
+  EyeOff,
   Home,
   Info,
+  Lock,
   SlidersHorizontal,
   UserRound,
   Wifi,
@@ -195,6 +198,9 @@ const EMPTY_STATE: ReviewState = {
 //   };
 // }
 
+// Password Regex: Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{7,8}$/;
+
 export default function ReviewYourDetails() {
   const router = useRouter();
   const { journey, setJourney } = useJourneyStore();
@@ -213,90 +219,12 @@ export default function ReviewYourDetails() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isPrepaymentComplete, setIsPrepaymentComplete] = useState(false);
 
+  // Password state fields
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+
   const review = journeyData.reviewDetails;
-
-  const handleConfirm = async () => {
-    if (!journey || isConfirming) {
-      return;
-    }
-
-    try {
-      setIsConfirming(true);
-
-      const journeyId = journey.id || journey.journeyId || localStorage.getItem('journey-storage');
-
-      if (!journeyId) {
-        throw new Error('Journey ID is required');
-      }
-
-      const customer = {
-        ...journey.customer,
-      };
-
-      const response = await journeyApi.createJourney({
-        uuid: journeyId,
-        customer,
-        lastUrl: getCurrentRelativeUrl(),
-      });
-
-      if (!response?.data) {
-        throw new Error('No data received from API');
-      }
-
-      const selectedPlan = readStoredSelectedPlan();
-      const quoteId = selectedPlan?.quoteId;
-      const productReferences =
-        selectedPlan?.productReferences ??
-        (selectedPlan?.productReference ? [selectedPlan.productReference] : []);
-
-      if (!quoteId || productReferences.length === 0) {
-        throw new Error('Selected quote details are missing. Please select a plan again.');
-      }
-
-      const orderResponse = await journeyApi.createJourneyOrder(journeyId, {
-        quoteId,
-        productReferences,
-      });
-      const orderId = orderResponse?.data?.orderId;
-
-      if (!orderId) {
-        throw new Error('No order ID received from API');
-      }
-
-      setJourney(response.data);
-      sessionStorage.setItem('journeyOrderId', orderId);
-
-      const normalizedPaymentMethod = (customer.paymentPreference ?? '')
-        .toLowerCase()
-        .replace(/[-_\s]/g, '');
-
-      if (normalizedPaymentMethod === 'prepayment') {
-        setIsPrepaymentComplete(true);
-      } else {
-        router.push('/payment');
-      }
-    } catch (error) {
-      console.error('Failed to confirm journey:', error);
-      showError(
-        error &&
-          typeof error === 'object' &&
-          'message' in error &&
-          typeof error.message === 'string'
-          ? error.message
-          : 'We could not create your order. Please try again.',
-      );
-    } finally {
-      setIsConfirming(false);
-    }
-  };
-
-  // const reviewSnapshot = useSyncExternalStore(
-  //   subscribeToReviewData,
-  //   getReviewSnapshot,
-  //   getReviewServerSnapshot,
-  // );
-
-  // const details = useMemo(() => buildReviewState(reviewSnapshot), [reviewSnapshot]);
 
   const details = useMemo<ReviewState>(() => {
     if (!journey) {
@@ -342,6 +270,101 @@ export default function ReviewYourDetails() {
     };
   }, [journey]);
 
+  const showPasswordSection = requestedService === 'energy' && isBundle;
+
+  const handleConfirm = async () => {
+    if (!journey || isConfirming) {
+      return;
+    }
+
+    setPasswordError('');
+
+    // Password validation when service is energy and flow is bundle
+    if (showPasswordSection) {
+      if (!password) {
+        setPasswordError('Password is required.');
+        return;
+      }
+      if (!PASSWORD_REGEX.test(password)) {
+        setPasswordError(
+          'Password must be 8-32 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+        );
+        return;
+      }
+    }
+
+    try {
+      setIsConfirming(true);
+
+      const journeyId = journey.id || journey.journeyId || localStorage.getItem('journey-storage');
+
+      if (!journeyId) {
+        throw new Error('Journey ID is required');
+      }
+
+      const customer = {
+        ...journey.customer,
+      };
+
+      const response = await journeyApi.createJourney({
+        uuid: journeyId,
+        customer,
+        lastUrl: getCurrentRelativeUrl(),
+      });
+
+      if (!response?.data) {
+        throw new Error('No data received from API');
+      }
+
+      const selectedPlan = readStoredSelectedPlan();
+      const quoteId = selectedPlan?.quoteId;
+      const productReferences =
+        selectedPlan?.productReferences ??
+        (selectedPlan?.productReference ? [selectedPlan.productReference] : []);
+
+      if (!quoteId || productReferences.length === 0) {
+        throw new Error('Selected quote details are missing. Please select a plan again.');
+      }
+
+      // Include password in order creation payload
+      const orderResponse = await journeyApi.createJourneyOrder(journeyId, {
+        quoteId,
+        productReferences,
+        ...(showPasswordSection && { password }),
+      });
+      const orderId = orderResponse?.data?.orderId;
+
+      if (!orderId) {
+        throw new Error('No order ID received from API');
+      }
+
+      setJourney(response.data);
+      sessionStorage.setItem('journeyOrderId', orderId);
+
+      const normalizedPaymentMethod = (customer.paymentPreference ?? '')
+        .toLowerCase()
+        .replace(/[-_\s]/g, '');
+
+      if (normalizedPaymentMethod === 'prepayment') {
+        setIsPrepaymentComplete(true);
+      } else {
+        router.push('/payment');
+      }
+    } catch (error) {
+      console.error('Failed to confirm journey:', error);
+      showError(
+        error &&
+          typeof error === 'object' &&
+          'message' in error &&
+          typeof error.message === 'string'
+          ? error.message
+          : 'We could not create your order. Please try again.',
+      );
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
   const [editingSection, setEditingSection] = useState<EditableSection | null>(null);
 
   const editSection = (section: EditableSection, fieldKeys: string[], route: string) => {
@@ -352,27 +375,19 @@ export default function ReviewYourDetails() {
     }
   };
 
-  /* =========================================================
-     LABEL HELPERS
-  ========================================================= */
-
   const propertyLabel = humanizeLabel(details.household.propertyType, '—');
-
   const occupantsLabel = details.household.occupants ?? '—';
-
   const bedroomsLabel = details.household.bedrooms ?? '—';
 
-  const providerLabel = useMemo(() => {
-    return details.broadbandProvider ?? '—';
-  }, [details.broadbandProvider]);
-
-  const speedLabel = useMemo(() => {
-    return details.broadbandSpeed ?? '—';
-  }, [details.broadbandSpeed]);
-
-  const contractLengthLabel = useMemo(() => {
-    return details.broadbandContractLength ?? '—';
-  }, [details.broadbandContractLength]);
+  const providerLabel = useMemo(
+    () => details.broadbandProvider ?? '—',
+    [details.broadbandProvider],
+  );
+  const speedLabel = useMemo(() => details.broadbandSpeed ?? '—', [details.broadbandSpeed]);
+  const contractLengthLabel = useMemo(
+    () => details.broadbandContractLength ?? '—',
+    [details.broadbandContractLength],
+  );
 
   if (isPrepaymentComplete) {
     return <FinalThankYou />;
@@ -385,139 +400,43 @@ export default function ReviewYourDetails() {
 
     const updatedJourney = {
       ...journey,
-
       customer: {
         ...journey.customer,
-
         title: updatedData.personalDetails.title ?? '',
         firstName: updatedData.personalDetails.firstName ?? '',
         surname: updatedData.personalDetails.lastName ?? '',
         emailAddress: updatedData.personalDetails.email ?? '',
         phoneNumber: updatedData.personalDetails.mobileNumber ?? '',
         dateOfBirth: updatedData.personalDetails.dateOfBirth ?? '',
-
         propertyType: updatedData.household.propertyType ?? '',
         occupants:
           updatedData.household.occupants !== '' ? Number(updatedData.household.occupants) : 0,
         bedrooms:
           updatedData.household.bedrooms !== '' ? Number(updatedData.household.bedrooms) : 0,
-
         paymentPreference: updatedData.paymentMethod ?? '',
-
         preferredStartDate: updatedData.contractDetails.contractDate ?? '',
       },
     };
 
     setJourney(updatedJourney);
-
     setEditingSection(null);
   };
 
   return (
     <>
-      <section
-        className="
-          w-full
-          bg-[#F9F9F9]
-
-          px-4
-          pb-10
-          pt-6
-
-          sm:px-6
-          sm:pt-7
-
-          md:px-8
-          md:pb-12
-          md:pt-8
-
-          lg:px-10
-          lg:pb-14
-          lg:pt-9
-        "
-      >
-        <div
-          className="
-            mx-auto
-            w-full
-            max-w-[1320px]
-          "
-        >
-          {/* =================================================
-              HEADING
-          ================================================== */}
+      <section className="w-full bg-[#F9F9F9] px-4 pb-10 pt-6 sm:px-6 sm:pt-7 md:px-8 md:pb-12 md:pt-8 lg:px-10 lg:pb-14 lg:pt-9">
+        <div className="mx-auto w-full max-w-[1320px]">
           <header>
-            <h1
-              className="
-                font-red-hat-display
-                text-[26px]
-                font-[645]
-                leading-[34px]
-                tracking-[0]
-                text-[#0C3354]
-
-                sm:text-[28px]
-                sm:leading-[38px]
-
-                md:text-[30px]
-                md:leading-[44px]
-
-                lg:text-[34px]
-                lg:leading-[56px]
-              "
-            >
+            <h1 className="font-red-hat-display text-[26px] font-[645] leading-[34px] tracking-[0] text-[#0C3354] sm:text-[28px] sm:leading-[38px] md:text-[30px] md:leading-[44px] lg:text-[34px] lg:leading-[56px]">
               {review.heading}
             </h1>
-
-            <p
-              className="
-                mt-1
-                max-w-[760px]
-
-                font-red-hat-display
-                text-[13px]
-                font-[467]
-                leading-[19px]
-                tracking-[0]
-                text-[#667085]
-
-                sm:text-[14px]
-                sm:leading-[20px]
-
-                md:text-[16px]
-                md:leading-[23px]
-
-                lg:text-[18px]
-                lg:leading-[25px]
-              "
-            >
+            <p className="mt-1 max-w-[760px] font-red-hat-display text-[13px] font-[467] leading-[19px] tracking-[0] text-[#667085] sm:text-[14px] sm:leading-[20px] md:text-[16px] md:leading-[23px] lg:text-[18px] lg:leading-[25px]">
               {review.description}
             </p>
           </header>
 
-          {/* =================================================
-              GRID
-          ================================================== */}
-          <div
-            className="
-              mt-7
-
-              grid
-              grid-cols-1
-              gap-5
-
-              lg:grid-cols-[minmax(0,1fr)_360px]
-              lg:items-start
-
-              xl:grid-cols-[minmax(0,1fr)_390px]
-              xl:gap-6
-            "
-          >
-            {/* ===============================================
-                LEFT
-            ================================================ */}
+          <div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start xl:grid-cols-[minmax(0,1fr)_390px] xl:gap-6">
             <div className="space-y-4">
-              {/* Personal details */}
               <ReviewSection
                 title={review.sections.personalDetails.title}
                 icon={<UserRound />}
@@ -529,52 +448,37 @@ export default function ReviewYourDetails() {
                   )
                 }
               >
-                <div
-                  className="
-                    grid
-                    grid-cols-1
-                    gap-2
-
-                    sm:grid-cols-2
-
-                    lg:grid-cols-3
-                  "
-                >
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {serviceFields.isVisible('title') && (
                     <ReviewField
                       label="Title"
                       value={details.personalDetails.title}
                     />
                   )}
-
                   {serviceFields.isVisible('firstName') && (
                     <ReviewField
                       label="Firstname"
                       value={details.personalDetails.firstName}
                     />
                   )}
-
                   {serviceFields.isVisible('surname') && (
                     <ReviewField
                       label="Lastname"
                       value={details.personalDetails.lastName}
                     />
                   )}
-
                   {serviceFields.isVisible('emailAddress') && (
                     <ReviewField
                       label="Email address"
                       value={details.personalDetails.email}
                     />
                   )}
-
                   {serviceFields.isVisible('phoneNumber') && (
                     <ReviewField
                       label="Mobile number"
                       value={details.personalDetails.mobileNumber}
                     />
                   )}
-
                   {serviceFields.isVisible('dateOfBirth') && (
                     <ReviewField
                       label="Date of birth"
@@ -584,10 +488,6 @@ export default function ReviewYourDetails() {
                 </div>
               </ReviewSection>
 
-              {/* =================================================
-                  ENERGY
-              ================================================== */}
-              {/* {details.service === 'energy' && ( */}
               <>
                 <ReviewSection
                   title={review.sections.household.title}
@@ -600,29 +500,19 @@ export default function ReviewYourDetails() {
                     )
                   }
                 >
-                  <div
-                    className="
-                        grid
-                        grid-cols-1
-                        gap-2
-
-                        sm:grid-cols-3
-                      "
-                  >
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {serviceFields.isVisible('propertyType') && (
                       <ReviewField
                         label="House type"
                         value={propertyLabel}
                       />
                     )}
-
                     {serviceFields.isVisible('occupants') && (
                       <ReviewField
                         label="House size"
                         value={occupantsLabel}
                       />
                     )}
-
                     {serviceFields.isVisible('bedrooms') && (
                       <ReviewField
                         label="No. of bedrooms"
@@ -639,7 +529,7 @@ export default function ReviewYourDetails() {
                     editSection(
                       'paymentMethod',
                       ['paymentPreference'],
-                      requestedService == 'bundle-bills'
+                      requestedService === 'bundle-bills'
                         ? `/steps/payment-details-form?service=${requestedService}`
                         : `/compare?service=${requestedService}`,
                     )
@@ -651,9 +541,6 @@ export default function ReviewYourDetails() {
                   />
                 </ReviewSection>
 
-                {/* ===============================================
-                      CONTRACT DATES
-                  ================================================ */}
                 <ReviewSection
                   title={review.sections.contractDates.title}
                   icon={<CalendarDays />}
@@ -669,15 +556,63 @@ export default function ReviewYourDetails() {
                     label="Contract start date"
                     value={details.contractDetails.contractDate}
                   />
-
                   <ContractInformation />
                 </ReviewSection>
-              </>
-              {/* )} */}
 
-              {/* =================================================
-                  BROADBAND
-              ================================================== */}
+                {/* Password Section (Energy service & Bundle flow) */}
+                {showPasswordSection && (
+                  <section className="overflow-hidden rounded-[12px] border border-[#EAECF0] bg-white shadow-[0px_1px_2px_rgba(16,24,40,0.03)]">
+                    <div className="flex min-h-[52px] items-center gap-3 border-b border-[#F2F4F7] px-4 sm:min-h-[56px] lg:min-h-[60px] lg:px-5">
+                      <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-[#344054] md:h-5 md:w-5 lg:h-6 lg:w-6">
+                        <Lock />
+                      </span>
+                      <h2 className="font-red-hat-display text-[15px] font-[645] leading-[20px] text-[#101828] sm:text-[16px] md:text-[18px] lg:text-[20px]">
+                        Account Password
+                      </h2>
+                    </div>
+                    <div className="p-4 lg:p-5 space-y-2">
+                      <label className="block font-inter text-[13px] font-medium text-[#344054]">
+                        Create Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative max-w-md">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          maxLength={32}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            if (passwordError) setPasswordError('');
+                          }}
+                          placeholder="Enter account password"
+                          className="w-full rounded-[7px] border border-[#D0D5DD] px-3 py-2 pr-10 font-inter text-[14px] text-[#101828] focus:border-[#00897B] focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085] hover:text-[#101828]"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                      <p className="font-inter text-[11px] text-[#667085]">
+                        8-32 characters, must include uppercase, lowercase, number, and special
+                        character.
+                      </p>
+                      {passwordError && (
+                        <p className="font-inter text-[12px] font-medium text-red-600">
+                          {passwordError}
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                )}
+              </>
+
               {details.service === 'broadband' && (
                 <>
                   <ReviewSection
@@ -702,9 +637,6 @@ export default function ReviewYourDetails() {
                     />
                   </ReviewSection>
 
-                  {/* ===============================================
-                        CONTRACT LENGTH
-                    ================================================ */}
                   <ReviewSection
                     title={review.sections.contractLength.title}
                     icon={<CalendarDays />}
@@ -714,19 +646,14 @@ export default function ReviewYourDetails() {
                       label="Preferred contract length"
                       value={contractLengthLabel}
                     />
-
                     <ContractInformation />
                   </ReviewSection>
                 </>
               )}
             </div>
 
-            {/* ===============================================
-                RIGHT
-            ================================================ */}
             <aside className="space-y-4">
               <SelectedPlanCard plan={details.selectedPlan} />
-
               <SummaryCard
                 paymentMethod={humanizeLabel(details.paymentMethod, '—')}
                 plan={details.selectedPlan}
@@ -756,13 +683,11 @@ function readStoredSelectedPlan(): StandardPlan | null {
 
   try {
     const storedPlan = sessionStorage.getItem('journeySelectedPlan');
-
     return storedPlan ? (JSON.parse(storedPlan) as StandardPlan) : null;
   } catch {
     return null;
   }
 }
-
 /* =========================================================
    REVIEW SECTION
 ========================================================= */

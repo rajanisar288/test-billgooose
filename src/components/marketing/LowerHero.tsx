@@ -5,8 +5,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { ChevronRight } from 'lucide-react';
-
 import data from '@/data/content.json';
 
 type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only' | 'insurance' | 'bundle-bills';
@@ -24,9 +22,11 @@ export default function LowerHero({ heading, description }: LowerHeroProps) {
   const displayHeading = heading ?? lowerHero.heading;
   const displayDescription = description ?? lowerHero.description;
 
-  const [selectedService, setSelectedService] = useState<ServiceType>(
-    lowerHero.serviceTabs.defaultValue as ServiceType,
-  );
+  /*
+   * Nothing is active initially.
+   * A service becomes active only after the user clicks it.
+   */
+  const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
 
   function handleServiceSelect(service: ServiceType) {
     setSelectedService(service);
@@ -273,7 +273,7 @@ export default function LowerHero({ heading, description }: LowerHeroProps) {
               {displayDescription}
             </p>
 
-            <div className="mt-5">
+            <div className="mt-5 w-full">
               <LowerHeroServiceGrid
                 selectedService={selectedService}
                 onSelect={handleServiceSelect}
@@ -334,7 +334,7 @@ export default function LowerHero({ heading, description }: LowerHeroProps) {
               {displayDescription}
             </p>
 
-            <div className="mt-5 w-[430px]">
+            <div className="mt-5 w-[410px]">
               <LowerHeroServiceGrid
                 selectedService={selectedService}
                 onSelect={handleServiceSelect}
@@ -393,7 +393,15 @@ export default function LowerHero({ heading, description }: LowerHeroProps) {
               {displayDescription}
             </p>
 
-            <div className="mt-6 h-[176px] w-[560px]">
+            {/* EXACT LAPTOP SERVICE GRID */}
+            <div
+              className="
+                mt-6
+
+                h-[112px]
+                w-[453px]
+              "
+            >
               <LowerHeroServiceGrid
                 selectedService={selectedService}
                 onSelect={handleServiceSelect}
@@ -411,88 +419,72 @@ export default function LowerHero({ heading, description }: LowerHeroProps) {
 ========================================================= */
 
 type LowerHeroServiceGridProps = {
-  selectedService: ServiceType;
+  selectedService: ServiceType | null;
   onSelect: (service: ServiceType) => void;
   compact?: boolean;
   tablet?: boolean;
 };
 
-function LowerHeroServiceGrid({
-  selectedService,
-  onSelect,
-  compact = false,
-  tablet = false,
-}: LowerHeroServiceGridProps) {
+function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGridProps) {
   const services = data.lowerHero.serviceTabs.items;
 
   return (
     <div
-      className={`
+      className="
+        w-full
+        max-w-[453px]
+
         overflow-hidden
+
+        rounded-[20px]
+
+        border
+        border-[#D9E4E7]
 
         bg-white
 
-        ${compact ? 'rounded-[18px]' : tablet ? 'rounded-[20px]' : 'rounded-[24px]'}
-      `}
+        shadow-[0px_19px_42px_0px_rgba(176,176,176,0.10),0px_77px_77px_0px_rgba(176,176,176,0.09),0px_174px_104px_0px_rgba(176,176,176,0.05),0px_309px_123px_0px_rgba(176,176,176,0.01),0px_482px_135px_0px_rgba(176,176,176,0)]
+      "
     >
       <div
         className="
           grid
-          grid-cols-2
-
-          sm:grid-cols-3
+          grid-cols-3
+          grid-rows-2
         "
       >
         {services.map((service, index) => {
           const isActive = selectedService === service.value;
+
+          const isFirstRow = index < 3;
+          const isLastColumn = index % 3 === 2;
 
           return (
             <button
               key={service.id}
               type="button"
               aria-pressed={isActive}
-              onClick={() => {
-                onSelect(service.value as ServiceType);
-              }}
+              onClick={() => onSelect(service.value as ServiceType)}
               className={`
-                group
-
                 flex
+                h-[56px]
+                min-w-0
+
                 items-center
+                justify-center
 
-                border-[#EAECF0]
+                gap-[6px]
 
-                text-left
+                px-[10px]
+
+                font-red-hat-display
 
                 transition-colors
+                duration-200
 
-                ${
-                  compact
-                    ? `
-                      min-h-[56px]
-                      gap-2
-                      px-3
-                    `
-                    : tablet
-                      ? `
-                        min-h-[64px]
-                        gap-2.5
-                        px-4
-                      `
-                      : `
-                        min-h-[87px]
-                        gap-3
-                        px-5
-                      `
-                }
+                ${!isLastColumn ? 'border-r border-[#E5E7EB]' : ''}
 
-                ${index % 3 !== 2 ? 'sm:border-r' : ''}
-
-                ${index < 3 ? 'sm:border-b' : ''}
-
-                ${index % 2 === 0 ? 'border-r sm:border-r-0' : ''}
-
-                ${index < 4 ? 'border-b sm:border-b-0' : ''}
+                ${isFirstRow ? 'border-b border-[#E5E7EB]' : ''}
 
                 ${
                   isActive
@@ -512,73 +504,32 @@ function LowerHeroServiceGrid({
               <Image
                 src={isActive ? service.activeIcon : service.icon}
                 alt={service.iconAlt}
-                width={48}
-                height={48}
-                className={`
+                width={18}
+                height={18}
+                className="
+                  h-[18px]
+                  w-[18px]
                   shrink-0
                   object-contain
-
-                  ${
-                    compact
-                      ? `
-                        h-[18px]
-                        w-[18px]
-                      `
-                      : tablet
-                        ? `
-                          h-[22px]
-                          w-[22px]
-                        `
-                        : `
-                          h-[26px]
-                          w-[26px]
-                        `
-                  }
-                `}
+                "
               />
 
               <span
                 className={`
-                  min-w-0
-                  flex-1
+                  whitespace-nowrap
 
-                  font-red-hat-display
+                  text-[12px]
+                  leading-[20px]
 
-                  ${isActive ? 'font-extrabold' : 'font-[550]'}
+                  ${isActive ? 'font-[645] text-[#00897B]' : 'font-[550] text-[#667085]'}
 
-                  ${
-                    compact
-                      ? `
-                        text-[10px]
+                  sm:text-[13px]
 
-                        min-[390px]:text-[11px]
-                      `
-                      : tablet
-                        ? `
-                          text-[13px]
-                        `
-                        : `
-                          text-[16px]
-                        `
-                  }
+                  lg:text-[14px]
                 `}
               >
                 {service.label}
               </span>
-
-              {isActive && (
-                <ChevronRight
-                  aria-hidden="true"
-                  className={`
-                    shrink-0
-
-                    text-[#0C3354]
-
-                    ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}
-                  `}
-                  strokeWidth={2}
-                />
-              )}
             </button>
           );
         })}

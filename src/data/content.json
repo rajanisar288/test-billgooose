@@ -1102,9 +1102,9 @@
         "heading": "Support",
         "links": [
           {
-            "id": "help-centre",
-            "label": "Help Centre",
-            "href": "/help"
+            "id": "customer-support",
+            "label": "Customer Support",
+            "href": "/customer-support"
           },
           {
             "id": "support-contact",
@@ -1156,6 +1156,36 @@
       "href": "/",
       "ariaLabel": "Go to the BillGoose homepage"
     },
+    "socials": [
+      {
+        "id": "x",
+        "label": "X",
+        "href": "https://x.com/",
+        "icon": "/images/footer-social-1.png",
+        "iconAlt": "X"
+      },
+      {
+        "id": "linkedin",
+        "label": "LinkedIn",
+        "href": "https://www.linkedin.com/",
+        "icon": "/images/footer-social-2.png",
+        "iconAlt": "LinkedIn"
+      },
+      {
+        "id": "facebook",
+        "label": "Facebook",
+        "href": "https://www.facebook.com/",
+        "icon": "/images/footer-social-3.png",
+        "iconAlt": "Facebook"
+      },
+      {
+        "id": "instagram",
+        "label": "Instagram",
+        "href": "https://www.instagram.com/",
+        "icon": "/images/footer-social-4.png",
+        "iconAlt": "Instagram"
+      }
+    ],
     "copyright": "© 2026 BillGoose Ltd. Registered in England & Wales. All rights reserved."
   },
   "compareFlow": {
@@ -4294,6 +4324,361 @@
           }
         ]
       }
+    }
+  },
+  "careers": {
+    "breadcrumb": {
+      "home": {
+        "label": "Home",
+        "href": "/"
+      },
+      "current": "Careers"
+    },
+    "hero": {
+      "heading": "Help us make running a home simpler",
+      "paragraphs": [
+        "BillGoose is building a new kind of household management platform. We help people compare, choose and manage the services that keep their homes running, but the job is much bigger than finding a cheaper deal.",
+        "Our Mission is simple; we want to turn scattered household information into clear insights and useful action.",
+        "To do that we need people who care about customers, notice the detail and are prepared to solve difficult problems properly."
+      ],
+      "primaryButton": {
+        "label": "See opportunities",
+        "href": "#opportunities"
+      },
+      "email": {
+        "label": "careers@billgoose.com",
+        "href": "mailto:careers@billgoose.com"
+      },
+      "backgroundImage": {
+        "src": "/images/careers-bg.png",
+        "alt": "Careers hero background"
+      },
+      "gooseImage": {
+        "src": "/images/careers-goose.png",
+        "alt": "BillGoose careers mascot"
+      }
+    },
+    "whatItsLike": {
+      "heading": "What it is like to work here",
+      "paragraphs": [
+        "BillGoose is a growing business. That means there is real work to do and plenty that has not been decided yet. People are close to the product, the customer and the commercial reality of the business, but good ideas do not need to travel through layers of management before they are heard.",
+        "We work across product, technology, data, operations, finance, security, marketing and partnerships. The teams are different, but the standard is the same: understand the problem, take responsibility and leave things better than you found them.",
+        "The pace can be quick. Priorities will sometimes move as we learn. We expect people to speak up when something is unclear, risky or simply not good enough. We would rather have an honest conversation early than repair avoidable damage later."
+      ]
+    },
+    "peopleWhoDoWell": {
+      "heading": "The people who do well at BillGoose",
+      "cards": [
+        {
+          "id": "customer",
+          "icon": "/images/card-career-1.png",
+          "iconAlt": "Heart",
+          "title": "They care about the customer",
+          "description": "They look beyond the process and think about the person using it."
+        },
+        {
+          "id": "ownership",
+          "icon": "/images/card-career-2.png",
+          "iconAlt": "Target",
+          "title": "They take ownership",
+          "description": "They do not wait to be chased, and they finish what they start."
+        },
+        {
+          "id": "curious",
+          "icon": "/images/card-career-3.png",
+          "iconAlt": "Search",
+          "title": "They are curious",
+          "description": "They ask questions, test assumptions and want to understand how things work."
+        },
+        {
+          "id": "detail",
+          "icon": "/images/card-career-4.png",
+          "iconAlt": "Eye",
+          "title": "They notice detail",
+          "description": "Accuracy matters when you are handling customer information and transactions."
+        },
+        {
+          "id": "practical",
+          "icon": "/images/card-career-5.png",
+          "iconAlt": "Wrench",
+          "title": "They are practical",
+          "description": "They can turn ideas into work that improves the product or the business."
+        },
+        {
+          "id": "communicate",
+          "icon": "/images/card-career-6.png",
+          "iconAlt": "Message",
+          "title": "They communicate clearly",
+          "description": "They explain problems and progress without hiding behind jargon."
+        }
+      ],
+      "fullWidthCard": {
+        "icon": "/images/card-career-7.png",
+        "iconAlt": "Users",
+        "title": "They work well with others",
+        "description": "They share information, challenge respectfully and help the wider team."
+      }
+    },
+    "workAtBillGoose": {
+      "heading": "What's it like to work at BillGoose?",
+      "subheading": "Straight from the team.",
+      "testimonials": [
+        {
+          "id": "mark",
+          "name": "Mark",
+          "role": "Head of Strategic Partnerships and Growth",
+          "quote": "I'm Mark and my role is to help customers discover BillGoose and ensure that they have an incredible experience once they do.",
+          "paragraphs": [
+            "I love this role because every hour is different. In one day I can be working with our marketing partners to get our best deals in front of the right customers, working with our technology partners to roll out a new category, ensuring our technology stack is robust, as well as producing content to help our customers navigate complex decisions and ultimately get the best deals that are right for their situation.",
+            "The team at BillGoose are a joy to work with. There is a lot of talent here and it's been such a pleasure to build BillGoose from the ground up with such a great bunch of people."
+          ],
+          "background": "#0C3F67"
+        },
+        {
+          "id": "katt",
+          "name": "Katt",
+          "role": "Design Team",
+          "quote": "At BillGoose, we're all about making everyday decisions feel a little easier.",
+          "paragraphs": [
+            "Behind the scenes that means a team of people working together, sharing ideas and always looking for better ways to help our customers.",
+            "Every day brings something different, and it's rewarding to know that the work we do can make a genuine difference to people's everyday lives."
+          ],
+          "background": "#0A998D"
+        }
+      ]
+    },
+    "whatYouCanExpect": {
+      "heading": "What you can expect from us",
+      "cards": [
+        {
+          "id": "work-that-matters",
+          "title": "Work that matters",
+          "description": "You will be helping to solve problems that affect almost every household."
+        },
+        {
+          "id": "visible-impact",
+          "title": "Visible impact",
+          "description": "You will be close enough to the work to see what your decisions change."
+        },
+        {
+          "id": "real-responsibility",
+          "title": "Real responsibility",
+          "description": "We give people room to own their work and expect them to use it well."
+        },
+        {
+          "id": "access-to-team",
+          "title": "Access to the team",
+          "description": "You will work directly with colleagues across the business, including its leaders."
+        },
+        {
+          "id": "chance-to-create",
+          "title": "A chance to create",
+          "description": "This is an opportunity to shape a growing platform, not just maintain an established one."
+        },
+        {
+          "id": "respect-and-support",
+          "title": "Respect and support",
+          "description": "We want people to do strong work without politics, posturing or unnecessary noise."
+        }
+      ],
+      "bottomDescription": "The salary, benefits, working pattern and location for each role will be set out clearly in the vacancy. We are an equal opportunities employer and we do not believe candidates should have to guess what a job involves or what it offers."
+    },
+    "ourValues": {
+      "heading": "Our values",
+      "items": [
+        {
+          "id": "01",
+          "number": "01",
+          "title": "Useful first",
+          "description": "Everything we build should solve a real household problem."
+        },
+        {
+          "id": "02",
+          "number": "02",
+          "title": "Clear and honest",
+          "description": "We use plain language and explain important limits, costs and relationships."
+        },
+        {
+          "id": "03",
+          "number": "03",
+          "title": "Consumer control",
+          "description": "People should understand and control how their information is used."
+        },
+        {
+          "id": "04",
+          "number": "04",
+          "title": "Care with data",
+          "description": "Security, privacy and responsible use of data are basic requirements."
+        },
+        {
+          "id": "05",
+          "number": "05",
+          "title": "Better over time",
+          "description": "We listen, measure what works and keep improving."
+        }
+      ]
+    },
+    "currentOpportunities": {
+      "heading": "Current opportunities",
+      "subheading": "Our current vacancies will be listed on this page. Each advert will explain the role, the experience we need and how to apply.",
+      "emptyState": {
+        "heading": "Don't see the right role?",
+        "paragraphs": [
+          "We are still interested in hearing from thoughtful people with experience in product, technology, data analysis, data reconciliation, operations, finance, security, customer support, digital marketing or commercial partnerships.",
+          "Please tell us what you are good at, the kind of work you want to do and why BillGoose interests you. A clear note is more useful than a polished sales pitch."
+        ],
+        "button": {
+          "label": "Send your details to careers@billgoose.com",
+          "href": "mailto:careers@billgoose.com"
+        },
+        "support": {
+          "prefix": "Need help with something else?",
+          "label": "Visit our support page.",
+          "href": "/help"
+        }
+      }
+    }
+  },
+  "customerSupport": {
+    "breadcrumb": {
+      "home": {
+        "label": "Home",
+        "href": "/"
+      },
+      "current": "Customer Support"
+    },
+    "hero": {
+      "heading": "Clear help when you need it",
+      "description": "BillGoose exists to make household services easier to manage, but sometimes things go wrong, mistakes happen or clarity is needed. When that happens we want it to be straightforward to find an answer and reach the right person.",
+      "primaryButton": {
+        "label": "Read the FAQs",
+        "href": "/faqs"
+      },
+      "email": {
+        "label": "Support@billgoose.com",
+        "href": "mailto:Support@billgoose.com"
+      },
+      "availability": {
+        "icon": "/images/mail-small.svg",
+        "iconAlt": "",
+        "text": "UK-based team, 8.30am to 5pm every day."
+      },
+      "backgroundImage": {
+        "src": "/images/careers-bg.png",
+        "alt": "Customer support background"
+      },
+      "gooseImage": {
+        "src": "/images/careers-goose.png",
+        "alt": "BillGoose customer support mascot"
+      }
+    },
+    "waysToGetAnswer": {
+      "heading": "Three ways to get an answer",
+      "description": "Our support starts with clear information throughout the website. We explain what each service covers, which providers or partners are involved and what happens when you choose to switch or apply.",
+      "cards": [
+        {
+          "id": "ask-bill",
+          "title": "Ask Bill",
+          "description": "Click the Bill mascot at the bottom of your screen and ask your question straight away.",
+          "icon": "/images/customer-support-card-icon.png",
+          "iconAlt": "Ask Bill",
+          "link": {
+            "label": "Ask Bill",
+            "href": "#ask-bill"
+          }
+        },
+        {
+          "id": "faqs",
+          "title": "Frequently Asked Questions",
+          "description": "The most commonly asked questions are answered below, from switching times to how we use your data.",
+          "icon": "/images/customer-support-card-icon.png",
+          "iconAlt": "Frequently Asked Questions",
+          "link": {
+            "label": "Browse FAQs",
+            "href": "#faqs"
+          }
+        },
+        {
+          "id": "email-team",
+          "title": "Email the team",
+          "description": "If the answer is not there, contact us directly and we will look into the issue and explain what we can do.",
+          "icon": "/images/customer-support-card-icon.png",
+          "iconAlt": "Email the team",
+          "link": {
+            "label": "support@billgoose.com",
+            "href": "mailto:support@billgoose.com"
+          }
+        }
+      ]
+    },
+    "howWeSupportYou": {
+      "heading": "How we support you",
+      "cards": [
+        {
+          "id": "clear-answers",
+          "icon": "/images/support-card-1.png",
+          "iconAlt": "Search",
+          "title": "Clear answers",
+          "description": "We will explain things in plain language and avoid unnecessary jargon."
+        },
+        {
+          "id": "best-route",
+          "icon": "/images/support-card-2.png",
+          "iconAlt": "Eye",
+          "title": "The best route",
+          "description": "If another partner provides the service, we will help you understand who needs to deal with the issue and how to contact them."
+        },
+        {
+          "id": "care-information",
+          "icon": "/images/support-card-3.png",
+          "iconAlt": "Wrench",
+          "title": "Care with your information",
+          "description": "We will confirm the details we need but will never ask for more personal information than is necessary."
+        },
+        {
+          "id": "record-issue",
+          "icon": "/images/support-card-4.png",
+          "iconAlt": "Message",
+          "title": "Record of the issue",
+          "description": "We will use the information you give us to investigate and keep you updated where further work is needed."
+        }
+      ],
+      "fullWidthCard": {
+        "icon": "/images/support-card-5.png",
+        "iconAlt": "Users",
+        "title": "They work well with others",
+        "description": "We use support queries and complaints to identify parts of the service that need to work better."
+      }
+    },
+    "faqs": {
+      "heading": "Frequently Asked Questions",
+      "items": [
+        {
+          "id": "faq-1",
+          "question": "Clear answers",
+          "answer": "We will explain things in plain language and avoid unnecessary jargon."
+        },
+        {
+          "id": "faq-2",
+          "question": "How quickly will I get a response?",
+          "answer": "We aim to respond as quickly as possible and will let you know if we need more time to investigate."
+        },
+        {
+          "id": "faq-3",
+          "question": "Who handles my query?",
+          "answer": "We will make sure your query reaches the right person or explain clearly if another provider or partner needs to help."
+        },
+        {
+          "id": "faq-4",
+          "question": "What information do you need?",
+          "answer": "We will only ask for the information needed to understand and resolve your issue."
+        },
+        {
+          "id": "faq-5",
+          "question": "How will I know what happens next?",
+          "answer": "We will explain the next step clearly and keep you updated where further work is needed."
+        }
+      ]
     }
   }
 }

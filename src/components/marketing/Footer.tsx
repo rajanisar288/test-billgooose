@@ -23,8 +23,13 @@ export default function Footer() {
     const normalizedLabel = linkLabel.trim().toLowerCase();
 
     // Company > About
-    if (normalizedHeading.includes('company') && normalizedLabel === 'about us') {
-      return '/about';
+    if (normalizedHeading.includes('company')) {
+      if (normalizedLabel === 'about us') return '/about';
+      if (normalizedLabel === 'careers') return '/careers';
+    }
+
+    if (normalizedHeading.includes('support')) {
+      if (normalizedLabel == 'customer support') return '/customer-support';
     }
 
     if (normalizedHeading.includes('compare')) {
@@ -168,19 +173,77 @@ export default function Footer() {
 
         {/* Desktop footer bottom */}
         <div className="mx-auto flex min-h-[66px] w-full max-w-[1280px] items-end justify-between gap-8 border-t border-[#EAECF0] px-8 pt-5">
-          <Link
-            href="/"
-            aria-label={footer.logo.ariaLabel}
-            className="relative block h-11 w-[141px] shrink-0"
-          >
-            <Image
-              src={footer.logo.src}
-              alt={footer.logo.alt}
-              fill
-              sizes="141px"
-              className="object-contain object-left"
+          {/* LOGO + DIVIDER + SOCIALS */}
+          <div className="flex items-center">
+            <Link
+              href={footer.logo.href}
+              aria-label={footer.logo.ariaLabel}
+              className="relative block h-11 w-[141px] shrink-0"
+            >
+              <Image
+                src={footer.logo.src}
+                alt={footer.logo.alt}
+                fill
+                sizes="141px"
+                className="object-contain object-left"
+              />
+            </Link>
+
+            {/* Vertical divider */}
+            <div
+              aria-hidden="true"
+              className="
+                mx-5
+                h-[44px]
+                w-px
+                shrink-0
+
+                bg-[#D0D5DD]
+              "
             />
-          </Link>
+
+            {/* Social icons */}
+            <div className="flex items-center gap-5">
+              {footer.socials.map((social) => (
+                <Link
+                  key={social.id}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="
+                    flex
+                    h-8
+                    w-8
+
+                    items-center
+                    justify-center
+
+                    transition-opacity
+
+                    hover:opacity-70
+
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-primary
+                    focus-visible:ring-offset-2
+                  "
+                >
+                  <Image
+                    src={social.icon}
+                    alt={social.iconAlt}
+                    width={20}
+                    height={20}
+                    className="
+                      h-5
+                      w-5
+                      object-contain
+                    "
+                  />
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <p className="text-right font-red-hat-display text-[16px] leading-[1.5] text-[#667085]">
             {footer.copyright}
