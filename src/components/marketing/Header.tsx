@@ -380,12 +380,12 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               items-center
               justify-between
 
-              px-5
+              px-10
 
               sm:px-8
 
               lg:min-h-[103px]
-              lg:px-10
+              lg:px-8
             "
         >
           {/* =================================================
@@ -480,6 +480,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                 hidden
                 items-center
                 gap-3
+                mt-[10px]
 
                 lg:flex
               "
