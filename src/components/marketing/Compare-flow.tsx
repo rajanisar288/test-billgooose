@@ -11,9 +11,11 @@ import { ArrowRight, CalendarDays, Check, ChevronDown } from 'lucide-react';
 import { EMAIL_REGEX } from '@/components/journey/forms/personal-details-form';
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
 import { MoveStatus, type Address, type Journey } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { serviceRequiresConsumption, useServiceFields } from '@/lib/service-fields';
+import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
 type CompareService = 'energy' | 'broadband' | 'insurance';
@@ -23,6 +25,8 @@ export default function CompareFlow() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { journey } = useJourneyStore();
+  const { showError, showSuccess } = useToast();
 
   const requestedService = searchParams.get('service');
   const requestedFlow = searchParams.get('flow');
@@ -122,11 +126,6 @@ export default function CompareFlow() {
     { id: 'vehicle-insurance', label: 'Vehicle Insurance', value: 'vehicle-insurance' },
     { id: 'health-insurance', label: 'Health Insurance', value: 'health-insurance' },
   ];
-
-  const [email, setEmail] = useState('');
-  const [insuranceType, setInsuranceType] = useState('life-insurance');
-  const [insuranceTypeDropdownOpen, setInsuranceTypeDropdownOpen] = useState(false);
-
   /* =========================================================
      REFS
   ========================================================= */
@@ -1317,210 +1316,6 @@ export default function CompareFlow() {
             {/* ENERGY */}
             {['energy'].includes(requestedService ?? '') && (
               <>
-                <div>
-                  <label
-                    htmlFor="insurance-email"
-                    className="
-                      mb-2
-                      block
-                      font-inter
-                      text-[13px]
-                      font-[500]
-                      leading-5
-                      text-[#344054]
-                      lg:text-[14px]
-                    "
-                  >
-                    Email address
-                  </label>
-
-                  <input
-                    id="insurance-email"
-                    name="insurance-email"
-                    type="email"
-                    value={email}
-                    autoComplete="email"
-                    placeholder="Enter your email address"
-                    aria-invalid={email.length > 0 && !isEmailValid}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                    }}
-                    className="
-                      h-12
-                      w-full
-                      rounded-full
-                      border
-                      border-[#D0D5DD]
-                      bg-white
-                      px-[18px]
-                      font-inter
-                      text-[14px]
-                      font-normal
-                      leading-6
-                      text-[#344054]
-                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-                      outline-none
-                      transition
-                      placeholder:text-[#667085]
-                      focus:border-black
-                      focus:ring-4
-                      focus:ring-[#EEFFFB]
-                      md:h-[50px]
-                      lg:h-[52px]
-                      lg:text-[16px]
-                    "
-                  />
-
-                  {email.length > 0 && !isEmailValid && (
-                    <p
-                      className="
-                        mt-1.5
-                        font-inter
-                        text-[11px]
-                        font-normal
-                        leading-4
-                        text-[#D92D20]
-                        lg:text-[12px]
-                      "
-                    >
-                      Please enter a valid email address.
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    id="insurance-type-label"
-                    className="
-                      mb-2
-                      block
-                      font-inter
-                      text-[13px]
-                      font-[500]
-                      leading-5
-                      text-[#344054]
-                      lg:text-[14px]
-                    "
-                  >
-                    Insurance Type
-                  </label>
-
-                  <div
-                    ref={insuranceTypeDropdownRef}
-                    className="relative"
-                  >
-                    <button
-                      type="button"
-                      aria-labelledby="insurance-type-label"
-                      aria-expanded={insuranceTypeDropdownOpen}
-                      aria-haspopup="listbox"
-                      onClick={() => {
-                        setInsuranceTypeDropdownOpen((current) => !current);
-                        setAddressDropdownOpen(false);
-                        setProviderDropdownOpen(false);
-                        setEnergyServiceDropdownOpen(false);
-                      }}
-                      className={`
-                        flex
-                        h-12
-                        w-full
-                        items-center
-                        justify-between
-                        gap-2
-                        rounded-full
-                        border
-                        bg-white
-                        px-[18px]
-                        text-left
-                        font-inter
-                        text-[14px]
-                        font-normal
-                        leading-6
-                        text-[#344054]
-                        shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-                        outline-none
-                        transition
-                        md:h-[50px]
-                        lg:h-[52px]
-                        lg:text-[16px]
-                        ${
-                          insuranceTypeDropdownOpen
-                            ? 'border-black ring-4 ring-[#EEFFFB]'
-                            : 'border-[#D0D5DD]'
-                        }
-                      `}
-                    >
-                      <span>
-                        {
-                          insuranceTypeOptions.find((option) => option.value === insuranceType)
-                            ?.label
-                        }
-                      </span>
-
-                      <ChevronDown
-                        aria-hidden="true"
-                        className={`
-                          h-5
-                          w-5
-                          shrink-0
-                          text-[#354052]
-                          transition-transform
-                          ${insuranceTypeDropdownOpen ? 'rotate-180' : ''}
-                        `}
-                        strokeWidth={2}
-                      />
-                    </button>
-
-                    {insuranceTypeDropdownOpen && (
-                      <DropdownPanel>
-                        {insuranceTypeOptions.map((option) => {
-                          const isSelected = insuranceType === option.value;
-
-                          return (
-                            <button
-                              key={option.id}
-                              type="button"
-                              role="option"
-                              aria-selected={isSelected}
-                              onClick={() => {
-                                setInsuranceType(option.value);
-                                setInsuranceTypeDropdownOpen(false);
-                              }}
-                              className={`
-                                flex
-                                min-h-10
-                                w-full
-                                items-center
-                                justify-between
-                                rounded-[30px]
-                                px-3
-                                py-2
-                                text-left
-                                font-inter
-                                text-[13px]
-                                text-[#344054]
-                                transition-colors
-                                hover:bg-[#F5F5F5]
-                                lg:text-[14px]
-                                ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
-                              `}
-                            >
-                              <span>{option.label}</span>
-
-                              {isSelected && (
-                                <Check
-                                  aria-hidden="true"
-                                  className="h-4 w-4 text-[#00897B]"
-                                  strokeWidth={2}
-                                />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </DropdownPanel>
-                    )}
-                  </div>
-                </div>
                 {isBundleFlow ? (
                   <>
                     <fieldset>
@@ -1833,7 +1628,7 @@ export default function CompareFlow() {
 
             {requestedService == 'insurance' && (
               <>
-                {/* <FormField label={compareFlow.form.email.label}>
+                <FormField label={compareFlow.form.email.label}>
                   <input
                     type="email"
                     value={email}
@@ -1897,7 +1692,7 @@ export default function CompareFlow() {
                   {errors.email && (
                     <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.email}</p>
                   )}
-                </FormField> */}
+                </FormField>
                 <div>
                   <label
                     id="energy-service-label"
