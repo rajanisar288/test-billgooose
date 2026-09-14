@@ -1,33 +1,51 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { useRouter } from 'next/navigation';
 
-import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Loader2 } from 'lucide-react';
 
+import {
+  formatKwhValue,
+  kwhForPeriod,
+  periodUnitLabel,
+} from '@/components/current-usage/current-usage-header';
 import data from '@/data/content.json';
 
-export default function UsageFooter() {
+type UsageFooterProps = {
+  period: 'monthly' | 'annual';
+  energyUsage: {
+    gas?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+    electricity?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+  } | null;
+  onCompare: () => void;
+  isComparing: boolean;
+};
+
+export default function UsageFooter({
+  period,
+  energyUsage,
+  onCompare,
+  isComparing,
+}: UsageFooterProps) {
   const router = useRouter();
 
   const { footer } = data.currentUsage;
 
-  /* =========================================================
-     COMPARE ENERGY PRICES
+  const { amountLabel, periodLabel } = useMemo(() => {
+    const electricityAnnual = energyUsage?.electricity?.isAvailable
+      ? energyUsage.electricity.annualConsumptionKwh
+      : 0;
+    const gasAnnual = energyUsage?.gas?.isAvailable ? energyUsage.gas.annualConsumptionKwh : 0;
 
-     PRESERVE NORMAL ENERGY / BUNDLE CONTEXT
-  ========================================================= */
+    const totalKwh = kwhForPeriod(electricityAnnual, period) + kwhForPeriod(gasAnnual, period);
 
-  const handleCompareEnergyPrices = () => {
-    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
-
-    const isBundleFlow = storedFlow === 'bundle';
-
-    sessionStorage.setItem('billgooseJourneyService', 'energy');
-
-    sessionStorage.setItem('billgooseJourneyFlow', isBundleFlow ? 'bundle' : 'energy');
-
-    router.push(isBundleFlow ? '/result?service=energy&flow=bundle' : '/result?service=energy');
-  };
+    return {
+      amountLabel: formatKwhValue(totalKwh, true),
+      periodLabel: periodUnitLabel(period),
+    };
+  }, [energyUsage, period]);
 
   return (
     <footer
@@ -83,7 +101,7 @@ export default function UsageFooter() {
               text-[#101828]
             "
           >
-            {footer.estimatedCost}
+            {amountLabel} {periodLabel}
           </p>
         </div>
 
@@ -141,7 +159,9 @@ export default function UsageFooter() {
           {/* Compare */}
           <button
             type="button"
-            onClick={handleCompareEnergyPrices}
+            onClick={onCompare}
+            disabled={isComparing}
+            aria-busy={isComparing}
             className="
               ml-auto
               inline-flex h-11
@@ -170,6 +190,9 @@ export default function UsageFooter() {
 
               hover:bg-[#00796D]
 
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+
               focus-visible:outline-none
               focus-visible:ring-4
               focus-visible:ring-[#B7E6DF]
@@ -179,15 +202,19 @@ export default function UsageFooter() {
           >
             {footer.compareButton}
 
-            <ArrowRight
-              aria-hidden="true"
-              className="
-                h-4
-                w-4
-                shrink-0
-              "
-              strokeWidth={2}
-            />
+            {isComparing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowRight
+                aria-hidden="true"
+                className="
+                  h-4
+                  w-4
+                  shrink-0
+                "
+                strokeWidth={2}
+              />
+            )}
           </button>
         </div>
       </div>
@@ -301,14 +328,16 @@ export default function UsageFooter() {
               lg:leading-6
             "
           >
-            {footer.estimatedCost}
+            {amountLabel} {periodLabel}
           </p>
         </div>
 
         {/* Compare */}
         <button
           type="button"
-          onClick={handleCompareEnergyPrices}
+          onClick={onCompare}
+          disabled={isComparing}
+          aria-busy={isComparing}
           className="
             ml-3
             inline-flex h-12
@@ -338,6 +367,9 @@ export default function UsageFooter() {
 
             hover:bg-[#00796D]
 
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+
             focus-visible:outline-none
             focus-visible:ring-4
             focus-visible:ring-[#B7E6DF]
@@ -351,18 +383,22 @@ export default function UsageFooter() {
         >
           {footer.compareButton}
 
-          <ArrowRight
-            aria-hidden="true"
-            className="
-              h-4
-              w-4
-              shrink-0
+          {isComparing ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ArrowRight
+              aria-hidden="true"
+              className="
+                h-4
+                w-4
+                shrink-0
 
-              lg:h-[18px]
-              lg:w-[18px]
-            "
-            strokeWidth={2}
-          />
+                lg:h-[18px]
+                lg:w-[18px]
+              "
+              strokeWidth={2}
+            />
+          )}
         </button>
       </div>
     </footer>

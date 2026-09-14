@@ -1,9 +1,13 @@
 import Image from 'next/image';
 
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
 
 export default function EstimatedPayment() {
+  const { journey } = useJourneyStore();
   const { estimatedPayment } = data.currentUsage;
+
+  if (!journey?.customer?.preferredStartDate) return;
 
   return (
     <section
@@ -46,7 +50,7 @@ export default function EstimatedPayment() {
             lg:text-[16px]
           "
         >
-          {estimatedPayment.date}
+          {journey?.customer?.preferredStartDate}
         </p>
 
         <p

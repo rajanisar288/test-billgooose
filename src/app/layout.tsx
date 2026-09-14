@@ -1,6 +1,9 @@
+import { Suspense } from 'react';
+
 import { Red_Hat_Display } from 'next/font/google';
 import Script from 'next/script';
 
+import AppRouteLoader from '@/components/common/AppRouteLoader';
 import { LoadConfig } from '@/components/loadConfig';
 import ToastProvider from '@/components/ToastProvider';
 
@@ -37,6 +40,9 @@ export default function RootLayout({
         className={`${redHatDisplay.variable} min-h-full flex flex-col`}
         suppressHydrationWarning
       >
+        <Suspense fallback={null}>
+          <AppRouteLoader />
+        </Suspense>
         <ShowcaseGuard>
           <ToastProvider>{children}</ToastProvider>
           {/* {children} */}

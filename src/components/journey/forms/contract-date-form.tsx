@@ -3,12 +3,19 @@
 import { type FormEvent, type ReactNode, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { CalendarDays, Check } from 'lucide-react';
 
-import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
+import { getNextJourneyRoute } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 type JourneyService = 'energy' | 'broadband';
 
@@ -53,10 +60,15 @@ function subscribeToJourneyService(callback: () => void) {
 }
 
 export default function ContractDateForm() {
-  const router = useRouter();
+  const { journey } = useJourneyStore();
+  const { updateJourney } = useUpdateJourney();
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
+  const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
 
   const { contractDetails, broadbandProvider } = data.journey;
-
   const { fields, information, warning, acknowledgement } = contractDetails;
 
   const service = useSyncExternalStore(
@@ -68,16 +80,34 @@ export default function ContractDateForm() {
   /*
    * ENERGY
    */
-  const [contractDate, setContractDate] = useState('');
+  const [contractDate, setContractDate] = useState(journey?.customer?.preferredStartDate ?? '');
 
-  const [acknowledged, setAcknowledged] = useState(acknowledgement.defaultValue);
+  const [acknowledged, setAcknowledged] = useState(
+    journey?.customer?.coolingOffPeriodWaiverAccepted ?? false,
+  );
 
+  const [contractDateError, setContractDateError] = useState('');
   /*
    * BROADBAND
    */
-  const [selectedProvider, setSelectedProvider] = useState(broadbandProvider.defaultValue);
+  const [selectedProvider, setSelectedProvider] = useState(
+    journey?.customer ? journey?.customer?.provider : broadbandProvider.defaultValue,
+  );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const parsedContractDate = new Date(contractDate);
+  const isValidContractDate =
+    !!contractDate &&
+    !Number.isNaN(parsedContractDate.getTime()) &&
+    parsedContractDate >= new Date(new Date().toDateString());
+
+  useJourneyStepStatus(
+    'journey-step-form-2',
+    service === 'broadband'
+      ? Boolean(selectedProvider)
+      : isValidContractDate && Boolean(acknowledged),
+  );
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     /*
@@ -85,17 +115,20 @@ export default function ContractDateForm() {
      */
     if (service === 'broadband') {
       if (!selectedProvider) {
+        notifyJourneyStepFailed();
         return;
       }
 
-      sessionStorage.setItem(
-        broadbandProvider.storageKey,
-        JSON.stringify({
-          provider: selectedProvider,
-        }),
+      const nextRoute = getNextJourneyRoute(2, 'broadband');
+      const success = await updateJourney(
+        { customer: selectedProvider },
+        nextRoute,
+        getCurrentRelativeUrl(),
       );
 
-      router.push(JOURNEY_ROUTES[3]);
+      if (!success) {
+        notifyJourneyStepFailed();
+      }
 
       return;
     }
@@ -103,18 +136,39 @@ export default function ContractDateForm() {
     /*
      * ENERGY
      */
-    if (!contractDate || !acknowledged) {
+    if (!isValidContractDate) {
+      setContractDateError('Enter a contract start date that is today or later.');
+      notifyJourneyStepFailed();
       return;
     }
 
+    if (!acknowledged) {
+      notifyJourneyStepFailed();
+      return;
+    }
+
+    setContractDateError('');
+
     const contractDetailsData = {
-      contractDate,
-      acknowledged,
+      preferredStartDate: contractDate,
+      coolingOffPeriodWaiverAccepted: acknowledged,
     };
 
-    sessionStorage.setItem(contractDetails.storageKey, JSON.stringify(contractDetailsData));
+    const nextRoute = getNextJourneyRoute(
+      2,
+      isBundle ? 'bundle-bills' : 'energy',
+      isBundle ? 'bundle' : undefined,
+    );
 
-    router.push(JOURNEY_ROUTES[3]);
+    const success = await updateJourney(
+      { customer: contractDetailsData },
+      nextRoute,
+      getCurrentRelativeUrl(),
+    );
+
+    if (!success) {
+      notifyJourneyStepFailed();
+    }
   }
 
   /*
@@ -185,8 +239,11 @@ export default function ContractDateForm() {
               value={contractDate}
               onChange={(event) => {
                 setContractDate(event.target.value);
+                setContractDateError('');
               }}
               autoComplete="off"
+              min={new Date().toISOString().split('T')[0]}
+              aria-invalid={!!contractDateError}
               className={`
                 ${inputClasses}
 
@@ -252,6 +309,9 @@ export default function ContractDateForm() {
               />
             </button>
           </div>
+          {contractDateError && (
+            <p className="mt-1.5 text-[12px] text-[#D92D20]">{contractDateError}</p>
+          )}
         </FormField>
 
         <div className="space-y-3 lg:space-y-4">

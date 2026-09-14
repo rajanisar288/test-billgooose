@@ -1,19 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import {
-  ArrowDownUp,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  ExternalLink,
-  Globe2,
-  X,
-} from 'lucide-react';
+import { Check, ChevronRight, ExternalLink, Globe2, LoaderCircle, X } from 'lucide-react';
 
 import FeaturedBroadbandCard from '@/components/result/featured-broadband-card';
 import PlanCard from '@/components/result/plan-card';
@@ -24,10 +16,17 @@ import type {
   SimOnlyPlan,
   StandardPlan,
 } from '@/components/result/plan.types';
+import { useResultFilters } from '@/components/result/result-filter-context';
 import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
+import type { ResultFilterState } from '@/components/result/result-filter.types';
+import { readStoredSelectedPlans } from '@/components/result/selected-plans';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
-type CompareService = 'energy' | 'broadband' | 'sim-only' | 'insurance';
+type CompareService = 'energy' | 'bundle-bills' | 'broadband' | 'sim-only' | 'insurance';
 
 type RedirectOrigin = 'sim-only' | 'mobile-details';
 
@@ -36,6 +35,10 @@ type ResultPlansProps = {
   description?: string;
   serviceOverride?: CompareService;
   redirectOrigin?: RedirectOrigin;
+  quotePlans?: ResultPlan[];
+  quoteLoading?: boolean;
+  quoteError?: string;
+  resultCount?: number;
 };
 
 type CompareFlowDetails = {
@@ -69,6 +72,90 @@ function isFeaturedBroadbandPlan(plan: ResultPlan): plan is FeaturedBroadbandPla
 
 function isStandardPlan(plan: ResultPlan): plan is StandardPlan {
   return plan.type === 'select-plan' || plan.type === 'view-deal';
+}
+
+function filterStandardPlans<T extends StandardPlan>(plans: T[], filters: ResultFilterState): T[] {
+  return plans.filter((plan) => {
+    const searchableText = [
+      plan.provider,
+      plan.description,
+      plan.contract,
+      ...plan.features,
+      plan.price,
+      plan.saving,
+      (plan as StandardPlan & { paymentMethod?: string }).paymentMethod,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    if (filters.onlyBillGoose && !searchableText.includes('billgoose')) {
+      return false;
+    }
+
+    return Object.entries(filters.values).every(([field, value]) => {
+      if (!value || value === 'all') {
+        return true;
+      }
+
+      const normalizedValue = value.replace(/-/g, ' ').toLowerCase();
+
+      if (field === 'plan-type' && value === 'dual-fuel') {
+        return (
+          searchableText.includes('dual') ||
+          searchableText.includes('gas') ||
+          searchableText.includes('electric')
+        );
+      }
+
+      if (field === 'contract-length') {
+        return (
+          searchableText.includes(normalizedValue) ||
+          searchableText.includes(value.replace('-months', ' months'))
+        );
+      }
+
+      return searchableText.includes(normalizedValue);
+    });
+  });
+}
+
+function filterSimOnlyPlans(plans: SimOnlyPlan[], filters: ResultFilterState): SimOnlyPlan[] {
+  return plans.filter((plan) => {
+    const searchableText = [
+      plan.provider,
+      plan.networkDescription,
+      plan.data,
+      plan.roamingText,
+      ...plan.badges,
+    ]
+      .join(' ')
+      .toLowerCase();
+    const price = Number(plan.price.replace(/[^\d.-]/g, ''));
+
+    if (
+      filters.networks.length &&
+      !filters.networks.some((network) => searchableText.includes(network.toLowerCase()))
+    ) {
+      return false;
+    }
+
+    return Object.entries(filters.simValues).every(([field, values]) =>
+      values.some((value) => {
+        if (field === 'monthly-cost') {
+          if (value === '40-plus') return price >= 40;
+          const [minimum, maximum] = value.split('-').map(Number);
+          return price >= minimum && price <= maximum;
+        }
+
+        if (field === 'data' && value === 'unlimited') {
+          return searchableText.includes('unlimited');
+        }
+
+        return searchableText.includes(value.replace(/-/g, ' ').toLowerCase());
+      }),
+    );
+  });
 }
 
 /* =========================================================
@@ -108,9 +195,18 @@ export default function ResultPlans({
   description,
   serviceOverride,
   redirectOrigin = 'sim-only',
+  quotePlans,
+  quoteLoading = false,
+  quoteError = '',
+  resultCount,
 }: ResultPlansProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { journey, setJourney } = useJourneyStore();
+  const { filters: appliedFilters } = useResultFilters();
+  const { showError } = useToast();
+  const [selectingPlanId, setSelectingPlanId] = useState<string | null>(null);
+  const [isContinuingBundle, setIsContinuingBundle] = useState(false);
 
   const { plans, resultsStatus } = data.resultPage;
 
@@ -119,6 +215,7 @@ export default function ResultPlans({
   ========================================================= */
 
   const queryService = searchParams.get('service');
+  const queryFlow = searchParams.get('flow');
 
   const service: CompareService =
     serviceOverride ??
@@ -128,7 +225,12 @@ export default function ResultPlans({
         ? 'sim-only'
         : queryService === 'insurance'
           ? 'insurance'
-          : 'energy');
+          : queryService === 'bundle-bills' || queryFlow === 'bundle'
+            ? 'bundle-bills'
+            : 'energy');
+
+  const isBundleService = service === 'bundle-bills';
+  const [selectedBundlePlans, setSelectedBundlePlans] = useState<Record<string, StandardPlan>>({});
 
   const isSimOnly = service === 'sim-only';
   const isInsurance = service === 'insurance';
@@ -137,7 +239,29 @@ export default function ResultPlans({
      PLAN DATA
   ========================================================= */
 
-  const energyPlanItems = plans.items as ResultPlan[];
+  const energyPlanItems = (quotePlans ?? plans.items) as ResultPlan[];
+
+  useEffect(() => {
+    if (!isBundleService || quoteLoading || !quotePlans) return;
+
+    const currentPlans = quotePlans.filter(isStandardPlan);
+    const currentQuoteId = currentPlans[0]?.quoteId;
+    const currentPlanIds = new Set(currentPlans.map((plan) => plan.id));
+    const validStoredPlans = readStoredSelectedPlans().filter(
+      (plan) => plan.quoteId === currentQuoteId && currentPlanIds.has(plan.id),
+    );
+    const nextSelections = validStoredPlans.reduce<Record<string, StandardPlan>>(
+      (selections, plan) => {
+        selections[plan.groupType ?? plan.productType ?? plan.id] = plan;
+        return selections;
+      },
+      {},
+    );
+
+    setSelectedBundlePlans(nextSelections);
+    sessionStorage.setItem('journeySelectedPlans', JSON.stringify(validStoredPlans));
+    if (validStoredPlans.length === 0) sessionStorage.removeItem('journeySelectedPlan');
+  }, [isBundleService, quoteLoading, quotePlans]);
 
   const broadbandPlanItems = (plans.broadbandItems ?? []) as StandardPlan[];
 
@@ -151,6 +275,14 @@ export default function ResultPlans({
   ========================================================= */
 
   const insurancePlanItems = (plans.insuranceItems ?? []) as InsurancePlan[];
+
+  const filteredEnergyPlanItems = energyPlanItems.filter(
+    (plan) =>
+      isFeaturedBroadbandPlan(plan) || filterStandardPlans([plan], appliedFilters).length > 0,
+  );
+  const filteredBroadbandPlanItems = filterStandardPlans(broadbandPlanItems, appliedFilters);
+  const filteredSimOnlyPlanItems = filterSimOnlyPlans(simOnlyPlanItems, appliedFilters);
+  const filteredInsurancePlanItems = filterStandardPlans(insurancePlanItems, appliedFilters);
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(
     isInsurance ? 'monthly' : resultsStatus.planTabs.defaultValue,
@@ -181,12 +313,92 @@ export default function ResultPlans({
      ENERGY / BROADBAND SELECT PLAN
   ========================================================= */
 
-  const handleSelectPlan = (plan: StandardPlan) => {
+  const handleSelectPlan = async (plan: StandardPlan) => {
     const queryFlow = searchParams.get('flow');
 
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
 
     const isBundleFlow = queryFlow === 'bundle' || storedFlow === 'bundle';
+
+    const isJourneyPlan = service === 'energy' || service === 'bundle-bills';
+
+    const groupKey = plan.groupType ?? plan.productType ?? plan.id;
+    const nextBundleSelections = { ...selectedBundlePlans };
+
+    if (isBundleFlow || isBundleService) {
+      if (nextBundleSelections[groupKey]?.id === plan.id) {
+        delete nextBundleSelections[groupKey];
+      } else {
+        nextBundleSelections[groupKey] = plan;
+      }
+    }
+
+    const bundlePlans = Object.values(nextBundleSelections);
+
+    if (isBundleFlow || isBundleService) {
+      setSelectedBundlePlans(nextBundleSelections);
+      sessionStorage.setItem('journeySelectedPlans', JSON.stringify(bundlePlans));
+
+      if (bundlePlans.length === 0) {
+        sessionStorage.removeItem('journeySelectedPlan');
+      } else {
+        const primaryPlan = bundlePlans[0];
+        sessionStorage.setItem(
+          'journeySelectedPlan',
+          JSON.stringify({
+            ...primaryPlan,
+            service: 'bundle-bills',
+            productReferences: bundlePlans.flatMap(
+              (item) =>
+                item.productReferences ?? (item.productReference ? [item.productReference] : []),
+            ),
+          }),
+        );
+      }
+      return;
+    }
+
+    if (isJourneyPlan) {
+      if (selectingPlanId) {
+        return;
+      }
+
+      const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
+
+      if (!journeyId) {
+        showError('Journey ID is required. Please try again.');
+        return;
+      }
+
+      setSelectingPlanId(plan.id);
+
+      try {
+        const response = await journeyApi.createJourney({
+          // ...journey,
+          journeyId,
+          uuid: journeyId,
+          lastUrl: getCurrentRelativeUrl(),
+          cart: [{ ...plan }],
+        });
+
+        if (!response?.data) {
+          throw new Error('We could not save your selected plan. Please try again.');
+        }
+
+        setJourney(response.data);
+      } catch (error) {
+        showError(
+          error &&
+            typeof error === 'object' &&
+            'message' in error &&
+            typeof error.message === 'string'
+            ? error.message
+            : 'We could not save your selected plan. Please try again.',
+        );
+        setSelectingPlanId(null);
+        return;
+      }
+    }
 
     /* =====================================================
        INSURANCE
@@ -197,6 +409,7 @@ export default function ResultPlans({
         return;
       }
 
+      sessionStorage.removeItem('journeySelectedPlans');
       sessionStorage.setItem(
         'journeySelectedPlan',
         JSON.stringify({
@@ -220,24 +433,6 @@ export default function ResultPlans({
        BUNDLE
     ====================================================== */
 
-    if (service === 'energy' && isBundleFlow) {
-      sessionStorage.setItem(
-        'journeySelectedPlan',
-        JSON.stringify({
-          ...plan,
-          service: 'energy',
-        }),
-      );
-
-      sessionStorage.setItem('billgooseJourneyService', 'energy');
-
-      sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
-
-      router.push('/review-your-details?service=energy&flow=bundle');
-
-      return;
-    }
-
     /* =====================================================
        BROADBAND
 
@@ -249,6 +444,7 @@ export default function ResultPlans({
         return;
       }
 
+      sessionStorage.removeItem('journeySelectedPlans');
       sessionStorage.setItem(
         'journeySelectedPlan',
         JSON.stringify({
@@ -278,6 +474,7 @@ export default function ResultPlans({
 
     const resolvedService = storedService ?? 'energy';
 
+    sessionStorage.removeItem('journeySelectedPlans');
     sessionStorage.setItem(
       'journeySelectedPlan',
       JSON.stringify({
@@ -291,6 +488,40 @@ export default function ResultPlans({
     sessionStorage.setItem('billgooseJourneyFlow', 'energy');
 
     router.push('/steps/personal-details-form?service=energy');
+  };
+
+  const handleBundleContinue = async () => {
+    const selectedPlans = Object.values(selectedBundlePlans);
+    const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
+
+    if (!journeyId || selectedPlans.length === 0 || isContinuingBundle) return;
+
+    setIsContinuingBundle(true);
+    try {
+      const response = await journeyApi.createJourney({
+        journeyId,
+        uuid: journeyId,
+        lastUrl: getCurrentRelativeUrl(),
+        cart: selectedPlans,
+      });
+      if (!response?.data) throw new Error('We could not save your selected products.');
+
+      setJourney(response.data);
+      sessionStorage.setItem('billgooseJourneyService', 'energy');
+      sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
+      router.push('/review-your-details?service=energy&flow=bundle');
+    } catch (error) {
+      showError(
+        error &&
+          typeof error === 'object' &&
+          'message' in error &&
+          typeof error.message === 'string'
+          ? error.message
+          : 'We could not save your selected products. Please try again.',
+      );
+    } finally {
+      setIsContinuingBundle(false);
+    }
   };
 
   /* =========================================================
@@ -404,7 +635,7 @@ export default function ResultPlans({
 
   const renderNormalCards = () => {
     if (service === 'insurance') {
-      return insurancePlanItems.map((plan) => (
+      return filteredInsurancePlanItems.map((plan) => (
         <InsurancePlanCard
           key={plan.id}
           plan={plan}
@@ -415,18 +646,19 @@ export default function ResultPlans({
     }
 
     if (service === 'broadband') {
-      return broadbandPlanItems.map((plan) => (
+      return filteredBroadbandPlanItems.map((plan) => (
         <PlanCard
           key={plan.id}
           plan={plan}
           onViewDetails={handleViewDetails}
           onSelectPlan={handleSelectPlan}
+          isSelecting={selectingPlanId === plan.id}
           service="broadband"
         />
       ));
     }
 
-    return energyPlanItems.map((plan) => {
+    return filteredEnergyPlanItems.map((plan) => {
       if (isFeaturedBroadbandPlan(plan)) {
         return (
           <FeaturedBroadbandCard
@@ -444,7 +676,14 @@ export default function ResultPlans({
             plan={plan}
             onViewDetails={handleViewDetails}
             onSelectPlan={handleSelectPlan}
-            service="energy"
+            isSelecting={selectingPlanId === plan.id}
+            isSelected={Boolean(
+              isBundleService &&
+              plan.groupType &&
+              selectedBundlePlans[plan.groupType]?.id === plan.id,
+            )}
+            showSaving={!quotePlans}
+            service={service === 'bundle-bills' ? 'bundle-bills' : 'energy'}
           />
         );
       }
@@ -459,7 +698,7 @@ export default function ResultPlans({
 
   const renderCards = () => {
     if (isSimOnly) {
-      return simOnlyPlanItems.map((plan) => (
+      return filteredSimOnlyPlanItems.map((plan) => (
         <SimOnlyCard
           key={plan.id}
           plan={plan}
@@ -473,7 +712,33 @@ export default function ResultPlans({
       ));
     }
 
-    return renderNormalCards();
+    if (quoteLoading) {
+      return (
+        <div className="flex bg-white justify-center items-center h-[200px] w-full">
+          <p className="flex rounded-[16px] p-6 text-[#667085]">
+            <LoaderCircle className="w-8 h-8 animate-spin" />
+          </p>
+        </div>
+      );
+    }
+
+    if (quoteError) {
+      return (
+        <div className="flex bg-white justify-center items-center h-[200px] w-full">
+          <p className="rounded-[16px] bg-white p-6 text-[#D92D20]">{quoteError}</p>
+        </div>
+      );
+    }
+
+    const cards = renderNormalCards();
+
+    return cards.length > 0 ? (
+      cards
+    ) : (
+      <div className="flex bg-white justify-center items-center h-[200px] w-full">
+        <p className="rounded-[16px] bg-white p-6 text-[#667085]">No plans match your filters.</p>
+      </div>
+    );
   };
 
   return (
@@ -508,6 +773,24 @@ export default function ResultPlans({
         ====================================================== */}
 
         <div className="lg:hidden">
+          {isBundleService && Object.keys(selectedBundlePlans).length > 0 && (
+            <button
+              type="button"
+              onClick={() => void handleBundleContinue()}
+              disabled={isContinuingBundle}
+              className="mb-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#00897B] px-6 font-red-hat-display text-sm font-bold text-white disabled:opacity-60"
+            >
+              {isContinuingBundle
+                ? 'Saving selections...'
+                : `Continue with ${Object.keys(selectedBundlePlans).length} selected ${
+                    Object.keys(selectedBundlePlans).length === 1 ? 'product' : 'products'
+                  }`}
+              <ChevronRight
+                className="ml-2 h-4 w-4"
+                aria-hidden="true"
+              />
+            </button>
+          )}
           <div
             className="
               space-y-4
@@ -567,8 +850,9 @@ export default function ResultPlans({
                   {heading ?? resultsStatus.heading}
                 </h2>
 
-                <p
-                  className="
+                {!quoteLoading && (
+                  <p
+                    className="
                     mt-1
 
                     font-inter
@@ -579,31 +863,34 @@ export default function ResultPlans({
 
                     text-[#667085]
                   "
-                >
-                  {description ? (
-                    description
-                  ) : isSimOnly ? (
-                    <>
-                      <strong className="font-normal">{simOnlyPlanItems.length} deals</strong>{' '}
-                      available, starting with the lowest monthly cost.
-                    </>
-                  ) : service === 'insurance' ? (
-                    <>
-                      <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
-                      found, starting with the lowest monthly cost.
-                    </>
-                  ) : isInsurance ? (
-                    <>
-                      <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
-                      sorted with lowest first.
-                    </>
-                  ) : (
-                    <>
-                      <strong className="font-normal">{resultsStatus.descriptionStart}</strong>{' '}
-                      {resultsStatus.descriptionRest}
-                    </>
-                  )}
-                </p>
+                  >
+                    {description ? (
+                      description
+                    ) : isSimOnly ? (
+                      <>
+                        <strong className="font-normal">{simOnlyPlanItems.length} deals</strong>{' '}
+                        available, starting with the lowest monthly cost.
+                      </>
+                    ) : service === 'insurance' ? (
+                      <>
+                        <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
+                        found, starting with the lowest monthly cost.
+                      </>
+                    ) : isInsurance ? (
+                      <>
+                        <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
+                        sorted with lowest first.
+                      </>
+                    ) : (
+                      <>
+                        <strong className="font-normal">
+                          {resultCount ?? resultsStatus.descriptionStart}
+                        </strong>{' '}
+                        {resultsStatus.descriptionRest}
+                      </>
+                    )}
+                  </p>
+                )}
 
                 {!isSimOnly && (
                   <div className="mt-3 flex items-center gap-2">
@@ -612,7 +899,8 @@ export default function ResultPlans({
                           { id: 'monthly', label: 'Monthly', value: 'monthly' },
                           { id: 'annual', label: 'Annual', value: 'annual' },
                         ]
-                      : resultsStatus.planTabs.options
+                      : // : resultsStatus.planTabs.options
+                        []
                     ).map((option) => {
                       const isSelected = selectedPlanTab === option.value;
 
@@ -625,33 +913,33 @@ export default function ResultPlans({
                             setSelectedPlanTab(option.value);
                           }}
                           className={`
-                              inline-flex
-                              h-[28px]
-                              items-center
-                              justify-center
-                              rounded-[6px]
-                              border
-                              px-3
-                              font-[660]
-                              font-red-hat-display
-                              text-[13px]
+                            inline-flex
+                            h-[28px]
+                            items-center
+                            justify-center
+                            rounded-[6px]
+                            border
+                            px-3
+                            font-[660]
+                            font-red-hat-display
+                            text-[13px]
 
-                              ${
-                                isSelected
-                                  ? `
-                                    border-[#00897B]
-                                    bg-[#00897B]
-                                    font-extrabold
-                                    text-white
-                                  `
-                                  : `
-                                    border-[#EAECF0]
-                                    bg-white
-                                    font-medium
-                                    text-[#344054]
-                                  `
-                              }
-                            `}
+                            ${
+                              isSelected
+                                ? `
+                                  border-[#00897B]
+                                  bg-[#00897B]
+                                  font-extrabold
+                                  text-white
+                                `
+                                : `
+                                  border-[#EAECF0]
+                                  bg-white
+                                  font-medium
+                                  text-[#344054]
+                                `
+                            }
+                          `}
                         >
                           {option.label}
                         </button>
@@ -662,7 +950,7 @@ export default function ResultPlans({
               </div>
 
               {/* SORT */}
-              <div className="flex shrink-0 items-center gap-2">
+              {/* <div className="flex shrink-0 items-center gap-2">
                 <div className="flex items-center gap-1.5">
                   <ArrowDownUp
                     aria-hidden="true"
@@ -720,8 +1008,28 @@ export default function ResultPlans({
                     strokeWidth={1.8}
                   />
                 </button>
-              </div>
+              </div> */}
             </div>
+            {isBundleService && Object.keys(selectedBundlePlans).length > 0 && (
+              <div className="mt-6 flex justify-end mb-2">
+                <button
+                  type="button"
+                  onClick={() => void handleBundleContinue()}
+                  disabled={isContinuingBundle}
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-[#00897B] px-8 font-red-hat-display text-sm font-bold text-white hover:bg-[#00796D]"
+                >
+                  {isContinuingBundle
+                    ? 'Saving selections...'
+                    : `Continue with ${Object.keys(selectedBundlePlans).length} selected ${
+                        Object.keys(selectedBundlePlans).length === 1 ? 'product' : 'products'
+                      }`}
+                  <ChevronRight
+                    className="ml-2 h-4 w-4"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+            )}
 
             <div className="min-w-0 space-y-3">{renderCards()}</div>
           </div>

@@ -32,7 +32,22 @@ export interface Journey {
   journeyId?: string;
   customer?: CustomerDetails | null;
   serviceType?: string;
+  cart?: Array<Record<string, unknown>> | null;
+  consumption?: {
+    gas?: GasConsumption;
+    electricity?: ElectricityConsumption;
+  };
 }
+
+export type GasConsumption =
+  | { method: 'mprn'; mprn: string }
+  | { method: 'usage'; usageKwh: number; usagePeriod: 'monthly' | 'yearly' }
+  | { method: 'estimateBand'; estimateBand: string };
+
+export type ElectricityConsumption =
+  | { method: 'mpan'; mpan: string }
+  | { method: 'usage'; usageKwh: number; usagePeriod: 'monthly' | 'yearly' }
+  | { method: 'estimateBand'; estimateBand: string };
 
 //address
 export interface Address {
@@ -93,4 +108,11 @@ export interface CustomerDetails {
   supplierDataSharingConsentAccepted?: boolean;
   surname?: string | null;
   title?: string | null;
+  insuranceType?: string;
+  insuranceHomeOwnershipStatus?: string;
+  insuranceCoverStartWindow?: string;
+  insurancePaymentFrequency?: string;
+  insuredHomeType?: string;
+  insuranceHouseStyle?: string;
+  hasWorkingSmokeDetectors?: boolean;
 }

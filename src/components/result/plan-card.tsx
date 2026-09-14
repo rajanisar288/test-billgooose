@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, LoaderCircle } from 'lucide-react';
 
 import type { CompareResultService, StandardPlan } from '@/components/result/plan.types';
 import data from '@/data/content.json';
@@ -13,11 +13,22 @@ type PlanCardProps = {
   onViewDetails: (plan: StandardPlan) => void;
 
   onSelectPlan: (plan: StandardPlan) => void;
+  isSelecting?: boolean;
+  isSelected?: boolean;
+  showSaving?: boolean;
 };
 
 const STAR_COUNT = 5;
 
-export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }: PlanCardProps) {
+export default function PlanCard({
+  plan,
+  service,
+  onViewDetails,
+  onSelectPlan,
+  isSelecting = false,
+  isSelected = false,
+  showSaving = true,
+}: PlanCardProps) {
   const { plans } = data.resultPage;
 
   const isBroadband = service === 'broadband';
@@ -204,8 +215,9 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               </div>
             )}
 
-            <span
-              className="
+            {showSaving && (
+              <span
+                className="
                 mt-1
 
                 inline-flex
@@ -224,9 +236,10 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
 
                 text-[#027A48]
               "
-            >
-              {plan.saving}
-            </span>
+              >
+                {plan.saving}
+              </span>
+            )}
           </div>
         </div>
 
@@ -344,6 +357,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
           <button
             type="button"
             onClick={handleSelectPlan}
+            disabled={isSelecting}
             className="
               inline-flex
               h-[42px]
@@ -369,9 +383,18 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               text-white
 
               hover:bg-[#00796D]
+
+              disabled:cursor-not-allowed
+              disabled:opacity-60
             "
           >
-            {plan.primaryButton}
+            {isSelecting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : isSelected ? (
+              'Selected'
+            ) : (
+              plan.primaryButton
+            )}
           </button>
         </div>
       </article>
@@ -602,6 +625,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
           <button
             type="button"
             onClick={handleSelectPlan}
+            disabled={isSelecting}
             className="
               inline-flex
               h-[42px]
@@ -627,9 +651,18 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               text-white
 
               hover:bg-[#00796D]
+
+              disabled:cursor-not-allowed
+              disabled:opacity-60
             "
           >
-            {plan.primaryButton}
+            {isSelecting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : isSelected ? (
+              'Selected'
+            ) : (
+              plan.primaryButton
+            )}
           </button>
         </div>
       </article>
@@ -683,8 +716,9 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               xl:gap-5
             "
           >
-            <div
-              className="
+            {showSaving && (
+              <div
+                className="
     flex
     h-[72px]
     w-[72px]
@@ -702,20 +736,21 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
 
     bg-[#EAF2F8]
   "
-            >
-              <Image
-                src={plan.logo}
-                alt={plan.logoAlt}
-                width={72}
-                height={72}
-                className="
+              >
+                <Image
+                  src={plan.logo}
+                  alt={plan.logoAlt}
+                  width={72}
+                  height={72}
+                  className="
       h-full
       w-full
 
       object-contain
     "
-              />
-            </div>
+                />
+              </div>
+            )}
 
             <div className="min-w-0 flex-1">
               <h3
@@ -872,8 +907,9 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               gap-5
             "
           >
-            <div
-              className="
+            {!['energy', 'bundle-bills']?.includes(plan.service as string) && (
+              <div
+                className="
                 flex
                 w-[125px]
                 shrink-0
@@ -891,9 +927,9 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
                 px-3
                 py-2.5
               "
-            >
-              <p
-                className="
+              >
+                <p
+                  className="
                   font-red-hat-display
 
                   text-[20px]
@@ -902,12 +938,12 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
 
                   text-[#12B76A]
                 "
-              >
-                {plan.saving}
-              </p>
+                >
+                  {plan.saving}
+                </p>
 
-              <p
-                className="
+                <p
+                  className="
                   mt-[2px]
 
                   font-red-hat-display
@@ -918,10 +954,11 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
 
                   text-[#054F31]
                 "
-              >
-                Annual saving at today&apos;s rates
-              </p>
-            </div>
+                >
+                  Annual saving at today&apos;s rates
+                </p>
+              </div>
+            )}
 
             <div
               className="
@@ -937,6 +974,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               <button
                 type="button"
                 onClick={handleSelectPlan}
+                disabled={isSelecting}
                 className="
                   inline-flex
                   h-[40px]
@@ -962,9 +1000,18 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
                   text-white
 
                   hover:bg-[#00796D]
+
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
                 "
               >
-                {plan.primaryButton}
+                {isSelecting ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : isSelected ? (
+                  'Selected'
+                ) : (
+                  plan.primaryButton
+                )}
               </button>
 
               <button
@@ -1092,7 +1139,7 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
           <div
             className="
               grid
-              grid-cols-4
+              grid-cols-3
 
               gap-3
 
@@ -1120,10 +1167,11 @@ export default function PlanCard({ plan, service, onViewDetails, onSelectPlan }:
               value={plan.contract}
             />
 
-            <ResultMetric
-              label="Exit fee"
-              value="No Exit Fee"
-            />
+            {/*  <ResultMetric
+               label="Exit fee"
+               value="£190"
+             />
+              */}
           </div>
         )}
       </article>

@@ -626,7 +626,7 @@
         "description": "All your essential services in one bundle",
         "icon": "/images/bundles-card-icon.png",
         "linkText": "Compare Now",
-        "href": "/compare?service=bundle-bills"
+        "href": "/compare?service=energy&flow=bundle"
       }
     ],
     "comingSoonItems": [
@@ -1222,7 +1222,7 @@
         "heading": "Support",
         "links": [
           {
-            "id": "help-centre",
+            "id": "customer-support",
             "label": "Customer Support",
             "href": "/customer-support"
           },
@@ -1373,33 +1373,33 @@
         "serviceType": {
           "label": "Services",
           "placeholder": "Select your services",
-          "defaultValue": "dual-fuel",
+          "defaultValue": "dualFuel",
           "options": [
             {
-              "id": "dual-fuel",
+              "id": "dualFuel",
               "label": "Gas & Electricity (Dual Fuel)",
-              "value": "dual-fuel"
+              "value": "dualFuel"
             },
             {
-              "id": "electricity-only",
+              "id": "electricityOnly",
               "label": "Electricity only",
-              "value": "electricity-only"
+              "value": "electricityOnly"
             }
           ]
         },
         "paymentMethod": {
           "label": "Select how you'd like to pay",
-          "defaultValue": "prepayment",
+          "defaultValue": "prePayment",
           "options": [
             {
-              "id": "monthly-direct-debit",
-              "label": "Monthly direct debit",
-              "value": "monthly-direct-debit"
+              "id": "monthlyDirectDebit",
+              "label": "Monthly Direct Debit",
+              "value": "monthlyDirectDebit"
             },
             {
-              "id": "prepayment",
+              "id": "prePayment",
               "label": "Pre Payment",
-              "value": "prepayment"
+              "value": "prePayment"
             }
           ]
         }
@@ -1408,7 +1408,7 @@
         "currentProvider": {
           "label": "Select your current provider",
           "placeholder": "Select",
-          "defaultValue": "",
+          "defaultValue": "bt",
           "options": [
             {
               "id": "bt",
@@ -1453,25 +1453,78 @@
           ]
         },
         "contractStatus": {
-          "label": "Are you still in contract with your current provider?",
+          "label": "Are you already in the property?",
           "helperText": "Select No if you're not sure",
-          "defaultValue": "yes",
+          "defaultValue": "alreadyMovedIn",
           "options": [
             {
-              "id": "yes",
+              "id": "alreadyMovedIn",
               "label": "Yes",
-              "value": "yes"
+              "value": "alreadyMovedIn"
             },
             {
-              "id": "no",
+              "id": "movingIn",
               "label": "No",
-              "value": "no"
+              "value": "movingIn"
             }
           ]
         }
       },
       "continueButton": {
         "label": "Continue"
+      },
+      "email": {
+        "label": "Email address",
+        "placeholder": "Enter your email",
+        "emptyError": "Please enter your email address",
+        "invalidError": "Please enter a valid email address"
+      },
+      "insurance": {
+        "insuranceType": {
+          "label": "Select your insurance type",
+          "placeholder": "Select",
+          "defaultValue": "life",
+          "options": [
+            {
+              "id": "life",
+              "label": "Life Insurance",
+              "value": "life"
+            },
+            {
+              "id": "home",
+              "label": "Home Insurance",
+              "value": "home"
+            },
+            {
+              "id": "vehicle",
+              "label": "Vehicle Insurance",
+              "value": "vehicle"
+            },
+            {
+              "id": "health",
+              "label": "Health Insurance",
+              "value": "health"
+            }
+          ]
+        }
+      },
+      "bundleBills": {
+        "renterHomeOwner": {
+          "label": "Are you a renter or homeowner?",
+          "defaultValue": "tenant",
+          "options": [
+            {
+              "id": "tenant",
+              "label": "Rental",
+              "value": "tenant"
+            },
+            {
+              "id": "homeOwner",
+              "label": "Home Owner",
+              "value": "homeOwner"
+            }
+          ]
+        }
       }
     }
   },
@@ -1838,7 +1891,7 @@
         "description": "Include all residents, even kids, to match your allowance to actual use.",
         "icon": "/images/occupants-icon.png",
         "iconAlt": "",
-        "defaultValue": "4",
+        "defaultValue": "3",
         "options": [
           {
             "id": "2-to-3",
@@ -1862,7 +1915,7 @@
         "description": "Used to estimate the household’s base energy allowance.",
         "icon": "/images/rooms-icon.png",
         "iconAlt": "",
-        "defaultValue": "2-3",
+        "defaultValue": "2",
         "options": [
           {
             "id": "1-bedroom",
@@ -1994,7 +2047,7 @@
       "summary": {
         "heading": "Summary",
         "estimatedPriceLabel": "ESTIMATED PRICE",
-        "totalLabel": "Your total monthly Direct Debit",
+        "totalLabel": "Your total",
         "annualSavingLabel": "annual saving",
         "confirmButton": "Confirm & Set Up Payment",
         "confirmationNotice": "By continuing, you confirm that all details above are correct and you authorise BillGoose to set up a Direct Debit on your behalf. You have a 14-day right to cancel. Prices are estimates; final amounts confirmed by Octopus Energy before your first payment."
@@ -2009,21 +2062,21 @@
       "heading": "Payment method type",
       "description": "Select how you’d like to pay.",
       "storageKey": "journeyPaymentMethod",
-      "defaultValue": "monthly-direct-debit",
+      "defaultValue": "monthlyDirectDebit",
       "options": [
         {
-          "id": "monthly-direct-debit",
-          "label": "Monthly direct debit",
+          "id": "monthlyDirectDebit",
+          "label": "Monthly Direct Debit",
           "description": "Your monthly payment will be gently deducted from your card automatically.",
-          "value": "monthly-direct-debit",
+          "value": "monthlyDirectDebit",
           "icon": "/images/step-4-1.png",
           "iconAlt": ""
         },
         {
-          "id": "pre-payment",
+          "id": "prePayment",
           "label": "Pre Payment",
           "description": "Your monthly payment will be securely deducted from your account on the agreed date.",
-          "value": "pre-payment",
+          "value": "prePayment",
           "icon": "/images/step-4-2.png",
           "iconAlt": ""
         }
@@ -2113,67 +2166,31 @@
       "storageKey": "journeyInsurancePolicyDetails",
       "ownership": {
         "label": "Do you own or rent your home?",
-        "defaultValue": "own-outright",
+        "defaultValue": "mortgage",
         "options": [
-          {
-            "id": "mortgage",
-            "label": "I have a mortgage",
-            "value": "mortgage"
-          },
-          {
-            "id": "own-outright",
-            "label": "I own my home outright",
-            "value": "own-outright"
-          },
-          {
-            "id": "renting",
-            "label": "I'm renting",
-            "value": "renting"
-          }
+          { "id": "mortgage", "label": "I have a mortgage", "value": "mortgage" },
+          { "id": "ownOutright", "label": "I own my home outright", "value": "ownOutright" },
+          { "id": "renting", "label": "I'm renting", "value": "renting" }
         ]
       },
       "coverStart": {
         "label": "When, within 30 days, would you like your cover to start?",
-        "placeholder": "Select",
+        "placeholder": "Select start date",
         "defaultValue": "today",
         "options": [
-          {
-            "id": "today",
-            "label": "Today",
-            "value": "today"
-          },
-          {
-            "id": "within-7-days",
-            "label": "Within 7 days",
-            "value": "within-7-days"
-          },
-          {
-            "id": "within-14-days",
-            "label": "Within 14 days",
-            "value": "within-14-days"
-          },
-          {
-            "id": "within-30-days",
-            "label": "Within 30 days",
-            "value": "within-30-days"
-          }
+          { "id": "today", "label": "Today", "value": "today" },
+          { "id": "within7days", "label": "Within 7 days", "value": "within7days" },
+          { "id": "within14days", "label": "Within 14 days", "value": "within14days" },
+          { "id": "within30days", "label": "Within 30 days", "value": "within30days" }
         ]
       },
       "paymentFrequency": {
         "label": "How do you want to pay for your home insurance?",
         "description": "One annual payment is typically the cheaper option, since paying monthly means you could be entering into a credit agreement and charged interest.",
-        "defaultValue": "annual",
+        "defaultValue": "monthly",
         "options": [
-          {
-            "id": "annual",
-            "label": "Annual",
-            "value": "annual"
-          },
-          {
-            "id": "monthly",
-            "label": "Monthly",
-            "value": "monthly"
-          }
+          { "id": "annual", "label": "Annual", "value": "annual" },
+          { "id": "monthly", "label": "Monthly", "value": "monthly" }
         ]
       }
     },
@@ -2185,78 +2202,30 @@
         "label": "What type of home do you want to insure?",
         "defaultValue": "house",
         "options": [
-          {
-            "id": "house",
-            "label": "House",
-            "value": "house"
-          },
-          {
-            "id": "flat",
-            "label": "Flat",
-            "value": "flat"
-          },
-          {
-            "id": "townhouse",
-            "label": "Townhouse",
-            "value": "townhouse"
-          },
-          {
-            "id": "maisonette",
-            "label": "Maisonette",
-            "value": "maisonette"
-          },
-          {
-            "id": "bungalow",
-            "label": "Bungalow",
-            "value": "bungalow"
-          },
-          {
-            "id": "room-bedsit",
-            "label": "Room only or bedsit",
-            "value": "room-bedsit"
-          }
+          { "id": "house", "label": "House", "value": "house" },
+          { "id": "flat", "label": "Flat", "value": "flat" },
+          { "id": "townhouse", "label": "Townhouse", "value": "townhouse" },
+          { "id": "maisonette", "label": "Maisonette", "value": "maisonette" },
+          { "id": "bungalow", "label": "Bungalow", "value": "bungalow" },
+          { "id": "roomOnlyOrBedsit", "label": "Room only or bedsit", "value": "roomOnlyOrBedsit" }
         ]
       },
       "houseStyle": {
         "label": "What type of house is it?",
-        "defaultValue": "detached",
+        "defaultValue": "semiDetached",
         "options": [
-          {
-            "id": "detached",
-            "label": "Detached",
-            "value": "detached"
-          },
-          {
-            "id": "semi-detached",
-            "label": "Semi-detached",
-            "value": "semi-detached"
-          },
-          {
-            "id": "mid-terrace",
-            "label": "Mid-Terrace",
-            "value": "mid-terrace"
-          },
-          {
-            "id": "end-terrace",
-            "label": "End-Terrace",
-            "value": "end-terrace"
-          }
+          { "id": "detached", "label": "Detached", "value": "detached" },
+          { "id": "semiDetached", "label": "Semi-detached", "value": "semiDetached" },
+          { "id": "midTerrace", "label": "Mid-Terrace", "value": "midTerrace" },
+          { "id": "endTerrace", "label": "End-Terrace", "value": "endTerrace" }
         ]
       },
       "smokeDetectors": {
         "label": "Do you have working smoke detectors?",
         "defaultValue": "yes",
         "options": [
-          {
-            "id": "yes",
-            "label": "Yes",
-            "value": "yes"
-          },
-          {
-            "id": "no",
-            "label": "No",
-            "value": "no"
-          }
+          { "id": "yes", "label": "Yes", "value": "yes" },
+          { "id": "no", "label": "No", "value": "no" }
         ]
       }
     }
@@ -2415,10 +2384,7 @@
               "provider": "Apple",
               "image": "/images/16pro-img.jpg",
               "imageAlt": "Apple iPhone 16 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£420",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2432,10 +2398,7 @@
               "provider": "Apple",
               "image": "/images/apple-card-1.png",
               "imageAlt": "Apple iPhone 16",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£385",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -2540,10 +2503,7 @@
               "provider": "Samsung",
               "image": "/images/samsung-fold8.png",
               "imageAlt": "Samsung Galaxy Z Fold 8 Graphite",
-              "badges": [
-                "24 month contract",
-                "Smart meter required"
-              ],
+              "badges": ["24 month contract", "Smart meter required"],
               "saving": "£470",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2557,10 +2517,7 @@
               "provider": "Samsung",
               "image": "/images/samsung-fold8.png",
               "imageAlt": "Samsung Galaxy Z Fold 8 Graphite 512GB",
-              "badges": [
-                "24 month contract",
-                "Smart meter required"
-              ],
+              "badges": ["24 month contract", "Smart meter required"],
               "saving": "£470",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2665,10 +2622,7 @@
               "provider": "Google",
               "image": "/images/pixel-10pro.jfif",
               "imageAlt": "Google Pixel 10 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£360",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2682,10 +2636,7 @@
               "provider": "Google",
               "image": "/images/pixel-10.jfif",
               "imageAlt": "Google Pixel 10",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£315",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -2790,10 +2741,7 @@
               "provider": "Motorola",
               "image": "/images/moto-razr.jfif",
               "imageAlt": "Motorola Razr Ultra",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£340",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2807,10 +2755,7 @@
               "provider": "Motorola",
               "image": "/images/moto-edge.jfif",
               "imageAlt": "Motorola Edge 60 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£295",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -2915,10 +2860,7 @@
               "provider": "Oppo",
               "image": "/images/oppo-find.jfif",
               "imageAlt": "OPPO Find X8 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£325",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2932,10 +2874,7 @@
               "provider": "Oppo",
               "image": "/images/oppo-reno.jfif",
               "imageAlt": "OPPO Reno 14",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£280",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -3105,10 +3044,7 @@
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "EE",
           "providerUrl": "https://ee.co.uk/mobile/sim-only-deals",
-          "badges": [
-            "6 month contract",
-            "No data caps"
-          ],
+          "badges": ["6 month contract", "No data caps"],
           "primaryPriceLabel": "Price for 3 month",
           "primaryPrice": "£3.18/month",
           "dataLabel": "Data",
@@ -3439,23 +3375,23 @@
         {
           "id": "payment-method",
           "label": "Payment method",
-          "placeholder": "Monthly direct debit",
-          "defaultValue": "monthly-direct-debit",
+          "placeholder": "Monthly Direct Debit",
+          "defaultValue": "monthlyDirectDebit",
           "options": [
             {
-              "id": "monthly-direct-debit",
-              "label": "Monthly direct debit",
-              "value": "monthly-direct-debit"
+              "id": "monthlyDirectDebit",
+              "label": "Monthly Direct Debit",
+              "value": "monthlyDirectDebit"
             },
             {
-              "id": "quarterly-direct-debit",
+              "id": "quarterlyDirectDebit",
               "label": "Quarterly direct debit",
-              "value": "quarterly-direct-debit"
+              "value": "quarterlyDirectDebit"
             },
             {
-              "id": "prepayment",
+              "id": "prePayment",
               "label": "Prepayment",
-              "value": "prepayment"
+              "value": "prePayment"
             },
             {
               "id": "pay-on-receipt",
@@ -3590,10 +3526,7 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "EE",
-          "badges": [
-            "6 month contract",
-            "No data caps"
-          ],
+          "badges": ["6 month contract", "No data caps"],
           "data": "80 GB",
           "priceLabel": "Starting price",
           "price": "£3.18/month",
@@ -3612,10 +3545,7 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "BT Mobile",
-          "badges": [
-            "12 month contract",
-            "No annual increase"
-          ],
+          "badges": ["12 month contract", "No annual increase"],
           "data": "70 GB",
           "priceLabel": "Starting price",
           "price": "£9.00/month",
@@ -3634,10 +3564,7 @@
           "networkDescription": "Uses Three’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Three",
-          "badges": [
-            "12 month contract",
-            "No price increases"
-          ],
+          "badges": ["12 month contract", "No price increases"],
           "data": "100 GB",
           "priceLabel": "Monthly price",
           "price": "£5.50/month",
@@ -3656,10 +3583,7 @@
           "networkDescription": "Uses Three’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Smarty",
-          "badges": [
-            "No contract",
-            "Price freeze options"
-          ],
+          "badges": ["No contract", "Price freeze options"],
           "data": "20 GB",
           "priceLabel": "Monthly fee",
           "price": "£4.50/month",
@@ -3678,10 +3602,7 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Virgin Mobile",
-          "badges": [
-            "1 month contract",
-            "No price hikes"
-          ],
+          "badges": ["1 month contract", "No price hikes"],
           "data": "60 GB",
           "priceLabel": "Price per month",
           "price": "£8.00/month",
@@ -3700,10 +3621,7 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "O2",
-          "badges": [
-            "No contract",
-            "Price locked for 6 months"
-          ],
+          "badges": ["No contract", "Price locked for 6 months"],
           "data": "40 GB",
           "priceLabel": "Intro price",
           "price": "£4.00/month",
@@ -3722,10 +3640,7 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Giffgaff",
-          "badges": [
-            "No contract",
-            "Flexible plans"
-          ],
+          "badges": ["No contract", "Flexible plans"],
           "data": "30 GB",
           "priceLabel": "Monthly cost",
           "price": "£7.00/month",
@@ -3744,10 +3659,7 @@
           "networkDescription": "Uses Vodafone’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Vodafone",
-          "badges": [
-            "1 month contract",
-            "No annual price increases"
-          ],
+          "badges": ["1 month contract", "No annual price increases"],
           "data": "50 GB",
           "priceLabel": "Starting 3 month price",
           "price": "£3.18/month",
@@ -3766,10 +3678,7 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Sky Mobile",
-          "badges": [
-            "No contract",
-            "Price lock available"
-          ],
+          "badges": ["No contract", "Price lock available"],
           "data": "25 GB",
           "priceLabel": "Starting price",
           "price": "£5.25/month",
@@ -3797,10 +3706,7 @@
           "logoAlt": "Utility Warehouse",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Price locked for 12 months",
-            "24/7 chat support"
-          ],
+          "features": ["Price locked for 12 months", "24/7 chat support"],
           "priceLabel": "Estimated Price",
           "price": "£136.78",
           "pricePeriod": "/mo",
@@ -3846,10 +3752,7 @@
           "logoAlt": "British Gas",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Longest price lock available",
-            "Exit fee applies before term end"
-          ],
+          "features": ["Longest price lock available", "Exit fee applies before term end"],
           "priceLabel": "Estimated Price",
           "price": "£249.99",
           "pricePeriod": "/mo",
@@ -3911,11 +3814,7 @@
           "logoAlt": "E.ON",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Same price every month",
-            "No usage surprises",
-            "Smart meter included"
-          ],
+          "features": ["Same price every month", "No usage surprises", "Smart meter included"],
           "priceLabel": "Estimated Price",
           "price": "£353.30",
           "pricePeriod": "/mo",
@@ -3933,10 +3832,7 @@
           "logoAlt": "SSE Energy Solutions",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -3954,10 +3850,7 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -3975,10 +3868,7 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -3998,10 +3888,7 @@
           "logoAlt": "Vodafone",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "New Vodafone customers only",
-            "No setup cost"
-          ],
+          "features": ["New Vodafone customers only", "No setup cost"],
           "priceLabel": "Monthly cost",
           "price": "£25.00",
           "pricePeriod": "/mo",
@@ -4022,10 +3909,7 @@
           "logoAlt": "TalkTalk",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "No setup fees",
-            "Smart meter required"
-          ],
+          "features": ["No setup fees", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -4046,10 +3930,7 @@
           "logoAlt": "Virgin Media",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Free installation",
-            "Smart meter not required"
-          ],
+          "features": ["Free installation", "Smart meter not required"],
           "priceLabel": "Monthly cost",
           "price": "£50.00",
           "pricePeriod": "/mo",
@@ -4070,10 +3951,7 @@
           "logoAlt": "EE",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "Free setup and router",
-            "Smart meter required"
-          ],
+          "features": ["Free setup and router", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£26.00",
           "pricePeriod": "/mo",
@@ -4094,10 +3972,7 @@
           "logoAlt": "Sky Broadband",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Free WiFi Hub included",
-            "Smart meter required"
-          ],
+          "features": ["Free WiFi Hub included", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£27.50",
           "pricePeriod": "/mo",
@@ -4118,10 +3993,7 @@
           "logoAlt": "Plusnet",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Price lock guarantee",
-            "Smart meter required"
-          ],
+          "features": ["Price lock guarantee", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£33.33",
           "pricePeriod": "/mo",
@@ -4142,10 +4014,7 @@
           "logoAlt": "BT",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Includes free router",
-            "No smart meter needed"
-          ],
+          "features": ["Includes free router", "No smart meter needed"],
           "priceLabel": "Monthly cost",
           "price": "£35.00",
           "pricePeriod": "/mo",
@@ -4166,10 +4035,7 @@
           "logoAlt": "BeFibre",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Award-winning service",
-            "No smart meter needed"
-          ],
+          "features": ["Award-winning service", "No smart meter needed"],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -4190,10 +4056,7 @@
           "logoAlt": "Brsk",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Renewable energy powered",
-            "Smart meter recommended"
-          ],
+          "features": ["Renewable energy powered", "Smart meter recommended"],
           "priceLabel": "Monthly cost",
           "price": "£32.50",
           "pricePeriod": "/mo",
@@ -4494,8 +4357,8 @@
           {
             "id": "payment-method",
             "label": "Payment method",
-            "electricity": "Monthly direct debit",
-            "gas": "Monthly direct debit"
+            "electricity": "Monthly Direct Debit",
+            "gas": "Monthly Direct Debit"
           },
           {
             "id": "rate-guaranteed",
@@ -4539,8 +4402,8 @@
           {
             "id": "payment",
             "label": "Payment method",
-            "current": "Monthly direct debit",
-            "selected": "Monthly direct debit"
+            "current": "Monthly Direct Debit",
+            "selected": "Monthly Direct Debit"
           },
           {
             "id": "exit-fees",

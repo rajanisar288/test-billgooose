@@ -3,12 +3,19 @@
 import { type FormEvent, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 type JourneyService = 'energy' | 'broadband';
 
@@ -53,11 +60,18 @@ function subscribeToJourneyService(callback: () => void) {
 }
 
 export default function HouseholdForm() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
+  const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
+
+  const { updateJourney } = useUpdateJourney();
 
   const { household, broadbandSpeed } = data.journey;
 
   const { propertyType, occupants, bedrooms } = household;
+
+  const { journey } = useJourneyStore();
 
   const service = useSyncExternalStore(
     subscribeToJourneyService,
@@ -69,27 +83,48 @@ export default function HouseholdForm() {
      ENERGY STATE
   ========================================================= */
 
-  const [selectedPropertyType, setSelectedPropertyType] = useState(propertyType.options[0].value);
+  const [selectedPropertyType, setSelectedPropertyType] = useState(
+    journey?.customer?.propertyType ?? propertyType.options[0].value,
+  );
 
-  const [selectedOccupants, setSelectedOccupants] = useState(2);
+  const [selectedOccupants, setSelectedOccupants] = useState(
+    journey?.customer?.occupants
+      ? Number(journey.customer.occupants)
+      : Number(occupants.defaultValue),
+  );
 
-  const [selectedBedrooms, setSelectedBedrooms] = useState(1);
-
-  const isValidOccupants = selectedOccupants >= 0 && selectedOccupants <= 10;
-
-  const isValidBedrooms = selectedBedrooms >= 0 && selectedBedrooms <= 10;
+  const [selectedBedrooms, setSelectedBedrooms] = useState(
+    journey?.customer?.bedrooms ? Number(journey.customer.bedrooms) : Number(bedrooms.defaultValue),
+  );
 
   /* =========================================================
      BROADBAND STATE
   ========================================================= */
 
-  const [selectedBroadbandSpeed, setSelectedBroadbandSpeed] = useState(broadbandSpeed.defaultValue);
+  const [selectedBroadbandSpeed, setSelectedBroadbandSpeed] = useState(
+    journey?.customer ? journey?.customer?.broadbandSpeed : broadbandSpeed.defaultValue,
+  );
+
+  const isValidHousehold =
+    propertyType.options.some((option) => option.value === selectedPropertyType) &&
+    selectedOccupants >= 0 &&
+    selectedOccupants <= 10 &&
+    selectedBedrooms >= 0 &&
+    selectedBedrooms <= 10;
+  const isValidBroadbandSpeed = broadbandSpeed.options.some(
+    (option) => option.value === selectedBroadbandSpeed,
+  );
+
+  useJourneyStepStatus(
+    'journey-step-form-3',
+    service === 'broadband' ? isValidBroadbandSpeed : isValidHousehold,
+  );
 
   /* =========================================================
      SUBMIT
   ========================================================= */
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     /* =======================================================
@@ -100,18 +135,21 @@ export default function HouseholdForm() {
     ======================================================== */
 
     if (service === 'broadband') {
-      if (!selectedBroadbandSpeed) {
+      if (!isValidBroadbandSpeed) {
+        notifyJourneyStepFailed();
         return;
       }
 
-      sessionStorage.setItem(
-        broadbandSpeed.storageKey,
-        JSON.stringify({
-          broadbandSpeed: selectedBroadbandSpeed,
-        }),
+      const nextRoute = getNextJourneyRoute(3, 'broadband');
+      const success = await updateJourney(
+        { customer: selectedBroadbandSpeed },
+        nextRoute,
+        getCurrentRelativeUrl(),
       );
 
-      router.push(getNextJourneyRoute(3, 'broadband'));
+      if (!success) {
+        notifyJourneyStepFailed();
+      }
 
       return;
     }
@@ -123,7 +161,8 @@ export default function HouseholdForm() {
        → Step 4 Electric Vehicle
     ======================================================== */
 
-    if (!selectedPropertyType || !isValidOccupants || !isValidBedrooms) {
+    if (!isValidHousehold) {
+      notifyJourneyStepFailed();
       return;
     }
 
@@ -133,9 +172,21 @@ export default function HouseholdForm() {
       bedrooms: selectedBedrooms,
     };
 
-    sessionStorage.setItem(household.storageKey, JSON.stringify(householdData));
+    const nextRoute = getNextJourneyRoute(
+      3,
+      isBundle ? 'bundle-bills' : 'energy',
+      isBundle ? 'bundle' : undefined,
+    );
 
-    router.push(getNextJourneyRoute(3, 'energy'));
+    const success = await updateJourney(
+      { customer: householdData },
+      nextRoute,
+      getCurrentRelativeUrl(),
+    );
+
+    if (!success) {
+      notifyJourneyStepFailed();
+    }
   }
 
   /* =========================================================
@@ -581,6 +632,16 @@ export default function HouseholdForm() {
               lg:grid-cols-[500px]
             "
           >
+            {/* {occupants.options.map((option) => (
+              <SelectorOption
+                key={option.id}
+                label={option.label}
+                selected={selectedOccupants === option.value}
+                onClick={() => {
+                  setSelectedOccupants(option.value);
+                }}
+              />
+            ))} */}
             <CounterSelector
               value={selectedOccupants}
               onChange={setSelectedOccupants}
@@ -601,11 +662,46 @@ export default function HouseholdForm() {
             description={bedrooms.description}
           />
 
-          <div className="mt-3 lg:mt-4">
-            <CounterSelector
-              value={selectedBedrooms}
-              onChange={setSelectedBedrooms}
-            />
+          <div className="mt-3 space-y-3 lg:mt-4">
+            {/* <SelectorOption
+              label={bedrooms.options[0].label}
+              selected={selectedBedrooms === bedrooms.options[0].value}
+              onClick={() => {
+                setSelectedBedrooms(bedrooms.options[0].value);
+              }}
+              fullWidth
+            /> */}
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                gap-3
+
+                min-[390px]:grid-cols-2
+                min-[390px]:gap-[14px]
+
+                md:grid-cols-2
+                md:gap-[14px]
+
+                lg:grid-cols-[243px_243px]
+              "
+            >
+              {/* {bedrooms.options.slice(1).map((option) => (
+                <SelectorOption
+                  key={option.id}
+                  label={option.label}
+                selected={selectedBedrooms === option.value}
+                  onClick={() => {
+                    setSelectedBedrooms(option.value);
+                  }}
+                />
+              ))} */}
+              <CounterSelector
+                value={selectedBedrooms}
+                onChange={setSelectedBedrooms}
+              />
+            </div>
           </div>
         </fieldset>
       </form>
@@ -753,10 +849,6 @@ function SelectionCircle({ selected }: SelectionCircleProps) {
   );
 }
 
-/* =========================================================
-   COUNTER SELECTOR
-========================================================= */
-
 type CounterSelectorProps = {
   value: number;
   onChange: (value: number) => void;
@@ -764,7 +856,7 @@ type CounterSelectorProps = {
 
 function CounterSelector({ value, onChange }: CounterSelectorProps) {
   const decrease = () => {
-    if (value > 0) {
+    if (value > 1) {
       onChange(value - 1);
     }
   };
@@ -781,15 +873,12 @@ function CounterSelector({ value, onChange }: CounterSelectorProps) {
         flex
         h-[52px]
         w-full
-
         items-center
         justify-between
 
         rounded-[14px]
-
         border
         border-[#D0D5DD]
-
         bg-white
 
         px-3
@@ -807,27 +896,23 @@ function CounterSelector({ value, onChange }: CounterSelectorProps) {
       <button
         type="button"
         onClick={decrease}
-        disabled={value === 0}
+        disabled={value === 1}
         aria-label="Decrease value"
         className="
           flex
           h-9
           w-9
-
           items-center
           justify-center
 
           rounded-full
-
           border
           border-[#D0D5DD]
 
           font-inter
-
           text-[22px]
           font-medium
           leading-none
-
           text-[#344054]
 
           transition-colors
@@ -845,11 +930,9 @@ function CounterSelector({ value, onChange }: CounterSelectorProps) {
       <span
         className="
           font-red-hat-display
-
           text-[18px]
           font-bold
           leading-5
-
           text-[#0D3B66]
         "
       >
@@ -865,21 +948,17 @@ function CounterSelector({ value, onChange }: CounterSelectorProps) {
           flex
           h-9
           w-9
-
           items-center
           justify-center
 
           rounded-full
-
           border
           border-[#D0D5DD]
 
           font-inter
-
           text-[22px]
           font-medium
           leading-none
-
           text-[#344054]
 
           transition-colors

@@ -1,38 +1,162 @@
 'use client';
-
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 
-import { INSURANCE_JOURNEY_ROUTES, JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import { getNextJourneyRoute, type JourneyService } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
+import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { type CustomerDetails } from '@/interfaces/shared';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { useServiceFields } from '@/lib/service-fields';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
-export default function PersonalDetailsForm() {
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+(?:\.[A-Za-z]{2,10})+$/;
+const UK_MOBILE_REGEX = /^(?:07\d{9}|\+447\d{9})$/;
+const MIN_AGE = 18;
+
+export function normalizeUkMobile(value: string): string {
+  const compact = value.replace(/[\s()-]/g, '');
+
+  if (compact.startsWith('0044')) {
+    return `+${compact.slice(2)}`;
+  }
+
+  if (compact.startsWith('447')) {
+    return `+${compact}`;
+  }
+
+  return compact;
+}
+
+export function isValidUkMobile(value: string): boolean {
+  return UK_MOBILE_REGEX.test(normalizeUkMobile(value));
+}
+
+function calculateAge(dob: string): number | null {
+  const birthDate = new Date(dob);
+  if (Number.isNaN(birthDate.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const hadBirthdayThisYear =
+    today.getMonth() > birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+
+  if (!hadBirthdayThisYear) age -= 1;
+  return age;
+}
+
+export function useUpdateJourney() {
+  const { journey, setJourney } = useJourneyStore();
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
 
+  const updateJourney = async (
+    payload: Record<string, any>,
+    nextRoute: string,
+    lastUrl: string,
+  ) => {
+    try {
+      const journeyId = journey?.id || journey?.journeyId || localStorage.getItem(storeJourney);
+
+      if (!journeyId) {
+        showError('Journey ID is required');
+        notifyJourneyStepFailed();
+        return false;
+      }
+
+      const updatedJourney = await journeyApi.createJourney({
+        uuid: journeyId,
+        ...payload,
+        lastUrl,
+      });
+
+      if (!updatedJourney?.data) {
+        throw new Error('No data received from API');
+      }
+
+      setJourney(updatedJourney.data);
+      showSuccess('🎉 Great!');
+      localStorage.setItem('journey-storage', JSON.stringify(updatedJourney.data));
+      router.push(nextRoute);
+      return true;
+    } catch (error) {
+      console.error('Failed to update journey:', error);
+      showError('Failed to update journey. Please try again.');
+      notifyJourneyStepFailed();
+      return false;
+    }
+  };
+
+  return { updateJourney };
+}
+
+export default function PersonalDetailsForm() {
   const { personalDetails } = data.journey;
+  const { journey } = useJourneyStore();
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
+  const serviceFields = useServiceFields(
+    requestedFlow === 'bundle' ? 'billPackage' : requestedService || journey?.serviceType,
+  );
 
   const { fields, terms } = personalDetails;
 
-  const [title, setTitle] = useState(fields.title.defaultValue);
-
+  const [title, setTitle] = useState<string>(
+    journey?.customer?.title ? journey?.customer?.title : fields.title.defaultValue,
+  );
   const [titleDropdownOpen, setTitleDropdownOpen] = useState(false);
+  const [firstName, setFirstName] = useState(
+    journey?.customer?.firstName ? journey?.customer?.firstName : fields.firstName.defaultValue,
+  );
+  const [lastName, setLastName] = useState(
+    journey?.customer?.surname ? journey?.customer?.surname : fields.lastName.defaultValue,
+  );
+  const [email, setEmail] = useState(
+    journey?.customer?.emailAddress ? journey?.customer?.emailAddress : '',
+  );
+  const [mobileNumber, setMobileNumber] = useState(
+    journey?.customer?.phoneNumber ? journey?.customer?.phoneNumber : '',
+  );
+  const [dateOfBirth, setDateOfBirth] = useState(
+    journey?.customer?.dateOfBirth ? journey?.customer?.dateOfBirth : '',
+  );
+  const [acceptedTerms, setAcceptedTerms] = useState(
+    journey?.customer?.privacyConsentAccepted
+      ? journey?.customer?.privacyConsentAccepted
+      : terms.acceptedTermsDefault,
+  );
+  const [marketingConsent, setMarketingConsent] = useState(
+    journey?.customer?.marketingConsent
+      ? journey?.customer?.marketingConsent
+      : terms.marketingConsentDefault,
+  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { updateJourney } = useUpdateJourney();
 
-  const [firstName, setFirstName] = useState(fields.firstName.defaultValue);
-
-  const [lastName, setLastName] = useState(fields.lastName.defaultValue);
-
-  const [email, setEmail] = useState('');
-
-  const [mobileNumber, setMobileNumber] = useState('');
-
-  const [dateOfBirth, setDateOfBirth] = useState('');
-
-  const [acceptedTerms, setAcceptedTerms] = useState(terms.acceptedTermsDefault);
-
-  const [marketingConsent, setMarketingConsent] = useState(terms.marketingConsentDefault);
+  useJourneyStepStatus(
+    'journey-step-form-1',
+    Boolean(
+      (!serviceFields.isRequired('title') || title) &&
+      (!serviceFields.isRequired('firstName') || firstName.trim()) &&
+      (!serviceFields.isRequired('surname') || lastName.trim()) &&
+      (!serviceFields.isRequired('emailAddress') || email.trim()) &&
+      (!serviceFields.isRequired('phoneNumber') || mobileNumber.trim()) &&
+      (!serviceFields.isRequired('dateOfBirth') || dateOfBirth) &&
+      (!serviceFields.isRequired('supplierDataSharingConsentAccepted') || acceptedTerms),
+    ),
+  );
 
   const titleDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -53,42 +177,71 @@ export default function PersonalDetailsForm() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    const nextErrors: Record<string, string> = {};
+
+    if (serviceFields.isRequired('title') && !title) nextErrors.title = 'Please select a title.';
+    if (serviceFields.isRequired('firstName') && !firstName.trim())
+      nextErrors.firstName = 'First name is required.';
+    if (serviceFields.isRequired('surname') && !lastName.trim())
+      nextErrors.lastName = 'Last name is required.';
+
     if (
-      !title ||
-      !firstName.trim() ||
-      !lastName.trim() ||
-      !email.trim() ||
-      !mobileNumber.trim() ||
-      !dateOfBirth ||
-      !acceptedTerms
+      serviceFields.isRequired('emailAddress') &&
+      (!email.trim() || !EMAIL_REGEX.test(email.trim()))
     ) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+
+    if (
+      serviceFields.isRequired('phoneNumber') &&
+      (!mobileNumber.trim() || !isValidUkMobile(mobileNumber.trim()))
+    ) {
+      nextErrors.mobileNumber = 'Enter a valid UK mobile number.';
+    }
+
+    const age = dateOfBirth ? calculateAge(dateOfBirth) : null;
+    if (serviceFields.isRequired('dateOfBirth') && !dateOfBirth) {
+      nextErrors.dateOfBirth = 'Enter your date of birth.';
+    } else if (dateOfBirth && (age === null || age > 120)) {
+      nextErrors.dateOfBirth = 'Enter a valid date of birth.';
+    } else if (age !== null && age < MIN_AGE) {
+      nextErrors.dateOfBirth = `You must be at least ${MIN_AGE} years old.`;
+    }
+
+    if (serviceFields.isRequired('supplierDataSharingConsentAccepted') && !acceptedTerms)
+      nextErrors.acceptedTerms = 'You must accept the terms to continue.';
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      notifyJourneyStepFailed();
       return;
     }
 
-    const personalDetailsData = {
-      title,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: email.trim(),
-      mobileNumber: mobileNumber.trim(),
-      dateOfBirth,
-      acceptedTerms,
-      marketingConsent,
+    const userDetailObject: CustomerDetails = {
+      title: title || null,
+      firstName: firstName.trim() || null,
+      surname: lastName.trim() || null,
+      emailAddress: email.trim() || null,
+      phoneNumber: mobileNumber.trim() || null,
+      dateOfBirth: dateOfBirth || null,
+      privacyConsentAccepted: acceptedTerms || false,
+      marketingConsent: marketingConsent || false,
     };
 
-    sessionStorage.setItem(personalDetails.storageKey, JSON.stringify(personalDetailsData));
+    const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
+    const resolvedService: JourneyService =
+      requestedService === 'insurance'
+        ? 'insurance'
+        : requestedService === 'broadband'
+          ? 'broadband'
+          : isBundle
+            ? 'bundle-bills'
+            : 'energy';
 
-    window.dispatchEvent(new Event('journey-review-updated'));
+    const nextRoute = getNextJourneyRoute(1, resolvedService, isBundle ? 'bundle' : undefined);
 
-    const journeyService = sessionStorage.getItem('billgooseJourneyService');
-
-    if (journeyService === 'insurance') {
-      router.push(`${INSURANCE_JOURNEY_ROUTES[2]}?service=insurance`);
-
-      return;
-    }
-
-    router.push(JOURNEY_ROUTES[2]);
+    updateJourney({ customer: userDetailObject }, nextRoute, getCurrentRelativeUrl());
   }
 
   return (
@@ -145,10 +298,11 @@ export default function PersonalDetailsForm() {
         "
         noValidate
       >
-        {/* =====================================================
-            TITLE
-        ====================================================== */}
-        <FormField label={fields.title.label}>
+        {/* Title */}
+        <FormField
+          label={fields.title.label}
+          visible={serviceFields.isVisible('title')}
+        >
           <div
             ref={titleDropdownRef}
             className="relative w-full"
@@ -323,7 +477,10 @@ export default function PersonalDetailsForm() {
             lg:grid-cols-[241px_241px]
           "
         >
-          <FormField label={fields.firstName.label}>
+          <FormField
+            label={fields.firstName.label}
+            visible={serviceFields.isVisible('firstName')}
+          >
             <input
               type="text"
               value={firstName}
@@ -336,7 +493,10 @@ export default function PersonalDetailsForm() {
             />
           </FormField>
 
-          <FormField label={fields.lastName.label}>
+          <FormField
+            label={fields.lastName.label}
+            visible={serviceFields.isVisible('surname')}
+          >
             <input
               type="text"
               value={lastName}
@@ -350,42 +510,96 @@ export default function PersonalDetailsForm() {
           </FormField>
         </div>
 
-        {/* =====================================================
-            EMAIL
-        ====================================================== */}
-        <FormField label={fields.email.label}>
+        <FormField
+          label={fields.email.label}
+          visible={serviceFields.isVisible('emailAddress')}
+        >
           <input
             type="email"
             value={email}
             onChange={(event) => {
-              setEmail(event.target.value);
+              let value = event.target.value;
+
+              // Remove spaces and invalid characters
+              value = value.replace(/\s/g, '').replace(/[^a-zA-Z0-9.!#$%&'*+/=?^_`{|}~@-]/g, '');
+
+              // Allow only one @
+              const atIndex = value.indexOf('@');
+
+              if (atIndex !== -1) {
+                const localPart = value.slice(0, atIndex);
+                let domain = value.slice(atIndex + 1);
+
+                // Prevent another @
+                domain = domain.replace(/@/g, '');
+
+                // Restrict TLD to maximum 10 characters
+                const lastDotIndex = domain.lastIndexOf('.');
+
+                if (lastDotIndex !== -1) {
+                  const domainName = domain.slice(0, lastDotIndex + 1);
+                  const tld = domain.slice(lastDotIndex + 1, lastDotIndex + 11);
+
+                  domain = domainName + tld;
+                }
+
+                value = `${localPart}@${domain}`;
+              }
+
+              setEmail(value);
             }}
             placeholder={fields.email.placeholder}
             autoComplete="email"
+            aria-invalid={!!errors.email}
             className={inputClasses}
           />
+          {errors.email && <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.email}</p>}
         </FormField>
 
-        {/* =====================================================
-            MOBILE NUMBER
-        ====================================================== */}
-        <FormField label={fields.mobileNumber.label}>
+        <FormField
+          label={fields.mobileNumber.label}
+          visible={serviceFields.isVisible('phoneNumber')}
+        >
           <input
             type="tel"
             value={mobileNumber}
             onChange={(event) => {
-              setMobileNumber(event.target.value);
+              let value = event.target.value;
+
+              // Allow only digits and +
+              value = value.replace(/[^\d+]/g, '');
+
+              // + can only appear at the beginning
+              if (value.includes('+')) {
+                value = `+${value.replace(/\+/g, '')}`;
+              }
+
+              value = value.slice(0, 14);
+
+              setMobileNumber(value);
+
+              // Clear error once the value becomes valid
+              if (isValidUkMobile(value)) {
+                setErrors((current) => ({
+                  ...current,
+                  mobileNumber: '',
+                }));
+              }
             }}
             placeholder={fields.mobileNumber.placeholder}
             autoComplete="tel"
+            aria-invalid={!!errors.mobileNumber}
             className={inputClasses}
           />
+          {errors.mobileNumber && (
+            <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.mobileNumber}</p>
+          )}
         </FormField>
 
-        {/* =====================================================
-            DATE OF BIRTH
-        ====================================================== */}
-        <FormField label={fields.dateOfBirth.label}>
+        <FormField
+          label={fields.dateOfBirth.label}
+          visible={serviceFields.isVisible('dateOfBirth')}
+        >
           <div className="relative w-full">
             <input
               id="date-of-birth"
@@ -395,6 +609,12 @@ export default function PersonalDetailsForm() {
                 setDateOfBirth(event.target.value);
               }}
               autoComplete="bday"
+              max={
+                new Date(new Date().setFullYear(new Date().getFullYear() - MIN_AGE))
+                  .toISOString()
+                  .split('T')[0]
+              }
+              aria-invalid={!!errors.dateOfBirth}
               className={`
                 ${inputClasses}
 
@@ -455,6 +675,9 @@ export default function PersonalDetailsForm() {
               />
             </button>
           </div>
+          {errors.dateOfBirth && (
+            <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.dateOfBirth}</p>
+          )}
         </FormField>
 
         {/* =====================================================
@@ -466,19 +689,23 @@ export default function PersonalDetailsForm() {
             pt-1
           "
         >
-          <CustomCheckbox
-            checked={acceptedTerms}
-            onChange={setAcceptedTerms}
-          >
-            {terms.acceptedTermsText}
-          </CustomCheckbox>
+          {serviceFields.isVisible('supplierDataSharingConsentAccepted') && (
+            <CustomCheckbox
+              checked={acceptedTerms}
+              onChange={setAcceptedTerms}
+            >
+              {terms.acceptedTermsText}
+            </CustomCheckbox>
+          )}
 
-          <CustomCheckbox
-            checked={marketingConsent}
-            onChange={setMarketingConsent}
-          >
-            {terms.marketingConsentText}
-          </CustomCheckbox>
+          {serviceFields.isVisible('marketingConsent') && (
+            <CustomCheckbox
+              checked={marketingConsent}
+              onChange={setMarketingConsent}
+            >
+              {terms.marketingConsentText}
+            </CustomCheckbox>
+          )}
         </div>
       </form>
     </div>
@@ -488,9 +715,11 @@ export default function PersonalDetailsForm() {
 type FormFieldProps = {
   label: string;
   children: ReactNode;
+  visible?: boolean;
 };
 
-function FormField({ label, children }: FormFieldProps) {
+function FormField({ label, children, visible = true }: FormFieldProps) {
+  if (!visible) return null;
   return (
     <div className="block w-full">
       <label

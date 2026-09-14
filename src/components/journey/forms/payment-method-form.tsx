@@ -1,19 +1,23 @@
 'use client';
 
-import { type FormEvent, useCallback, useState, useSyncExternalStore } from 'react';
+import { type FormEvent, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
+import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import data from '@/data/content.json';
-
-import GasWarningModal from '../modal/gas-warning-modal';
-import ServicesModal from '../modal/services-modal';
-import UpdateConsumptionModal, {
-  type ConsumptionFormValues,
-} from '../modal/update-consumption-modal';
+import { useToast } from '@/hooks/useToast';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { serviceRequiresConsumption, useServiceFields } from '@/lib/service-fields';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 type JourneyService = 'energy' | 'broadband';
 
@@ -63,6 +67,8 @@ function subscribeToJourneyService(callback: () => void) {
 
 export default function PaymentMethodForm() {
   const router = useRouter();
+  const { journey, setJourney } = useJourneyStore();
+  const { showError } = useToast();
 
   const { paymentMethod, broadbandContractLength } = data.journey;
 
@@ -71,6 +77,9 @@ export default function PaymentMethodForm() {
     getJourneyServiceSnapshot,
     getJourneyServiceServerSnapshot,
   );
+  const journeyFlow =
+    typeof window === 'undefined' ? null : sessionStorage.getItem('billgooseJourneyFlow');
+  const serviceFields = useServiceFields(journeyFlow === 'bundle' ? 'billPackage' : service);
 
   /* =========================================================
      ENERGY STATE
@@ -78,11 +87,7 @@ export default function PaymentMethodForm() {
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethod.defaultValue);
 
-  const [servicesModalOpen, setServicesModalOpen] = useState(false);
-
-  const [gasWarningModalOpen, setGasWarningModalOpen] = useState(false);
-
-  const [updateConsumptionModalOpen, setUpdateConsumptionModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /* =========================================================
      BROADBAND STATE
@@ -92,11 +97,16 @@ export default function PaymentMethodForm() {
     broadbandContractLength.defaultValue,
   );
 
+  useJourneyStepStatus(
+    service === 'broadband' ? 'journey-step-form-4' : 'journey-step-form-5',
+    Boolean(service === 'broadband' ? selectedContractLength : selectedPaymentMethod),
+  );
+
   /* =========================================================
      SUBMIT
   ========================================================= */
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     /* =====================================================
@@ -105,6 +115,7 @@ export default function PaymentMethodForm() {
 
     if (service === 'broadband') {
       if (!selectedContractLength) {
+        notifyJourneyStepFailed();
         return;
       }
 
@@ -119,92 +130,74 @@ export default function PaymentMethodForm() {
        ENERGY — STEP 5
     ====================================================== */
 
-    if (!selectedPaymentMethod) {
+    if (serviceFields.isRequired('paymentPreference') && !selectedPaymentMethod) {
+      notifyJourneyStepFailed();
       return;
     }
 
     sessionStorage.setItem(paymentMethod.storageKey, selectedPaymentMethod);
 
-    const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
-
-    /*
-     * Bundle Bills:
-     *
-     * Payment Method
-     * → Gas Warning Modal
-     *
-     * Skip the Services modal because the Bundle service
-     * selection has already been established earlier.
-     */
-    if (journeyFlow === 'bundle') {
-      setGasWarningModalOpen(true);
-
+    if (isSubmitting) {
       return;
     }
 
-    /*
-     * Existing non-Bundle Energy behavior remains unchanged.
-     */
-    setServicesModalOpen(true);
-  }
+    setIsSubmitting(true);
 
-  /* =========================================================
-     ENERGY MODAL FLOW
-  ========================================================= */
+    try {
+      const journeyId = journey?.id || journey?.journeyId || localStorage.getItem(storeJourney);
 
-  function handleServiceSelect(selectedService: string) {
-    sessionStorage.setItem('journeySelectedService', selectedService);
+      if (!journeyId) {
+        throw new Error('Journey ID is required');
+      }
 
-    setServicesModalOpen(false);
+      const updatedJourney = await journeyApi.createJourney({
+        uuid: journeyId,
+        lastUrl: getCurrentRelativeUrl(),
+        serviceType: journeyFlow === 'bundle' ? 'billPackage' : 'energy',
+        customer: {
+          // ...journey?.customer,
+          paymentPreference: selectedPaymentMethod,
+        },
+      });
 
-    setGasWarningModalOpen(true);
-  }
+      if (!updatedJourney?.data) {
+        throw new Error('No data received from createJourney API');
+      }
 
-  const handleCloseServicesModal = useCallback(() => {
-    setServicesModalOpen(false);
-  }, []);
+      let partnerConfig: any = null;
+      try {
+        partnerConfig = JSON.parse(localStorage.getItem(storePartnerConfig) ?? 'null');
+      } catch {
+        partnerConfig = null;
+      }
+      const requiresConsumption = serviceRequiresConsumption(
+        partnerConfig,
+        journeyFlow === 'bundle' ? 'billPackage' : 'energy',
+      );
 
-  const handleCloseGasWarningModal = useCallback(() => {
-    setGasWarningModalOpen(false);
-  }, []);
+      if (requiresConsumption) {
+        const energyUsage = await journeyApi.prepareConsumption(journeyId, {
+          forceRefresh: true,
+        });
+        if (!energyUsage?.data) throw new Error('No data received from prepareConsumption API');
+        localStorage.setItem('energyUsage', JSON.stringify(energyUsage.data));
+      }
+      setJourney(updatedJourney.data);
 
-  const handleCloseUpdateConsumptionModal = useCallback(() => {
-    setUpdateConsumptionModalOpen(false);
-  }, []);
-
-  function openUpdateConsumptionModal() {
-    setGasWarningModalOpen(false);
-
-    setUpdateConsumptionModalOpen(true);
-  }
-
-  function handleUpdateGasConsumption() {
-    openUpdateConsumptionModal();
-  }
-
-  function handleElectricityOnly() {
-    sessionStorage.setItem('journeySelectedService', 'electricity-only');
-
-    openUpdateConsumptionModal();
-  }
-
-  function handleConsumptionSubmit(values: ConsumptionFormValues) {
-    sessionStorage.setItem('journeyConsumptionDetails', JSON.stringify(values));
-
-    setUpdateConsumptionModalOpen(false);
-
-    const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
-
-    /*
-     * Preserve Bundle Bills context.
-     */
-    if (journeyFlow === 'bundle') {
-      router.push('/current-usage?service=energy&flow=bundle');
-
-      return;
+      router.push(
+        requiresConsumption
+          ? journeyFlow === 'bundle'
+            ? '/current-usage?service=energy&flow=bundle'
+            : '/current-usage?service=energy'
+          : `/result?service=${journeyFlow === 'bundle' ? 'energy&flow=bundle' : 'energy'}`,
+      );
+    } catch (error) {
+      console.error('Failed to complete payment method step:', error);
+      showError('We could not prepare your energy consumption details. Please try again.');
+      notifyJourneyStepFailed();
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push('/current-usage?service=energy');
   }
 
   /* =========================================================
@@ -371,11 +364,10 @@ export default function PaymentMethodForm() {
   ========================================================= */
 
   return (
-    <>
-      <div className="w-full">
-        <header className="hidden lg:mb-9 lg:block">
-          <h1
-            className="
+    <div className="w-full">
+      <header className="hidden lg:mb-9 lg:block">
+        <h1
+          className="
               font-red-hat-display
               text-[40px]
               font-extrabold
@@ -384,12 +376,12 @@ export default function PaymentMethodForm() {
 
               text-[#0C3354]
             "
-          >
-            {paymentMethod.heading}
-          </h1>
+        >
+          {paymentMethod.heading}
+        </h1>
 
-          <p
-            className="
+        <p
+          className="
               mt-1
 
               font-inter
@@ -400,41 +392,41 @@ export default function PaymentMethodForm() {
 
               text-[#667085]
             "
-          >
-            {paymentMethod.description}
-          </p>
-        </header>
-
-        {/*
-         * IMPORTANT:
-         *
-         * Energy is STEP 5.
-         *
-         * JourneyShell/footer submits:
-         * journey-step-form-5
-         *
-         * Previously this incorrectly used:
-         * journey-step-form-4
-         */}
-        <form
-          id="journey-step-form-5"
-          onSubmit={handleSubmit}
-          className="space-y-3 sm:space-y-4"
         >
-          {paymentMethod.options.map((option, index) => {
-            const isSelected = selectedPaymentMethod === option.value;
+          {paymentMethod.description}
+        </p>
+      </header>
 
-            const mobileIcon = index === 0 ? '/images/step-4-1.png' : '/images/step-4-2.png';
+      {/*
+       * IMPORTANT:
+       *
+       * Energy is STEP 5.
+       *
+       * JourneyShell/footer submits:
+       * journey-step-form-5
+       *
+       * Previously this incorrectly used:
+       * journey-step-form-4
+       */}
+      <form
+        id="journey-step-form-5"
+        onSubmit={handleSubmit}
+        className="space-y-3 sm:space-y-4"
+      >
+        {paymentMethod.options.map((option, index) => {
+          const isSelected = selectedPaymentMethod === option.value;
 
-            return (
-              <button
-                key={option.id}
-                type="button"
-                aria-pressed={isSelected}
-                onClick={() => {
-                  setSelectedPaymentMethod(option.value);
-                }}
-                className={`
+          const mobileIcon = index === 0 ? '/images/step-4-1.png' : '/images/step-4-2.png';
+
+          return (
+            <button
+              key={option.id}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => {
+                setSelectedPaymentMethod(option.value);
+              }}
+              className={`
                   flex
                   min-h-[128px]
                   w-full
@@ -468,9 +460,9 @@ export default function PaymentMethodForm() {
 
                   ${isSelected ? 'border-2 border-[#00897B]' : 'border border-[#D0D5DD]'}
                 `}
-              >
-                <div
-                  className="
+            >
+              <div
+                className="
                     flex
                     w-full
 
@@ -479,14 +471,14 @@ export default function PaymentMethodForm() {
 
                     gap-4
                   "
-                >
-                  <Image
-                    src={mobileIcon}
-                    alt={option.iconAlt}
-                    width={22}
-                    height={22}
-                    aria-hidden="true"
-                    className="
+              >
+                <Image
+                  src={mobileIcon}
+                  alt={option.iconAlt}
+                  width={22}
+                  height={22}
+                  aria-hidden="true"
+                  className="
                       h-[22px]
                       w-[22px]
                       shrink-0
@@ -495,15 +487,15 @@ export default function PaymentMethodForm() {
 
                       lg:hidden
                     "
-                  />
+                />
 
-                  <Image
-                    src={option.icon}
-                    alt={option.iconAlt}
-                    width={24}
-                    height={24}
-                    aria-hidden="true"
-                    className="
+                <Image
+                  src={option.icon}
+                  alt={option.iconAlt}
+                  width={24}
+                  height={24}
+                  aria-hidden="true"
+                  className="
                       hidden
 
                       lg:block
@@ -512,14 +504,14 @@ export default function PaymentMethodForm() {
                       lg:shrink-0
                       lg:object-contain
                     "
-                  />
+                />
 
-                  <SelectionCircle selected={isSelected} />
-                </div>
+                <SelectionCircle selected={isSelected} />
+              </div>
 
-                <div className="min-w-0">
-                  <h2
-                    className="
+              <div className="min-w-0">
+                <h2
+                  className="
                       font-red-hat-display
 
                       text-[18px]
@@ -534,12 +526,12 @@ export default function PaymentMethodForm() {
                       lg:text-[18px]
                       lg:leading-none
                     "
-                  >
-                    {option.label}
-                  </h2>
+                >
+                  {option.label}
+                </h2>
 
-                  <p
-                    className="
+                <p
+                  className="
                       mt-2
 
                       font-inter
@@ -556,39 +548,15 @@ export default function PaymentMethodForm() {
                       lg:text-[14px]
                       lg:leading-[18px]
                     "
-                  >
-                    {option.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </form>
-      </div>
-
-      {/* =====================================================
-          ENERGY MODALS
-      ====================================================== */}
-
-      <ServicesModal
-        isOpen={servicesModalOpen}
-        onClose={handleCloseServicesModal}
-        onSelect={handleServiceSelect}
-      />
-
-      <GasWarningModal
-        isOpen={gasWarningModalOpen}
-        onClose={handleCloseGasWarningModal}
-        onUpdateGasConsumption={handleUpdateGasConsumption}
-        onElectricityOnly={handleElectricityOnly}
-      />
-
-      <UpdateConsumptionModal
-        isOpen={updateConsumptionModalOpen}
-        onClose={handleCloseUpdateConsumptionModal}
-        onSubmit={handleConsumptionSubmit}
-      />
-    </>
+                >
+                  {option.description}
+                </p>
+              </div>
+            </button>
+          );
+        })}
+      </form>
+    </div>
   );
 }
 

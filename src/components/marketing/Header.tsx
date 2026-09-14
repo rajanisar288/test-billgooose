@@ -380,13 +380,13 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               items-center
               justify-between
 
-              px-10
+            px-5
 
               sm:px-8
 
-              lg:min-h-[103px]
-              lg:px-8
-            "
+            lg:min-h-[103px]
+            lg:px-10
+          "
         >
           {/* =================================================
                 LOGO
@@ -477,10 +477,9 @@ export default function Header({ variant = 'default' }: HeaderProps) {
             ================================================== */}
           <div
             className="
-                hidden
-                items-center
-                gap-3
-                mt-[10px]
+              hidden
+              items-center
+              gap-3
 
                 lg:flex
               "

@@ -22,7 +22,7 @@ type ReviewEditModalProps = {
   service: 'energy' | 'broadband';
   currentData: ReviewState;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (updatedData: ReviewState) => void;
 };
 
 function getInitialFormData(
@@ -102,7 +102,7 @@ type ReviewEditModalContentProps = {
   service: 'energy' | 'broadband';
   currentData: ReviewState;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (updatedData: ReviewState) => void;
 };
 
 function ReviewEditModalContent({
@@ -127,73 +127,57 @@ function ReviewEditModalContent({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const updatedData: ReviewState = {
+      ...currentData,
+    };
+
     switch (section) {
       case 'personalDetails':
-        sessionStorage.setItem('journeyPersonalDetails', JSON.stringify(formData));
-
+        updatedData.personalDetails = {
+          ...currentData.personalDetails,
+          title: formData.title ?? '',
+          firstName: formData.firstName ?? '',
+          lastName: formData.lastName ?? '',
+          email: formData.email ?? '',
+          mobileNumber: formData.mobileNumber ?? '',
+          dateOfBirth: formData.dateOfBirth ?? '',
+        };
         break;
 
       case 'household':
-        sessionStorage.setItem(journey.household.storageKey, JSON.stringify(formData));
-
+        updatedData.household = {
+          ...currentData.household,
+          propertyType: formData.propertyType ?? '',
+          occupants: formData.occupants ?? '',
+          bedrooms: formData.bedrooms ?? '',
+        };
         break;
 
       case 'paymentMethod':
-        sessionStorage.setItem(journey.paymentMethod.storageKey, formData.paymentMethod ?? '');
-
+        updatedData.paymentMethod = formData.paymentMethod ?? '';
         break;
 
       case 'contractDates':
-        sessionStorage.setItem(
-          journey.contractDetails.storageKey,
-          JSON.stringify({
-            ...currentData.contractDetails,
-
-            contractDate: formData.contractDate ?? '',
-          }),
-        );
-
+        updatedData.contractDetails = {
+          ...currentData.contractDetails,
+          contractDate: formData.contractDate ?? '',
+        };
         break;
 
       case 'provider':
-        sessionStorage.setItem(
-          journey.broadbandProvider.storageKey,
-          JSON.stringify({
-            provider: formData.provider ?? '',
-          }),
-        );
-
+        updatedData.broadbandProvider = formData.provider ?? '';
         break;
 
       case 'broadbandSpeed':
-        sessionStorage.setItem(
-          journey.broadbandSpeed.storageKey,
-          JSON.stringify({
-            broadbandSpeed: formData.broadbandSpeed ?? '',
-          }),
-        );
-
+        updatedData.broadbandSpeed = formData.broadbandSpeed ?? '';
         break;
 
       case 'contractLength':
-        sessionStorage.setItem(
-          journey.broadbandContractLength.storageKey,
-          formData.contractLength ?? '',
-        );
-
+        updatedData.broadbandContractLength = formData.contractLength ?? '';
         break;
     }
 
-    /*
-     * sessionStorage does not fire a storage event
-     * in the same browser tab.
-     *
-     * Emit our own event so ReviewYourDetails
-     * immediately reads the updated values.
-     */
-    window.dispatchEvent(new Event('journey-review-updated'));
-
-    onSaved();
+    onSaved(updatedData);
   };
 
   return (
@@ -339,17 +323,15 @@ function ReviewEditModalContent({
                 onChange={(value) => setValue('propertyType', value)}
               />
 
-              <EditSelect
+              <EditCounter
                 label="House size"
                 value={formData.occupants ?? ''}
-                options={journey.household.occupants.options}
                 onChange={(value) => setValue('occupants', value)}
               />
 
-              <EditSelect
+              <EditCounter
                 label="No. of bedrooms"
                 value={formData.bedrooms ?? ''}
-                options={journey.household.bedrooms.options}
                 onChange={(value) => setValue('bedrooms', value)}
               />
             </>
@@ -512,6 +494,47 @@ function EditInput({ label, value, type = 'text', onChange }: EditInputProps) {
         "
       />
     </label>
+  );
+}
+
+type EditCounterProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function EditCounter({ label, value, onChange }: EditCounterProps) {
+  const numericValue = Math.min(10, Math.max(1, Number(value) || 1));
+
+  return (
+    <div>
+      <span className="mb-1.5 block font-inter text-[12px] font-medium text-[#344054]">
+        {label}
+      </span>
+      <div className="flex h-[48px] w-full items-center justify-between rounded-full border border-[#D0D5DD] bg-white px-3">
+        <button
+          type="button"
+          aria-label={`Decrease ${label}`}
+          disabled={numericValue <= 1}
+          onClick={() => onChange(String(numericValue - 1))}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#D0D5DD] text-xl text-[#344054] hover:border-[#00897B] hover:text-[#00897B] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          −
+        </button>
+        <span className="font-red-hat-display text-[18px] font-bold text-[#0D3B66]">
+          {numericValue}
+        </span>
+        <button
+          type="button"
+          aria-label={`Increase ${label}`}
+          disabled={numericValue >= 10}
+          onClick={() => onChange(String(numericValue + 1))}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#D0D5DD] text-xl text-[#344054] hover:border-[#00897B] hover:text-[#00897B] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          +
+        </button>
+      </div>
+    </div>
   );
 }
 

@@ -1,13 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-
 import data from '@/data/content.json';
 
-export default function CurrentUsageHeader() {
-  const { header } = data.currentUsage;
+export type UsagePeriod = 'monthly' | 'annual';
 
-  const [selectedPeriod, setSelectedPeriod] = useState(header.periods.defaultValue);
+export function kwhForPeriod(annualKwh: number | null | undefined, period: UsagePeriod): number {
+  if (!annualKwh || Number.isNaN(annualKwh)) return 0;
+
+  return period === 'monthly' ? annualKwh / 12 : annualKwh;
+}
+
+const numberFormatter = new Intl.NumberFormat('en-GB', {
+  maximumFractionDigits: 0,
+});
+
+export function formatKwhValue(value: number, displayUnit?: boolean): string {
+  return `${numberFormatter.format(Math.round(value))} ${displayUnit ? 'kWh' : ''}`;
+}
+
+export function formatKwh(value: number): string {
+  return `${formatKwhValue(value, true)}`;
+}
+
+export function periodUnitLabel(period: UsagePeriod): string {
+  return period === 'monthly' ? '/ month' : '/ year';
+}
+
+type CurrentUsageHeaderProps = {
+  period: UsagePeriod;
+  onPeriodChange: (period: UsagePeriod) => void;
+};
+
+export default function CurrentUsageHeader({ period, onPeriodChange }: CurrentUsageHeaderProps) {
+  const { header } = data.currentUsage;
 
   return (
     <div
@@ -87,16 +112,16 @@ export default function CurrentUsageHeader() {
           lg:rounded-[14px]
         "
       >
-        {header.periods.options.map((period, index) => {
-          const isSelected = selectedPeriod === period.value;
+        {header.periods.options.map((periodOption, index) => {
+          const isSelected = period === periodOption.value;
 
           return (
             <button
-              key={period.id}
+              key={periodOption.id}
               type="button"
               aria-pressed={isSelected}
               onClick={() => {
-                setSelectedPeriod(period.value);
+                onPeriodChange(periodOption.value as UsagePeriod);
               }}
               className={`
                   inline-flex
@@ -132,7 +157,7 @@ export default function CurrentUsageHeader() {
                   }
                 `}
             >
-              {period.label}
+              {periodOption.label}
             </button>
           );
         })}

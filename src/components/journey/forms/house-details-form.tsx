@@ -2,29 +2,59 @@
 
 import { type FormEvent, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
+import { getNextJourneyRoute, type JourneyService } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
+import { type CustomerDetails } from '@/interfaces/shared';
+import { useServiceFields } from '@/lib/service-fields';
+import { useJourneyStore } from '@/store/journeyStore';
+import { getCurrentRelativeUrl } from '@/utils/helper';
 
 export default function HouseDetailsForm() {
   const router = useRouter();
+  const { journey } = useJourneyStore();
+  const { updateJourney } = useUpdateJourney();
+  const searchParams = useSearchParams();
+
+  const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
+  const serviceFields = useServiceFields('insurance');
 
   const { insuranceHouseDetails } = data.journey;
 
-  const [homeType, setHomeType] = useState(insuranceHouseDetails.homeType.defaultValue);
+  const [homeType, setHomeType] = useState(
+    journey?.customer?.insuredHomeType ?? insuranceHouseDetails.homeType.defaultValue,
+  );
 
-  const [houseStyle, setHouseStyle] = useState(insuranceHouseDetails.houseStyle.defaultValue);
+  const [houseStyle, setHouseStyle] = useState(
+    journey?.customer?.insuranceHouseStyle ?? insuranceHouseDetails.houseStyle.defaultValue,
+  );
 
   const [smokeDetectors, setSmokeDetectors] = useState(
-    insuranceHouseDetails.smokeDetectors.defaultValue,
+    journey?.customer?.hasWorkingSmokeDetectors ??
+      insuranceHouseDetails.smokeDetectors.defaultValue,
   );
+
+  const isComplete =
+    (!serviceFields.isRequired('insuredHomeType') || homeType) &&
+    (!serviceFields.isRequired('insuranceHouseStyle') || houseStyle) &&
+    (!serviceFields.isRequired('hasWorkingSmokeDetectors', false) || smokeDetectors);
+
+  useJourneyStepStatus('journey-step-form-3', Boolean(isComplete));
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!homeType || !houseStyle || !smokeDetectors) {
+    if (!isComplete) {
+      notifyJourneyStepFailed();
       return;
     }
 
@@ -40,7 +70,25 @@ export default function HouseDetailsForm() {
     sessionStorage.setItem('billgooseJourneyService', 'insurance');
     sessionStorage.setItem('billgooseJourneyFlow', 'insurance');
 
-    router.push('/result?service=insurance');
+    const userDetailObject: CustomerDetails = {
+      insuredHomeType: homeType,
+      insuranceHouseStyle: houseStyle,
+      hasWorkingSmokeDetectors: smokeDetectors == 'yes' ? true : false,
+    };
+
+    const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
+    const resolvedService: JourneyService =
+      requestedService === 'insurance'
+        ? 'insurance'
+        : requestedService === 'broadband'
+          ? 'broadband'
+          : isBundle
+            ? 'bundle-bills'
+            : 'energy';
+
+    const nextRoute = getNextJourneyRoute(3, resolvedService, isBundle ? 'bundle' : undefined);
+
+    updateJourney({ customer: userDetailObject }, nextRoute, getCurrentRelativeUrl());
   }
 
   return (
@@ -64,9 +112,6 @@ export default function HouseDetailsForm() {
             mt-1
             font-inter
             text-[18px]
-            font-normal
-            leading-[25px]
-            tracking-[0]
             text-[#667085]
           "
         >
@@ -81,6 +126,7 @@ export default function HouseDetailsForm() {
         noValidate
       >
         <OptionSection
+          visible={serviceFields.isVisible('insuredHomeType')}
           label={insuranceHouseDetails.homeType.label}
           options={insuranceHouseDetails.homeType.options}
           value={homeType}
@@ -90,6 +136,7 @@ export default function HouseDetailsForm() {
         <div className="h-px w-full bg-[#EAECF0]" />
 
         <OptionSection
+          visible={serviceFields.isVisible('insuranceHouseStyle')}
           label={insuranceHouseDetails.houseStyle.label}
           options={insuranceHouseDetails.houseStyle.options}
           value={houseStyle}
@@ -99,6 +146,7 @@ export default function HouseDetailsForm() {
         <div className="h-px w-full bg-[#EAECF0]" />
 
         <OptionSection
+          visible={serviceFields.isVisible('hasWorkingSmokeDetectors', false)}
           label={insuranceHouseDetails.smokeDetectors.label}
           options={insuranceHouseDetails.smokeDetectors.options}
           value={smokeDetectors}
@@ -116,13 +164,15 @@ type Option = {
 };
 
 type OptionSectionProps = {
+  visible?: boolean;
   label: string;
   options: Option[];
   value: string;
   onChange: (value: string) => void;
 };
 
-function OptionSection({ label, options, value, onChange }: OptionSectionProps) {
+function OptionSection({ label, options, value, onChange, visible = true }: OptionSectionProps) {
+  if (!visible) return null;
   return (
     <fieldset>
       <legend

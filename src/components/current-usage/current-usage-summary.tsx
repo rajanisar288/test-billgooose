@@ -1,20 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 
+import {
+  formatKwhValue,
+  kwhForPeriod,
+  periodUnitLabel,
+  type UsagePeriod,
+} from '@/components/current-usage/current-usage-header';
 import UpdateConsumptionModal, {
   type ConsumptionFormValues,
 } from '@/components/journey/modal/update-consumption-modal';
 import data from '@/data/content.json';
 
-export default function CurrentUsageSummary() {
-  const router = useRouter();
+type EnergyUsage = {
+  gas?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+  electricity?: { isAvailable?: boolean; annualConsumptionKwh?: number };
+};
 
+type CurrentUsageSummaryProps = {
+  period: UsagePeriod;
+  energyUsage: EnergyUsage | null;
+  onCompare: () => void;
+  isComparing: boolean;
+  onConsumptionSubmit: (fuel: 'gas' | 'electricity', values: ConsumptionFormValues) => void;
+};
+
+export default function CurrentUsageSummary({
+  period,
+  energyUsage,
+  onCompare,
+  isComparing,
+  onConsumptionSubmit,
+}: CurrentUsageSummaryProps) {
   const { summary } = data.currentUsage;
 
   const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
@@ -24,31 +46,23 @@ export default function CurrentUsageSummary() {
   };
 
   const handleConsumptionSubmit = (values: ConsumptionFormValues) => {
-    sessionStorage.setItem('journeyConsumptionDetails', JSON.stringify(values));
-
+    onConsumptionSubmit('gas', values);
     setIsUpdateConsumptionOpen(false);
   };
 
-  /* =========================================================
-     COMPARE ENERGY PRICES
+  const { amountLabel, periodLabel } = useMemo(() => {
+    const electricityAnnual = energyUsage?.electricity?.isAvailable
+      ? energyUsage.electricity.annualConsumptionKwh
+      : 0;
+    const gasAnnual = energyUsage?.gas?.isAvailable ? energyUsage.gas.annualConsumptionKwh : 0;
 
-     NORMAL ENERGY ONLY
+    const totalKwh = kwhForPeriod(electricityAnnual, period) + kwhForPeriod(gasAnnual, period);
 
-     Current Usage
-     → Energy Results
-  ========================================================= */
-
-  const handleCompareEnergyPrices = () => {
-    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
-
-    const isBundleFlow = storedFlow === 'bundle';
-
-    sessionStorage.setItem('billgooseJourneyService', 'energy');
-
-    sessionStorage.setItem('billgooseJourneyFlow', isBundleFlow ? 'bundle' : 'energy');
-
-    router.push(isBundleFlow ? '/result?service=energy&flow=bundle' : '/result?service=energy');
-  };
+    return {
+      amountLabel: formatKwhValue(totalKwh, true),
+      periodLabel: periodUnitLabel(period),
+    };
+  }, [energyUsage, period]);
 
   return (
     <>
@@ -121,7 +135,7 @@ export default function CurrentUsageSummary() {
                 lg:leading-[66.94px]
               "
             >
-              {summary.amount}
+              {amountLabel}
             </span>
 
             <span
@@ -141,7 +155,7 @@ export default function CurrentUsageSummary() {
                 lg:leading-[29.89px]
               "
             >
-              {summary.period}
+              {periodLabel}
             </span>
           </div>
 
@@ -268,10 +282,12 @@ export default function CurrentUsageSummary() {
               lg:gap-3
             "
           >
-            {/* Compare Energy Prices */}
+            {/* Compare - unchanged */}
             <button
               type="button"
-              onClick={handleCompareEnergyPrices}
+              onClick={onCompare}
+              disabled={isComparing}
+              aria-busy={isComparing}
               className="
                 inline-flex
                 h-12
@@ -302,6 +318,9 @@ export default function CurrentUsageSummary() {
 
                 hover:bg-[#00796D]
 
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+
                 focus-visible:outline-none
                 focus-visible:ring-4
                 focus-visible:ring-[#B7E6DF]
@@ -325,9 +344,12 @@ export default function CurrentUsageSummary() {
             >
               {summary.compareButton}
 
-              <ArrowRight
-                aria-hidden="true"
-                className="
+              {isComparing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRight
+                  aria-hidden="true"
+                  className="
                   h-4
                   w-4
                   shrink-0
@@ -338,17 +360,19 @@ export default function CurrentUsageSummary() {
                   lg:h-[18px]
                   lg:w-[18px]
                 "
-                strokeWidth={2}
-              />
+                  strokeWidth={2}
+                />
+              )}
             </button>
 
             {/* Update consumption */}
-            <button
-              type="button"
-              onClick={() => {
-                setIsUpdateConsumptionOpen(true);
-              }}
-              className="
+            {energyUsage?.gas?.isAvailable && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsUpdateConsumptionOpen(true);
+                }}
+                className="
                 inline-flex
                 h-12
                 w-full
@@ -396,9 +420,10 @@ export default function CurrentUsageSummary() {
                 lg:font-extrabold
                 lg:leading-[26px]
               "
-            >
-              {summary.updateButton}
-            </button>
+              >
+                {summary.updateButton}
+              </button>
+            )}
           </div>
         </div>
 
@@ -504,6 +529,7 @@ export default function CurrentUsageSummary() {
       <UpdateConsumptionModal
         isOpen={isUpdateConsumptionOpen}
         onClose={handleCloseUpdateConsumption}
+        fuel="gas"
         onSubmit={handleConsumptionSubmit}
       />
     </>

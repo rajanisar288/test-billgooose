@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
 
 export default function StatusBar() {
   const router = useRouter();
   const { statusBar } = data.currentUsage;
+  const { journey } = useJourneyStore();
 
   return (
     <section className="border-b border-[#EAECF0] bg-white">
@@ -114,24 +116,31 @@ export default function StatusBar() {
     lg:text-[12px]
   "
         >
-          <span className="text-[#99A1AF]">{statusBar.mpanLabel}</span>
+          {journey?.consumption?.mpan && (
+            <>
+              <span className="text-[#99A1AF]">{statusBar?.mpanLabel}</span>
+              <span className="text-[#4A5565]">{journey?.consumption?.mpan}</span>
+            </>
+          )}
+          {journey?.consumption?.mpan && journey?.consumption?.mprn && (
+            <span
+              aria-hidden="true"
+              className="
+          text-[18px] font-bold
+          leading-4
+          text-[#99A1AF]
+        "
+            >
+              ·
+            </span>
+          )}
 
-          <span className="text-[#4A5565]">{statusBar.mpanValue}</span>
-
-          <span
-            aria-hidden="true"
-            className="
-      text-[18px] font-bold
-      leading-4
-      text-[#99A1AF]
-    "
-          >
-            ·
-          </span>
-
-          <span className="text-[#99A1AF]">{statusBar.mprnLabel}</span>
-
-          <span className="text-[#4A5565]">{statusBar.mprnValue}</span>
+          {journey?.consumption?.mprn && (
+            <>
+              <span className="text-[#99A1AF]">{statusBar.mprnLabel}</span>
+              <span className="text-[#4A5565]">{journey?.consumption?.mprn}</span>
+            </>
+          )}
         </div>
       </div>
     </section>

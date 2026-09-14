@@ -1,78 +1,96 @@
 // components/loadConfig.tsx
 'use client';
+import { useEffect, useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
-import { Journey } from '@/interfaces/shared';
+import { type Journey } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { partnerConfigApi } from '@/lib/api/endpoints/partnerConfig';
 import { useJourneyStore } from '@/store/journeyStore';
 import { generateRequestId } from '@/utils/uuid';
-import { useEffect, useState } from 'react';
 
 export function LoadConfig() {
   const { setJourney, journey } = useJourneyStore();
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  async function createNewJourney() {
+    const payload = getDefaultJourney();
+
+    console.log('🆕 Creating new journey with payload:', payload);
+
+    try {
+      const createdJourney = await journeyApi.createJourney(payload);
+
+      console.log('✅ Created journey response:', createdJourney);
+
+      if (createdJourney?.data?.journeyId) {
+        localStorage.setItem(storeJourney, createdJourney.data.journeyId);
+        setJourney(createdJourney.data);
+
+        console.log('💾 New journey saved to store:', createdJourney.data);
+      } else {
+        console.error('❌ No journeyId in created response');
+      }
+    } catch (error) {
+      console.error('❌ Failed to create journey:', error);
+    }
+  }
 
   useEffect(() => {
-    async function getConfig() {
+    async function initialize() {
+      setIsLoading(true);
+
       try {
-        const data = await partnerConfigApi.getConfig();
-        localStorage.setItem(storePartnerConfig, JSON.stringify(data.data));
-        console.log('✅ Config loaded');
-      } catch (error) {
-        console.log('Failed to fetch config:', error);
-      }
-    }
-
-    async function loadJourney() {
-      console.log('🔄 Loading journey...');
-      const journeyId = localStorage.getItem(storeJourney);
-      console.log('📦 Stored journey ID:', journeyId);
-
-      if (journeyId) {
+        // Load config
         try {
-          const journeyRes = await journeyApi.getJourney(journeyId);
-          console.log('📥 Fetched journey response:', journeyRes);
+          const config = await partnerConfigApi.getConfig();
 
-          if (journeyRes?.data?.id) {
-            setJourney(journeyRes.data);
-            console.log('✅ Journey set in store:', journeyRes.data);
-          } else {
-            console.warn('⚠️ No journey data in response');
-          }
+          localStorage.setItem(storePartnerConfig, JSON.stringify(config.data));
+
+          console.log('✅ Config loaded');
         } catch (error) {
-          console.error('❌ Failed to fetch journey:', error);
-          // Optionally create new journey if fetch fails
+          console.error('❌ Failed to fetch config:', error);
+        }
+
+        // Load or create journey
+        const journeyId = localStorage.getItem(storeJourney);
+        console.log('📦 Stored journey ID:', journeyId);
+
+        if (journeyId) {
+          try {
+            const journeyRes = await journeyApi.getJourney(journeyId);
+
+            console.log('📥 Fetched journey response:', journeyRes);
+
+            if (journeyRes?.data?.id) {
+              setJourney(journeyRes.data);
+
+              console.log('✅ Journey set in store:', journeyRes.data);
+
+              if (journeyRes.data.lastUrl) {
+                router.push(journeyRes.data.lastUrl);
+              }
+            } else {
+              console.warn('⚠️ No journey data in response');
+              await createNewJourney();
+            }
+          } catch (error) {
+            console.error('❌ Failed to fetch journey:', error);
+            await createNewJourney();
+          }
+        } else {
           await createNewJourney();
         }
-      } else {
-        await createNewJourney();
-      }
-      setIsLoading(false);
-    }
-
-    async function createNewJourney() {
-      const payload = getDefaultJourney();
-      console.log('🆕 Creating new journey with payload:', payload);
-
-      try {
-        const createdJourney = await journeyApi.createJourney(payload);
-        console.log('✅ Created journey response:', createdJourney);
-
-        if (createdJourney?.data?.journeyId) {
-          localStorage.setItem(storeJourney, createdJourney.data.journeyId);
-          setJourney(createdJourney.data);
-          console.log('💾 New journey saved to store:', createdJourney.data);
-        } else {
-          console.error('❌ No journeyId in created response');
-        }
-      } catch (error) {
-        console.error('❌ Failed to create journey:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
 
-    getConfig();
-    loadJourney();
-  }, []);
+    initialize();
+  }, [router, setJourney]);
 
   // Debug: Log when journey changes
   useEffect(() => {
@@ -80,13 +98,13 @@ export function LoadConfig() {
   }, [journey]);
 
   if (isLoading) {
-    return null; // or a loading spinner
+    return <div>Loading...</div>;
   }
 
   return null;
 }
 
-function getDefaultJourney(): Journey {
+export function getDefaultJourney(): Journey {
   return {
     address: null,
     lastUrl: '',

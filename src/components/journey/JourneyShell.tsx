@@ -19,8 +19,9 @@ type JourneyShellProps = {
   children: ReactNode;
 };
 
-export type JourneyService = 'energy' | 'broadband' | 'insurance';
-export type JourneyFlow = 'energy' | 'broadband' | 'bundle' | 'insurance';
+export type JourneyService =
+  'energy' | 'broadband' | 'bundle-bills' | 'sim-only' | 'insurance' | 'mobile';
+export type JourneyFlow = 'energy' | 'broadband' | 'bundle' | 'bundle-bills' | 'insurance';
 
 /* =========================================================
    JOURNEY SERVICE
@@ -28,35 +29,26 @@ export type JourneyFlow = 'energy' | 'broadband' | 'bundle' | 'insurance';
 
 function getJourneyServiceSnapshot(): JourneyService {
   try {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlService = urlParams.get('service');
+      const urlFlow = urlParams.get('flow');
+      if (urlService === 'insurance') return 'insurance';
+      if (urlService === 'broadband') return 'broadband';
+      if (urlFlow === 'bundle' || urlService === 'bundle-bills') return 'bundle-bills';
+      if (urlService === 'energy') return 'energy';
+    }
+
     const storedService = sessionStorage.getItem('billgooseJourneyService');
+    if (storedService === 'insurance') return 'insurance';
+    if (storedService === 'broadband') return 'broadband';
 
-    if (storedService === 'broadband') {
-      return 'broadband';
-    }
-
-    if (storedService === 'insurance') {
-      return 'insurance';
-    }
-
-    if (storedService === 'energy') {
-      return 'energy';
-    }
-
-    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
-
-    if (!storedCompareFlow) {
-      return 'energy';
-    }
-
-    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
-      service?: string;
-    };
-
-    if (parsedCompareFlow.service === 'insurance') {
-      return 'insurance';
-    }
-
-    return parsedCompareFlow.service === 'broadband' ? 'broadband' : 'energy';
+    const rawStorage = localStorage.getItem('journey-storage');
+    const serviceType = rawStorage ? JSON.parse(rawStorage)?.state?.journey?.serviceType : null;
+    if (serviceType === 'billPackage' || serviceType === 'bundle-bills') return 'bundle-bills';
+    if (serviceType === 'insurance') return 'insurance';
+    if (serviceType === 'broadband') return 'broadband';
+    return (storedService as JourneyService) || 'energy';
   } catch {
     return 'energy';
   }
@@ -72,48 +64,27 @@ function getJourneyServiceServerSnapshot(): JourneyService {
 
 function getJourneyFlowSnapshot(): JourneyFlow {
   try {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlFlow = urlParams.get('flow');
+      const urlService = urlParams.get('service');
+      if (urlFlow === 'bundle' || urlService === 'bundle-bills') return 'bundle';
+      if (urlService === 'insurance') return 'insurance';
+      if (urlService === 'broadband') return 'broadband';
+      if (urlService === 'energy') return 'energy';
+    }
+
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+    if (storedFlow === 'bundle' || storedFlow === 'bundle-bills') return 'bundle';
+    if (storedFlow === 'insurance') return 'insurance';
+    if (storedFlow === 'broadband') return 'broadband';
 
-    if (storedFlow === 'bundle') {
-      return 'bundle';
-    }
-
-    if (storedFlow === 'broadband') {
-      return 'broadband';
-    }
-
-    if (storedFlow === 'insurance') {
-      return 'insurance';
-    }
-
-    if (storedFlow === 'energy') {
-      return 'energy';
-    }
-
-    const storedCompareFlow = sessionStorage.getItem('compareFlowDetails');
-
-    if (!storedCompareFlow) {
-      return 'energy';
-    }
-
-    const parsedCompareFlow = JSON.parse(storedCompareFlow) as {
-      service?: string;
-      flow?: string;
-    };
-
-    if (parsedCompareFlow.flow === 'bundle') {
-      return 'bundle';
-    }
-
-    if (parsedCompareFlow.service === 'broadband') {
-      return 'broadband';
-    }
-
-    if (parsedCompareFlow.service === 'insurance') {
-      return 'insurance';
-    }
-
-    return 'energy';
+    const rawStorage = localStorage.getItem('journey-storage');
+    const serviceType = rawStorage ? JSON.parse(rawStorage)?.state?.journey?.serviceType : null;
+    if (serviceType === 'billPackage' || serviceType === 'bundle-bills') return 'bundle';
+    if (serviceType === 'insurance') return 'insurance';
+    if (serviceType === 'broadband') return 'broadband';
+    return (storedFlow as JourneyFlow) || 'energy';
   } catch {
     return 'energy';
   }
@@ -132,7 +103,8 @@ function subscribeToJourneyContext(callback: () => void) {
     if (
       event.key === 'compareFlowDetails' ||
       event.key === 'billgooseJourneyService' ||
-      event.key === 'billgooseJourneyFlow'
+      event.key === 'billgooseJourneyFlow' ||
+      event.key === 'journey-storage'
     ) {
       callback();
     }
@@ -143,17 +115,15 @@ function subscribeToJourneyContext(callback: () => void) {
   }
 
   window.addEventListener('storage', handleStorage);
-
-  window.addEventListener('billgoose-journey-service-changed', handleJourneyChanged);
-
+  window.addEventListener('popstate', handleJourneyChanged);
   window.addEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+  window.addEventListener('billgoose-journey-service-changed', handleJourneyChanged);
 
   return () => {
     window.removeEventListener('storage', handleStorage);
-
-    window.removeEventListener('billgoose-journey-service-changed', handleJourneyChanged);
-
+    window.removeEventListener('popstate', handleJourneyChanged);
     window.removeEventListener('billgoose-compare-flow-changed', handleJourneyChanged);
+    window.removeEventListener('billgoose-journey-service-changed', handleJourneyChanged);
   };
 }
 
@@ -216,22 +186,23 @@ export default function JourneyShell({ children }: JourneyShellProps) {
      4 steps - unchanged
   ========================================================= */
 
+  const isBundle =
+    journeyFlow === 'bundle' || journeyFlow === 'bundle-bills' || service === 'bundle-bills';
+
   const steps =
     service === 'insurance'
       ? sidebar.insuranceSteps
       : service === 'broadband'
         ? sidebar.broadbandSteps
-        : journeyFlow === 'bundle'
+        : isBundle
           ? sidebar.bundleSteps
           : sidebar.energySteps;
 
-  /*
-   * Bundle still uses the Energy routes underneath,
-   * including Payment Method as step 5.
-   *
-   * Normal Energy simply never reaches step 5.
-   */
-  const currentStep = getJourneyStepFromPathname(pathname, service);
+  const currentStep = getJourneyStepFromPathname(
+    pathname,
+    service === 'insurance' ? 'insurance' : service === 'broadband' ? 'broadband' : 'energy',
+    isBundle ? 'bundle' : undefined,
+  );
 
   const [copied, setCopied] = useState(false);
 

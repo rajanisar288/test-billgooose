@@ -1,13 +1,19 @@
+'use client';
+
 import Image from 'next/image';
-import Link from 'next/link';
 
 import { ArrowRight, Mail } from 'lucide-react';
 
+import {
+  type HomepageService,
+  useServiceJourneyNavigation,
+} from '@/components/marketing/use-service-journey-navigation';
 import data from '@/data/content.json';
 
 const NEWSLETTER_IMAGE = '/images/compare-mail.png';
 
 export default function Compare() {
+  const { navigateToService } = useServiceJourneyNavigation();
   const { compare, newsletter } = data;
 
   const activeItems = compare.items;
@@ -189,10 +195,6 @@ export default function Compare() {
           "
         >
           {activeItems.map((item) => {
-            const isBundleBills = item.title.toLowerCase().includes('bundle');
-
-            const itemHref = isBundleBills ? '/compare?service=energy&flow=bundle' : item.href;
-
             return (
               <article
                 key={item.id}
@@ -366,8 +368,11 @@ export default function Compare() {
                     lg:h-[48px]
                   "
                 >
-                  <Link
-                    href={itemHref}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void navigateToService(item.id as HomepageService);
+                    }}
                     className="
                       inline-flex
                       items-center
@@ -410,7 +415,7 @@ export default function Compare() {
                       "
                       strokeWidth={2}
                     />
-                  </Link>
+                  </button>
                 </div>
               </article>
             );

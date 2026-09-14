@@ -2,52 +2,71 @@
 
 import { type FormEvent, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import { Check } from 'lucide-react';
 
+import { useSearchParams } from 'next/navigation';
+
+import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
+import {
+  notifyJourneyStepFailed,
+  useJourneyStepStatus,
+} from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
+
+const EV_VALUE_MAP: Record<string, number> = {
+  yes: 1,
+  no: 2,
+  considering: 3,
+};
 
 export default function ElectricVehicleForm() {
-  const router = useRouter();
+  const { updateJourney } = useUpdateJourney();
+  const { journey } = useJourneyStore();
+  const searchParams = useSearchParams();
 
   const { electricVehicle } = data.journey;
 
-  const [selectedOption, setSelectedOption] = useState(electricVehicle.defaultValue);
+  const [selectedOption, setSelectedOption] = useState(
+    journey?.customer ? journey?.customer?.hasEvCar : electricVehicle.defaultValue,
+  );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  useJourneyStepStatus(
+    'journey-step-form-4',
+    Boolean(
+      selectedOption && electricVehicle.options.some((option) => option.value === selectedOption),
+    ),
+  );
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!selectedOption) {
+    const isValidOption = electricVehicle.options.some((option) => option.value === selectedOption);
+    if (!selectedOption || !isValidOption) {
+      notifyJourneyStepFailed();
       return;
     }
+
+    const hasEvCar = EV_VALUE_MAP[selectedOption.toLowerCase()];
 
     sessionStorage.setItem(electricVehicle.storageKey, selectedOption);
+    const requestedFlow = searchParams.get('flow');
+    const requestedService = searchParams.get('service');
+    const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
+    const isBundle =
+      requestedFlow === 'bundle' ||
+      storedFlow === 'bundle' ||
+      requestedService === 'bundle-bills';
 
-    const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
+    const targetRoute = isBundle
+      ? `${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`
+      : '/review-your-details?service=energy';
 
-    /* =====================================================
-       BUNDLE
-
-       Bundle stays exactly as before:
-       Step 4 -> Payment Method Type Step 5.
-    ====================================================== */
-
-    if (journeyFlow === 'bundle') {
-      router.push(`${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`);
-
-      return;
+    const success = await updateJourney({ customer: { hasEvCar } }, targetRoute, journey?.lastUrl);
+    if (!success) {
+      notifyJourneyStepFailed();
     }
-
-    /* =====================================================
-       NORMAL ENERGY
-
-       Energy now has only 4 forms.
-       Step 4 -> Review Details.
-    ====================================================== */
-
-    router.push('/review-your-details?service=energy');
   }
 
   return (

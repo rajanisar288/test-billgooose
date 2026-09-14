@@ -1,22 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
 
+import {
+  formatKwhValue,
+  kwhForPeriod,
+  type UsagePeriod,
+} from '@/components/current-usage/current-usage-header';
 import UpdateConsumptionModal, {
   type ConsumptionFormValues,
+  type ConsumptionFuel,
 } from '@/components/journey/modal/update-consumption-modal';
 
 type UsageCardProps = {
   title: string;
   address: string;
-  usage: string;
   unit: string;
+
+  /**
+   * Price is not currently returned by the API. Kept as a prop so the
+   * caller/content.json shape doesn't need to change, but it is not
+   * rendered right now - see the commented-out block below.
+   */
+  price: string;
+
   buttonLabel: string;
   icon: string;
   iconAlt: string;
   borderColor: string;
+  period: UsagePeriod;
+  energyUsage: {
+    gas?: { annualConsumptionKwh?: number };
+    electricity?: { annualConsumptionKwh?: number };
+  } | null;
+  onConsumptionSubmit: (fuel: ConsumptionFuel, values: ConsumptionFormValues) => void;
 
   /**
    * Keeps the existing behavior for buttons such as
@@ -27,12 +46,13 @@ type UsageCardProps = {
 
 export default function UsageCard({
   title,
-  address,
-  usage,
   unit,
   buttonLabel,
   icon,
   iconAlt,
+  period,
+  energyUsage,
+  onConsumptionSubmit,
   onButtonClick,
 }: UsageCardProps) {
   const [isUpdateConsumptionOpen, setIsUpdateConsumptionOpen] = useState(false);
@@ -40,6 +60,16 @@ export default function UsageCard({
   const isGas = title.toLowerCase().includes('gas');
 
   const isUpdateConsumptionButton = buttonLabel.toLowerCase().includes('update');
+
+  // Pick the matching fuel out of the energyUsage response cached in
+  // localStorage, and derive the figure for the selected Monthly/Annual
+  // period. This card only ever renders when the parent has confirmed
+  // this fuel is available, so there's no static fallback here.
+  const displayedUsage = useMemo(() => {
+    const fuel = isGas ? energyUsage?.gas : energyUsage?.electricity;
+
+    return formatKwhValue(kwhForPeriod(fuel?.annualConsumptionKwh, period), false);
+  }, [energyUsage, isGas, period]);
 
   const cardBackground = isGas
     ? `
@@ -107,7 +137,7 @@ export default function UsageCard({
      * We DO NOT navigate anywhere here because the
      * user is already on the Current Usage/Summary page.
      */
-    sessionStorage.setItem('journeyConsumptionDetails', JSON.stringify(values));
+    onConsumptionSubmit(isGas ? 'gas' : 'electricity', values);
 
     setIsUpdateConsumptionOpen(false);
   };
@@ -136,7 +166,7 @@ export default function UsageCard({
         "
       >
         {/* Header */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <Image
             src={icon}
             alt={iconAlt}
@@ -170,7 +200,7 @@ export default function UsageCard({
               {title}
             </h2>
 
-            <p
+            {/* <p
               className="
                 mt-1.5
                 truncate
@@ -187,7 +217,7 @@ export default function UsageCard({
               "
             >
               {address}
-            </p>
+            </p> */}
           </div>
         </div>
 
@@ -218,7 +248,7 @@ export default function UsageCard({
                 lg:leading-[38px]
               "
             >
-              {usage}
+              {displayedUsage}
             </span>
 
             <span
@@ -237,62 +267,72 @@ export default function UsageCard({
             </span>
           </div>
 
-          <span
-            className="
-              shrink-0
+          {/*
+            Price is not currently returned by the API - hidden until
+            pricing data is wired up.
 
-              font-red-hat-display
-              text-[20px]
-              font-medium
-              leading-[30px]
-              text-[#667085]
+            <span
+              className="
+                shrink-0
 
-              sm:text-[20px]
+                font-red-hat-display
+                text-[20px]
+                font-medium
+                leading-[30px]
+                text-[#667085]
 
-              lg:text-[20px]
-              lg:leading-[30px]
-            "
-          ></span>
+                sm:text-[20px]
+
+                lg:text-[20px]
+                lg:leading-[30px]
+              "
+            >
+              {price}
+            </span>
+          */}
         </div>
 
         {/* Button */}
         <button
           type="button"
           onClick={handleButtonClick}
+          disabled={!isGas}
           className="
             mt-auto
             inline-flex h-11
-            w-full
-            shrink-0
-            items-center
-            justify-center
+          w-full
+          shrink-0
+          items-center
+          justify-center
 
-            whitespace-nowrap
-            rounded-[100px]
+          whitespace-nowrap
+          rounded-[100px]
 
-            border border-[#D0D5DD]
-            bg-white
+          border border-[#D0D5DD]
+          bg-white
 
-            px-4
+          px-4
 
-            font-red-hat-display
-            text-[16px]
-            font-bold
-            leading-6
-            text-[#0C3354]
+          font-red-hat-display
+          text-[16px]
+          font-bold
+          leading-6
+          text-[#0C3354]
 
-            transition-colors
+          transition-colors
 
-            hover:bg-[#F9FAFB]
+          disabled:opacity-60
 
-            lg:h-[52px]
-            lg:w-[382px]
-            lg:max-w-full
-            lg:px-6
-            lg:text-[16px]
-            lg:font-extrabold
-            lg:leading-[26px]
-          "
+          hover:bg-[#F9FAFB]
+
+          lg:h-[52px]
+          lg:w-[382px]
+          lg:max-w-full
+          lg:px-6
+          lg:text-[16px]
+          lg:font-extrabold
+          lg:leading-[26px]
+        "
         >
           {buttonLabel}
         </button>
@@ -302,6 +342,7 @@ export default function UsageCard({
       <UpdateConsumptionModal
         isOpen={isUpdateConsumptionOpen}
         onClose={handleCloseUpdateConsumption}
+        fuel={isGas ? 'gas' : 'electricity'}
         onSubmit={handleConsumptionSubmit}
       />
     </>

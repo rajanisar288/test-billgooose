@@ -1,14 +1,16 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import { useRouter } from 'next/navigation';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, LoaderCircle } from 'lucide-react';
 
 import data from '@/data/content.json';
 
-import { getPreviousJourneyRoute } from './journey-routes';
+import { JOURNEY_STEP_STATUS_EVENT, JOURNEY_STEP_SUBMIT_FAILED_EVENT } from './journey-step-status';
 
-type JourneyService = 'energy' | 'broadband' | 'insurance';
+type JourneyService = 'energy' | 'broadband' | 'insurance' | 'bundle-bills';
 
 type JourneyNavigationProps = {
   currentStep: number;
@@ -22,46 +24,72 @@ export default function JourneyNavigation({
   service,
 }: JourneyNavigationProps) {
   const router = useRouter();
+  const formId = `journey-step-form-${currentStep}`;
+  const [isValid, setIsValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const updateStatus = () => {
+      const form = document.getElementById(formId);
+      setIsValid(form?.dataset.journeyValid === 'true');
+    };
+
+    updateStatus();
+    window.addEventListener(JOURNEY_STEP_STATUS_EVENT, updateStatus);
+
+    return () => {
+      window.removeEventListener(JOURNEY_STEP_STATUS_EVENT, updateStatus);
+    };
+  }, [formId]);
+
+  useEffect(() => {
+    setIsSubmitting(false);
+  }, [currentStep]);
+
+  useEffect(() => {
+    const handleFailed = () => {
+      setIsSubmitting(false);
+    };
+
+    window.addEventListener(JOURNEY_STEP_SUBMIT_FAILED_EVENT, handleFailed);
+
+    return () => {
+      window.removeEventListener(JOURNEY_STEP_SUBMIT_FAILED_EVENT, handleFailed);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleSubmit = (event: Event) => {
+      const form = event.target as HTMLFormElement;
+
+      if (form.id === formId && form.dataset.journeyValid === 'true') {
+        setIsSubmitting(true);
+      }
+    };
+
+    document.addEventListener('submit', handleSubmit, true);
+
+    return () => {
+      document.removeEventListener('submit', handleSubmit, true);
+    };
+  }, [formId]);
+
+  // Safety timeout to prevent button getting permanently stuck in loading state
+  useEffect(() => {
+    if (!isSubmitting) return;
+
+    const timeout = setTimeout(() => {
+      setIsSubmitting(false);
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [isSubmitting]);
 
   const { navigation } = data.journey;
 
   const handleBack = () => {
-    /*
-     * Step 1 needs to return to the page that started
-     * the journey rather than trying to resolve step 0.
-     */
-    if (currentStep === 1) {
-      const journeyFlow = sessionStorage.getItem('billgooseJourneyFlow');
-
-      /* NORMAL ENERGY */
-      if (service === 'energy' && journeyFlow !== 'bundle') {
-        router.push('/result?service=energy');
-        return;
-      }
-
-      /* BUNDLE BILLS */
-      if (service === 'energy' && journeyFlow === 'bundle') {
-        router.push('/compare?service=energy&flow=bundle');
-        return;
-      }
-
-      /* INSURANCE */
-      if (service === 'insurance') {
-        router.push('/compare?service=insurance');
-        return;
-      }
-
-      /* BROADBAND FALLBACK */
-      if (service === 'broadband') {
-        router.push('/result?service=broadband');
-        return;
-      }
-    }
-
-    /*
-     * Step 2+ keeps your existing journey navigation.
-     */
-    router.push(getPreviousJourneyRoute(currentStep, service));
+    // router.push(getPreviousJourneyRoute(currentStep, service));
+    router.back();
   };
 
   const continueLabel =
@@ -108,6 +136,7 @@ export default function JourneyNavigation({
         <button
           type="button"
           onClick={handleBack}
+          disabled={isSubmitting}
           className="
             inline-flex
             h-[44px]
@@ -159,7 +188,9 @@ export default function JourneyNavigation({
 
         <button
           type="submit"
-          form={`journey-step-form-${currentStep}`}
+          form={formId}
+          disabled={!isValid || isSubmitting}
+          aria-busy={isSubmitting}
           className="
             inline-flex
             h-[44px]
@@ -189,17 +220,32 @@ export default function JourneyNavigation({
 
             hover:bg-[#00796D]
 
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+
             sm:h-[48px]
             sm:min-w-[160px]
           "
         >
           {continueLabel}
+          {isSubmitting ? (
+            <LoaderCircle
+              aria-label="Loading"
+              className="h-5 w-5 animate-spin"
+            />
+          ) : (
+            <ArrowRight
+              aria-hidden="true"
+              className="
+                h-4
+                w-4
+                shrink-0
 
-          <ArrowRight
-            aria-hidden="true"
-            className="h-4 w-4 shrink-0 text-white"
-            strokeWidth={3}
-          />
+                text-white
+              "
+              strokeWidth={3}
+            />
+          )}
         </button>
       </div>
     </footer>
