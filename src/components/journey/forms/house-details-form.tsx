@@ -112,9 +112,6 @@ export default function HouseDetailsForm() {
             mt-1
             font-inter
             text-[18px]
-            font-normal
-            leading-[25px]
-            tracking-[0]
             text-[#667085]
           "
         >

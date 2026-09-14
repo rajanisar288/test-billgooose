@@ -1254,5 +1254,5 @@ function getEstimatedAnnualCost(monthlyPrice: string): string {
     return '—';
   }
 
-  return `£${(numericPrice * 12).toFixed(2)}`;
+  return `£${(numericPrice * 12).toFixed(1)}`;
 }

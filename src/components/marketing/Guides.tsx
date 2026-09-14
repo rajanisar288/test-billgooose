@@ -306,7 +306,7 @@ function DesktopGuideCard({ guide }: DesktopGuideCardProps) {
       </div>
 
       {/* Guide information */}
-      <div className="flex min-h-[159px] flex-1 flex-col px-6 pb-4 pt-3">
+      <div className="flex min-h-[159px] flex-1 flex-col px-6 pb-6 pt-5">
         <div className="flex items-center gap-2">
           <span className="inline-flex min-h-6 min-w-[62px] items-center justify-center rounded-full bg-[rgba(0,137,123,0.1)] px-2 font-inter text-[12px] font-bold leading-none text-primary">
             {guide.category}

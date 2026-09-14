@@ -925,7 +925,8 @@ function ReviewField({ label, value }: ReviewFieldProps) {
           break-words
 
           font-inter
-          text-[14px]
+          text-[15px]
+          font-[660]
           font-medium
           leading-[16px]
           text-[#101828]
@@ -1160,7 +1161,8 @@ function SelectedPlanCard({ selectedPlans }: { selectedPlans: StandardPlan[] }) 
                 w-[54px]
                 shrink-0
 
-                rounded-[7px]
+    items-center
+    justify-center
 
                 object-contain
               "
@@ -1186,7 +1188,8 @@ function SelectedPlanCard({ selectedPlans }: { selectedPlans: StandardPlan[] }) 
                   truncate
 
                   font-inter
-                  text-[10px]
+                  font-[660]
+                  text-[14px]
                   leading-[14px]
                   text-[#667085]
                 "
@@ -1383,7 +1386,8 @@ function SummaryCard({
             <p
               className="
                 font-inter
-                text-[10px]
+                text-[13px]
+                font-[660]
                 text-[#667085]
               "
             >
@@ -1601,10 +1605,11 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
         font-inter
         text-[10px]
 
-        md:text-[11px]
+        md:text-[13px]
+        font-[660]
       "
     >
-      <span className="text-[#667085]">{label}</span>
+      <span className="text-[#667085] font-[660]">{label}</span>
 
       <span
         className="

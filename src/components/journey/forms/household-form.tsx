@@ -623,17 +623,13 @@ export default function HouseholdForm() {
               grid-cols-1
               gap-3
 
-              min-[390px]:grid-cols-3
-              min-[390px]:gap-2
-
               sm:gap-3
 
-              md:grid-cols-3
+              md:grid-cols-1
               md:gap-3
 
               lg:mt-4
-              lg:grid-cols-[157.33px_157.33px_157.33px]
-              lg:gap-[14px]
+              lg:grid-cols-[500px]
             "
           >
             {/* {occupants.options.map((option) => (

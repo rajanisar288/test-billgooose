@@ -153,7 +153,7 @@ export function getJourneyStepFromPathname(
 
   if (service === 'broadband') {
     switch (normalizedPathname) {
-      case BROADBAND_JOURNEY_ROUTES[2]:
+      case INSURANCE_JOURNEY_ROUTES[2]:
         return 2;
       case BROADBAND_JOURNEY_ROUTES[3]:
         return 3;

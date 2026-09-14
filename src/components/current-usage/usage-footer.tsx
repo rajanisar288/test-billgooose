@@ -30,6 +30,7 @@ export default function UsageFooter({
   isComparing,
 }: UsageFooterProps) {
   const router = useRouter();
+
   const { footer } = data.currentUsage;
 
   const { amountLabel, periodLabel } = useMemo(() => {

@@ -219,7 +219,6 @@ export default function CurrentUsagePage() {
                   title={card.title}
                   address={card.address}
                   unit={card.unit}
-                  price={card.price}
                   buttonLabel={card.buttonLabel}
                   icon={card.icon}
                   iconAlt={card.iconAlt}

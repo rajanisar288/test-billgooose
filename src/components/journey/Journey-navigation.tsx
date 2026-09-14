@@ -8,10 +8,7 @@ import { ArrowRight, LoaderCircle } from 'lucide-react';
 
 import data from '@/data/content.json';
 
-import {
-  JOURNEY_STEP_STATUS_EVENT,
-  JOURNEY_STEP_SUBMIT_FAILED_EVENT,
-} from './journey-step-status';
+import { JOURNEY_STEP_STATUS_EVENT, JOURNEY_STEP_SUBMIT_FAILED_EVENT } from './journey-step-status';
 
 type JourneyService = 'energy' | 'broadband' | 'insurance' | 'bundle-bills';
 
@@ -88,7 +85,6 @@ export default function JourneyNavigation({
     return () => clearTimeout(timeout);
   }, [isSubmitting]);
 
-
   const { navigation } = data.journey;
 
   const handleBack = () => {
@@ -137,7 +133,6 @@ export default function JourneyNavigation({
           gap-4
         "
       >
-        {/* Back */}
         <button
           type="button"
           onClick={handleBack}
@@ -178,13 +173,10 @@ export default function JourneyNavigation({
             aria-hidden="true"
             className="
               mr-1
-
               h-[8px]
               w-[8px]
               shrink-0
-
               rotate-45
-
               border-b-[2px]
               border-l-[2px]
               border-[#344054]
@@ -194,7 +186,6 @@ export default function JourneyNavigation({
           {navigation.backButton}
         </button>
 
-        {/* Continue / Complete */}
         <button
           type="submit"
           form={formId}

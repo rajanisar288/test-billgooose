@@ -336,7 +336,7 @@ export default function WhyBillGoose() {
 
                       rounded-[8px]
 
-                      bg-[#EEFFFB]
+                      bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
 
                       min-[360px]:h-[74px]
                       min-[360px]:w-[60px]
@@ -370,7 +370,7 @@ export default function WhyBillGoose() {
 
                       overflow-hidden
 
-                      bg-[#EEFFFB]
+                      bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
 
                       md:block
                       md:h-[185px]

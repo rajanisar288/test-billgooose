@@ -18,31 +18,6 @@ export default function Footer() {
     setOpenColumnId((currentColumnId) => (currentColumnId === columnId ? null : columnId));
   };
 
-  const getFooterHref = (columnHeading: string, linkLabel: string) => {
-    const normalizedHeading = columnHeading.trim().toLowerCase();
-    const normalizedLabel = linkLabel.trim().toLowerCase();
-
-    // Company > About
-    if (normalizedHeading.includes('company')) {
-      if (normalizedLabel === 'about us') return '/about';
-      if (normalizedLabel === 'careers') return '/careers';
-    }
-
-    if (normalizedHeading.includes('support')) {
-      if (normalizedLabel == 'customer support') return '/customer-support';
-    }
-
-    if (normalizedHeading.includes('compare')) {
-      return '/compare';
-    }
-
-    if (normalizedHeading.includes('guide')) {
-      return '/#guides';
-    }
-
-    return '/';
-  };
-
   return (
     <footer className="w-full bg-white">
       {/* Mobile footer */}
@@ -51,8 +26,6 @@ export default function Footer() {
         <div>
           {footer.columns.map((column) => {
             const isOpen = openColumnId === column.id;
-
-            const getLinkHref = (linkLabel: string) => getFooterHref(column.heading, linkLabel);
 
             return (
               <div key={column.id}>
@@ -89,7 +62,7 @@ export default function Footer() {
                       {column.links.map((link) => (
                         <Link
                           key={link.id}
-                          href={getLinkHref(link.label)}
+                          href={link.href}
                           className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[12px] font-[467] leading-[18px] tracking-[0] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-[360px]:text-[13px] min-[360px]:leading-[19px] min-[390px]:text-[14px] min-[390px]:leading-5"
                         >
                           <span>{link.label}</span>
@@ -111,19 +84,58 @@ export default function Footer() {
 
         {/* Mobile footer bottom */}
         <div className="mt-auto border-t border-[#EAECF0] pt-6 min-[360px]:pt-7 min-[390px]:pt-[30px]">
-          <Link
-            href="/"
-            aria-label={footer.logo.ariaLabel}
-            className="relative mx-auto block h-[25px] w-[126px] min-[360px]:h-[27px] min-[360px]:w-[136px] min-[390px]:h-7 min-[390px]:w-[142px]"
-          >
-            <Image
-              src={footer.logo.src}
-              alt={footer.logo.alt}
-              fill
-              sizes="142px"
-              className="object-contain object-center"
+          <div className="flex items-center justify-center">
+            <Link
+              href={footer.logo.href}
+              aria-label={footer.logo.ariaLabel}
+              className="relative block h-[25px] w-[126px] shrink-0 min-[360px]:h-[27px] min-[360px]:w-[136px] min-[390px]:h-7 min-[390px]:w-[142px]"
+            >
+              <Image
+                src={footer.logo.src}
+                alt={footer.logo.alt}
+                fill
+                sizes="142px"
+                className="object-contain object-center"
+              />
+            </Link>
+
+            <div
+              aria-hidden="true"
+              className="mx-4 h-[28px] w-px shrink-0 bg-[#D0D5DD]"
             />
-          </Link>
+
+            <div className="flex items-center gap-4">
+              {footer.socials.map((social) => (
+                <Link
+                  key={social.id}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="
+                    flex
+                    h-8
+                    w-8
+
+                    items-center
+                    justify-center
+
+                    transition-opacity
+
+                    hover:opacity-70
+                  "
+                >
+                  <Image
+                    src={social.icon}
+                    alt={social.iconAlt}
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 object-contain"
+                  />
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <p className="mx-auto mt-5 max-w-[300px] text-center font-red-hat-display text-[11px] font-[467] leading-[18px] tracking-[0] text-[#667085] min-[360px]:max-w-[325px] min-[360px]:text-[12px] min-[360px]:leading-5 min-[390px]:max-w-[360px] min-[390px]:text-[14px] min-[390px]:leading-6">
             {footer.copyright}
@@ -135,38 +147,34 @@ export default function Footer() {
       <div className="mx-auto hidden min-h-[480px] w-full max-w-[1440px] flex-col px-20 pb-12 pt-16 lg:flex">
         {/* Footer links */}
         <div className="grid grid-cols-4 gap-16">
-          {footer.columns.map((column) => {
-            const getLinkHref = (linkLabel: string) => getFooterHref(column.heading, linkLabel);
+          {footer.columns.map((column) => (
+            <div key={column.id}>
+              <h2 className="font-red-hat-display text-[14px] font-medium leading-[1.4] text-[#667085]">
+                {column.heading}
+              </h2>
 
-            return (
-              <div key={column.id}>
-                <h2 className="font-red-hat-display text-[14px] font-medium leading-[1.4] text-[#667085]">
-                  {column.heading}
-                </h2>
+              <nav
+                className="mt-5 flex flex-col gap-4"
+                aria-label={`${column.heading} footer links`}
+              >
+                {column.links.map((link) => (
+                  <Link
+                    key={link.id}
+                    href={link.href}
+                    className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[16px] font-semibold leading-[1.3] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  >
+                    <span>{link.label}</span>
 
-                <nav
-                  className="mt-5 flex flex-col gap-4"
-                  aria-label={`${column.heading} footer links`}
-                >
-                  {column.links.map((link) => (
-                    <Link
-                      key={link.id}
-                      href={getLinkHref(link.label)}
-                      className="inline-flex w-fit items-center gap-2 font-red-hat-display text-[16px] font-semibold leading-[1.3] text-[#475467] transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    >
-                      <span>{link.label}</span>
-
-                      {link.badge && (
-                        <span className="inline-flex min-h-[20px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[11px] font-bold leading-none text-primary">
-                          {link.badge}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </nav>
-              </div>
-            );
-          })}
+                    {link.badge && (
+                      <span className="inline-flex min-h-[20px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[11px] font-bold leading-none text-primary">
+                        {link.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          ))}
         </div>
 
         <div className="flex-1" />

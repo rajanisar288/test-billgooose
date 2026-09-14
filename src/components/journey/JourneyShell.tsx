@@ -187,9 +187,7 @@ export default function JourneyShell({ children }: JourneyShellProps) {
   ========================================================= */
 
   const isBundle =
-    journeyFlow === 'bundle' ||
-    journeyFlow === 'bundle-bills' ||
-    service === 'bundle-bills';
+    journeyFlow === 'bundle' || journeyFlow === 'bundle-bills' || service === 'bundle-bills';
 
   const steps =
     service === 'insurance'
@@ -205,7 +203,6 @@ export default function JourneyShell({ children }: JourneyShellProps) {
     service === 'insurance' ? 'insurance' : service === 'broadband' ? 'broadband' : 'energy',
     isBundle ? 'bundle' : undefined,
   );
-
 
   const [copied, setCopied] = useState(false);
 

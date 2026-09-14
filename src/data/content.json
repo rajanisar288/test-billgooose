@@ -49,37 +49,37 @@
         "id": 3,
         "label": "Mobile",
         "description": "Latest SIM-Only And Contract Deals",
-        "href": "/compare/mobile",
+        "href": "/result?service=mobile",
         "icon": "/images/mobile-icon.png",
         "iconAlt": "Mobile",
         "status": "available"
       },
       {
-        "id": 4,
-        "label": "Credit Card",
-        "description": "",
-        "href": "/compare/credit-cards",
-        "icon": "/images/credit-cards.png",
-        "iconAlt": "Credit Card",
-        "status": "coming-soon"
+        "id": "sim-only",
+        "label": "SIM only",
+        "value": "sim-only",
+        "href": "/result?service=sim-only",
+        "icon": "/images/sim-icon-gray.png",
+        "activeIcon": "/images/sim-icon-green.png",
+        "iconAlt": "SIM only"
       },
       {
         "id": 5,
         "label": "Insurance",
-        "description": "",
-        "href": "/compare/insurance",
+        "description": "Protect what matters with trusted insurance deals",
+        "href": "/compare?service=insurance",
         "icon": "/images/insurance.png",
         "iconAlt": "Insurance",
-        "status": "coming-soon"
+        "status": "available"
       },
       {
         "id": 6,
-        "label": "Loan",
-        "description": "",
-        "href": "/compare/loans",
-        "icon": "/images/loans.png",
-        "iconAlt": "Loan",
-        "status": "coming-soon"
+        "label": "Bundle Bills",
+        "description": "Bundle your household bills and save more",
+        "href": "/compare?service=energy&flow=bundle",
+        "icon": "/images/bundle-icon.png",
+        "iconAlt": "Bundle Bills",
+        "status": "available"
       }
     ],
     "account": {
@@ -610,7 +610,7 @@
         "description": "Latest SIM-only plans and contract offers",
         "icon": "/images/sim-icon.png",
         "linkText": "Compare Now",
-        "href": "/compare?service=sim-only"
+        "href": "/result?service=sim-only"
       },
       {
         "id": "insurance",
@@ -1441,6 +1441,11 @@
               "value": "vodafone"
             },
             {
+              "id": "no-current-provider",
+              "label": "No I do not have a current provider",
+              "value": "no-current-provider"
+            },
+            {
               "id": "other",
               "label": "Other",
               "value": "other"
@@ -2156,7 +2161,7 @@
       }
     },
     "insurancePolicyDetails": {
-      "heading": "Policy details",
+      "heading": "Policy Details",
       "description": "Please enter your policy details below.",
       "storageKey": "journeyInsurancePolicyDetails",
       "ownership": {
@@ -2242,21 +2247,21 @@
         "defaultValue": "annual",
         "options": [
           {
-            "id": "monthly",
-            "label": "Monthly",
-            "value": "monthly"
-          },
-          {
             "id": "annual",
             "label": "Annual",
             "value": "annual"
+          },
+          {
+            "id": "monthly",
+            "label": "Monthly",
+            "value": "monthly"
           }
         ]
       }
     },
     "summary": {
-      "amount": "£121.34",
-      "period": "/month",
+      "amount": "1300 kWh",
+      "period": "/annual",
       "description": "is your estimated monthly spend",
       "totalUsage": "958 kWh total",
       "serviceLabel": "Gas & Electricity",
@@ -2275,7 +2280,6 @@
         "address": "59 Masons Way, Wallyford Mussel",
         "usage": "650",
         "unit": "kWh",
-        "price": "~£46/mo",
         "buttonLabel": "Update Gas Consumption",
         "icon": "/images/gas-usage-icon.png",
         "iconAlt": "",
@@ -2287,7 +2291,6 @@
         "address": "59 Masons Way, Wallyford Mussel",
         "usage": "650",
         "unit": "kWh",
-        "price": "~£46/mo",
         "buttonLabel": "Update Electricity Consumption",
         "icon": "/images/electricity-usage-icon.png",
         "iconAlt": "",
@@ -2346,8 +2349,8 @@
     },
     "footer": {
       "backButton": "Back",
-      "estimatedCostLabel": "Current estimated consumption",
-      "estimatedCost": "£121/month",
+      "estimatedCostLabel": "Current estimated usage",
+      "estimatedCost": "1300kWh/annual",
       "compareButton": "Compare Energy Prices"
     }
   },
@@ -3694,18 +3697,18 @@
       "buttonArrowIcon": "/images/arrow-plan-cards.png",
       "items": [
         {
-          "id": "octopus-energy",
+          "id": "utility-warehouse",
           "type": "select-plan",
           "service": "energy",
-          "provider": "Octopus Energy",
-          "description": "Simple Fixed – 12 month fixed · Dual fuel",
-          "logo": "/images/card-1-provider.png",
-          "logoAlt": "Octopus Energy",
+          "provider": "Utility Warehouse",
+          "description": "Simple Variable – 12 month fixed · Dual fuel",
+          "logo": "/images/uw-provider.png",
+          "logoAlt": "Utility Warehouse",
           "rating": "4.3",
           "contract": "12 month contract",
           "features": ["Price locked for 12 months", "24/7 chat support"],
           "priceLabel": "Estimated Price",
-          "price": "£284.90",
+          "price": "£136.78",
           "pricePeriod": "/mo",
           "saving": "£580/yr",
           "viewDetailsButton": "View Details",
@@ -4324,32 +4327,32 @@
           {
             "id": "tariff-type",
             "label": "Tariff type",
-            "electricity": "Tracker",
-            "gas": "Tracker"
+            "electricity": "Value",
+            "gas": "Value"
           },
           {
             "id": "contract-length",
             "label": "Contract length",
-            "electricity": "24 months",
-            "gas": "24 months"
+            "electricity": "12 months",
+            "gas": "12 months"
           },
           {
             "id": "early-exit-fees",
             "label": "Early exit fees",
-            "electricity": "£95.00",
-            "gas": "£95.00"
+            "electricity": "£0.00",
+            "gas": "£0.00"
           },
           {
             "id": "unit-rate",
             "label": "Unit rate per kWh",
-            "electricity": "24.330p",
-            "gas": "£295.00"
+            "electricity": "26.347p",
+            "gas": "7.5p"
           },
           {
             "id": "standing-charge",
             "label": "Standing charge per day",
-            "electricity": "44.780p",
-            "gas": "29.510p"
+            "electricity": "44.645p",
+            "gas": "29.381p"
           },
           {
             "id": "payment-method",
@@ -4406,7 +4409,7 @@
             "id": "exit-fees",
             "label": "Exit fees",
             "current": "None",
-            "selected": "£95.00"
+            "selected": "None"
           }
         ]
       },

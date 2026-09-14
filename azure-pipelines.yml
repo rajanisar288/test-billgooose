@@ -1,0 +1,39 @@
+trigger:
+  branches:
+    include:
+      - uat
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: Billgoose Variables
+
+steps:
+  - task: NodeTool@0
+    displayName: Use Node.js 22
+    inputs:
+      versionSpec: '22.x'
+
+  - script: |
+      npm ci
+      npm run build
+    displayName: Build static site
+
+  - task: CopyFiles@2
+    displayName: Add Static Web Apps configuration
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: 'staticwebapp.config.json'
+      TargetFolder: '$(Build.SourcesDirectory)/out'
+
+  - task: AzureStaticWebApp@0
+    displayName: Deploy to Azure Static Web Apps
+    inputs:
+      azure_static_web_apps_api_token: $(billgoose_customer_uat_deployment_token)
+      app_location: 'out'
+      api_location: ''
+      output_location: ''
+      skip_app_build: true

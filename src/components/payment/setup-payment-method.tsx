@@ -550,7 +550,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                         font-red-hat-display
 
                         text-[11px]
-                        font-[467]
+                        font-[667]
                         leading-4
                         tracking-[0]
 
@@ -590,7 +590,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                         font-red-hat-display
 
                         text-[11px]
-                        font-[467]
+                        font-[667]
                         leading-4
                         tracking-[0]
 
@@ -610,7 +610,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                         font-red-hat-display
 
                         text-[11px]
-                        font-[467]
+                        font-[667]
                         leading-4
                         tracking-[0]
 
@@ -913,7 +913,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                             font-red-hat-display
 
                             text-[12px]
-                            font-[467]
+                            font-[667]
                             leading-[18px]
                             tracking-[0]
 
@@ -1003,7 +1003,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                                   font-inter
 
                                   text-[10.5px]
-                                  font-normal
+                                  font-[660]
                                   leading-[17px]
                                   tracking-[0]
 
@@ -1017,7 +1017,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                                   sm:text-[11px]
                                   sm:leading-[18px]
 
-                                  lg:text-[12px]
+                                  lg:text-[13px]
                                   lg:leading-[19.5px]
                                 "
                             >
@@ -1128,14 +1128,14 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                   {/* <SummaryRow
                     label="Broadband"
                     value="£25.90"
-                  />
+                  /> */}
 
-                  <SummaryRow
+                  {/* <SummaryRow
                     label="Mobile"
                     value="£15.90"
-                  />
+                  /> */}
 
-                  <SummaryRow
+                  {/* <SummaryRow
                     label="Platform fee"
                     value="£1.90"
                   /> */}
@@ -1164,13 +1164,13 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       <p
                         className="
                           font-inter
-                          text-[9px]
-                          font-normal
+                          text-[11px]
                           leading-[14px]
 
                           text-[#667085]
 
-                          lg:text-[10px]
+                          font-[667]
+                          lg:text-[13px]
                           lg:leading-4
                         "
                       >
@@ -1265,13 +1265,13 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                         className="
                           font-inter
 
-                          text-[7px]
-                          font-normal
+                          text-[11px]
+                          font-[660]
                           leading-[11px]
 
                           text-[#027A48]
 
-                          lg:text-[9px]
+                          lg:text-[11px]
                           lg:leading-3
                         "
                       >
@@ -1404,8 +1404,8 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
 
                             object-contain
 
-                            lg:h-[14px]
-                            lg:w-[14px]
+                            lg:h-[15px]
+                            lg:w-[15px]
                           "
                       />
 
@@ -1413,13 +1413,13 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                         className="
                             font-inter
 
-                            text-[10px]
-                            font-normal
+                            text-[12px]
+                            font-[660]
                             leading-4
 
                             text-[#667085]
 
-                            lg:text-[11px]
+                            lg:text-[12px]
                           "
                       >
                         {item.label}
@@ -1667,13 +1667,13 @@ function SummaryRow({ label, value }: SummaryRowProps) {
     >
       <span
         className="
-          text-[10px]
-          font-normal
+          text-[12px]
+          font-[660]
           leading-4
 
           text-[#667085]
 
-          lg:text-[11px]
+          lg:text-[13px]
         "
       >
         {label}
@@ -1683,13 +1683,13 @@ function SummaryRow({ label, value }: SummaryRowProps) {
         className="
           shrink-0
 
-          text-[10px]
-          font-medium
+          text-[13px]
+          font-[660]
           leading-4
 
           text-[#101828]
 
-          lg:text-[11px]
+          lg:text-[13px]
         "
       >
         {value}

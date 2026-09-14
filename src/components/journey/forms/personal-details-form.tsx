@@ -246,7 +246,12 @@ export default function PersonalDetailsForm() {
 
   return (
     <div className="w-full">
-      {/* Desktop heading */}
+      {/* =====================================================
+          DESKTOP HEADING ONLY
+
+          Mobile + tablet heading comes from
+          JourneyMobileStepHeader.
+      ====================================================== */}
       <header
         className="
           hidden
@@ -310,48 +315,48 @@ export default function PersonalDetailsForm() {
                 setTitleDropdownOpen((currentValue) => !currentValue);
               }}
               className={`
-    flex h-11
-    w-full
-    items-center
-    justify-between
-    gap-2
+                flex h-11
+                w-full
+                items-center
+                justify-between
+                gap-2
 
-    rounded-[100px]
+                rounded-[100px]
 
-    border
+                border
 
-    bg-white
+                bg-white
 
-    px-4
-    py-3
+                px-4
+                py-3
 
-    text-left
+                text-left
 
-    font-inter
-    text-[13px]
-    font-medium
-    leading-5
-    text-[#101828]
+                font-inter
+                text-[13px]
+                font-normal
+                leading-5
+                text-[#344054]
 
-    shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
 
-    outline-none
+                outline-none
 
-    transition
+                transition
 
-    sm:h-12
-    sm:px-[18px]
-    sm:py-[13px]
-    sm:text-[14px]
+                sm:h-12
+                sm:px-[18px]
+                sm:py-[13px]
+                sm:text-[14px]
 
-    lg:h-[52px]
-    lg:px-[18px]
-    lg:py-[14px]
-    lg:text-[16px]
-    lg:leading-6
+                lg:h-[52px]
+                lg:px-[18px]
+                lg:py-[14px]
+                lg:text-[16px]
+                lg:leading-6
 
-    ${titleDropdownOpen ? 'border-black ring-4 ring-[#EEFFFB]' : 'border-[#D0D5DD]'}
-  `}
+                ${titleDropdownOpen ? 'border-black ring-4 ring-[#EEFFFB]' : 'border-[#D0D5DD]'}
+              `}
             >
               <span>{title}</span>
 
@@ -406,36 +411,34 @@ export default function PersonalDetailsForm() {
                       aria-selected={isSelected}
                       onClick={() => {
                         setTitle(option.value);
-
                         setTitleDropdownOpen(false);
                       }}
                       className={`
-  flex min-h-9
-  w-full
-  items-center
-  justify-between
+                        flex min-h-9
+                        w-full
+                        items-center
+                        justify-between
 
-  rounded-[30px]
+                        rounded-[30px]
 
-  px-3
-  py-2
+                        px-3
+                        py-2
 
-  text-left
+                        text-left
 
-  font-inter
-  text-[13px]
-  font-medium
-  leading-5
-  text-[#101828]
+                        font-inter
+                        text-[13px]
+                        leading-5
+                        text-[#344054]
 
-  transition-colors
+                        transition-colors
 
-  hover:bg-[#F5F5F5]
+                        hover:bg-[#F5F5F5]
 
-  sm:text-[14px]
+                        sm:text-[14px]
 
-  ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
-`}
+                        ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
+                      `}
                     >
                       <span>{option.label}</span>
 
@@ -443,11 +446,11 @@ export default function PersonalDetailsForm() {
                         <Check
                           aria-hidden="true"
                           className="
-                              h-4
-                              w-4
-                              shrink-0
-                              text-[#00897B]
-                            "
+                            h-4
+                            w-4
+                            shrink-0
+                            text-[#00897B]
+                          "
                           strokeWidth={2}
                         />
                       )}
@@ -459,7 +462,9 @@ export default function PersonalDetailsForm() {
           </div>
         </FormField>
 
-        {/* First / Last */}
+        {/* =====================================================
+            FIRST / LAST NAME
+        ====================================================== */}
         <div
           className="
             grid
@@ -675,6 +680,9 @@ export default function PersonalDetailsForm() {
           )}
         </FormField>
 
+        {/* =====================================================
+            TERMS
+        ====================================================== */}
         <div
           className="
             space-y-3
@@ -843,7 +851,7 @@ function CustomCheckbox({ checked, onChange, children }: CustomCheckboxProps) {
 
           font-inter
           text-[11px]
-          font-medium
+          font-normal
           leading-[16px]
           tracking-[0]
           text-[#535862]
@@ -881,7 +889,7 @@ const inputClasses = `
 
   font-inter
   text-[13px]
-  font-medium
+  font-normal
   leading-5
 
   text-[#101828]
