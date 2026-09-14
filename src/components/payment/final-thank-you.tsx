@@ -108,6 +108,8 @@ export default function FinalThankYou() {
   const { journey, clearJourney, setJourney } = useJourneyStore();
   const [isResettingJourney, setIsResettingJourney] = useState(false);
 
+  const isBundleFlow = journey?.serviceType == 'billPackage';
+
   const provider =
     selectedPlans.map((plan) => plan.provider).join(', ') || journey?.cart?.[0]?.provider;
 
@@ -439,8 +441,8 @@ export default function FinalThankYou() {
               lg:leading-[25px]
             "
           >
-            Your {journey?.serviceType} switch to {journey?.cart?.[0]?.provider} is confirmed and
-            your
+            Your {humanizeLabel(journey?.serviceType)} switch to {journey?.cart?.[0]?.provider} is
+            confirmed and your
             <br className="hidden sm:block" />
             {humanizeLabel(journey?.customer?.paymentPreference)} is set up.
           </p>
@@ -476,241 +478,242 @@ export default function FinalThankYou() {
           {/* =====================================================
               DIRECT DEBIT CONFIRMED
           ====================================================== */}
-          {['monthlyDirectDebit']?.includes(journey?.customer?.paymentPreference) && (
-            <section
-              className="
-              mt-8
-              w-full
-              max-w-[820px]
+          {['monthlyDirectDebit']?.includes(journey?.customer?.paymentPreference) &&
+            !isBundleFlow && (
+              <section
+                className="
+            mt-8
+            w-full
+            max-w-[820px]
 
-              overflow-hidden
+            overflow-hidden
 
-              rounded-[14px]
+            rounded-[14px]
 
-              border
+            border
+            border-[#EAECF0]
+
+            bg-white
+
+            shadow-[0px_1px_2px_rgba(16,24,40,0.03)]
+
+            sm:mt-9
+            sm:rounded-[16px]
+
+            lg:mt-10
+          "
+              >
+                {/* Header */}
+                <div
+                  className="
+              flex
+              min-h-[54px]
+              items-center
+              gap-2.5
+
+              border-b
               border-[#EAECF0]
 
-              bg-white
+              px-4
 
-              shadow-[0px_1px_2px_rgba(16,24,40,0.03)]
+              sm:min-h-[58px]
+              sm:px-5
 
-              sm:mt-9
-              sm:rounded-[16px]
-
-              lg:mt-10
+              lg:min-h-[64px]
+              lg:px-6
             "
-            >
-              {/* Header */}
-              <div
-                className="
+                >
+                  <Image
+                    src="/images/thanks-card-direct.png"
+                    alt=""
+                    width={24}
+                    height={24}
+                    aria-hidden="true"
+                    className="
+                h-[18px]
+                w-[18px]
+                shrink-0
+
+                object-contain
+
+                sm:h-5
+                sm:w-5
+
+                lg:h-6
+                lg:w-6
+              "
+                  />
+
+                  <h2
+                    className="
+                font-red-hat-display
+                text-[16px]
+                font-[645]
+                leading-[21px]
+                tracking-[0]
+
+                text-[#101828]
+
+                sm:text-[18px]
+                sm:leading-[22px]
+
+                lg:text-[20px]
+                lg:leading-6
+              "
+                  >
+                    Direct Debit Confirmed
+                  </h2>
+                </div>
+
+                {/* Body */}
+                <div
+                  className="
+              p-4
+
+              sm:p-5
+
+              lg:p-6
+            "
+                >
+                  <div
+                    className="
+                grid
+                grid-cols-1
+                gap-3
+
+                sm:grid-cols-2
+
+                lg:gap-3.5
+              "
+                  >
+                    <ConfirmedField
+                      label="Account holder"
+                      value={accountHolder}
+                    />
+
+                    <ConfirmedField
+                      label="Bank"
+                      value={bankName}
+                    />
+
+                    <ConfirmedField
+                      label="Sort code"
+                      value={maskedSortCode}
+                    />
+
+                    <ConfirmedField
+                      label="Account number"
+                      value={maskedAccountNumber}
+                    />
+
+                    <ConfirmedField
+                      label="Monthly amount"
+                      value={monthlyAmount}
+                    />
+
+                    {selectedPlans.map((plan) => (
+                      <ConfirmedField
+                        key={plan.id}
+                        label={plan.groupDisplayName ?? plan.provider}
+                        value={plan.price}
+                      />
+                    ))}
+
+                    {/* <ConfirmedField
+                  label="First payment"
+                  value={CONFIRMATION_DETAILS.firstPaymentDate}
+                /> */}
+
+                    <ConfirmedField
+                      label="Collection day"
+                      value={CONFIRMATION_DETAILS.collectionDay}
+                    />
+
+                    {/* <ConfirmedField
+                  label="Mandate ref"
+                  value={CONFIRMATION_DETAILS.mandateReference}
+                /> */}
+                  </div>
+
+                  {/* Guarantee */}
+                  <div
+                    className="
+                mt-4
+
                 flex
-                min-h-[54px]
-                items-center
+                min-h-[48px]
+                w-full
+                items-start
+
                 gap-2.5
 
-                border-b
-                border-[#EAECF0]
+                rounded-[10px]
 
-                px-4
+                border
+                border-[#2E90FA]
 
-                sm:min-h-[58px]
-                sm:px-5
+                bg-[#EFF4FF]
 
-                lg:min-h-[64px]
-                lg:px-6
+                px-3
+                py-3
+
+                sm:items-center
+                sm:rounded-[11px]
+                sm:px-4
+
+                lg:h-[52px]
+                lg:min-h-[52px]
+                lg:gap-3
+                lg:rounded-[12px]
+                lg:p-4
               "
-              >
-                <Image
-                  src="/images/thanks-card-direct.png"
-                  alt=""
-                  width={24}
-                  height={24}
-                  aria-hidden="true"
-                  className="
-                  h-[18px]
-                  w-[18px]
+                  >
+                    <Image
+                      src="/images/thanks-span-icon.png"
+                      alt=""
+                      width={20}
+                      height={20}
+                      aria-hidden="true"
+                      className="
+                  mt-[1px]
+                  h-4
+                  w-4
                   shrink-0
 
                   object-contain
 
-                  sm:h-5
-                  sm:w-5
+                  sm:mt-0
+                  sm:h-[18px]
+                  sm:w-[18px]
 
-                  lg:h-6
-                  lg:w-6
+                  lg:h-5
+                  lg:w-5
                 "
-                />
+                    />
 
-                <h2
-                  className="
-                  font-red-hat-display
-                  text-[16px]
-                  font-[645]
-                  leading-[21px]
+                    <p
+                      className="
+                  font-inter
+                  text-[11px]
+                  font-semibold
+                  leading-[17px]
                   tracking-[0]
 
-                  text-[#101828]
+                  text-[#026AA2]
 
-                  sm:text-[18px]
-                  sm:leading-[22px]
+                  sm:text-[12px]
+                  sm:leading-[18px]
 
-                  lg:text-[20px]
-                  lg:leading-6
+                  lg:text-[14px]
+                  lg:leading-5
                 "
-                >
-                  Direct Debit Confirmed
-                </h2>
-              </div>
-
-              {/* Body */}
-              <div
-                className="
-                p-4
-
-                sm:p-5
-
-                lg:p-6
-              "
-              >
-                <div
-                  className="
-                  grid
-                  grid-cols-1
-                  gap-3
-
-                  sm:grid-cols-2
-
-                  lg:gap-3.5
-                "
-                >
-                  <ConfirmedField
-                    label="Account holder"
-                    value={accountHolder}
-                  />
-
-                  <ConfirmedField
-                    label="Bank"
-                    value={bankName}
-                  />
-
-                  <ConfirmedField
-                    label="Sort code"
-                    value={maskedSortCode}
-                  />
-
-                  <ConfirmedField
-                    label="Account number"
-                    value={maskedAccountNumber}
-                  />
-
-                  <ConfirmedField
-                    label="Monthly amount"
-                    value={monthlyAmount}
-                  />
-
-                  {selectedPlans.map((plan) => (
-                    <ConfirmedField
-                      key={plan.id}
-                      label={plan.groupDisplayName ?? plan.provider}
-                      value={plan.price}
-                    />
-                  ))}
-
-                  {/* <ConfirmedField
-                    label="First payment"
-                    value={CONFIRMATION_DETAILS.firstPaymentDate}
-                  /> */}
-
-                  <ConfirmedField
-                    label="Collection day"
-                    value={CONFIRMATION_DETAILS.collectionDay}
-                  />
-
-                  {/* <ConfirmedField
-                    label="Mandate ref"
-                    value={CONFIRMATION_DETAILS.mandateReference}
-                  /> */}
+                    >
+                      Protected by the Direct Debit Guarantee. Full refund if any error occurs
+                    </p>
+                  </div>
                 </div>
-
-                {/* Guarantee */}
-                <div
-                  className="
-                  mt-4
-
-                  flex
-                  min-h-[48px]
-                  w-full
-                  items-start
-
-                  gap-2.5
-
-                  rounded-[10px]
-
-                  border
-                  border-[#2E90FA]
-
-                  bg-[#EFF4FF]
-
-                  px-3
-                  py-3
-
-                  sm:items-center
-                  sm:rounded-[11px]
-                  sm:px-4
-
-                  lg:h-[52px]
-                  lg:min-h-[52px]
-                  lg:gap-3
-                  lg:rounded-[12px]
-                  lg:p-4
-                "
-                >
-                  <Image
-                    src="/images/thanks-span-icon.png"
-                    alt=""
-                    width={20}
-                    height={20}
-                    aria-hidden="true"
-                    className="
-                    mt-[1px]
-                    h-4
-                    w-4
-                    shrink-0
-
-                    object-contain
-
-                    sm:mt-0
-                    sm:h-[18px]
-                    sm:w-[18px]
-
-                    lg:h-5
-                    lg:w-5
-                  "
-                  />
-
-                  <p
-                    className="
-                    font-inter
-                    text-[11px]
-                    font-semibold
-                    leading-[17px]
-                    tracking-[0]
-
-                    text-[#026AA2]
-
-                    sm:text-[12px]
-                    sm:leading-[18px]
-
-                    lg:text-[14px]
-                    lg:leading-5
-                  "
-                  >
-                    Protected by the Direct Debit Guarantee. Full refund if any error occurs
-                  </p>
-                </div>
-              </div>
-            </section>
-          )}
+              </section>
+            )}
 
           {/* =====================================================
               WHAT HAPPENS NEXT

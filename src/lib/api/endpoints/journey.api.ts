@@ -36,6 +36,9 @@ export const journeyApi = {
     payload: { quoteId: string; productReferences: string[]; supplierAccountPassword?: string },
   ) => apiClient.post(`/api/v1/journeys/${journeyId}/orders`, payload),
 
+  getJourneyOrderPaymentStatus: (journeyId: string, orderId: string) =>
+    apiClient.get(`/api/v1/journeys/${journeyId}/orders/${orderId}/payment-status`),
+
   // Submit Journey Order Bank Details
   submitJourneyOrderBankDetails: (
     journeyId: string,

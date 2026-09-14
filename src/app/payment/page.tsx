@@ -20,7 +20,11 @@ export default function PaymentPage() {
       {paymentCompleted ? (
         <FinalThankYou />
       ) : isBundle ? (
-        <BundlePaymentFrame />
+        <BundlePaymentFrame
+          onSuccess={() => {
+            setPaymentCompleted(true);
+          }}
+        />
       ) : (
         <SetupPaymentMethod
           onSuccess={() => {
