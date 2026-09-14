@@ -8,11 +8,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { humanizeLabel } from '@/components/result/result-labels';
 import data from '@/data/content.json';
+import { useJourneyStore } from '@/store/journeyStore';
 
 type CompareService = 'energy' | 'broadband' | 'insurance';
 
 type CompareFlowDetails = {
   service?: CompareService;
+  flow?: string;
 
   postcode?: string;
   address?: string | { fullAddress?: string };
@@ -208,8 +210,10 @@ function getServiceHref(label: string): string {
 export default function ResultFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { journey } = useJourneyStore();
 
   const requestedService = searchParams.get('service');
+  const requestedFlow = searchParams.get('flow');
 
   const isSimOnly = requestedService === 'sim-only';
 
@@ -252,6 +256,14 @@ export default function ResultFilters() {
 
   const isBroadband = service === 'broadband';
   const isInsurance = service === 'insurance';
+  const isBundle =
+    requestedFlow === 'bundle' ||
+    details.flow === 'bundle' ||
+    journey?.serviceType === 'billPackage';
+  const selectedEnergyType = isBundle ? journey?.customer?.energySupplyType : details.serviceType;
+  const selectedPaymentMethod = isBundle
+    ? journey?.customer?.paymentPreference
+    : details.paymentMethod;
 
   const address =
     typeof details.address === 'string'
@@ -269,7 +281,7 @@ export default function ResultFilters() {
   }
 
   const handleEdit = () => {
-    router.push(`/compare?service=${service}`);
+    router.push(`/compare?service=${service}${isBundle ? '&flow=bundle' : ''}`);
   };
 
   /* =========================================================
@@ -781,7 +793,7 @@ export default function ResultFilters() {
             ) : (
               <ResultInformationCard
                 title="Selected service"
-                value={humanizeLabel(details.serviceType, 'Dual Fuel')}
+                value={humanizeLabel(selectedEnergyType, 'Not provided')}
                 onEdit={handleEdit}
               />
             )}
@@ -802,7 +814,7 @@ export default function ResultFilters() {
             ) : (
               <ResultInformationCard
                 title="Payment method"
-                value={humanizeLabel(details.paymentMethod, 'Pre Payment')}
+                value={humanizeLabel(selectedPaymentMethod, 'Not provided')}
                 onEdit={handleEdit}
               />
             )}

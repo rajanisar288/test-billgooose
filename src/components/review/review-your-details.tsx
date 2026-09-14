@@ -559,8 +559,8 @@ export default function ReviewYourDetails() {
                     editSection(
                       'paymentMethod',
                       ['paymentPreference'],
-                      requestedService === 'bundle-bills'
-                        ? `/steps/payment-details-form?service=${requestedService}`
+                      isBundle
+                        ? `/steps/payment-details-form?service=${requestedService}&flow=bundle`
                         : `/compare?service=${requestedService}`,
                     )
                   }
@@ -1479,8 +1479,8 @@ function SummaryCard({
         >
           {isConfirming
             ? 'Confirming...'
-            : paymentMethod == 'prepayment'
-              ? `Confirm`
+            : paymentMethod?.toLowerCase().replace(/[-_\s]/g, '') === 'prepayment'
+              ? 'Confirm'
               : `${summary.confirmButton} →`}
         </button>
 
