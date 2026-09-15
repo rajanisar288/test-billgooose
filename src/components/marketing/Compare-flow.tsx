@@ -57,7 +57,7 @@ export default function CompareFlow() {
   const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
   const [alreadyInProperty, setAlreadyInProperty] = useState<any>(
     journey?.customer?.moveStatus ??
-      (compareFlow.form.broadband.contractStatus.defaultValue as MoveStatus),
+      (compareFlow.form.bundleBills.moveStatus.defaultValue as MoveStatus),
   );
   const [moveInDate, setMoveInDate] = useState(journey?.customer?.moveInDate ?? '');
   const [isAddressLoading, setIsAddressLoading] = useState<boolean>(false);
@@ -104,11 +104,20 @@ export default function CompareFlow() {
       compareFlow.form.broadband.currentProvider.defaultValue,
   );
 
-  const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
-
   const [stillInContract, setStillInContract] = useState(
-    compareFlow.form.broadband.contractStatus.defaultValue,
+    journey?.customer?.hasCurrentBroadbandContract == null
+      ? compareFlow.form.broadband.contractStatus.defaultValue
+      : journey.customer.hasCurrentBroadbandContract
+        ? 'yes'
+        : 'no',
   );
+
+  const hasNoCurrentProvider = currentProvider === 'no-current-provider';
+
+  const shouldShowContractStatus =
+    selectedService === 'broadband' && Boolean(currentProvider) && !hasNoCurrentProvider;
+
+  const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
 
   /* =========================================================
      INSURANCE STATE
@@ -268,7 +277,6 @@ export default function CompareFlow() {
         serviceType: isBundleFlow ? 'billPackage' : (requestedService ?? ''),
         address: selectedAddress,
         customer: {
-          ...(alreadyInProperty === MoveStatus.MOVING_IN && { moveInDate: moveInDate }),
           ...(['energy'].includes(requestedService ?? '') &&
             !isBundleFlow && {
               paymentPreference: paymentMethod,
@@ -280,10 +288,17 @@ export default function CompareFlow() {
               alreadyInProperty === MoveStatus.ALREADY_MOVED_IN
                 ? MoveStatus.ALREADY_MOVED_IN
                 : MoveStatus.MOVING_IN,
+            ...(alreadyInProperty === MoveStatus.MOVING_IN && { moveInDate: moveInDate }),
             energySupplyType: energyServiceType,
           }),
           ...(['broadband'].includes(requestedService ?? '') && {
-            currentBroadbandProvider: currentProvider,
+            hasCurrentBroadbandProvider: ['no-current-provider']?.includes(currentProvider)
+              ? false
+              : true,
+            ...(!hasNoCurrentProvider && {
+              currentBroadbandProvider: currentProvider,
+              hasCurrentBroadbandContract: stillInContract == 'yes' ? true : false,
+            }),
           }),
           ...(['insurance'].includes(requestedService ?? '') && {
             insuranceType: insuranceType,
@@ -1443,7 +1458,7 @@ export default function CompareFlow() {
                     </fieldset>
                     <fieldset>
                       <legend className="sr-only">
-                        {compareFlow.form.broadband.contractStatus.label}
+                        {compareFlow.form.bundleBills.moveStatus.label}
                       </legend>
 
                       <div
@@ -1471,11 +1486,11 @@ export default function CompareFlow() {
                             lg:text-[14px]
                           "
                         >
-                          {compareFlow.form.broadband.contractStatus.label}
+                          {compareFlow.form.bundleBills.moveStatus.label}
                         </span>
 
                         <div className="flex h-[34px] shrink-0 items-center">
-                          {compareFlow.form.broadband.contractStatus.options.map((option) => (
+                          {compareFlow.form.bundleBills.moveStatus.options.map((option) => (
                             <PropertyOption
                               key={option.id}
                               label={option.label}
@@ -1489,6 +1504,115 @@ export default function CompareFlow() {
                         </div>
                       </div>
                     </fieldset>
+
+                    {/* =================================================
+                MOVE IN DATE
+            ================================================== */}
+
+                    {alreadyInProperty == MoveStatus.MOVING_IN && (
+                      <FormField label="">
+                        <div className="relative w-full">
+                          <input
+                            id="date-of-birth"
+                            type="date"
+                            value={moveInDate}
+                            onChange={(event) => setMoveInDate(event.target.value)}
+                            autoComplete="bday"
+                            className="
+                      flex
+                      h-12
+                      w-full
+
+                      items-center
+
+                      rounded-full
+
+                      border
+
+                      bg-white
+
+                      px-[18px]
+                      pr-11
+
+                      font-inter
+
+                      text-[14px]
+                      font-normal
+
+                      text-[#344054]
+
+                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                      outline-none
+
+                      transition
+
+                      lg:pr-[50px]
+
+                      [&::-webkit-calendar-picker-indicator]:absolute
+                      [&::-webkit-calendar-picker-indicator]:right-[18px]
+                      [&::-webkit-calendar-picker-indicator]:h-[18px]
+                      [&::-webkit-calendar-picker-indicator]:w-[18px]
+                      [&::-webkit-calendar-picker-indicator]:cursor-pointer
+                      [&::-webkit-calendar-picker-indicator]:opacity-0
+                    "
+                          />
+
+                          <button
+                            type="button"
+                            aria-label="Open date of birth calendar"
+                            onClick={() => {
+                              const input = document.getElementById(
+                                'date-of-birth',
+                              ) as HTMLInputElement | null;
+
+                              if (input?.showPicker) {
+                                input.showPicker();
+                              } else {
+                                input?.click();
+                              }
+
+                              input?.focus();
+                            }}
+                            className="
+                      absolute
+                      right-[14px]
+                      top-1/2
+
+                      flex
+                      h-8
+                      w-8
+                      -translate-y-1/2
+
+                      items-center
+                      justify-center
+
+                      rounded-full
+
+                      text-[#667085]
+
+                      hover:bg-[#F2F4F7]
+
+                      focus-visible:outline-none
+                      focus-visible:ring-4
+                      focus-visible:ring-[#EEFFFB]
+                    "
+                          >
+                            <CalendarDays
+                              aria-hidden="true"
+                              className="
+                        h-4
+                        w-4
+
+                        lg:h-[18px]
+                        lg:w-[18px]
+                      "
+                              strokeWidth={1.6}
+                            />
+                          </button>
+                        </div>
+                      </FormField>
+                    )}
                   </>
                 ) : (
                   <>
@@ -1719,6 +1843,89 @@ export default function CompareFlow() {
                     )}
                   </div>
                 </div>
+                {shouldShowContractStatus && (
+                  <>
+                    <fieldset>
+                      <legend className="sr-only">
+                        {compareFlow.form.broadband.contractStatus.label}
+                      </legend>
+
+                      <div
+                        className="
+                      flex
+                      min-h-12
+                      w-full
+
+                      items-center
+                      justify-between
+
+                      gap-[18px]
+
+                      rounded-full
+
+                      border
+                      border-[#D0D5DD]
+
+                      bg-white
+
+                      py-[9px]
+                      pl-4
+                      pr-2
+
+                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+
+                      min-[390px]:pl-6
+
+                      md:h-[50px]
+                      md:min-h-[50px]
+                      md:pl-5
+
+                      lg:h-[52px]
+                      lg:min-h-[52px]
+                    "
+                      >
+                        <span
+                          className="
+                        font-inter
+
+                        text-[12px]
+                        font-medium
+                        leading-5
+
+                        text-[#344054]
+
+                        min-[390px]:text-[13px]
+
+                        lg:text-[14px]
+                      "
+                        >
+                          {compareFlow.form.broadband.contractStatus.label}
+                        </span>
+
+                        <div
+                          className="
+                        flex
+                        h-[34px]
+                        shrink-0
+
+                        items-center
+                      "
+                        >
+                          {compareFlow.form.broadband.contractStatus.options.map((option) => (
+                            <PropertyOption
+                              key={option.id}
+                              label={option.label}
+                              selected={stillInContract === option.value}
+                              onClick={() => {
+                                setStillInContract(option.value);
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </fieldset>
+                  </>
+                )}
               </>
             )}
             {/* {requestedService == 'bundle-bills' && (
@@ -1907,115 +2114,6 @@ export default function CompareFlow() {
                   </div>
                 </div>
               </>
-            )}
-
-            {/* =================================================
-                MOVE IN DATE
-            ================================================== */}
-
-            {alreadyInProperty == MoveStatus.MOVING_IN && (
-              <FormField label="">
-                <div className="relative w-full">
-                  <input
-                    id="date-of-birth"
-                    type="date"
-                    value={moveInDate}
-                    onChange={(event) => setMoveInDate(event.target.value)}
-                    autoComplete="bday"
-                    className="
-                      flex
-                      h-12
-                      w-full
-
-                      items-center
-
-                      rounded-full
-
-                      border
-
-                      bg-white
-
-                      px-[18px]
-                      pr-11
-
-                      font-inter
-
-                      text-[14px]
-                      font-normal
-
-                      text-[#344054]
-
-                      shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
-
-                      outline-none
-
-                      transition
-
-                      lg:pr-[50px]
-
-                      [&::-webkit-calendar-picker-indicator]:absolute
-                      [&::-webkit-calendar-picker-indicator]:right-[18px]
-                      [&::-webkit-calendar-picker-indicator]:h-[18px]
-                      [&::-webkit-calendar-picker-indicator]:w-[18px]
-                      [&::-webkit-calendar-picker-indicator]:cursor-pointer
-                      [&::-webkit-calendar-picker-indicator]:opacity-0
-                    "
-                  />
-
-                  <button
-                    type="button"
-                    aria-label="Open date of birth calendar"
-                    onClick={() => {
-                      const input = document.getElementById(
-                        'date-of-birth',
-                      ) as HTMLInputElement | null;
-
-                      if (input?.showPicker) {
-                        input.showPicker();
-                      } else {
-                        input?.click();
-                      }
-
-                      input?.focus();
-                    }}
-                    className="
-                      absolute
-                      right-[14px]
-                      top-1/2
-
-                      flex
-                      h-8
-                      w-8
-                      -translate-y-1/2
-
-                      items-center
-                      justify-center
-
-                      rounded-full
-
-                      text-[#667085]
-
-                      hover:bg-[#F2F4F7]
-
-                      focus-visible:outline-none
-                      focus-visible:ring-4
-                      focus-visible:ring-[#EEFFFB]
-                    "
-                  >
-                    <CalendarDays
-                      aria-hidden="true"
-                      className="
-                        h-4
-                        w-4
-
-                        lg:h-[18px]
-                        lg:w-[18px]
-                      "
-                      strokeWidth={1.6}
-                    />
-                  </button>
-                </div>
-              </FormField>
             )}
 
             {/* =================================================

@@ -1453,19 +1453,19 @@
           ]
         },
         "contractStatus": {
-          "label": "Are you already in the property?",
+          "label": "Are you still in contract with your current provider?",
           "helperText": "Select No if you're not sure",
-          "defaultValue": "alreadyMovedIn",
+          "defaultValue": "yes",
           "options": [
             {
-              "id": "alreadyMovedIn",
+              "id": "yes",
               "label": "Yes",
-              "value": "alreadyMovedIn"
+              "value": "yes"
             },
             {
-              "id": "movingIn",
+              "id": "no",
               "label": "No",
-              "value": "movingIn"
+              "value": "no"
             }
           ]
         }
@@ -1519,9 +1519,26 @@
               "value": "tenant"
             },
             {
-              "id": "homeOwner",
+              "id": "homeowner",
               "label": "Home Owner",
-              "value": "homeOwner"
+              "value": "homeowner"
+            }
+          ]
+        },
+        "moveStatus": {
+          "label": "Are you already in the property?",
+          "helperText": "Select No if you're not sure",
+          "defaultValue": "alreadyMovedIn",
+          "options": [
+            {
+              "id": "alreadyMovedIn",
+              "label": "Yes",
+              "value": "alreadyMovedIn"
+            },
+            {
+              "id": "movingIn",
+              "label": "No",
+              "value": "movingIn"
             }
           ]
         }
