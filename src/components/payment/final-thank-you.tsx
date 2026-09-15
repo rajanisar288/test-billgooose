@@ -12,6 +12,7 @@ import { readStoredSelectedPlans, sumPlanPrices } from '@/components/result/sele
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { partnerConfigApi } from '@/lib/api/endpoints/partnerConfig';
+import { clearJourneyStorage } from '@/lib/journey-storage';
 import { useJourneyStore } from '@/store/journeyStore';
 
 /* =========================================================
@@ -161,26 +162,7 @@ export default function FinalThankYou() {
     // Reset in-memory Zustand store
     clearJourney();
 
-    // Clear journey-related localStorage keys
-    localStorage.removeItem('journeyId');
-    localStorage.removeItem(storeJourney);
-    localStorage.removeItem('journey-storage');
-    localStorage.removeItem('energyUsage');
-    localStorage.removeItem('billgooseJourneyService');
-
-    // Clear journey-related sessionStorage keys
-    sessionStorage.removeItem('compareFlowDetails');
-    sessionStorage.removeItem('billgooseJourneyService');
-    sessionStorage.removeItem('billgooseJourneyFlow');
-    sessionStorage.removeItem('journeySelectedPlans');
-    sessionStorage.removeItem('billgooseJourneyProgress');
-    sessionStorage.removeItem('journeySelectedPlan');
-    sessionStorage.removeItem('journeyPaymentDetails');
-
-    // Notify subscribers so UI resets (JourneyShell, etc.)
-    window.dispatchEvent(new Event('billgoose-compare-flow-changed'));
-    window.dispatchEvent(new Event('billgoose-journey-service-changed'));
-    window.dispatchEvent(new Event('billgoose-journey-progress-changed'));
+    clearJourneyStorage();
 
     try {
       const [configResponse, journeyResponse] = await Promise.all([
