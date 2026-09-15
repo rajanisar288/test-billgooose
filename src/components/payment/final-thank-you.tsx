@@ -5,8 +5,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { ArrowLeft } from 'lucide-react';
-
 import { getDefaultJourney } from '@/components/loadConfig';
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
@@ -222,7 +220,7 @@ export default function FinalThankYou() {
 
           Gradient starts AFTER this row.
       ====================================================== */}
-      <div
+      {/* <div
         className="
     w-full
 
@@ -290,7 +288,7 @@ export default function FinalThankYou() {
             <span>Back</span>
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* =====================================================
           GRADIENT PAGE AREA
