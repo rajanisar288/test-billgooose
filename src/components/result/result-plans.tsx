@@ -386,15 +386,8 @@ export default function ResultPlans({
         }
 
         setJourney(response.data);
-      } catch (error) {
-        showError(
-          error &&
-            typeof error === 'object' &&
-            'message' in error &&
-            typeof error.message === 'string'
-            ? error.message
-            : 'We could not save your selected plan. Please try again.',
-        );
+      } catch (error: any) {
+        showError(error?.message);
         setSelectingPlanId(null);
         return;
       }
@@ -510,15 +503,8 @@ export default function ResultPlans({
       sessionStorage.setItem('billgooseJourneyService', 'energy');
       sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
       router.push('/review-your-details?service=energy&flow=bundle');
-    } catch (error) {
-      showError(
-        error &&
-          typeof error === 'object' &&
-          'message' in error &&
-          typeof error.message === 'string'
-          ? error.message
-          : 'We could not save your selected products. Please try again.',
-      );
+    } catch (error: any) {
+      showError(error?.message);
     } finally {
       setIsContinuingBundle(false);
     }

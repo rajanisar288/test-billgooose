@@ -355,16 +355,9 @@ export default function ReviewYourDetails() {
       } else {
         router.push('/payment');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to confirm journey:', error);
-      showError(
-        error &&
-          typeof error === 'object' &&
-          'message' in error &&
-          typeof error.message === 'string'
-          ? error.message
-          : 'We could not create your order. Please try again.',
-      );
+      showError(error?.message);
     } finally {
       setIsConfirming(false);
     }

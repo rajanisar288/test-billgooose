@@ -147,16 +147,8 @@ export default function CurrentUsagePage() {
 
       localStorage.setItem('energyUsage', JSON.stringify(energyUsage || {}));
       router.push(`/result?service=${journey?.serviceType || 'energy'}`);
-    } catch (error) {
-      const backendMessage =
-        error &&
-        typeof error === 'object' &&
-        'message' in error &&
-        typeof error.message === 'string'
-          ? error.message
-          : 'We could not update your consumption details. Please try again.';
-
-      showError(backendMessage);
+    } catch (error: any) {
+      showError(error?.message);
     } finally {
       setIsComparing(false);
     }

@@ -180,15 +180,8 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
       );
       showSuccess('Your payment details were submitted successfully.');
       onSuccess();
-    } catch (error) {
-      showError(
-        error &&
-          typeof error === 'object' &&
-          'message' in error &&
-          typeof error.message === 'string'
-          ? error.message
-          : 'We could not submit your payment details. Please try again.',
-      );
+    } catch (error: any) {
+      showError(error.message);
     } finally {
       setIsSubmitting(false);
     }

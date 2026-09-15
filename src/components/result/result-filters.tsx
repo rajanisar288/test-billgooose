@@ -802,7 +802,7 @@ export default function ResultFilters() {
             {isInsurance ? (
               <ResultInformationCard
                 title="Insurance type"
-                value={getInsuranceTypeLabel(details.insuranceType)}
+                value={humanizeLabel(getInsuranceTypeLabel(details.insuranceType))}
                 onEdit={handleEdit}
               />
             ) : isBroadband ? (

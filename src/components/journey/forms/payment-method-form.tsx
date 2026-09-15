@@ -191,9 +191,9 @@ export default function PaymentMethodForm() {
             : '/current-usage?service=energy'
           : `/result?service=${journeyFlow === 'bundle' ? 'energy&flow=bundle' : 'energy'}`,
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to complete payment method step:', error);
-      showError('We could not prepare your energy consumption details. Please try again.');
+      showError(error?.message);
       notifyJourneyStepFailed();
     } finally {
       setIsSubmitting(false);

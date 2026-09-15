@@ -89,9 +89,9 @@ export function useUpdateJourney() {
       localStorage.setItem('journey-storage', JSON.stringify(updatedJourney.data));
       router.push(nextRoute);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update journey:', error);
-      showError('Failed to update journey. Please try again.');
+      showError(error?.message);
       notifyJourneyStepFailed();
       return false;
     }

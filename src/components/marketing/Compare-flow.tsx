@@ -25,7 +25,7 @@ export default function CompareFlow() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { journey } = useJourneyStore();
+  const { journey, setJourney } = useJourneyStore();
   const { showError, showSuccess } = useToast();
 
   const requestedService = searchParams.get('service');
@@ -41,7 +41,10 @@ export default function CompareFlow() {
   const isBundleFlow = requestedFlow === 'bundle';
   const apiServiceType = isBundleFlow ? 'billPackage' : requestedService;
   const serviceFields = useServiceFields(apiServiceType);
-  const serviceContent = compareFlow.services[selectedService];
+  const serviceContent =
+    selectedService == 'insurance'
+      ? compareFlow.services.energy
+      : compareFlow.services[selectedService];
 
   /* =========================================================
      COMMON STATE
@@ -60,6 +63,7 @@ export default function CompareFlow() {
     journey?.customer?.moveStatus ??
       (compareFlow.form.broadband.contractStatus.defaultValue as MoveStatus),
   );
+  console.log('🚀 ~ CompareFlow ~ alreadyInProperty:', alreadyInProperty);
   const [moveInDate, setMoveInDate] = useState(journey?.customer?.moveInDate ?? '');
   const [isAddressLoading, setIsAddressLoading] = useState<boolean>(false);
 
@@ -315,10 +319,10 @@ export default function CompareFlow() {
         if (!updatedJourney?.data) {
           throw new Error('No data received from createJourney API');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('createJourney failed:', error);
 
-        showError('Failed to update journey. Please try again.');
+        showError(error?.message);
 
         return;
       }
@@ -348,10 +352,10 @@ export default function CompareFlow() {
           if (!energyUsage?.data) {
             throw new Error('No data received from prepareConsumption API');
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('prepareConsumption failed:', error);
 
-          showError('We could not prepare your energy consumption details. Please try again.');
+          showError(error?.message);
 
           return;
         }
@@ -418,10 +422,10 @@ export default function CompareFlow() {
       } else {
         router.push(`/steps/personal-details-form/?service=${requestedService}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Unexpected compare flow error:', error);
 
-      showError('Something went wrong. Please try again.');
+      showError(error?.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -1316,6 +1320,121 @@ export default function CompareFlow() {
             {/* ENERGY */}
             {['energy'].includes(requestedService ?? '') && (
               <>
+                <div>
+                  <label
+                    id="energy-service-label"
+                    className="
+                        mb-2 block
+                        font-inter
+                        text-[13px] font-[500]
+                        leading-5
+                        text-[#344054]
+                        lg:text-[14px]
+                      "
+                  >
+                    {compareFlow.form.energy.serviceType.label}
+                  </label>
+
+                  <div
+                    ref={energyServiceDropdownRef}
+                    className="relative"
+                  >
+                    <button
+                      type="button"
+                      aria-labelledby="energy-service-label"
+                      aria-expanded={energyServiceDropdownOpen}
+                      aria-haspopup="listbox"
+                      onClick={() => {
+                        setEnergyServiceDropdownOpen((current) => !current);
+                        setAddressDropdownOpen(false);
+                        setProviderDropdownOpen(false);
+                      }}
+                      className={`
+                          flex h-12 w-full
+                          items-center justify-between
+                          gap-2
+                          rounded-full border
+                          bg-white
+                          px-[18px]
+                          text-left
+                          font-inter text-[14px] font-normal leading-6
+                          text-[#344054]
+                          shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
+                          outline-none transition
+                          md:h-[50px]
+                          lg:h-[52px] lg:text-[16px]
+                          ${
+                            energyServiceDropdownOpen
+                              ? 'border-black ring-4 ring-[#EEFFFB]'
+                              : 'border-[#D0D5DD]'
+                          }
+                        `}
+                    >
+                      <span>
+                        {
+                          compareFlow.form.energy.serviceType.options.find(
+                            (option) => option.value === energyServiceType,
+                          )?.label
+                        }
+                      </span>
+
+                      <ChevronDown
+                        aria-hidden="true"
+                        className={`
+                            h-5 w-5 shrink-0
+                            text-[#354052]
+                            transition-transform
+                            ${energyServiceDropdownOpen ? 'rotate-180' : ''}
+                          `}
+                        strokeWidth={2}
+                      />
+                    </button>
+
+                    {energyServiceDropdownOpen && (
+                      <DropdownPanel>
+                        {compareFlow.form.energy.serviceType.options.map((option) => {
+                          const isSelected = energyServiceType === option.value;
+
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              role="option"
+                              aria-selected={isSelected}
+                              onClick={() => {
+                                setEnergyServiceType(option.value);
+                                setEnergyServiceDropdownOpen(false);
+                              }}
+                              className={`
+                                  flex min-h-10 w-full
+                                  items-center justify-between
+                                  rounded-[30px]
+                                  px-3 py-2
+                                  text-left
+                                  font-inter text-[13px]
+                                  text-[#344054]
+                                  transition-colors
+                                  hover:bg-[#F5F5F5]
+                                  lg:text-[14px]
+                                  ${isSelected ? 'bg-[#F5F5F5]' : 'bg-white'}
+                                `}
+                            >
+                              <span>{option.label}</span>
+
+                              {isSelected && (
+                                <Check
+                                  aria-hidden="true"
+                                  className="h-4 w-4 text-[#00897B]"
+                                  strokeWidth={2}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </DropdownPanel>
+                    )}
+                  </div>
+                </div>
                 {isBundleFlow ? (
                   <>
                     <fieldset>
@@ -1395,47 +1514,49 @@ export default function CompareFlow() {
                     </fieldset>
                   </>
                 ) : (
-                  <fieldset>
-                    <legend
-                      className="
-                        mb-2
+                  <>
+                    <fieldset>
+                      <legend
+                        className="
+                          mb-2
 
-                        font-inter
+                          font-inter
 
-                        text-[13px]
-                        font-[500]
-                        leading-5
+                          text-[13px]
+                          font-[500]
+                          leading-5
 
-                        text-[#344054]
+                          text-[#344054]
 
-                        lg:text-[14px]
-                      "
-                    >
-                      {compareFlow.form.energy.paymentMethod.label}
-                    </legend>
+                          lg:text-[14px]
+                        "
+                      >
+                        {compareFlow.form.energy.paymentMethod.label}
+                      </legend>
 
-                    <div
-                      className="
-                        flex
-                        flex-wrap
+                      <div
+                        className="
+                          flex
+                          flex-wrap
 
-                        items-center
+                          items-center
 
-                        gap-2
-                      "
-                    >
-                      {compareFlow.form.energy.paymentMethod.options.map((option) => (
-                        <ChoicePill
-                          key={option.id}
-                          label={option.label}
-                          selected={paymentMethod === option.value}
-                          onClick={() => {
-                            setPaymentMethod(option.value);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </fieldset>
+                          gap-2
+                        "
+                      >
+                        {compareFlow.form.energy.paymentMethod.options.map((option) => (
+                          <ChoicePill
+                            key={option.id}
+                            label={option.label}
+                            selected={paymentMethod === option.value}
+                            onClick={() => {
+                              setPaymentMethod(option.value);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </fieldset>
+                  </>
                 )}
               </>
             )}
@@ -1628,7 +1749,7 @@ export default function CompareFlow() {
 
             {requestedService == 'insurance' && (
               <>
-                <FormField label={compareFlow.form.email.label}>
+                {/* <FormField label={compareFlow.form.email.label}>
                   <input
                     type="email"
                     value={email}
@@ -1692,7 +1813,7 @@ export default function CompareFlow() {
                   {errors.email && (
                     <p className="mt-1.5 text-[12px] text-[#D92D20]">{errors.email}</p>
                   )}
-                </FormField>
+                </FormField> */}
                 <div>
                   <label
                     id="energy-service-label"
@@ -1815,7 +1936,7 @@ export default function CompareFlow() {
                 MOVE IN DATE
             ================================================== */}
 
-            {alreadyInProperty == String(MoveStatus.MOVING_IN) && (
+            {alreadyInProperty == MoveStatus.MOVING_IN && (
               <FormField label="">
                 <div className="relative w-full">
                   <input
