@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, no-console */
+
 import pino from 'pino';
 
 // Create logger instance

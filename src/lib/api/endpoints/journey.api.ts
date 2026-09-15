@@ -17,11 +17,11 @@ export const journeyApi = {
     apiClient.post(`/api/v1/journeys/${journeyId}/consumption/prepare`, payload),
 
   // Get Quote
-  getQuote: (journeyId: string, payload: {}) =>
+  getQuote: (journeyId: string, payload: Record<string, never>) =>
     apiClient.post(`/api/v1/journeys/${journeyId}/quotes`, payload),
 
   // update a Journey
-  updateJourney: (journeyId: string, payload: {}) =>
+  updateJourney: (journeyId: string, payload: Record<string, unknown>) =>
     apiClient.put(`/api/v1/journeys/${journeyId}/customer`, payload),
 
   getAddress: (journeyId: string, params?: { postcode?: string; source?: number }) => {

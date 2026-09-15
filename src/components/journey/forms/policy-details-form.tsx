@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { Check, ChevronDown } from 'lucide-react';
 
@@ -18,14 +18,7 @@ import { useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
-type OptionItem = {
-  id: string;
-  label: string;
-  value: string;
-};
-
 export default function PolicyDetailsForm() {
-  const router = useRouter();
   const { journey } = useJourneyStore();
   const { updateJourney } = useUpdateJourney();
   const searchParams = useSearchParams();

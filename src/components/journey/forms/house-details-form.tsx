@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState } from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
@@ -19,7 +19,6 @@ import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
 export default function HouseDetailsForm() {
-  const router = useRouter();
   const { journey } = useJourneyStore();
   const { updateJourney } = useUpdateJourney();
   const searchParams = useSearchParams();

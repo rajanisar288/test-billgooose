@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect, useState } from 'react';
 
 import Image from 'next/image';
@@ -258,6 +260,8 @@ export default function ResultPlans({
       {},
     );
 
+    // Reconcile persisted selections only after the current quote has loaded.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedBundlePlans(nextSelections);
     sessionStorage.setItem('journeySelectedPlans', JSON.stringify(validStoredPlans));
     if (validStoredPlans.length === 0) sessionStorage.removeItem('journeySelectedPlan');

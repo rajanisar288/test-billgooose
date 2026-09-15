@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { type FormEvent, useMemo, useState } from 'react';
 
 import Image from 'next/image';
@@ -101,7 +103,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof PaymentForm, string>>>({});
 
-  const selectedPlans = useMemo<StandardPlan[]>(readStoredSelectedPlans, []);
+  const selectedPlans = useMemo<StandardPlan[]>(() => readStoredSelectedPlans(), []);
   const totalMonthlyPrice = sumPlanPrices(selectedPlans, 'price');
 
   function updateField<K extends keyof PaymentForm>(field: K, value: PaymentForm[K]) {

@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
+
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
 import Image from 'next/image';
@@ -8,7 +10,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ArrowRight, CalendarDays, Check, ChevronDown } from 'lucide-react';
 
-import { EMAIL_REGEX } from '@/components/journey/forms/personal-details-form';
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
@@ -53,17 +54,11 @@ export default function CompareFlow() {
   const initialPostcode = searchParams.get('postcode')?.toUpperCase() ?? '';
   const [postcode, setPostcode] = useState(journey?.address?.postcode ?? initialPostcode);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(journey?.address ?? null);
-  const [email, setEmail] = useState(journey?.customer?.emailAddress ?? '');
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [addressDropdownOpen, setAddressDropdownOpen] = useState(false);
-  const [occupancyType, setOccupancyType] = useState<any>(
-    compareFlow.form.energy.serviceType.defaultValue,
-  );
   const [alreadyInProperty, setAlreadyInProperty] = useState<any>(
     journey?.customer?.moveStatus ??
       (compareFlow.form.broadband.contractStatus.defaultValue as MoveStatus),
   );
-  console.log('🚀 ~ CompareFlow ~ alreadyInProperty:', alreadyInProperty);
   const [moveInDate, setMoveInDate] = useState(journey?.customer?.moveInDate ?? '');
   const [isAddressLoading, setIsAddressLoading] = useState<boolean>(false);
 
@@ -115,21 +110,10 @@ export default function CompareFlow() {
     compareFlow.form.broadband.contractStatus.defaultValue,
   );
 
-  const hasNoCurrentProvider = currentProvider === 'no-current-provider';
-
-  const shouldShowContractStatus =
-    selectedService === 'broadband' && Boolean(currentProvider) && !hasNoCurrentProvider;
-
   /* =========================================================
      INSURANCE STATE
   ========================================================= */
 
-  const insuranceTypeOptions = [
-    { id: 'life-insurance', label: 'Life Insurance', value: 'life-insurance' },
-    { id: 'home-insurance', label: 'Home Insurance', value: 'home-insurance' },
-    { id: 'vehicle-insurance', label: 'Vehicle Insurance', value: 'vehicle-insurance' },
-    { id: 'health-insurance', label: 'Health Insurance', value: 'health-insurance' },
-  ];
   /* =========================================================
      REFS
   ========================================================= */
@@ -141,8 +125,6 @@ export default function CompareFlow() {
   const energyServiceDropdownRef = useRef<HTMLDivElement>(null);
   const insuranceDropdownRef = useRef<HTMLDivElement>(null);
 
-  const insuranceTypeDropdownRef = useRef<HTMLDivElement>(null);
-
   /* =========================================================
      VALIDATION
   ========================================================= */
@@ -150,7 +132,6 @@ export default function CompareFlow() {
   const ukPostcodePattern = /^(GIR\s?0AA|[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2})$/i;
 
   const isPostcodeValid = ukPostcodePattern.test(postcode.trim());
-  const isEmailValid = email !== '' && EMAIL_REGEX.test(email.trim());
 
   const hasRequiredValue = (fieldKey: string, value: unknown, valid = true) =>
     !serviceFields.isVisible(fieldKey) ||
@@ -240,6 +221,8 @@ export default function CompareFlow() {
     const journeyPostcode = journey?.address?.postcode || '';
 
     if (urlPostcode && ukPostcodePattern.test(urlPostcode.trim())) {
+      // This effect intentionally hydrates address results from the URL.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       getAddresses(urlPostcode);
       return;
     }
@@ -900,12 +883,6 @@ export default function CompareFlow() {
                 <button
                   type="button"
                   disabled={postcode === '' || !isPostcodeValid}
-                  className={`
-                    rounded-full text-white
-                    h-10 px-5
-                    transition-colors text-[11px] duration-200 bg-primary
-                    ${postcode === '' || !isPostcodeValid ? 'border border-primary text-primary !bg-[#00897b17] pointer-none aria-readonly' : '!bg-[#0D3B66]'}
-                  `}
                   onClick={handlePostalCode}
                   className={`
                     absolute

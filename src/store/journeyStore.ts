@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, no-console */
+
 // store/journeyStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';

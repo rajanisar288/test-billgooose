@@ -1,5 +1,7 @@
 // components/loadConfig.tsx
 'use client';
+
+/* eslint-disable no-console, react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';

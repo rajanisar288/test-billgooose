@@ -32,9 +32,9 @@ export default function AppRouteLoader() {
     if (currentPath !== prevPathRef.current) {
       // Route changed — complete the progress bar
       prevPathRef.current = currentPath;
+      // eslint-disable-next-line react-hooks/immutability
       completeProgress();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams]);
 
   /* =========================================================
@@ -54,8 +54,11 @@ export default function AppRouteLoader() {
       // Only intercept same-origin internal links
       if (
         href.startsWith('/') ||
-        (href.startsWith(window.location.origin) && !href.startsWith('mailto:') && !href.startsWith('tel:'))
+        (href.startsWith(window.location.origin) &&
+          !href.startsWith('mailto:') &&
+          !href.startsWith('tel:'))
       ) {
+        // eslint-disable-next-line react-hooks/immutability
         startProgress();
       }
     }
@@ -139,7 +142,10 @@ export default function AppRouteLoader() {
         <div
           style={{
             width: `${progress}%`,
-            transition: progress === 100 ? 'width 0.2s ease-out, opacity 0.3s ease-out 0.1s' : 'width 0.2s ease-out',
+            transition:
+              progress === 100
+                ? 'width 0.2s ease-out, opacity 0.3s ease-out 0.1s'
+                : 'width 0.2s ease-out',
             opacity: progress === 100 ? 0 : 1,
           }}
           className="

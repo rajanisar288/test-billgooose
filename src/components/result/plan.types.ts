@@ -22,6 +22,7 @@ export type SelectPlan = {
   quoteId?: string;
   productReference?: string;
   productReferences?: string[];
+  groupType?: string;
   groupDisplayName?: string;
   selectionMode?: 'single' | 'multiple' | string;
   supplierCode?: string;
@@ -32,6 +33,8 @@ export type SelectPlan = {
   priceIncreaseDetails?: unknown[];
   viewDetailsButton: string;
   primaryButton: string;
+};
+
 export type ViewDealPlan = {
   id: string;
   type: 'view-deal';
@@ -66,6 +69,8 @@ export type ViewDealPlan = {
 };
 
 export type FeaturedBroadbandPlan = {
+  id: string;
+  type: 'featured-broadband';
   featured: {
     eyebrow: string;
     heading: string;

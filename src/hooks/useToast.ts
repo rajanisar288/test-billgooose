@@ -1,4 +1,4 @@
-import { toast, ToastOptions } from 'react-toastify';
+import { toast, type ToastOptions } from 'react-toastify';
 
 export const useToast = () => {
   const showSuccess = (message: string, options?: ToastOptions) => {

@@ -134,7 +134,7 @@ export function getNextJourneyRoute(
 export function getJourneyStepFromPathname(
   pathname: string,
   service: JourneyService = 'energy',
-  flow?: string,
+  _flow?: string,
 ): number {
   const normalizedPathname =
     pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;

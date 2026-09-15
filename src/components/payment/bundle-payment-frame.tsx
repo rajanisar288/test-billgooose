@@ -36,7 +36,7 @@ function readStoredOrder(): StoredOrder | null {
 }
 
 export default function BundlePaymentFrame({ onSuccess }: { onSuccess: () => void }) {
-  const order = useMemo(readStoredOrder, []);
+  const order = useMemo(() => readStoredOrder(), []);
   const handoff = order?.payment?.handoff ?? order?.Data?.payment_method_details;
   const [pollingError, setPollingError] = useState('');
   const [hasOpenedPaymentForm, setHasOpenedPaymentForm] = useState(false);

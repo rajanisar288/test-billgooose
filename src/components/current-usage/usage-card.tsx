@@ -24,7 +24,7 @@ type UsageCardProps = {
    * caller/content.json shape doesn't need to change, but it is not
    * rendered right now - see the commented-out block below.
    */
-  price: string;
+  price?: string;
 
   buttonLabel: string;
   icon: string;

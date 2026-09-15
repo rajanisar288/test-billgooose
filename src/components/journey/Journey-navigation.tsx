@@ -10,7 +10,7 @@ import data from '@/data/content.json';
 
 import { JOURNEY_STEP_STATUS_EVENT, JOURNEY_STEP_SUBMIT_FAILED_EVENT } from './journey-step-status';
 
-type JourneyService = 'energy' | 'broadband' | 'insurance' | 'bundle-bills';
+type JourneyService = 'energy' | 'broadband' | 'insurance' | 'bundle-bills' | 'sim-only' | 'mobile';
 
 type JourneyNavigationProps = {
   currentStep: number;
@@ -43,6 +43,8 @@ export default function JourneyNavigation({
   }, [formId]);
 
   useEffect(() => {
+    // A new step represents a new submission lifecycle.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsSubmitting(false);
   }, [currentStep]);
 

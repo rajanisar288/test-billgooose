@@ -2,9 +2,9 @@
 
 import { type FormEvent, useState } from 'react';
 
-import { Check } from 'lucide-react';
-
 import { useSearchParams } from 'next/navigation';
+
+import { Check } from 'lucide-react';
 
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
@@ -55,9 +55,7 @@ export default function ElectricVehicleForm() {
     const requestedService = searchParams.get('service');
     const storedFlow = sessionStorage.getItem('billgooseJourneyFlow');
     const isBundle =
-      requestedFlow === 'bundle' ||
-      storedFlow === 'bundle' ||
-      requestedService === 'bundle-bills';
+      requestedFlow === 'bundle' || storedFlow === 'bundle' || requestedService === 'bundle-bills';
 
     const targetRoute = isBundle
       ? `${JOURNEY_ROUTES[5]}?service=energy&flow=bundle`

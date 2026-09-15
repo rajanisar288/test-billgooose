@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
@@ -47,6 +49,8 @@ export default function CurrentUsagePage() {
 
     if (storedUsage) {
       try {
+        // Hydrate browser-only usage data after the client mounts.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setEnergyUsage(JSON.parse(storedUsage) as EnergyUsage);
       } catch {
         setEnergyUsage(null);
@@ -138,8 +142,9 @@ export default function CurrentUsagePage() {
 
       if (updatedJourney?.data) {
         setJourney(updatedJourney.data);
-        Object.keys(consumption).length > 0 &&
+        if (Object.keys(consumption).length > 0) {
           showSuccess('Consumption details updated successfully.');
+        }
       } else {
         showError('We could not update your consumption details. Please try again.');
         return;

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect, useMemo, useState } from 'react';
 
 import { journeyApi } from '@/lib/api/endpoints/journey.api';

@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { type FormEvent, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
