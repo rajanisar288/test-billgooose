@@ -251,21 +251,21 @@ export default function ReviewYourDetails() {
       },
 
       household: {
-        propertyType: journey.customer?.propertyType ?? '',
+        propertyType: journey?.details?.propertyType ?? '',
         occupants:
-          journey.customer?.occupants !== null && journey.customer?.occupants !== undefined
-            ? String(journey.customer.occupants)
+          journey?.details?.occupants !== null && journey?.details?.occupants !== undefined
+            ? String(journey?.details.occupants)
             : '',
         bedrooms:
-          journey.customer?.bedrooms !== null && journey.customer?.bedrooms !== undefined
-            ? String(journey.customer.bedrooms)
+          journey?.details?.bedrooms !== null && journey?.details?.bedrooms !== undefined
+            ? String(journey?.details.bedrooms)
             : '',
       },
 
-      paymentMethod: journey.customer?.paymentPreference ?? '',
+      paymentMethod: journey?.details?.paymentPreference ?? '',
 
       contractDetails: {
-        contractDate: journey.customer?.preferredStartDate ?? '',
+        contractDate: journey?.details?.preferredStartDate ?? '',
         acknowledged: false,
       },
 

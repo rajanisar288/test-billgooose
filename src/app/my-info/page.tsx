@@ -521,7 +521,7 @@ export default function MyInfoPage() {
               {/* ===============================================
                   UNFINISHED JOURNEY
               ================================================ */}
-              {journey?.route && (
+              {/* {journey?.route && (
                 <section
                   className="
                     mt-7
@@ -541,11 +541,11 @@ export default function MyInfoPage() {
                     lg:mt-9
                     lg:p-6
                   "
-                >
+                > */}
                   {/* =============================================
                       TOP
                   ============================================== */}
-                  <div
+                  {/* <div
                     className="
                       flex
                       flex-col
@@ -567,9 +567,9 @@ export default function MyInfoPage() {
 
                         sm:gap-4
                       "
-                    >
+                    > */}
                       {/* SERVICE ICON */}
-                      <div
+                      {/* <div
                         className="
                           flex
                           h-[50px]
@@ -704,13 +704,13 @@ export default function MyInfoPage() {
                         "
                       />
                     </button>
-                  </div>
+                  </div> */}
 
                   {/* =============================================
                       PROGRESS
                       NO DIVIDER/BORDER
                   ============================================== */}
-                  <div
+                  {/* <div
                     className="
                       mt-4
 
@@ -782,7 +782,7 @@ export default function MyInfoPage() {
                     </span>
                   </div>
                 </section>
-              )}
+              )} */}
 
               {!journey?.route && <div className="h-[10px]" />}
             </div>
