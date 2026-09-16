@@ -1389,7 +1389,7 @@
         },
         "paymentMethod": {
           "label": "Select how you'd like to pay",
-          "defaultValue": "prePayment",
+          "defaultValue": "prepayment",
           "options": [
             {
               "id": "monthlyDirectDebit",
@@ -1397,9 +1397,9 @@
               "value": "monthlyDirectDebit"
             },
             {
-              "id": "prePayment",
+              "id": "prepayment",
               "label": "Pre Payment",
-              "value": "prePayment"
+              "value": "prepayment"
             }
           ]
         }

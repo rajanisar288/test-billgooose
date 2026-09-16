@@ -147,29 +147,27 @@ export default function CompareFlow() {
     !serviceFields.isRequired(fieldKey) ||
     (Boolean(value) && valid);
   const hasValidAddress = hasRequiredValue('address', selectedAddress, isPostcodeValid);
-  const isFormValid = Boolean(
-    requestedService &&
-    hasValidAddress &&
-    (isBundleFlow
+  const hasValidServiceFields = isBundleFlow
+    ? hasRequiredValue('energySupplyType', energyServiceType) &&
+      hasRequiredValue('occupancyStatus', renterHomeOwner) &&
+      hasRequiredValue('moveStatus', alreadyInProperty) &&
+      hasRequiredValue('moveInDate', moveInDate)
+    : requestedService === 'energy'
       ? hasRequiredValue('energySupplyType', energyServiceType) &&
-        hasRequiredValue('occupancyStatus', renterHomeOwner) &&
-        hasRequiredValue('moveStatus', alreadyInProperty) &&
-        hasRequiredValue('moveInDate', moveInDate)
-      : requestedService === 'energy'
-        ? hasRequiredValue('energySupplyType', energyServiceType) &&
-          hasRequiredValue('paymentPreference', paymentMethod)
-        : requestedService === 'broadband'
-          ? hasRequiredValue('currentBroadbandProvider', currentProvider)
-          : requestedService === 'insurance'
-            ? hasRequiredValue('insuranceType', insuranceType)
-            : false),
-  );
+        hasRequiredValue('paymentPreference', paymentMethod)
+      : requestedService === 'broadband'
+        ? hasRequiredValue('currentBroadbandProvider', currentProvider)
+        : requestedService === 'insurance'
+          ? hasRequiredValue('insuranceType', insuranceType)
+          : false;
+  const isFormValid = Boolean(requestedService && hasValidAddress && hasValidServiceFields);
+  const canAttemptSubmit = Boolean(requestedService && isPostcodeValid && hasValidServiceFields);
 
   /* =========================================================
      API FUNCTIONS
   ========================================================= */
 
-  async function getAddresses(postalCode: string) {
+  async function getAddresses(postalCode: string, preferredAddress: Address | null = null) {
     if (!postalCode) {
       return;
     }
@@ -178,7 +176,7 @@ export default function CompareFlow() {
       setIsAddressLoading(true);
 
       setAddressOptions([]);
-      setSelectedAddress(null);
+      setSelectedAddress(preferredAddress);
       setAddressDropdownOpen(false);
 
       setPostcode(postalCode);
@@ -201,14 +199,22 @@ export default function CompareFlow() {
 
       setAddressOptions(mappedAddresses);
 
-      if (mappedAddresses.length > 0) {
+      if (preferredAddress) {
+        const matchingAddress = mappedAddresses.find(
+          (address: { label: string; fullAddressObject: Address }) =>
+            address.label === preferredAddress.fullAddress,
+        );
+        setSelectedAddress(matchingAddress?.fullAddressObject ?? preferredAddress);
+      }
+
+      if (mappedAddresses.length > 0 && !preferredAddress) {
         setAddressDropdownOpen(true);
       }
     } catch (error) {
       console.error(error);
 
       setAddressOptions([]);
-      setSelectedAddress(null);
+      setSelectedAddress(preferredAddress);
       setAddressDropdownOpen(false);
     } finally {
       setIsAddressLoading(false);
@@ -226,18 +232,24 @@ export default function CompareFlow() {
   ========================================================= */
   useEffect(() => {
     const urlPostcode = searchParams.get('postcode') || '';
-    const journeyAddress = journey?.address?.fullAddress;
-    const journeyPostcode = journey?.address?.postcode || '';
+    const journeyAddress = journey?.address ?? null;
+    const journeyPostcode = journeyAddress?.postcode || '';
+    const normalizePostcode = (value: string) => value.replace(/\s+/g, '').toUpperCase();
 
     if (urlPostcode && ukPostcodePattern.test(urlPostcode.trim())) {
       // This effect intentionally hydrates address results from the URL.
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      getAddresses(urlPostcode);
+      getAddresses(
+        urlPostcode,
+        journeyAddress && normalizePostcode(journeyPostcode) === normalizePostcode(urlPostcode)
+          ? journeyAddress
+          : null,
+      );
       return;
     }
 
-    if (journeyAddress && journeyPostcode) {
-      getAddresses(journeyPostcode);
+    if (journeyAddress?.fullAddress && journeyPostcode) {
+      getAddresses(journeyPostcode, journeyAddress);
     }
   }, [journey?.address?.fullAddress, journey?.address?.postcode, searchParams]);
 
@@ -431,6 +443,13 @@ export default function CompareFlow() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (serviceFields.isVisible('address') && !selectedAddress) {
+      showError(
+        'Please select an address by clicking Find address or fill in the address before continuing the journey.',
+      );
+      return;
+    }
 
     if (!isFormValid || isSubmitting) {
       return;
@@ -2122,7 +2141,7 @@ export default function CompareFlow() {
 
             <button
               type="submit"
-              disabled={!isFormValid || isSubmitting}
+              disabled={!canAttemptSubmit || isSubmitting}
               className="
                 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border px-5 py-3
                 font-inter text-[14px] font-semibold leading-5 text-white shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)]
