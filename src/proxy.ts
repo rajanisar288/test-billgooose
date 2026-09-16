@@ -54,6 +54,21 @@ export function proxy(request: NextRequest) {
   }
 
   /*
+   * Journey IDs are runtime values and cannot be generated during a static
+   * export. Serve the reusable resume shell while preserving the browser URL.
+   */
+  if (/^\/journey\/[^/]+\/$/.test(pathname)) {
+    url.pathname = '/journey/';
+
+    const response = NextResponse.rewrite(url);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    addSecurityHeaders(response);
+
+    return response;
+  }
+
+  /*
    * Journey/private pages:
    * noindex + no-cache.
    */
@@ -62,6 +77,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/profile') ||
     pathname.startsWith('/steps') ||
+    pathname.startsWith('/journey') ||
     pathname.startsWith('/compare') ||
     pathname.startsWith('/result') ||
     pathname.startsWith('/current-usage') ||

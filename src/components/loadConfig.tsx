@@ -4,7 +4,7 @@
 /* eslint-disable no-console, react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import { type Journey } from '@/interfaces/shared';
@@ -17,6 +17,7 @@ export function LoadConfig() {
   const { setJourney, journey } = useJourneyStore();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   async function createNewJourney() {
     const payload = getDefaultJourney();
@@ -43,6 +44,11 @@ export function LoadConfig() {
 
   useEffect(() => {
     async function initialize() {
+      if (pathname === '/journey' || pathname.startsWith('/journey/')) {
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
 
       try {
@@ -92,7 +98,7 @@ export function LoadConfig() {
     }
 
     initialize();
-  }, [router, setJourney]);
+  }, [pathname, router, setJourney]);
 
   // Debug: Log when journey changes
   useEffect(() => {

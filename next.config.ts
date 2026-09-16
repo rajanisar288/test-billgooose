@@ -1,9 +1,12 @@
 import type { NextConfig } from 'next';
 
+const isProdBuild = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   // Azure Static Web Apps serves the exported files directly; no Node.js server
-  // is available at runtime.
-  output: 'export',
+  // is available at runtime. Keep this off in `next dev` so /journey/:id can be
+  // rewritten to the static resume page without generateStaticParams.
+  ...(isProdBuild ? { output: 'export' as const } : {}),
   trailingSlash: true,
   images: {
     // The Next.js image optimizer requires a server. Keep image assets static.
