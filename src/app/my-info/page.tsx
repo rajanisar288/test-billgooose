@@ -1,14 +1,26 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { ArrowRight, CalendarDays, Settings, UserRound } from 'lucide-react';
+import {
+  ArrowRight,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Settings,
+  UserRound,
+} from 'lucide-react';
 
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Header from '@/components/marketing/Header';
+import { humanizeLabel } from '@/components/result/result-labels';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { journeyApi } from '@/lib/api/endpoints/journey.api';
 
 /* =========================================================
    TYPES
@@ -52,7 +64,7 @@ type AccountSnapshot = {
   selectedPlan: string;
 };
 
-type AccountTab = 'deals' | 'settings';
+type AccountTab = 'deals' | 'journeys' | 'settings';
 
 /* =========================================================
    STORAGE
@@ -143,10 +155,49 @@ function subscribeToAccount(callback: () => void) {
 
 export default function MyInfoPage() {
   const router = useRouter();
+  const { showError } = useToast();
 
   const { footer2 } = data;
 
   const [activeTab, setActiveTab] = useState<AccountTab>('deals');
+  const [customerJourneys, setCustomerJourneys] = useState<any[]>([]);
+  const [isLoadingJourneys, setIsLoadingJourneys] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize] = useState<number>(10);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
+
+  useEffect(() => {
+    async function fetchCustomerJourneys() {
+      setIsLoadingJourneys(true);
+      try {
+        const response = await journeyApi.getCustomerJourneys({ page: currentPage, pageSize });
+        const responseData = response?.data;
+        const list =
+          responseData?.items ||
+          responseData?.data ||
+          (Array.isArray(responseData) ? responseData : []);
+        setCustomerJourneys(Array.isArray(list) ? list : []);
+
+        const total =
+          responseData?.total ??
+          responseData?.totalCount ??
+          responseData?.count ??
+          (Array.isArray(list) ? list.length : 0);
+        const calculatedPages = responseData?.totalPages ?? Math.ceil(total / pageSize) ?? 1;
+
+        setTotalCount(total);
+        setTotalPages(calculatedPages > 0 ? calculatedPages : 1);
+      } catch (err: any) {
+        console.error('❌ Failed to fetch customer journeys:', err);
+        showError(err?.data?.error);
+      } finally {
+        setIsLoadingJourneys(false);
+      }
+    }
+
+    fetchCustomerJourneys();
+  }, []);
 
   const snapshot = useSyncExternalStore(
     subscribeToAccount,
@@ -233,803 +284,743 @@ export default function MyInfoPage() {
   }
 
   return (
-    <main
-      className="
-        flex
-        min-h-screen
-        w-full
-        flex-col
-
-        bg-white
-      "
-    >
-      {/* =====================================================
-          DARK AREA
-      ====================================================== */}
-      <div
+    <ProtectedRoute redirectTo="/">
+      <main
         className="
+          flex
+          min-h-screen
           w-full
+          flex-col
 
-          bg-[#0B2B43]
+          bg-white
         "
       >
-        {/* =================================================
-            NAVBAR + BOTTOM BORDER
-        ================================================== */}
+        {/* =====================================================
+            DARK AREA
+        ====================================================== */}
         <div
           className="
-            border-b
-            border-white/10
+            w-full
+
+            bg-[#0B2B43]
           "
         >
-          <Header />
-        </div>
-
-        {/* =================================================
-            ACCOUNT / PROGRESS AREA
-        ================================================== */}
-        <section
-          className="
-    w-full
-
-    px-4
-    pb-[45px]
-    pt-7
-
-    sm:px-6
-    sm:pt-9
-
-    md:px-8
-
-    lg:pt-10
-  "
-        >
+          {/* =================================================
+              NAVBAR + BOTTOM BORDER
+          ================================================== */}
           <div
             className="
-              mx-auto
-              w-full
-              max-w-[920px]
+              border-b
+              border-white/10
             "
           >
-            {/* ===============================================
-                USER
-            ================================================ */}
+            <Header />
+          </div>
+
+          {/* =================================================
+              ACCOUNT / PROGRESS AREA
+          ================================================== */}
+          <section
+            className="
+      w-full
+
+      px-4
+      pb-[45px]
+      pt-7
+
+      sm:px-6
+      sm:pt-9
+
+      md:px-8
+
+      lg:pt-10
+    "
+          >
             <div
               className="
-                flex
-                items-center
-
-                gap-4
-
-                sm:gap-5
+                mx-auto
+                w-full
+                max-w-[920px]
               "
             >
+              {/* ===============================================
+                  USER
+              ================================================ */}
               <div
                 className="
                   flex
-                  h-[60px]
-                  w-[60px]
-                  shrink-0
-
                   items-center
-                  justify-center
 
-                  rounded-full
+                  gap-4
 
-                  border
-                  border-white/20
-
-                  bg-[#00897B]
-
-                  text-white
-
-                  sm:h-[68px]
-                  sm:w-[68px]
-
-                  lg:h-[76px]
-                  lg:w-[76px]
+                  sm:gap-5
                 "
               >
-                <UserRound
-                  aria-hidden="true"
+                <div
                   className="
-                    h-7
-                    w-7
+                    flex
+                    h-[60px]
+                    w-[60px]
+                    shrink-0
 
-                    sm:h-8
-                    sm:w-8
-
-                    lg:h-[34px]
-                    lg:w-[34px]
-                  "
-                  strokeWidth={1.8}
-                />
-              </div>
-
-              <div className="min-w-0">
-                <h1
-                  className="
-                    font-red-hat-display
-
-                    text-[20px]
-                    font-extrabold
-                    leading-[27px]
-
-                    text-white
-
-                    sm:text-[23px]
-                    sm:leading-[30px]
-
-                    lg:text-[26px]
-                    lg:leading-[34px]
-                  "
-                >
-                  SIGNED IN
-                </h1>
-
-                <p
-                  className="
-                    mt-0.5
-
-                    max-w-[240px]
-                    truncate
-
-                    font-inter
-                    text-[11px]
-                    font-normal
-                    leading-[17px]
-
-                    text-[#D0D5DD]
-
-                    sm:max-w-[350px]
-                    sm:text-[12px]
-
-                    lg:text-[13px]
-                    lg:leading-[18px]
-                  "
-                >
-                  {user.email || 'Signed in'}
-                </p>
-
-                <span
-                  className="
-                    mt-2
-
-                    inline-flex
                     items-center
-
-                    gap-1.5
+                    justify-center
 
                     rounded-full
 
-                    bg-white/10
+                    border
+                    border-white/20
 
-                    px-2.5
-                    py-1
+                    bg-[#00897B]
 
-                    font-inter
-                    text-[9px]
-                    font-medium
+                    text-white
 
-                    text-[#D0D5DD]
+                    sm:h-[68px]
+                    sm:w-[68px]
 
-                    sm:text-[10px]
+                    lg:h-[76px]
+                    lg:w-[76px]
                   "
                 >
-                  <CalendarDays
+                  <UserRound
                     aria-hidden="true"
                     className="
-                      h-3
-                      w-3
+                      h-7
+                      w-7
+
+                      sm:h-8
+                      sm:w-8
+
+                      lg:h-[34px]
+                      lg:w-[34px]
                     "
+                    strokeWidth={1.8}
                   />
-                  Member
-                </span>
-              </div>
-            </div>
+                </div>
 
-            {/* ===============================================
-                UNFINISHED JOURNEY
-            ================================================ */}
-            {journey?.route && (
-              <section
-                className="
-                  mt-7
-
-                  rounded-[14px]
-
-                  bg-white
-
-                  p-4
-
-                  shadow-[0px_8px_24px_rgba(16,24,40,0.08)]
-
-                  sm:mt-8
-                  sm:rounded-[16px]
-                  sm:p-5
-
-                  lg:mt-9
-                  lg:p-6
-                "
-              >
-                {/* =============================================
-                    TOP
-                ============================================== */}
-                <div
-                  className="
-                    flex
-                    flex-col
-
-                    gap-4
-
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                  "
-                >
-                  <div
+                <div className="min-w-0">
+                  <h1
                     className="
-                      flex
-                      min-w-0
-                      items-center
-
-                      gap-3
-
-                      sm:gap-4
-                    "
-                  >
-                    {/* SERVICE ICON */}
-                    <div
-                      className="
-                        flex
-                        h-[50px]
-                        w-[50px]
-                        shrink-0
-
-                        items-center
-                        justify-center
-
-                        rounded-[10px]
-
-                        border
-                        border-[#00B1AA33]
-
-                        bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
-
-                        sm:h-[54px]
-                        sm:w-[54px]
-
-                        lg:h-[60px]
-                        lg:w-[60px]
-                        lg:rounded-[12px]
-                        lg:border-[0.58px]
-                      "
-                    >
-                      <Image
-                        src={journeyIcon}
-                        alt={isBroadband ? 'Broadband' : 'Energy'}
-                        width={48}
-                        height={48}
-                        className="
-                          h-[40px]
-                          w-[40px]
-
-                          object-contain
-
-                          sm:h-[44px]
-                          sm:w-[44px]
-
-                          lg:h-[48px]
-                          lg:w-[48px]
-                        "
-                      />
-                    </div>
-
-                    <div className="min-w-0">
-                      <h2
-                        className="
-                          font-red-hat-display
-
-                          text-[15px]
-                          font-extrabold
-                          leading-5
-
-                          text-[#0C3354]
-
-                          sm:text-[16px]
-
-                          lg:text-[18px]
-                          lg:leading-6
-                        "
-                      >
-                        Continue compare {isBroadband ? 'broadband' : 'energy'}
-                      </h2>
-
-                      <p
-                        className="
-                          mt-1
-
-                          font-inter
-                          text-[11px]
-                          font-normal
-                          leading-[17px]
-
-                          text-[#667085]
-
-                          sm:text-[12px]
-
-                          lg:text-[13px]
-                          lg:leading-[18px]
-                        "
-                      >
-                        {journey.stepDescription || `Continue your ${service} comparison`}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      router.push(continueRoute);
-                    }}
-                    className="
-                      inline-flex
-                      h-[42px]
-
-                      shrink-0
-                      items-center
-                      justify-center
-
-                      gap-2
-
-                      rounded-full
-
-                      bg-[#00897B]
-
-                      px-5
-
                       font-red-hat-display
-                      text-[12px]
-                      font-bold
+
+                      text-[20px]
+                      font-extrabold
+                      leading-[27px]
 
                       text-white
 
-                      transition-colors
+                      sm:text-[23px]
+                      sm:leading-[30px]
 
-                      hover:bg-[#00796D]
-
-                      sm:w-auto
-
-                      lg:h-[44px]
-                      lg:px-6
-                      lg:text-[13px]
+                      lg:text-[26px]
+                      lg:leading-[34px]
                     "
                   >
-                    Continue
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="
-                        h-4
-                        w-4
-                      "
-                    />
-                  </button>
-                </div>
+                    SIGNED IN
+                  </h1>
 
-                {/* =============================================
-                    PROGRESS
-                    NO DIVIDER/BORDER
-                ============================================== */}
-                <div
-                  className="
-                    mt-4
-
-                    flex
-                    items-center
-
-                    gap-3
-
-                    lg:mt-5
-                    lg:gap-4
-                  "
-                >
-                  <div
+                  <p
                     className="
-                      h-[7px]
-                      min-w-0
-                      flex-1
+                      mt-0.5
 
-                      overflow-hidden
+                      max-w-[240px]
+                      truncate
+
+                      font-inter
+                      text-[11px]
+                      font-normal
+                      leading-[17px]
+
+                      text-[#D0D5DD]
+
+                      sm:max-w-[350px]
+                      sm:text-[12px]
+
+                      lg:text-[13px]
+                      lg:leading-[18px]
+                    "
+                  >
+                    {user.email || 'Signed in'}
+                  </p>
+
+                  <span
+                    className="
+                      mt-2
+
+                      inline-flex
+                      items-center
+
+                      gap-1.5
 
                       rounded-full
 
-                      bg-[#EAECF0]
+                      bg-white/10
 
-                      lg:h-2
+                      px-2.5
+                      py-1
+
+                      font-inter
+                      text-[9px]
+                      font-medium
+
+                      text-[#D0D5DD]
+
+                      sm:text-[10px]
+                    "
+                  >
+                    <CalendarDays
+                      aria-hidden="true"
+                      className="
+                        h-3
+                        w-3
+                      "
+                    />
+                    Member
+                  </span>
+                </div>
+              </div>
+
+              {/* ===============================================
+                  UNFINISHED JOURNEY
+              ================================================ */}
+              {journey?.route && (
+                <section
+                  className="
+                    mt-7
+
+                    rounded-[14px]
+
+                    bg-white
+
+                    p-4
+
+                    shadow-[0px_8px_24px_rgba(16,24,40,0.08)]
+
+                    sm:mt-8
+                    sm:rounded-[16px]
+                    sm:p-5
+
+                    lg:mt-9
+                    lg:p-6
+                  "
+                >
+                  {/* =============================================
+                      TOP
+                  ============================================== */}
+                  <div
+                    className="
+                      flex
+                      flex-col
+
+                      gap-4
+
+                      sm:flex-row
+                      sm:items-center
+                      sm:justify-between
                     "
                   >
                     <div
                       className="
-                        h-full
+                        flex
+                        min-w-0
+                        items-center
+
+                        gap-3
+
+                        sm:gap-4
+                      "
+                    >
+                      {/* SERVICE ICON */}
+                      <div
+                        className="
+                          flex
+                          h-[50px]
+                          w-[50px]
+                          shrink-0
+
+                          items-center
+                          justify-center
+
+                          rounded-[10px]
+
+                          border
+                          border-[#00B1AA33]
+
+                          bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
+
+                          sm:h-[54px]
+                          sm:w-[54px]
+
+                          lg:h-[60px]
+                          lg:w-[60px]
+                          lg:rounded-[12px]
+                          lg:border-[0.58px]
+                        "
+                      >
+                        <Image
+                          src={journeyIcon}
+                          alt={isBroadband ? 'Broadband' : 'Energy'}
+                          width={48}
+                          height={48}
+                          className="
+                            h-[40px]
+                            w-[40px]
+
+                            object-contain
+
+                            sm:h-[44px]
+                            sm:w-[44px]
+
+                            lg:h-[48px]
+                            lg:w-[48px]
+                          "
+                        />
+                      </div>
+
+                      <div className="min-w-0">
+                        <h2
+                          className="
+                            font-red-hat-display
+
+                            text-[15px]
+                            font-extrabold
+                            leading-5
+
+                            text-[#0C3354]
+
+                            sm:text-[16px]
+
+                            lg:text-[18px]
+                            lg:leading-6
+                          "
+                        >
+                          Continue compare {isBroadband ? 'broadband' : 'energy'}
+                        </h2>
+
+                        <p
+                          className="
+                            mt-1
+
+                            font-inter
+                            text-[11px]
+                            font-normal
+                            leading-[17px]
+
+                            text-[#667085]
+
+                            sm:text-[12px]
+
+                            lg:text-[13px]
+                            lg:leading-[18px]
+                          "
+                        >
+                          {journey.stepDescription || `Continue your ${service} comparison`}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        router.push(continueRoute);
+                      }}
+                      className="
+                        inline-flex
+                        h-[42px]
+
+                        shrink-0
+                        items-center
+                        justify-center
+
+                        gap-2
 
                         rounded-full
 
                         bg-[#00897B]
 
-                        transition-[width]
-                        duration-300
+                        px-5
+
+                        font-red-hat-display
+                        text-[12px]
+                        font-bold
+
+                        text-white
+
+                        transition-colors
+
+                        hover:bg-[#00796D]
+
+                        sm:w-auto
+
+                        lg:h-[44px]
+                        lg:px-6
+                        lg:text-[13px]
                       "
-                      style={{
-                        width: `${Math.max(0, Math.min(100, progress))}%`,
-                      }}
-                    />
+                    >
+                      Continue
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="
+                          h-4
+                          w-4
+                        "
+                      />
+                    </button>
                   </div>
 
-                  <span
-                    className="
-                      w-[44px]
-                      shrink-0
-
-                      text-right
-
-                      font-red-hat-display
-
-                      text-[14px]
-                      font-[645]
-                      leading-6
-
-                      text-[#0C3354]
-
-                      sm:text-[16px]
-                      sm:leading-7
-
-                      lg:w-[50px]
-                      lg:text-[18px]
-                      lg:leading-[36.4px]
-                    "
-                  >
-                    {progress}%
-                  </span>
-                </div>
-              </section>
-            )}
-
-            {!journey?.route && <div className="h-[10px]" />}
-          </div>
-        </section>
-      </div>
-
-      {/* =====================================================
-          WHITE ACCOUNT BODY
-      ====================================================== */}
-      <section
-        className="
-    flex-1
-    w-full
-
-    bg-[#F9F9F9]
-  "
-      >
-        {/* =================================================
-    TABS
-================================================== */}
-        <div
-          className="
-    border-b
-    border-[#EAECF0]
-
-    bg-white
-  "
-        >
-          <div
-            className="
-      mx-auto
-      flex
-      w-full
-      max-w-[920px]
-
-      items-center
-      gap-5
-
-      px-4
-
-      sm:px-6
-
-      md:px-8
-    "
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('deals');
-              }}
-              className={`
-        relative
-
-        flex
-        min-h-[48px]
-
-        items-center
-
-        font-red-hat-display
-        text-[12px]
-
-        transition-colors
-
-        sm:min-h-[52px]
-        sm:text-[13px]
-
-        lg:text-[14px]
-
-        ${
-          activeTab === 'deals'
-            ? `
-              font-extrabold
-              text-[#00897B]
-
-              after:absolute
-              after:bottom-0
-              after:left-0
-              after:right-0
-              after:h-[2px]
-              after:bg-[#00897B]
-            `
-            : `
-              font-semibold
-              text-[#667085]
-
-              hover:text-[#0C3354]
-            `
-        }
-      `}
-            >
-              My Deals
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('settings');
-              }}
-              className={`
-        relative
-
-        flex
-        min-h-[48px]
-
-        items-center
-
-        font-red-hat-display
-        text-[12px]
-
-        transition-colors
-
-        sm:min-h-[52px]
-        sm:text-[13px]
-
-        lg:text-[14px]
-
-        ${
-          activeTab === 'settings'
-            ? `
-              font-extrabold
-              text-[#00897B]
-
-              after:absolute
-              after:bottom-0
-              after:left-0
-              after:right-0
-              after:h-[2px]
-              after:bg-[#00897B]
-            `
-            : `
-              font-semibold
-              text-[#667085]
-
-              hover:text-[#0C3354]
-            `
-        }
-      `}
-            >
-              Settings
-            </button>
-          </div>
-        </div>
-
-        {/* =================================================
-            TAB CONTENT
-        ================================================== */}
-        <div
-          className="
-            mx-auto
-            w-full
-            max-w-[920px]
-
-            px-4
-            pb-16
-            pt-6
-
-            sm:px-6
-            sm:pt-7
-
-            md:px-8
-
-            lg:pb-24
-            lg:pt-8
-          "
-        >
-          {/* ===============================================
-              MY DEALS
-          ================================================ */}
-          {activeTab === 'deals' && (
-            <div>
-              <h2
-                className="
-                  font-red-hat-display
-
-                  text-[20px]
-                  font-extrabold
-                  leading-[28px]
-
-                  text-[#0C3354]
-
-                  sm:text-[22px]
-
-                  lg:text-[24px]
-                  lg:leading-[32px]
-                "
-              >
-                My Active Deals
-              </h2>
-
-              {deals.length > 0 ? (
-                <div
-                  className="
-                    mt-4
-
-                    space-y-3
-
-                    sm:mt-5
-                    sm:space-y-4
-                  "
-                >
-                  {deals.map((deal, index) => (
-                    <ActiveDealCard
-                      key={deal.id ?? `${deal.provider}-${index}`}
-                      deal={deal}
-                      onCompareAgain={() => {
-                        handleCompareAgain(deal);
-                      }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div
-                  className="
-                    mt-4
-
-                    rounded-[14px]
-
-                    border
-                    border-[#EAECF0]
-
-                    bg-[#FCFCFD]
-
-                    p-5
-
-                    sm:mt-5
-                    sm:p-6
-                  "
-                >
-                  <p
-                    className="
-                      font-red-hat-display
-
-                      text-[14px]
-                      font-semibold
-                      leading-5
-
-                      text-[#344054]
-                    "
-                  >
-                    You don&apos;t have any active deals yet.
-                  </p>
-
-                  <p
-                    className="
-                      mt-1
-
-                      font-inter
-                      text-[12px]
-                      font-normal
-                      leading-[18px]
-
-                      text-[#667085]
-                    "
-                  >
-                    Any plans you complete through BillGoose will appear here.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ===============================================
-              SETTINGS
-          ================================================ */}
-          {activeTab === 'settings' && (
-            <div>
-              <h2
-                className="
-                  font-red-hat-display
-
-                  text-[20px]
-                  font-extrabold
-                  leading-[28px]
-
-                  text-[#0C3354]
-
-                  sm:text-[22px]
-
-                  lg:text-[24px]
-                  lg:leading-[32px]
-                "
-              >
-                Settings
-              </h2>
-
-              <div
-                className="
-                  mt-4
-
-                  rounded-[14px]
-
-                  border
-                  border-[#EAECF0]
-
-                  bg-white
-
-                  p-5
-
-                  sm:mt-5
-                  sm:p-6
-                "
-              >
-                <div
-                  className="
-                    flex
-                    items-start
-
-                    gap-3
-                  "
-                >
+                  {/* =============================================
+                      PROGRESS
+                      NO DIVIDER/BORDER
+                  ============================================== */}
                   <div
                     className="
+                      mt-4
+
                       flex
-                      h-10
-                      w-10
-                      shrink-0
-
                       items-center
-                      justify-center
 
-                      rounded-[10px]
+                      gap-3
 
-                      bg-[#F2F4F7]
-
-                      text-[#0C3354]
+                      lg:mt-5
+                      lg:gap-4
                     "
                   >
-                    <Settings
-                      aria-hidden="true"
+                    <div
                       className="
-                        h-5
-                        w-5
-                      "
-                    />
-                  </div>
+                        h-[7px]
+                        min-w-0
+                        flex-1
 
-                  <div>
+                        overflow-hidden
+
+                        rounded-full
+
+                        bg-[#EAECF0]
+
+                        lg:h-2
+                      "
+                    >
+                      <div
+                        className="
+                          h-full
+
+                          rounded-full
+
+                          bg-[#00897B]
+
+                          transition-[width]
+                          duration-300
+                        "
+                        style={{
+                          width: `${Math.max(0, Math.min(100, progress))}%`,
+                        }}
+                      />
+                    </div>
+
+                    <span
+                      className="
+                        w-[44px]
+                        shrink-0
+
+                        text-right
+
+                        font-red-hat-display
+
+                        text-[14px]
+                        font-[645]
+                        leading-6
+
+                        text-[#0C3354]
+
+                        sm:text-[16px]
+                        sm:leading-7
+
+                        lg:w-[50px]
+                        lg:text-[18px]
+                        lg:leading-[36.4px]
+                      "
+                    >
+                      {progress}%
+                    </span>
+                  </div>
+                </section>
+              )}
+
+              {!journey?.route && <div className="h-[10px]" />}
+            </div>
+          </section>
+        </div>
+
+        {/* =====================================================
+            WHITE ACCOUNT BODY
+        ====================================================== */}
+        <section
+          className="
+      flex-1
+      w-full
+
+      bg-[#F9F9F9]
+    "
+        >
+          {/* =================================================
+      TABS
+  ================================================== */}
+          <div
+            className="
+      border-b
+      border-[#EAECF0]
+
+      bg-white
+    "
+          >
+            <div
+              className="
+        mx-auto
+        flex
+        w-full
+        max-w-[920px]
+
+        items-center
+        gap-5
+
+        px-4
+
+        sm:px-6
+
+        md:px-8
+      "
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('deals');
+                }}
+                className={`
+          relative
+
+          flex
+          min-h-[48px]
+
+          items-center
+
+          font-red-hat-display
+          text-[12px]
+
+          transition-colors
+
+          sm:min-h-[52px]
+          sm:text-[13px]
+
+          lg:text-[14px]
+
+          ${
+            activeTab === 'deals'
+              ? `
+                font-extrabold
+                text-[#00897B]
+
+                after:absolute
+                after:bottom-0
+                after:left-0
+                after:right-0
+                after:h-[2px]
+                after:bg-[#00897B]
+              `
+              : `
+                font-semibold
+                text-[#667085]
+
+                hover:text-[#0C3354]
+              `
+          }
+        `}
+              >
+                My Deals
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('journeys');
+                }}
+                className={`
+          relative
+
+          flex
+          min-h-[48px]
+
+          items-center
+
+          font-red-hat-display
+          text-[12px]
+
+          transition-colors
+
+          sm:min-h-[52px]
+          sm:text-[13px]
+
+          lg:text-[14px]
+
+          ${
+            activeTab === 'journeys'
+              ? `
+                font-extrabold
+                text-[#00897B]
+
+                after:absolute
+                after:bottom-0
+                after:left-0
+                after:right-0
+                after:h-[2px]
+                after:bg-[#00897B]
+              `
+              : `
+                font-semibold
+                text-[#667085]
+
+                hover:text-[#0C3354]
+              `
+          }
+        `}
+              >
+                My Journeys
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('settings');
+                }}
+                className={`
+          relative
+
+          flex
+          min-h-[48px]
+
+          items-center
+
+          font-red-hat-display
+          text-[12px]
+
+          transition-colors
+
+          sm:min-h-[52px]
+          sm:text-[13px]
+
+          lg:text-[14px]
+
+          ${
+            activeTab === 'settings'
+              ? `
+                font-extrabold
+                text-[#00897B]
+
+                after:absolute
+                after:bottom-0
+                after:left-0
+                after:right-0
+                after:h-[2px]
+                after:bg-[#00897B]
+              `
+              : `
+                font-semibold
+                text-[#667085]
+
+                hover:text-[#0C3354]
+              `
+          }
+        `}
+              >
+                Settings
+              </button>
+            </div>
+          </div>
+
+          {/* =================================================
+              TAB CONTENT
+          ================================================== */}
+          <div
+            className="
+              mx-auto
+              w-full
+              max-w-[920px]
+
+              px-4
+              pb-16
+              pt-6
+
+              sm:px-6
+              sm:pt-7
+
+              md:px-8
+
+              lg:pb-24
+              lg:pt-8
+            "
+          >
+            {/* ===============================================
+                MY DEALS
+            ================================================ */}
+            {activeTab === 'deals' && (
+              <div>
+                <h2
+                  className="
+                    font-red-hat-display
+
+                    text-[20px]
+                    font-extrabold
+                    leading-[28px]
+
+                    text-[#0C3354]
+
+                    sm:text-[22px]
+
+                    lg:text-[24px]
+                    lg:leading-[32px]
+                  "
+                >
+                  My Active Deals
+                </h2>
+
+                {deals.length > 0 ? (
+                  <div
+                    className="
+                      mt-4
+
+                      space-y-3
+
+                      sm:mt-5
+                      sm:space-y-4
+                    "
+                  >
+                    {deals.map((deal, index) => (
+                      <ActiveDealCard
+                        key={deal.id ?? `${deal.provider}-${index}`}
+                        deal={deal}
+                        onCompareAgain={() => {
+                          handleCompareAgain(deal);
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    className="
+                      mt-4
+
+                      rounded-[14px]
+
+                      border
+                      border-[#EAECF0]
+
+                      bg-[#FCFCFD]
+
+                      p-5
+
+                      sm:mt-5
+                      sm:p-6
+                    "
+                  >
                     <p
                       className="
                         font-red-hat-display
@@ -1038,10 +1029,10 @@ export default function MyInfoPage() {
                         font-semibold
                         leading-5
 
-                        text-[#101828]
+                        text-[#344054]
                       "
                     >
-                      Account settings
+                      You don&apos;t have any active deals yet.
                     </p>
 
                     <p
@@ -1056,25 +1047,272 @@ export default function MyInfoPage() {
                         text-[#667085]
                       "
                     >
-                      Account preferences will be available here when the account API is connected.
+                      Any plans you complete through BillGoose will appear here.
                     </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ===============================================
+                MY JOURNEYS
+            ================================================ */}
+            {activeTab === 'journeys' && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <h2
+                    className="
+                      font-red-hat-display
+
+                      text-[20px]
+                      font-extrabold
+                      leading-[28px]
+
+                      text-[#0C3354]
+
+                      sm:text-[22px]
+
+                      lg:text-[24px]
+                      lg:leading-[32px]
+                    "
+                  >
+                    My Journeys
+                  </h2>
+
+                  {totalCount > 0 && (
+                    <span className="font-inter text-[12px] font-medium text-[#667085]">
+                      Total: {totalCount}
+                    </span>
+                  )}
+                </div>
+
+                {isLoadingJourneys ? (
+                  <div className="mt-4 p-5 text-center text-[#667085]">Loading journeys...</div>
+                ) : customerJourneys.length > 0 ? (
+                  <>
+                    <div className="mt-4 space-y-3 sm:mt-5 sm:space-y-4">
+                      {customerJourneys.map((j: any, index: number) => (
+                        <article
+                          key={j.id || j.uuid || index}
+                          className="
+                            flex
+                            w-full
+                            flex-col
+                            gap-4
+                            rounded-[14px]
+                            border
+                            border-[#EAECF0]
+                            bg-white
+                            p-4
+                            shadow-[0px_1px_2px_rgba(16,24,40,0.03)]
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                            sm:p-5
+                            lg:min-h-[118px]
+                            lg:rounded-[16px]
+                          "
+                        >
+                          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                            <div className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-[10px] border border-[#EAECF0] bg-[#FCFCFD] sm:h-[64px] sm:w-[64px]">
+                              <Compass className="h-6 w-6 text-[#00897B]" />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-red-hat-display text-[16px] font-bold text-[#0C3354]">
+                                {humanizeLabel(j.serviceType) || 'Customer Journey'}
+                              </h3>
+                              <p className="mt-1 font-inter text-[12px] text-[#667085]">
+                                ID: {j.id || 'N/A'} • Status:{' '}
+                                <span className="font-semibold text-[#00897B]">
+                                  {humanizeLabel(j.status) || 'Active'}
+                                </span>
+                              </p>
+                              {j.createdAt && (
+                                <p className="font-inter text-[11px] text-[#98A2B3]">
+                                  Created: {new Date(j.createdAt).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          {j.lastUrl && (
+                            <button
+                              type="button"
+                              onClick={() => router.push(j.lastUrl)}
+                              className="inline-flex h-[40px] items-center justify-center gap-2 rounded-full bg-[#00897B] px-4 font-red-hat-display text-[12px] font-bold text-white hover:bg-[#00796D]"
+                            >
+                              Continue Journey
+                              <ArrowRight className="h-4 w-4" />
+                            </button>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+
+                    {/* PAGINATION CONTROLS */}
+                    {totalPages > 1 && (
+                      <div className="mt-6 flex items-center justify-between border-t border-[#EAECF0] pt-4">
+                        <button
+                          type="button"
+                          disabled={currentPage <= 1}
+                          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                          className="inline-flex items-center gap-1 rounded-lg border border-[#D0D5DD] px-3 py-1.5 font-inter text-[12px] font-medium text-[#344054] transition-colors hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Previous
+                        </button>
+
+                        <span className="font-inter text-[12px] font-medium text-[#344054]">
+                          Page {currentPage} of {totalPages}
+                        </span>
+
+                        <button
+                          type="button"
+                          disabled={currentPage >= totalPages}
+                          onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                          className="inline-flex items-center gap-1 rounded-lg border border-[#D0D5DD] px-3 py-1.5 font-inter text-[12px] font-medium text-[#344054] transition-colors hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          Next
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="mt-4 rounded-[14px] border border-[#EAECF0] bg-[#FCFCFD] p-5 sm:mt-5 sm:p-6">
+                    <p className="font-red-hat-display text-[14px] font-semibold leading-5 text-[#344054]">
+                      No journeys found.
+                    </p>
+                    <p className="mt-1 font-inter text-[12px] font-normal leading-[18px] text-[#667085]">
+                      Your active and past comparison journeys will appear here.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ===============================================
+                SETTINGS
+            ================================================ */}
+            {activeTab === 'settings' && (
+              <div>
+                <h2
+                  className="
+                    font-red-hat-display
+
+                    text-[20px]
+                    font-extrabold
+                    leading-[28px]
+
+                    text-[#0C3354]
+
+                    sm:text-[22px]
+
+                    lg:text-[24px]
+                    lg:leading-[32px]
+                  "
+                >
+                  Settings
+                </h2>
+
+                <div
+                  className="
+                    mt-4
+
+                    rounded-[14px]
+
+                    border
+                    border-[#EAECF0]
+
+                    bg-white
+
+                    p-5
+
+                    sm:mt-5
+                    sm:p-6
+                  "
+                >
+                  <div
+                    className="
+                      flex
+                      items-start
+
+                      gap-3
+                    "
+                  >
+                    <div
+                      className="
+                        flex
+                        h-10
+                        w-10
+                        shrink-0
+
+                        items-center
+                        justify-center
+
+                        rounded-[10px]
+
+                        bg-[#F2F4F7]
+
+                        text-[#0C3354]
+                      "
+                    >
+                      <Settings
+                        aria-hidden="true"
+                        className="
+                          h-5
+                          w-5
+                        "
+                      />
+                    </div>
+
+                    <div>
+                      <p
+                        className="
+                          font-red-hat-display
+
+                          text-[14px]
+                          font-semibold
+                          leading-5
+
+                          text-[#101828]
+                        "
+                      >
+                        Account settings
+                      </p>
+
+                      <p
+                        className="
+                          mt-1
+
+                          font-inter
+                          text-[12px]
+                          font-normal
+                          leading-[18px]
+
+                          text-[#667085]
+                        "
+                      >
+                        Account preferences will be available here when the account API is
+                        connected.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </section>
+            )}
+          </div>
+        </section>
 
-      {/* =====================================================
-          FOOTER 2
-      ====================================================== */}
-      <FooterTwo
-        copyright={footer2.copyright}
-        navigationAriaLabel={footer2.navigationAriaLabel}
-        links={footer2.links}
-      />
-    </main>
+        {/* =====================================================
+            FOOTER 2
+        ====================================================== */}
+        <FooterTwo
+          copyright={footer2.copyright}
+          navigationAriaLabel={footer2.navigationAriaLabel}
+          links={footer2.links}
+        />
+      </main>
+    </ProtectedRoute>
   );
 }
 

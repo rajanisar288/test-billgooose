@@ -53,14 +53,28 @@ class ApiClient {
       config.headers['api-key'] = process.env.NEXT_PUBLIC_API_KEY;
     }
 
-    // Add language header if available
+    // Add language & Authorization header if available
     if (typeof window !== 'undefined') {
       const lang = localStorage.getItem('language') || 'en';
       config.headers['Accept-Language'] = lang;
-    }
 
-    // Log request
-    // apiLogger.request(config.method?.toUpperCase() || 'GET', config.url || '', config.data);
+      let token = localStorage.getItem('token');
+      if (!token) {
+        try {
+          const userStr = sessionStorage.getItem('billgooseSignedInUser');
+          if (userStr) {
+            const userObj = JSON.parse(userStr);
+            token = userObj?.token || userObj?.accessToken || userObj?.jwt || null;
+          }
+        } catch {
+          // ignore JSON parse error
+        }
+      }
+
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
 
     return config;
   }
@@ -71,18 +85,10 @@ class ApiClient {
   }
 
   private handleResponse(response: any) {
-    // Log response
-    // apiLogger.response(
-    //   response.config.method?.toUpperCase() || 'GET',
-    //   response.config.url || '',
-    //   response.status,
-    //   response.data,
-    // );
-
     return response;
   }
 
-  private handleResponseError(error: AxiosError<ApiErrorResponse>) {
+  private async handleResponseError(error: AxiosError<ApiErrorResponse>) {
     if (error.response) {
       // Server responded with error status
       const errorData = {
@@ -96,13 +102,6 @@ class ApiClient {
         url: error.config?.url,
         method: error.config?.method?.toUpperCase(),
       };
-
-      // // Log error
-      // apiLogger.error(
-      //   error.config?.method?.toUpperCase() || 'GET',
-      //   error.config?.url || '',
-      //   errorData,
-      // );
 
       return Promise.reject(errorData);
     }

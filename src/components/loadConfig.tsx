@@ -4,7 +4,7 @@
 /* eslint-disable no-console, react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import { type Journey } from '@/interfaces/shared';
@@ -16,7 +16,6 @@ import { generateRequestId } from '@/utils/uuid';
 export function LoadConfig() {
   const { setJourney, journey } = useJourneyStore();
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
   const pathname = usePathname();
 
   async function createNewJourney() {
@@ -44,7 +43,18 @@ export function LoadConfig() {
 
   useEffect(() => {
     async function initialize() {
-      if (pathname === '/journey' || pathname.startsWith('/journey/')) {
+      const isBypassPage =
+        pathname === '/sign-in' ||
+        pathname.startsWith('/sign-in/') ||
+        pathname === '/my-info' ||
+        pathname.startsWith('/my-info/') ||
+        pathname === '/dashboard' ||
+        pathname.startsWith('/dashboard/') ||
+        pathname === '/journey' ||
+        pathname.startsWith('/journey/') ||
+        pathname.startsWith('/steps');
+
+      if (isBypassPage) {
         setIsLoading(false);
         return;
       }
@@ -77,10 +87,6 @@ export function LoadConfig() {
               setJourney(journeyRes.data);
 
               console.log('✅ Journey set in store:', journeyRes.data);
-
-              if (journeyRes.data.lastUrl) {
-                router.push(journeyRes.data.lastUrl);
-              }
             } else {
               console.warn('⚠️ No journey data in response');
               await createNewJourney();
@@ -98,7 +104,7 @@ export function LoadConfig() {
     }
 
     initialize();
-  }, [pathname, router, setJourney]);
+  }, []);
 
   // Debug: Log when journey changes
   useEffect(() => {

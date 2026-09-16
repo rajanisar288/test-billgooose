@@ -304,6 +304,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
   function handleLogout() {
     try {
       sessionStorage.removeItem('billgooseSignedInUser');
+      localStorage.removeItem('token');
     } catch {
       // Ignore storage failure.
     }

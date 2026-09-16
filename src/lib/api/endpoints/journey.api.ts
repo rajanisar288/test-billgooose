@@ -9,6 +9,15 @@ export const journeyApi = {
 
   getJourney: (journeyId: string) => apiClient.get(`/api/v1/journeys/${journeyId}`),
 
+  // Get customer journeys list
+  getCustomerJourneys: (params?: { page?: number; pageSize?: number }) =>
+    apiClient.get('/api/v1/customer/journeys', {
+      params: {
+        page: params?.page ?? 1,
+        pageSize: params?.pageSize ?? 10,
+      },
+    }),
+
   // Create a Journey
   createJourney: (payload: Journey) => apiClient.post('/api/v1/journeys', payload),
 

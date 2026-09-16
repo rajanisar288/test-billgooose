@@ -9,11 +9,14 @@ import { ArrowRight, Check } from 'lucide-react';
 
 import Header from '@/components/marketing/Header';
 import data from '@/data/content.json';
+import { useToast } from '@/hooks/useToast';
+import { authApi } from '@/lib/api/endpoints/auth.api';
 
 type LoginStage = 'email' | 'otp' | 'success';
 
 export default function SignInPage() {
   const router = useRouter();
+  const { showSuccess, showError } = useToast();
 
   const { hero, footer2 } = data;
 
@@ -22,69 +25,102 @@ export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
 
-  const [emailError, setEmailError] = useState('');
-  const [otpError, setOtpError] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   /* =========================================================
      GET OTP
   ========================================================= */
 
-  function handleGetOtp(event: FormEvent<HTMLFormElement>) {
+  async function handleGetOtp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!termsAccepted) {
+      showError('Please accept the terms & conditions to proceed.');
+      return;
+    }
 
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
-      setEmailError('Please enter your email address.');
+      showError('Please enter your email address.');
       return;
     }
 
     const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
 
     if (!emailIsValid) {
-      setEmailError('Please enter a valid email address.');
+      showError('Please enter a valid email address.');
       return;
     }
 
-    setEmailError('');
-    setOtpError('');
-    setStage('otp');
+    setIsLoading(true);
+
+    try {
+      await authApi.sendCode({ email: trimmedEmail });
+      showSuccess('OTP code sent to your email.');
+      setStage('otp');
+    } catch (error: any) {
+      showError(error?.data?.error || 'Failed to send OTP code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   /* =========================================================
-     LOGIN
+     LOGIN / VERIFY OTP
   ========================================================= */
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (!termsAccepted) {
+      showError('Please accept the terms & conditions to proceed.');
+      return;
+    }
+
     if (!otp.trim()) {
-      setOtpError('Please enter your OTP.');
+      showError('Please enter your OTP.');
       return;
     }
 
-    if (otp !== '0000') {
-      setOtpError('Incorrect OTP. Please enter 0000.');
-      return;
-    }
+    setIsLoading(true);
 
-    setOtpError('');
-
-    sessionStorage.setItem(
-      'billgooseSignedInUser',
-      JSON.stringify({
+    try {
+      const response = await authApi.verifyCode({
         email: email.trim(),
-        signedIn: true,
-      }),
-    );
+        code: otp.trim(),
+      });
 
-    /*
-     * Update any mounted Header immediately
-     * inside the same browser tab.
-     */
-    window.dispatchEvent(new Event('billgoose-auth-changed'));
+      const responseData = response?.data || {};
 
-    setStage('success');
+      sessionStorage.setItem(
+        'billgooseSignedInUser',
+        JSON.stringify({
+          email: email.trim(),
+          signedIn: true,
+          token: responseData.token || responseData.accessToken,
+          ...responseData,
+        }),
+      );
+
+      if (responseData.token || responseData.accessToken) {
+        localStorage.setItem('token', responseData.token || responseData.accessToken);
+      }
+
+      /*
+       * Update any mounted Header immediately
+       * inside the same browser tab.
+       */
+      window.dispatchEvent(new Event('billgoose-auth-changed'));
+
+      showSuccess('Signed in successfully.');
+      setStage('success');
+    } catch (error: any) {
+      showError(error?.data?.error || 'Incorrect OTP or verification failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   /* =========================================================
@@ -481,18 +517,14 @@ export default function SignInPage() {
                                   label="Email address"
                                   placeholder="Enter your email address"
                                   value={email}
-                                  error={emailError}
                                   onChange={(value) => {
                                     setEmail(value);
-
-                                    if (emailError) {
-                                      setEmailError('');
-                                    }
                                   }}
                                 />
 
                                 <button
                                   type="submit"
+                                  disabled={!termsAccepted || isLoading}
                                   className="
                                     mt-5
 
@@ -521,6 +553,9 @@ export default function SignInPage() {
 
                                     hover:bg-[#00796D]
 
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
+
                                     focus-visible:outline-none
                                     focus-visible:ring-4
                                     focus-visible:ring-[#CFECE8]
@@ -531,7 +566,7 @@ export default function SignInPage() {
                                     lg:h-[52px]
                                   "
                                 >
-                                  <span>Get OTP</span>
+                                  <span>{isLoading ? 'Sending...' : 'Get OTP'}</span>
 
                                   <ArrowRight
                                     aria-hidden="true"
@@ -570,6 +605,19 @@ export default function SignInPage() {
                                   onChange={setEmail}
                                 />
 
+                                <div className="mt-1 flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setStage('email');
+                                      setOtp('');
+                                    }}
+                                    className="font-inter text-[12px] font-medium text-[#00897B] hover:underline"
+                                  >
+                                    Change or re-enter email
+                                  </button>
+                                </div>
+
                                 <div className="mt-5">
                                   <LoginField
                                     id="login-otp"
@@ -578,22 +626,18 @@ export default function SignInPage() {
                                     label="Enter OTP"
                                     placeholder="Enter your OTP"
                                     value={otp}
-                                    error={otpError}
-                                    maxLength={4}
+                                    maxLength={6}
                                     onChange={(value) => {
-                                      const numericValue = value.replace(/\D/g, '').slice(0, 4);
+                                      const numericValue = value.replace(/\D/g, '').slice(0, 6);
 
                                       setOtp(numericValue);
-
-                                      if (otpError) {
-                                        setOtpError('');
-                                      }
                                     }}
                                   />
                                 </div>
 
                                 <button
                                   type="submit"
+                                  disabled={!termsAccepted || isLoading}
                                   className="
                                     mt-5
 
@@ -622,6 +666,9 @@ export default function SignInPage() {
 
                                     hover:bg-[#00796D]
 
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
+
                                     focus-visible:outline-none
                                     focus-visible:ring-4
                                     focus-visible:ring-[#CFECE8]
@@ -633,7 +680,7 @@ export default function SignInPage() {
                                     lg:text-[16px]
                                   "
                                 >
-                                  <span>Login</span>
+                                  <span>{isLoading ? 'Verifying...' : 'Login'}</span>
 
                                   <ArrowRight
                                     aria-hidden="true"
@@ -660,34 +707,46 @@ export default function SignInPage() {
                                 ${stage === 'email' ? 'mt-6 lg:mt-[27px]' : 'mt-5'}
                               `}
                             >
-                              <span
-                                className="
+                              <button
+                                type="button"
+                                role="checkbox"
+                                aria-checked={termsAccepted}
+                                onClick={() => {
+                                  setTermsAccepted((prev) => !prev);
+                                }}
+                                className={`
                                   mt-[2px]
-
                                   flex
-                                  h-[14px]
-                                  w-[14px]
+                                  h-[16px]
+                                  w-[16px]
                                   shrink-0
-
                                   items-center
                                   justify-center
-
-                                  rounded-[3px]
-
-                                  bg-[#00897B]
-                                "
+                                  rounded-[4px]
+                                  border
+                                  transition-colors
+                                  focus-visible:outline-none
+                                  focus-visible:ring-2
+                                  focus-visible:ring-[#00897B]
+                                  ${
+                                    termsAccepted
+                                      ? 'border-[#00897B] bg-[#00897B]'
+                                      : 'border-[#D0D5DD] bg-white hover:border-[#00897B]'
+                                  }
+                                `}
                               >
-                                <Check
-                                  aria-hidden="true"
-                                  className="
-                                    h-[9px]
-                                    w-[9px]
-
-                                    text-white
-                                  "
-                                  strokeWidth={3}
-                                />
-                              </span>
+                                {termsAccepted && (
+                                  <Check
+                                    aria-hidden="true"
+                                    className="
+                                      h-[10px]
+                                      w-[10px]
+                                      text-white
+                                    "
+                                    strokeWidth={3}
+                                  />
+                                )}
+                              </button>
 
                               <p
                                 className="
