@@ -16,7 +16,7 @@
       {
         "id": 2,
         "label": "Guides",
-        "href": "/guides",
+        "href": "/blogs",
         "hasDropdown": false
       },
       {
@@ -728,7 +728,7 @@
     "description": "Impartial UK guides written by our editorial team.",
     "allGuides": {
       "text": "All guides",
-      "href": "/guides"
+      "href": "/blogs"
     },
     "items": [
       {
@@ -739,7 +739,7 @@
         "image": "/images/guide-1.png",
         "imageAlt": "Warm home interior during winter",
         "linkText": "Read Guide",
-        "href": "/guides/reduce-energy-bills"
+        "href": "/guides"
       },
       {
         "id": "broadband-providers",
@@ -749,7 +749,7 @@
         "image": "/images/guide-2.png",
         "imageAlt": "Broadband router and network cables",
         "linkText": "Read Guide",
-        "href": "/guides/best-broadband-providers"
+        "href": "/guides"
       },
       {
         "id": "credit-score",
@@ -759,7 +759,7 @@
         "image": "/images/guide-3.png",
         "imageAlt": "Person using a credit card and mobile phone",
         "linkText": "Read Guide",
-        "href": "/guides/improve-credit-score"
+        "href": "/guides"
       },
       {
         "id": "electric-car-insurance",
@@ -769,7 +769,7 @@
         "image": "/images/guide-4.png",
         "imageAlt": "Electric car parked outside a home",
         "linkText": "Read Guide",
-        "href": "/guides/insurance-buying-guide"
+        "href": "/guides"
       }
     ]
   },
@@ -913,11 +913,7 @@
       },
       "priceReductionTable": {
         "heading": "What usually reduces the price, and what to watch for",
-        "columns": [
-          "Action",
-          "Why it can reduce cost",
-          "Important warning"
-        ],
+        "columns": ["Action", "Why it can reduce cost", "Important warning"],
         "rows": [
           {
             "id": "shop-around",
@@ -2753,10 +2749,7 @@
               "provider": "Apple",
               "image": "/images/16pro-img.jpg",
               "imageAlt": "Apple iPhone 16 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£420",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2770,10 +2763,7 @@
               "provider": "Apple",
               "image": "/images/apple-card-1.png",
               "imageAlt": "Apple iPhone 16",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£385",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -2878,10 +2868,7 @@
               "provider": "Samsung",
               "image": "/images/samsung-fold8.png",
               "imageAlt": "Samsung Galaxy Z Fold 8 Graphite",
-              "badges": [
-                "24 month contract",
-                "Smart meter required"
-              ],
+              "badges": ["24 month contract", "Smart meter required"],
               "saving": "£470",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2895,10 +2882,7 @@
               "provider": "Samsung",
               "image": "/images/samsung-fold8.png",
               "imageAlt": "Samsung Galaxy Z Fold 8 Graphite 512GB",
-              "badges": [
-                "24 month contract",
-                "Smart meter required"
-              ],
+              "badges": ["24 month contract", "Smart meter required"],
               "saving": "£470",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -3003,10 +2987,7 @@
               "provider": "Google",
               "image": "/images/pixel-10pro.jfif",
               "imageAlt": "Google Pixel 10 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£360",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -3020,10 +3001,7 @@
               "provider": "Google",
               "image": "/images/pixel-10.jfif",
               "imageAlt": "Google Pixel 10",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£315",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -3128,10 +3106,7 @@
               "provider": "Motorola",
               "image": "/images/moto-razr.jfif",
               "imageAlt": "Motorola Razr Ultra",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£340",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -3145,10 +3120,7 @@
               "provider": "Motorola",
               "image": "/images/moto-edge.jfif",
               "imageAlt": "Motorola Edge 60 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£295",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -3253,10 +3225,7 @@
               "provider": "Oppo",
               "image": "/images/oppo-find.jfif",
               "imageAlt": "OPPO Find X8 Pro",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£325",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -3270,10 +3239,7 @@
               "provider": "Oppo",
               "image": "/images/oppo-reno.jfif",
               "imageAlt": "OPPO Reno 14",
-              "badges": [
-                "24 month contract",
-                "5G included"
-              ],
+              "badges": ["24 month contract", "5G included"],
               "saving": "£280",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -3443,10 +3409,7 @@
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "EE",
           "providerUrl": "https://ee.co.uk/mobile/sim-only-deals",
-          "badges": [
-            "6 month contract",
-            "No data caps"
-          ],
+          "badges": ["6 month contract", "No data caps"],
           "primaryPriceLabel": "Price for 3 month",
           "primaryPrice": "£3.18/month",
           "dataLabel": "Data",
@@ -3928,10 +3891,7 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "EE",
-          "badges": [
-            "6 month contract",
-            "No data caps"
-          ],
+          "badges": ["6 month contract", "No data caps"],
           "data": "80 GB",
           "priceLabel": "Starting price",
           "price": "£3.18/month",
@@ -3950,10 +3910,7 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "BT Mobile",
-          "badges": [
-            "12 month contract",
-            "No annual increase"
-          ],
+          "badges": ["12 month contract", "No annual increase"],
           "data": "70 GB",
           "priceLabel": "Starting price",
           "price": "£9.00/month",
@@ -3972,10 +3929,7 @@
           "networkDescription": "Uses Three’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Three",
-          "badges": [
-            "12 month contract",
-            "No price increases"
-          ],
+          "badges": ["12 month contract", "No price increases"],
           "data": "100 GB",
           "priceLabel": "Monthly price",
           "price": "£5.50/month",
@@ -3994,10 +3948,7 @@
           "networkDescription": "Uses Three’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Smarty",
-          "badges": [
-            "No contract",
-            "Price freeze options"
-          ],
+          "badges": ["No contract", "Price freeze options"],
           "data": "20 GB",
           "priceLabel": "Monthly fee",
           "price": "£4.50/month",
@@ -4016,10 +3967,7 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Virgin Mobile",
-          "badges": [
-            "1 month contract",
-            "No price hikes"
-          ],
+          "badges": ["1 month contract", "No price hikes"],
           "data": "60 GB",
           "priceLabel": "Price per month",
           "price": "£8.00/month",
@@ -4038,10 +3986,7 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "O2",
-          "badges": [
-            "No contract",
-            "Price locked for 6 months"
-          ],
+          "badges": ["No contract", "Price locked for 6 months"],
           "data": "40 GB",
           "priceLabel": "Intro price",
           "price": "£4.00/month",
@@ -4060,10 +4005,7 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Giffgaff",
-          "badges": [
-            "No contract",
-            "Flexible plans"
-          ],
+          "badges": ["No contract", "Flexible plans"],
           "data": "30 GB",
           "priceLabel": "Monthly cost",
           "price": "£7.00/month",
@@ -4082,10 +4024,7 @@
           "networkDescription": "Uses Vodafone’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Vodafone",
-          "badges": [
-            "1 month contract",
-            "No annual price increases"
-          ],
+          "badges": ["1 month contract", "No annual price increases"],
           "data": "50 GB",
           "priceLabel": "Starting 3 month price",
           "price": "£3.18/month",
@@ -4104,10 +4043,7 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Sky Mobile",
-          "badges": [
-            "No contract",
-            "Price lock available"
-          ],
+          "badges": ["No contract", "Price lock available"],
           "data": "25 GB",
           "priceLabel": "Starting price",
           "price": "£5.25/month",
@@ -4135,10 +4071,7 @@
           "logoAlt": "Utility Warehouse",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Price locked for 12 months",
-            "24/7 chat support"
-          ],
+          "features": ["Price locked for 12 months", "24/7 chat support"],
           "priceLabel": "Estimated Price",
           "price": "£136.78",
           "pricePeriod": "/mo",
@@ -4184,10 +4117,7 @@
           "logoAlt": "British Gas",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Longest price lock available",
-            "Exit fee applies before term end"
-          ],
+          "features": ["Longest price lock available", "Exit fee applies before term end"],
           "priceLabel": "Estimated Price",
           "price": "£249.99",
           "pricePeriod": "/mo",
@@ -4249,11 +4179,7 @@
           "logoAlt": "E.ON",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "Same price every month",
-            "No usage surprises",
-            "Smart meter included"
-          ],
+          "features": ["Same price every month", "No usage surprises", "Smart meter included"],
           "priceLabel": "Estimated Price",
           "price": "£353.30",
           "pricePeriod": "/mo",
@@ -4271,10 +4197,7 @@
           "logoAlt": "SSE Energy Solutions",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -4292,10 +4215,7 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -4313,10 +4233,7 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": [
-            "100% renewable sourced",
-            "Cancel anytime"
-          ],
+          "features": ["100% renewable sourced", "Cancel anytime"],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -4336,10 +4253,7 @@
           "logoAlt": "Vodafone",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "New Vodafone customers only",
-            "No setup cost"
-          ],
+          "features": ["New Vodafone customers only", "No setup cost"],
           "priceLabel": "Monthly cost",
           "price": "£25.00",
           "pricePeriod": "/mo",
@@ -4360,10 +4274,7 @@
           "logoAlt": "TalkTalk",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "No setup fees",
-            "Smart meter required"
-          ],
+          "features": ["No setup fees", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -4384,10 +4295,7 @@
           "logoAlt": "Virgin Media",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Free installation",
-            "Smart meter not required"
-          ],
+          "features": ["Free installation", "Smart meter not required"],
           "priceLabel": "Monthly cost",
           "price": "£50.00",
           "pricePeriod": "/mo",
@@ -4408,10 +4316,7 @@
           "logoAlt": "EE",
           "rating": "",
           "contract": "24 months",
-          "features": [
-            "Free setup and router",
-            "Smart meter required"
-          ],
+          "features": ["Free setup and router", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£26.00",
           "pricePeriod": "/mo",
@@ -4432,10 +4337,7 @@
           "logoAlt": "Sky Broadband",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Free WiFi Hub included",
-            "Smart meter required"
-          ],
+          "features": ["Free WiFi Hub included", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£27.50",
           "pricePeriod": "/mo",
@@ -4456,10 +4358,7 @@
           "logoAlt": "Plusnet",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Price lock guarantee",
-            "Smart meter required"
-          ],
+          "features": ["Price lock guarantee", "Smart meter required"],
           "priceLabel": "Monthly cost",
           "price": "£33.33",
           "pricePeriod": "/mo",
@@ -4480,10 +4379,7 @@
           "logoAlt": "BT",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Includes free router",
-            "No smart meter needed"
-          ],
+          "features": ["Includes free router", "No smart meter needed"],
           "priceLabel": "Monthly cost",
           "price": "£35.00",
           "pricePeriod": "/mo",
@@ -4504,10 +4400,7 @@
           "logoAlt": "BeFibre",
           "rating": "",
           "contract": "12 months",
-          "features": [
-            "Award-winning service",
-            "No smart meter needed"
-          ],
+          "features": ["Award-winning service", "No smart meter needed"],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -4528,10 +4421,7 @@
           "logoAlt": "Brsk",
           "rating": "",
           "contract": "18 months",
-          "features": [
-            "Renewable energy powered",
-            "Smart meter recommended"
-          ],
+          "features": ["Renewable energy powered", "Smart meter recommended"],
           "priceLabel": "Monthly cost",
           "price": "£32.50",
           "pricePeriod": "/mo",
