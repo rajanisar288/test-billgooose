@@ -773,6 +773,274 @@
       }
     ]
   },
+  "blogsPage": {
+    "badge": {
+      "label": "Our guides"
+    },
+    "heading": "Resources and guides",
+    "breadcrumb": {
+      "home": {
+        "label": "Home",
+        "href": "/"
+      },
+      "current": "Our guides"
+    },
+    "search": {
+      "placeholder": "Search",
+      "ariaLabel": "Search guides",
+      "emptyMessage": "No guides found. Try another search."
+    }
+  },
+  "staticGuidePage": {
+    "badge": {
+      "category": "Car Insurance",
+      "readTime": "8 min read"
+    },
+    "heading": "How to Reduce Your Car Insurance Premium Legally",
+    "breadcrumb": {
+      "home": {
+        "label": "Home",
+        "href": "/"
+      },
+      "guides": {
+        "label": "Our guides",
+        "href": "/blogs"
+      },
+      "current": "Car Insurance"
+    },
+    "image": {
+      "src": "/images/guide-car-insurance.png",
+      "alt": "Car parked inside a residential garage"
+    }
+  },
+  "guideArticleContent": {
+    "sidebar": {
+      "heading": "Table of contents",
+      "links": [
+        {
+          "id": "introduction",
+          "label": "Introduction"
+        },
+        {
+          "id": "software-and-tools",
+          "label": "Software and tools"
+        },
+        {
+          "id": "other-resources",
+          "label": "Other resources"
+        },
+        {
+          "id": "conclusion",
+          "label": "Conclusion"
+        }
+      ],
+      "contributorsHeading": "Contributors",
+      "contributor": {
+        "name": "Admin",
+        "role": "Admin",
+        "image": "/images/admin-pfp.png",
+        "imageAlt": "BillGoose contributor"
+      },
+      "download": {
+        "title": "How to Reduce Your Car Insurance Premium Legally",
+        "fileDetails": "Downloadable guide",
+        "buttonLabel": "Download"
+      },
+      "newsletter": {
+        "heading": "Subscribe to our newsletter",
+        "placeholder": "Enter your email address",
+        "buttonLabel": "Subscribe"
+      }
+    },
+    "article": {
+      "intro": "How to Reduce Your Car Insurance Premium Legally",
+      "quickAnswer": {
+        "heading": "THE QUICK ANSWER",
+        "description": "You can reduce car insurance legally by shopping around before renewal, giving accurate information, choosing the right cover level, setting a sensible voluntary excess, protecting and building your no-claims discount, avoiding unnecessary extras, paying annually if affordable, considering telematics or pay-by-mile cover, and choosing a car that is cheaper to insure. Do not lie about the main driver, address, mileage, job, modifications or how the car is used. A cheaper premium is not worth invalid insurance."
+      },
+      "legalMatters": {
+        "heading": "Why \"legally\" matters",
+        "paragraphs": [
+          "Car insurance is priced on risk. Insurers look at details such as your car, address, age, driving history, mileage, job, claims record, named drivers and how the vehicle is used. Small changes can affect the premium, but they must be true.",
+          "There is a difference between finding a better deal and misrepresenting the risk. If you give false or misleading information, the insurer may cancel the policy, refuse a claim or treat the policy as if it never existed. That can leave you personally responsible for costs and make future insurance harder to arrange.",
+          "The aim is simple: reduce unnecessary cost while keeping cover that still works if you need to claim."
+        ]
+      },
+      "legalBaseline": {
+        "heading": "Legal Baseline",
+        "description": "You must have motor insurance if you use your vehicle on roads or in public places. A vehicle kept off the road does not need insurance only if it is declared SORN and kept off the road."
+      },
+      "checklist": {
+        "heading": "Your legal premium-reduction checklist",
+        "items": [
+          {
+            "id": "compare-before-renewal",
+            "number": "1",
+            "title": "Compare before renewal",
+            "description": "Do not accept a renewal price without checking the market. Compare like-for-like cover, not just the cheapest monthly figure."
+          },
+          {
+            "id": "accurate-details",
+            "number": "2",
+            "title": "Use accurate details",
+            "description": "Check your address, occupation, use class, annual mileage, parking, claims, convictions and modifications are all correct."
+          },
+          {
+            "id": "cover-level",
+            "number": "3",
+            "title": "Choose the right cover level",
+            "description": "Compare comprehensive, third party fire and theft, and third party only. Comprehensive can sometimes be cheaper than more limited cover."
+          },
+          {
+            "id": "voluntary-excess",
+            "number": "4",
+            "title": "Set a sensible voluntary excess",
+            "description": "A higher voluntary excess can reduce the premium, but only choose an amount you could afford if you had to claim."
+          },
+          {
+            "id": "telematics",
+            "number": "5",
+            "title": "Consider telematics or pay-by-mile",
+            "description": "Black box, app-based or low-mileage policies can suit careful drivers or people who drive less."
+          },
+          {
+            "id": "annual-payment",
+            "number": "6",
+            "title": "Pay annually if affordable",
+            "description": "Monthly payments can include credit charges or interest. Compare the total cost, not just the monthly amount."
+          }
+        ]
+      },
+      "priceReductionTable": {
+        "heading": "What usually reduces the price, and what to watch for",
+        "columns": [
+          "Action",
+          "Why it can reduce cost",
+          "Important warning"
+        ],
+        "rows": [
+          {
+            "id": "shop-around",
+            "action": "Shop around",
+            "reason": "Different insurers price the same risk differently",
+            "warning": "Compare cover, excess and add-ons, not just the headline premium."
+          },
+          {
+            "id": "voluntary-excess",
+            "action": "Increase voluntary excess",
+            "reason": "You take on more of the claim cost yourself",
+            "warning": "Do not set an excess you could not afford."
+          },
+          {
+            "id": "reduce-mileage",
+            "action": "Reduce mileage if accurate",
+            "reason": "Lower mileage can reduce exposure to risk.",
+            "warning": "Do not understate mileage. Update the insurer if usage changes."
+          },
+          {
+            "id": "pay-annually",
+            "action": "Pay annually",
+            "reason": "Avoids monthly credit charges where they apply.",
+            "warning": "Only do this if it does not create cash-flow problems."
+          },
+          {
+            "id": "named-driver",
+            "action": "Add a named driver",
+            "reason": "An experienced genuine named driver may reduce risk.",
+            "warning": "Never use this to disguise the real main driver."
+          },
+          {
+            "id": "remove-extras",
+            "action": "Remove extras",
+            "reason": "Stops paying for duplicate or unwanted benefits.",
+            "warning": "Do not remove cover you would genuinely need after a claim."
+          },
+          {
+            "id": "telematics",
+            "action": "Telematics",
+            "reason": "Rewards safer or lower-risk driving patterns.",
+            "warning": "Check data use, curfews, scoring and cancellation terms."
+          },
+          {
+            "id": "lower-risk-car",
+            "action": "Choose a lower-risk car",
+            "reason": "Repairs, performance and theft risk affect price.",
+            "warning": "Check insurance cost before buying or modifying a car."
+          }
+        ]
+      },
+      "premiumReductionSteps": [
+        {
+          "id": "shop-around-before-renewal",
+          "heading": "1. Shop around before your renewal date",
+          "paragraphs": [
+            "Your renewal price is not automatically the best available price. FCA rules introduced from 2022 were designed to stop insurers charging renewing home and motor customers more than an equivalent new customer through the same channel, but that does not mean every insurer will quote the same price or that your current provider will be cheapest.",
+            "Your renewal price is not automatically the best available price. FCA rules introduced from 2022 were designed to stop insurers charging renewing home and motor customers more than an equivalent new customer through the same channel, but that does not mean every insurer will quote the same price or that your current provider will be cheapest."
+          ]
+        },
+        {
+          "id": "accurate-mileage-and-use",
+          "heading": "2. Give accurate mileage and use class",
+          "paragraphs": [
+            "Annual mileage matters because it tells the insurer how much the car is likely to be on the road. If you now work from home, use public transport more, or no longer commute, your expected mileage may have fallen. Updating it honestly can help.",
+            "The same applies to use class. Social, domestic and pleasure use is different from commuting or business use. Choose the class that matches how the car is actually used. The cheapest option is not useful if it leaves the policy wrong."
+          ]
+        },
+        {
+          "id": "choose-cover-level",
+          "heading": "3. Choose cover level by value, not assumption",
+          "paragraphs": [
+            "Many drivers assume third party only is always cheapest because it offers less cover. In practice, insurers price based on claims experience and risk, so comprehensive cover can sometimes be cheaper than more limited cover.",
+            "Compare all suitable cover levels before choosing. Third party only may meet the minimum legal requirement for driving on public roads, but it will not pay to repair or replace your own car after an at-fault accident."
+          ]
+        },
+        {
+          "id": "set-excess-carefully",
+          "heading": "4. Set the excess carefully",
+          "paragraphs": [
+            "The excess is the amount you contribute towards a claim. Policies usually include a compulsory excess set by the insurer and may allow you to choose an additional voluntary excess.",
+            "A higher voluntary excess can reduce the premium because you take on more of the risk. But if the total excess becomes too high, the policy may be less useful for smaller claims. Choose an amount you could pay without borrowing if something happened."
+          ]
+        },
+        {
+          "id": "protect-no-claims",
+          "heading": "5. Build and protect your no-claims discount",
+          "paragraphs": [
+            "A no-claims discount can make a significant difference to the premium. It rewards claim-free driving history, although the size of the discount and how it is applied varies by insurer.",
+            "If you have built up a discount, compare the cost of protecting it. Protection does not stop the underlying premium from changing after a claim, but it may preserve the discount percentage according to the policy terms."
+          ]
+        },
+        {
+          "id": "named-drivers",
+          "heading": "6. Be careful with named drivers",
+          "paragraphs": [
+            "Adding a genuine named driver can sometimes reduce the premium, especially if they are experienced and will occasionally use the car. It can also increase the price if the additional driver is higher risk."
+          ]
+        }
+      ],
+      "riskWarnings": {
+        "heading": "Things that are not worth the risk",
+        "items": [
+          "Using a different address because it is cheaper.",
+          "Understating mileage when you know you will drive more.",
+          "Leaving commuting or business use off the policy when you need it.",
+          "Failing to disclose claims, accidents or motoring convictions when asked.",
+          "Failing to disclose modifications.",
+          "Naming someone else as the main driver when they are not.",
+          "Choosing an excess so high that you could not realistically claim.",
+          "Buying the cheapest policy without checking exclusions and compulsory excesses."
+        ]
+      },
+      "conclusion": {
+        "heading": "Ready to compare car insurance?",
+        "description": "Reducing car insurance is not about finding loopholes. It is about making sure your quote reflects your real risk, your real cover needs and the best available price for the policy you actually want.",
+        "highlight": {
+          "heading": "Compare with BillGoose",
+          "description": "Use BillGoose to compare car insurance by cover level, excess, optional extras and total cost. Check the details carefully so you save money without choosing cover that lets you down."
+        }
+      }
+    }
+  },
   "reviews": {
     "badge": {
       "text": "Reviews",
@@ -1206,9 +1474,9 @@
             "href": "/careers"
           },
           {
-            "id": "press",
-            "label": "Press",
-            "href": "/press"
+            "id": "blogs",
+            "label": "Blogs",
+            "href": "/blogs"
           },
           {
             "id": "company-contact",
@@ -2185,9 +2453,21 @@
         "label": "Do you own or rent your home?",
         "defaultValue": "mortgage",
         "options": [
-          { "id": "mortgage", "label": "I have a mortgage", "value": "mortgage" },
-          { "id": "ownOutright", "label": "I own my home outright", "value": "ownOutright" },
-          { "id": "renting", "label": "I'm renting", "value": "renting" }
+          {
+            "id": "mortgage",
+            "label": "I have a mortgage",
+            "value": "mortgage"
+          },
+          {
+            "id": "ownOutright",
+            "label": "I own my home outright",
+            "value": "ownOutright"
+          },
+          {
+            "id": "renting",
+            "label": "I'm renting",
+            "value": "renting"
+          }
         ]
       },
       "coverStart": {
@@ -2195,10 +2475,26 @@
         "placeholder": "Select start date",
         "defaultValue": "today",
         "options": [
-          { "id": "today", "label": "Today", "value": "today" },
-          { "id": "within7days", "label": "Within 7 days", "value": "within7days" },
-          { "id": "within14days", "label": "Within 14 days", "value": "within14days" },
-          { "id": "within30days", "label": "Within 30 days", "value": "within30days" }
+          {
+            "id": "today",
+            "label": "Today",
+            "value": "today"
+          },
+          {
+            "id": "within7days",
+            "label": "Within 7 days",
+            "value": "within7days"
+          },
+          {
+            "id": "within14days",
+            "label": "Within 14 days",
+            "value": "within14days"
+          },
+          {
+            "id": "within30days",
+            "label": "Within 30 days",
+            "value": "within30days"
+          }
         ]
       },
       "paymentFrequency": {
@@ -2206,8 +2502,16 @@
         "description": "One annual payment is typically the cheaper option, since paying monthly means you could be entering into a credit agreement and charged interest.",
         "defaultValue": "monthly",
         "options": [
-          { "id": "annual", "label": "Annual", "value": "annual" },
-          { "id": "monthly", "label": "Monthly", "value": "monthly" }
+          {
+            "id": "annual",
+            "label": "Annual",
+            "value": "annual"
+          },
+          {
+            "id": "monthly",
+            "label": "Monthly",
+            "value": "monthly"
+          }
         ]
       }
     },
@@ -2219,30 +2523,78 @@
         "label": "What type of home do you want to insure?",
         "defaultValue": "house",
         "options": [
-          { "id": "house", "label": "House", "value": "house" },
-          { "id": "flat", "label": "Flat", "value": "flat" },
-          { "id": "townhouse", "label": "Townhouse", "value": "townhouse" },
-          { "id": "maisonette", "label": "Maisonette", "value": "maisonette" },
-          { "id": "bungalow", "label": "Bungalow", "value": "bungalow" },
-          { "id": "roomOnlyOrBedsit", "label": "Room only or bedsit", "value": "roomOnlyOrBedsit" }
+          {
+            "id": "house",
+            "label": "House",
+            "value": "house"
+          },
+          {
+            "id": "flat",
+            "label": "Flat",
+            "value": "flat"
+          },
+          {
+            "id": "townhouse",
+            "label": "Townhouse",
+            "value": "townhouse"
+          },
+          {
+            "id": "maisonette",
+            "label": "Maisonette",
+            "value": "maisonette"
+          },
+          {
+            "id": "bungalow",
+            "label": "Bungalow",
+            "value": "bungalow"
+          },
+          {
+            "id": "roomOnlyOrBedsit",
+            "label": "Room only or bedsit",
+            "value": "roomOnlyOrBedsit"
+          }
         ]
       },
       "houseStyle": {
         "label": "What type of house is it?",
         "defaultValue": "semiDetached",
         "options": [
-          { "id": "detached", "label": "Detached", "value": "detached" },
-          { "id": "semiDetached", "label": "Semi-detached", "value": "semiDetached" },
-          { "id": "midTerrace", "label": "Mid-Terrace", "value": "midTerrace" },
-          { "id": "endTerrace", "label": "End-Terrace", "value": "endTerrace" }
+          {
+            "id": "detached",
+            "label": "Detached",
+            "value": "detached"
+          },
+          {
+            "id": "semiDetached",
+            "label": "Semi-detached",
+            "value": "semiDetached"
+          },
+          {
+            "id": "midTerrace",
+            "label": "Mid-Terrace",
+            "value": "midTerrace"
+          },
+          {
+            "id": "endTerrace",
+            "label": "End-Terrace",
+            "value": "endTerrace"
+          }
         ]
       },
       "smokeDetectors": {
         "label": "Do you have working smoke detectors?",
         "defaultValue": "yes",
         "options": [
-          { "id": "yes", "label": "Yes", "value": "yes" },
-          { "id": "no", "label": "No", "value": "no" }
+          {
+            "id": "yes",
+            "label": "Yes",
+            "value": "yes"
+          },
+          {
+            "id": "no",
+            "label": "No",
+            "value": "no"
+          }
         ]
       }
     }
@@ -2401,7 +2753,10 @@
               "provider": "Apple",
               "image": "/images/16pro-img.jpg",
               "imageAlt": "Apple iPhone 16 Pro",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£420",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2415,7 +2770,10 @@
               "provider": "Apple",
               "image": "/images/apple-card-1.png",
               "imageAlt": "Apple iPhone 16",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£385",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -2520,7 +2878,10 @@
               "provider": "Samsung",
               "image": "/images/samsung-fold8.png",
               "imageAlt": "Samsung Galaxy Z Fold 8 Graphite",
-              "badges": ["24 month contract", "Smart meter required"],
+              "badges": [
+                "24 month contract",
+                "Smart meter required"
+              ],
               "saving": "£470",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2534,7 +2895,10 @@
               "provider": "Samsung",
               "image": "/images/samsung-fold8.png",
               "imageAlt": "Samsung Galaxy Z Fold 8 Graphite 512GB",
-              "badges": ["24 month contract", "Smart meter required"],
+              "badges": [
+                "24 month contract",
+                "Smart meter required"
+              ],
               "saving": "£470",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2639,7 +3003,10 @@
               "provider": "Google",
               "image": "/images/pixel-10pro.jfif",
               "imageAlt": "Google Pixel 10 Pro",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£360",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2653,7 +3020,10 @@
               "provider": "Google",
               "image": "/images/pixel-10.jfif",
               "imageAlt": "Google Pixel 10",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£315",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -2758,7 +3128,10 @@
               "provider": "Motorola",
               "image": "/images/moto-razr.jfif",
               "imageAlt": "Motorola Razr Ultra",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£340",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2772,7 +3145,10 @@
               "provider": "Motorola",
               "image": "/images/moto-edge.jfif",
               "imageAlt": "Motorola Edge 60 Pro",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£295",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -2877,7 +3253,10 @@
               "provider": "Oppo",
               "image": "/images/oppo-find.jfif",
               "imageAlt": "OPPO Find X8 Pro",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£325",
               "savingDescription": "Annual saving at today's rates",
               "data": "Unlimited 5G Data",
@@ -2891,7 +3270,10 @@
               "provider": "Oppo",
               "image": "/images/oppo-reno.jfif",
               "imageAlt": "OPPO Reno 14",
-              "badges": ["24 month contract", "5G included"],
+              "badges": [
+                "24 month contract",
+                "5G included"
+              ],
               "saving": "£280",
               "savingDescription": "Annual saving at today's rates",
               "data": "100GB 5G Data",
@@ -3061,7 +3443,10 @@
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "EE",
           "providerUrl": "https://ee.co.uk/mobile/sim-only-deals",
-          "badges": ["6 month contract", "No data caps"],
+          "badges": [
+            "6 month contract",
+            "No data caps"
+          ],
           "primaryPriceLabel": "Price for 3 month",
           "primaryPrice": "£3.18/month",
           "dataLabel": "Data",
@@ -3543,7 +3928,10 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "EE",
-          "badges": ["6 month contract", "No data caps"],
+          "badges": [
+            "6 month contract",
+            "No data caps"
+          ],
           "data": "80 GB",
           "priceLabel": "Starting price",
           "price": "£3.18/month",
@@ -3562,7 +3950,10 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "BT Mobile",
-          "badges": ["12 month contract", "No annual increase"],
+          "badges": [
+            "12 month contract",
+            "No annual increase"
+          ],
           "data": "70 GB",
           "priceLabel": "Starting price",
           "price": "£9.00/month",
@@ -3581,7 +3972,10 @@
           "networkDescription": "Uses Three’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Three",
-          "badges": ["12 month contract", "No price increases"],
+          "badges": [
+            "12 month contract",
+            "No price increases"
+          ],
           "data": "100 GB",
           "priceLabel": "Monthly price",
           "price": "£5.50/month",
@@ -3600,7 +3994,10 @@
           "networkDescription": "Uses Three’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Smarty",
-          "badges": ["No contract", "Price freeze options"],
+          "badges": [
+            "No contract",
+            "Price freeze options"
+          ],
           "data": "20 GB",
           "priceLabel": "Monthly fee",
           "price": "£4.50/month",
@@ -3619,7 +4016,10 @@
           "networkDescription": "Uses EE’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Virgin Mobile",
-          "badges": ["1 month contract", "No price hikes"],
+          "badges": [
+            "1 month contract",
+            "No price hikes"
+          ],
           "data": "60 GB",
           "priceLabel": "Price per month",
           "price": "£8.00/month",
@@ -3638,7 +4038,10 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "O2",
-          "badges": ["No contract", "Price locked for 6 months"],
+          "badges": [
+            "No contract",
+            "Price locked for 6 months"
+          ],
           "data": "40 GB",
           "priceLabel": "Intro price",
           "price": "£4.00/month",
@@ -3657,7 +4060,10 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Giffgaff",
-          "badges": ["No contract", "Flexible plans"],
+          "badges": [
+            "No contract",
+            "Flexible plans"
+          ],
           "data": "30 GB",
           "priceLabel": "Monthly cost",
           "price": "£7.00/month",
@@ -3676,7 +4082,10 @@
           "networkDescription": "Uses Vodafone’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Vodafone",
-          "badges": ["1 month contract", "No annual price increases"],
+          "badges": [
+            "1 month contract",
+            "No annual price increases"
+          ],
           "data": "50 GB",
           "priceLabel": "Starting 3 month price",
           "price": "£3.18/month",
@@ -3695,7 +4104,10 @@
           "networkDescription": "Uses O2’s Network",
           "logo": "/images/sim-only-provider.png",
           "logoAlt": "Sky Mobile",
-          "badges": ["No contract", "Price lock available"],
+          "badges": [
+            "No contract",
+            "Price lock available"
+          ],
           "data": "25 GB",
           "priceLabel": "Starting price",
           "price": "£5.25/month",
@@ -3723,7 +4135,10 @@
           "logoAlt": "Utility Warehouse",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["Price locked for 12 months", "24/7 chat support"],
+          "features": [
+            "Price locked for 12 months",
+            "24/7 chat support"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£136.78",
           "pricePeriod": "/mo",
@@ -3769,7 +4184,10 @@
           "logoAlt": "British Gas",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["Longest price lock available", "Exit fee applies before term end"],
+          "features": [
+            "Longest price lock available",
+            "Exit fee applies before term end"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£249.99",
           "pricePeriod": "/mo",
@@ -3831,7 +4249,11 @@
           "logoAlt": "E.ON",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["Same price every month", "No usage surprises", "Smart meter included"],
+          "features": [
+            "Same price every month",
+            "No usage surprises",
+            "Smart meter included"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£353.30",
           "pricePeriod": "/mo",
@@ -3849,7 +4271,10 @@
           "logoAlt": "SSE Energy Solutions",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["100% renewable sourced", "Cancel anytime"],
+          "features": [
+            "100% renewable sourced",
+            "Cancel anytime"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -3867,7 +4292,10 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["100% renewable sourced", "Cancel anytime"],
+          "features": [
+            "100% renewable sourced",
+            "Cancel anytime"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -3885,7 +4313,10 @@
           "logoAlt": "Octopus Energy",
           "rating": "4.3",
           "contract": "12 month contract",
-          "features": ["100% renewable sourced", "Cancel anytime"],
+          "features": [
+            "100% renewable sourced",
+            "Cancel anytime"
+          ],
           "priceLabel": "Estimated Price",
           "price": "£298.00",
           "pricePeriod": "/mo",
@@ -3905,7 +4336,10 @@
           "logoAlt": "Vodafone",
           "rating": "",
           "contract": "24 months",
-          "features": ["New Vodafone customers only", "No setup cost"],
+          "features": [
+            "New Vodafone customers only",
+            "No setup cost"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£25.00",
           "pricePeriod": "/mo",
@@ -3926,7 +4360,10 @@
           "logoAlt": "TalkTalk",
           "rating": "",
           "contract": "24 months",
-          "features": ["No setup fees", "Smart meter required"],
+          "features": [
+            "No setup fees",
+            "Smart meter required"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -3947,7 +4384,10 @@
           "logoAlt": "Virgin Media",
           "rating": "",
           "contract": "12 months",
-          "features": ["Free installation", "Smart meter not required"],
+          "features": [
+            "Free installation",
+            "Smart meter not required"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£50.00",
           "pricePeriod": "/mo",
@@ -3968,7 +4408,10 @@
           "logoAlt": "EE",
           "rating": "",
           "contract": "24 months",
-          "features": ["Free setup and router", "Smart meter required"],
+          "features": [
+            "Free setup and router",
+            "Smart meter required"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£26.00",
           "pricePeriod": "/mo",
@@ -3989,7 +4432,10 @@
           "logoAlt": "Sky Broadband",
           "rating": "",
           "contract": "18 months",
-          "features": ["Free WiFi Hub included", "Smart meter required"],
+          "features": [
+            "Free WiFi Hub included",
+            "Smart meter required"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£27.50",
           "pricePeriod": "/mo",
@@ -4010,7 +4456,10 @@
           "logoAlt": "Plusnet",
           "rating": "",
           "contract": "18 months",
-          "features": ["Price lock guarantee", "Smart meter required"],
+          "features": [
+            "Price lock guarantee",
+            "Smart meter required"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£33.33",
           "pricePeriod": "/mo",
@@ -4031,7 +4480,10 @@
           "logoAlt": "BT",
           "rating": "",
           "contract": "12 months",
-          "features": ["Includes free router", "No smart meter needed"],
+          "features": [
+            "Includes free router",
+            "No smart meter needed"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£35.00",
           "pricePeriod": "/mo",
@@ -4052,7 +4504,10 @@
           "logoAlt": "BeFibre",
           "rating": "",
           "contract": "12 months",
-          "features": ["Award-winning service", "No smart meter needed"],
+          "features": [
+            "Award-winning service",
+            "No smart meter needed"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£30.00",
           "pricePeriod": "/mo",
@@ -4073,7 +4528,10 @@
           "logoAlt": "Brsk",
           "rating": "",
           "contract": "18 months",
-          "features": ["Renewable energy powered", "Smart meter recommended"],
+          "features": [
+            "Renewable energy powered",
+            "Smart meter recommended"
+          ],
           "priceLabel": "Monthly cost",
           "price": "£32.50",
           "pricePeriod": "/mo",
