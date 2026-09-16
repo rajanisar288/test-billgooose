@@ -285,16 +285,6 @@ export default function MyInfoPage() {
     deals = [];
   }
 
-  const service = journey?.service ?? 'energy';
-
-  const progress = journey?.progress ?? 0;
-
-  const continueRoute = journey?.route ?? `/compare?service=${service}`;
-
-  const isBroadband = service === 'broadband';
-
-  const journeyIcon = isBroadband ? '/images/broadband.png' : '/images/energy-icon.png';
-
   /* =========================================================
      COMPARE AGAIN
   ========================================================= */
@@ -542,10 +532,10 @@ export default function MyInfoPage() {
                     lg:p-6
                   "
                 > */}
-                  {/* =============================================
+              {/* =============================================
                       TOP
                   ============================================== */}
-                  {/* <div
+              {/* <div
                     className="
                       flex
                       flex-col
@@ -568,8 +558,8 @@ export default function MyInfoPage() {
                         sm:gap-4
                       "
                     > */}
-                      {/* SERVICE ICON */}
-                      {/* <div
+              {/* SERVICE ICON */}
+              {/* <div
                         className="
                           flex
                           h-[50px]
@@ -706,11 +696,11 @@ export default function MyInfoPage() {
                     </button>
                   </div> */}
 
-                  {/* =============================================
+              {/* =============================================
                       PROGRESS
                       NO DIVIDER/BORDER
                   ============================================== */}
-                  {/* <div
+              {/* <div
                     className="
                       mt-4
 
