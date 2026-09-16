@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { ArrowRight, Check } from 'lucide-react';
 
+import FullPageLoader, { InlineSpinner } from '@/components/common/FullPageLoader';
 import Header from '@/components/marketing/Header';
 import data from '@/data/content.json';
 import { useToast } from '@/hooks/useToast';
@@ -20,13 +21,76 @@ export default function SignInPage() {
 
   const { hero, footer2 } = data;
 
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [stage, setStage] = useState<LoginStage>('email');
-
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
 
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  /* =========================================================
+     REDIRECT IF ALREADY AUTHENTICATED
+  ========================================================= */
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const tokenExpiryStr = localStorage.getItem('token_expiry');
+
+    if (token) {
+      if (tokenExpiryStr && Date.now() > Number(tokenExpiryStr)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_expiry');
+        sessionStorage.removeItem('billgooseSignedInUser');
+        window.dispatchEvent(new Event('billgoose-auth-changed'));
+        // Hydrate browser-only usage data after the client mounts.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsCheckingAuth(false);
+      } else {
+        router.replace('/my-info');
+        return;
+      }
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, [router]);
+
+  /* =========================================================
+     SUCCESS → RETURN AFTER 2.5 SECONDS
+  ========================================================= */
+
+  useEffect(() => {
+    if (stage !== 'success') {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const storedReturnTo = sessionStorage.getItem('billgooseSignInReturnTo');
+
+      /*
+       * Prevent accidentally sending the user
+       * straight back to /sign-in.
+       */
+      const returnTo =
+        storedReturnTo && !storedReturnTo.startsWith('/sign-in') ? storedReturnTo : '/my-info';
+
+      sessionStorage.removeItem('billgooseSignInReturnTo');
+
+      router.push(returnTo);
+    }, 2500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [router, stage]);
+
+  /* =========================================================
+     FULL PAGE LOADER IF CHECKING AUTH (MUST BE DECLARED AFTER ALL HOOKS)
+  ========================================================= */
+
+  if (isCheckingAuth) {
+    return <FullPageLoader message="Checking authentication..." />;
+  }
 
   /* =========================================================
      GET OTP
@@ -93,19 +157,23 @@ export default function SignInPage() {
       });
 
       const responseData = response?.data || {};
+      const token = responseData.token || responseData.accessToken;
 
       sessionStorage.setItem(
         'billgooseSignedInUser',
         JSON.stringify({
           email: email.trim(),
           signedIn: true,
-          token: responseData.token || responseData.accessToken,
+          token,
           ...responseData,
         }),
       );
 
-      if (responseData.token || responseData.accessToken) {
-        localStorage.setItem('token', responseData.token || responseData.accessToken);
+      if (token) {
+        localStorage.setItem('token', token);
+        const expiresInSeconds = responseData.expiresIn || 86400;
+        const tokenExpiry = Date.now() + expiresInSeconds * 1000;
+        localStorage.setItem('token_expiry', tokenExpiry.toString());
       }
 
       /*
@@ -122,35 +190,6 @@ export default function SignInPage() {
       setIsLoading(false);
     }
   }
-
-  /* =========================================================
-     SUCCESS → RETURN AFTER 5 SECONDS
-  ========================================================= */
-
-  useEffect(() => {
-    if (stage !== 'success') {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      const storedReturnTo = sessionStorage.getItem('billgooseSignInReturnTo');
-
-      /*
-       * Prevent accidentally sending the user
-       * straight back to /sign-in.
-       */
-      const returnTo =
-        storedReturnTo && !storedReturnTo.startsWith('/sign-in') ? storedReturnTo : '/';
-
-      sessionStorage.removeItem('billgooseSignInReturnTo');
-
-      router.push(returnTo);
-    }, 5000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [router, stage]);
 
   return (
     <main className="flex min-h-screen w-full flex-col bg-white">
@@ -277,7 +316,7 @@ export default function SignInPage() {
                         FORM CARD BORDER
                     ============================================== */}
                     <div
-                      className="
+                      className={`
                         w-full
 
                         rounded-[24px]
@@ -290,9 +329,9 @@ export default function SignInPage() {
 
                         sm:rounded-[28px]
 
-                        lg:h-[509px]
+                        ${stage === 'otp' ? 'lg:h-[550px]' : 'lg:h-[509px]'}
                         lg:rounded-[36px]
-                      "
+                      `}
                     >
                       {/* ===========================================
                           CARD INNER
@@ -439,6 +478,13 @@ export default function SignInPage() {
                             >
                               Your identity has been successfully verified.
                             </p>
+
+                            <div className="mt-6 flex items-center justify-center gap-2.5 text-[#00897B]">
+                              <InlineSpinner className="h-5 w-5 text-[#00897B]" />
+                              <span className="font-red-hat-display text-sm font-semibold">
+                                Redirecting...
+                              </span>
+                            </div>
                           </div>
                         ) : (
                           <>

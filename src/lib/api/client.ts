@@ -58,21 +58,30 @@ class ApiClient {
       const lang = localStorage.getItem('language') || 'en';
       config.headers['Accept-Language'] = lang;
 
-      let token = localStorage.getItem('token');
-      if (!token) {
-        try {
-          const userStr = sessionStorage.getItem('billgooseSignedInUser');
-          if (userStr) {
-            const userObj = JSON.parse(userStr);
-            token = userObj?.token || userObj?.accessToken || userObj?.jwt || null;
+      const tokenExpiry = localStorage.getItem('token_expiry');
+      if (tokenExpiry && Date.now() > Number(tokenExpiry)) {
+        // Token expired
+        localStorage.removeItem('token');
+        localStorage.removeItem('token_expiry');
+        sessionStorage.removeItem('billgooseSignedInUser');
+        window.dispatchEvent(new Event('billgoose-auth-changed'));
+      } else {
+        let token = localStorage.getItem('token');
+        if (!token) {
+          try {
+            const userStr = sessionStorage.getItem('billgooseSignedInUser');
+            if (userStr) {
+              const userObj = JSON.parse(userStr);
+              token = userObj?.token || userObj?.accessToken || userObj?.jwt || null;
+            }
+          } catch {
+            // ignore JSON parse error
           }
-        } catch {
-          // ignore JSON parse error
         }
-      }
 
-      if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
       }
     }
 

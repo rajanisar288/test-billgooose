@@ -305,6 +305,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
     try {
       sessionStorage.removeItem('billgooseSignedInUser');
       localStorage.removeItem('token');
+      localStorage.removeItem('token_expiry');
     } catch {
       // Ignore storage failure.
     }
