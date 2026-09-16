@@ -16,7 +16,7 @@
       {
         "id": 2,
         "label": "Guides",
-        "href": "/guides",
+        "href": "/blogs",
         "hasDropdown": false
       },
       {
@@ -728,7 +728,7 @@
     "description": "Impartial UK guides written by our editorial team.",
     "allGuides": {
       "text": "All guides",
-      "href": "/guides"
+      "href": "/blogs"
     },
     "items": [
       {
@@ -739,7 +739,7 @@
         "image": "/images/guide-1.png",
         "imageAlt": "Warm home interior during winter",
         "linkText": "Read Guide",
-        "href": "/guides/reduce-energy-bills"
+        "href": "/guides"
       },
       {
         "id": "broadband-providers",
@@ -749,7 +749,7 @@
         "image": "/images/guide-2.png",
         "imageAlt": "Broadband router and network cables",
         "linkText": "Read Guide",
-        "href": "/guides/best-broadband-providers"
+        "href": "/guides"
       },
       {
         "id": "credit-score",
@@ -759,7 +759,7 @@
         "image": "/images/guide-3.png",
         "imageAlt": "Person using a credit card and mobile phone",
         "linkText": "Read Guide",
-        "href": "/guides/improve-credit-score"
+        "href": "/guides"
       },
       {
         "id": "electric-car-insurance",
@@ -769,7 +769,7 @@
         "image": "/images/guide-4.png",
         "imageAlt": "Electric car parked outside a home",
         "linkText": "Read Guide",
-        "href": "/guides/insurance-buying-guide"
+        "href": "/guides"
       }
     ]
   },

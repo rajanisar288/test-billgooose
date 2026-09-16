@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,7 +19,76 @@ export default function GuideArticleContent() {
   const [linkCopied, setLinkCopied] = useState(false);
 
   // =====================================================
-  // TABLE OF CONTENTS
+  // AUTOMATIC ACTIVE TABLE OF CONTENTS ON SCROLL
+  // =====================================================
+
+  useEffect(() => {
+    const sectionIds = ['introduction', 'software-and-tools', 'other-resources', 'conclusion'];
+
+    let animationFrameId: number | null = null;
+
+    const updateActiveSection = () => {
+      const activationOffset = 180;
+
+      let currentSection = sectionIds[0];
+
+      for (const sectionId of sectionIds) {
+        const section = document.getElementById(sectionId);
+
+        if (!section) continue;
+
+        const sectionTop = section.getBoundingClientRect().top;
+
+        if (sectionTop <= activationOffset) {
+          currentSection = sectionId;
+        }
+      }
+
+      // Highlight Conclusion when the user reaches
+      // the end of the article, even if its heading
+      // has not reached the activation offset.
+      const articleElement = document.getElementById('guide-article-content');
+
+      if (articleElement) {
+        const articleBottom = articleElement.getBoundingClientRect().bottom;
+
+        if (articleBottom <= window.innerHeight + 10) {
+          currentSection = 'conclusion';
+        }
+      }
+
+      setActiveSection((previous) => (previous === currentSection ? previous : currentSection));
+
+      animationFrameId = null;
+    };
+
+    const handleScroll = () => {
+      if (animationFrameId !== null) return;
+
+      animationFrameId = window.requestAnimationFrame(updateActiveSection);
+    };
+
+    // Detect the correct section on initial load.
+    updateActiveSection();
+
+    window.addEventListener('scroll', handleScroll, {
+      passive: true,
+    });
+
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+
+      if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
+
+  // =====================================================
+  // TABLE OF CONTENTS CLICK NAVIGATION
   // =====================================================
 
   function handleSectionClick(sectionId: string) {
@@ -149,15 +218,25 @@ export default function GuideArticleContent() {
                     key={link.id}
                     type="button"
                     onClick={() => handleSectionClick(link.id)}
+                    aria-current={isActive ? 'location' : undefined}
                     className={`
-                      w-full text-left font-inter
-                      text-[14px] leading-[22px]
-                      transition-colors duration-200
-                      lg:text-[16px] lg:leading-[24px]
+                      w-full
+                      text-left
+                      font-inter
+
+                      text-[14px]
+                      leading-[22px]
+
+                      transition-colors
+                      duration-200
+
+                      lg:text-[16px]
+                      lg:leading-[24px]
+
                       ${
                         isActive
-                          ? 'font-semibold text-[#00897B]'
-                          : 'font-semibold text-[#475467] hover:text-[#00897B]'
+                          ? 'font-semibold !text-[#00897B]'
+                          : 'font-semibold !text-[#475467] hover:!text-[#00897B]'
                       }
                     `}
                   >
@@ -343,7 +422,10 @@ export default function GuideArticleContent() {
             RIGHT ARTICLE CONTENT
         ====================================================== */}
 
-        <article className="min-w-0 w-full font-inter text-[15px] font-normal leading-[24px] text-[#475467] sm:text-[16px] sm:leading-[26px] lg:text-[18px] lg:leading-[28px] xl:text-[20px] xl:leading-[30px]">
+        <article
+          id="guide-article-content"
+          className="min-w-0 w-full font-inter text-[15px] font-normal leading-[24px] text-[#475467] sm:text-[16px] sm:leading-[26px] lg:text-[18px] lg:leading-[28px] xl:text-[20px] xl:leading-[30px]"
+        >
           {/* =================================================
               1. INTRODUCTION
               Sidebar link: Introduction
@@ -569,70 +651,25 @@ export default function GuideArticleContent() {
               5. THINGS THAT ARE NOT WORTH THE RISK
 
               Sidebar link: Other resources
-
-              Appears directly after the six numbered sections.
           ====================================================== */}
 
           <section
             id="other-resources"
             aria-labelledby="risk-warnings-heading"
-            className="
-              mt-12
-              w-full
-              scroll-mt-8
-
-              sm:mt-14
-              lg:mt-16
-            "
+            className="mt-12 w-full scroll-mt-8 sm:mt-14 lg:mt-16"
           >
             {/* HEADING */}
 
             <h2
               id="risk-warnings-heading"
-              className="
-                font-inter
-                text-[22px]
-                font-semibold
-                leading-[30px]
-                tracking-[0]
-                text-[#00897B]
-
-                sm:text-[24px]
-                sm:leading-[34px]
-
-                lg:text-[26px]
-                lg:leading-[36px]
-              "
+              className="font-inter text-[22px] font-semibold leading-[30px] tracking-[0] text-[#00897B] sm:text-[24px] sm:leading-[34px] lg:text-[26px] lg:leading-[36px]"
             >
               {article.riskWarnings.heading}
             </h2>
 
             {/* BULLET POINTS */}
 
-            <ul
-              className="
-                mt-5
-                list-disc
-                space-y-2
-
-                pl-5
-
-                font-inter
-                text-[14px]
-                font-normal
-                leading-[23px]
-
-                text-[#344054]
-
-                marker:text-[#344054]
-
-                sm:text-[16px]
-                sm:leading-[26px]
-
-                lg:text-[18px]
-                lg:leading-[28px]
-              "
-            >
+            <ul className="mt-5 list-disc space-y-2 pl-5 font-inter text-[14px] font-normal leading-[23px] text-[#344054] marker:text-[#344054] sm:text-[16px] sm:leading-[26px] lg:text-[18px] lg:leading-[28px]">
               {article.riskWarnings.items.map((item, index) => (
                 <li
                   key={`risk-warning-${index}`}
@@ -648,129 +685,36 @@ export default function GuideArticleContent() {
               6. CONCLUSION
 
               Sidebar link: Conclusion
-
-              Final section matching your second screenshot.
           ====================================================== */}
 
           <section
             id="conclusion"
             aria-labelledby="guide-conclusion-heading"
-            className="
-              mt-12
-              w-full
-              scroll-mt-8
-
-              sm:mt-14
-              lg:mt-16
-            "
+            className="mt-12 w-full scroll-mt-8 sm:mt-14 lg:mt-16"
           >
             {/* CONCLUSION HEADING */}
 
             <h2
               id="guide-conclusion-heading"
-              className="
-                font-inter
-                text-[22px]
-                font-semibold
-                leading-[30px]
-                tracking-[0]
-
-                text-[#00897B]
-
-                sm:text-[24px]
-                sm:leading-[34px]
-
-                lg:text-[26px]
-                lg:leading-[36px]
-              "
+              className="font-inter text-[22px] font-semibold leading-[30px] tracking-[0] text-[#00897B] sm:text-[24px] sm:leading-[34px] lg:text-[26px] lg:leading-[36px]"
             >
               {article.conclusion.heading}
             </h2>
 
             {/* CONCLUSION DESCRIPTION */}
 
-            <p
-              className="
-                mt-4
-
-                font-inter
-                text-[14px]
-                font-normal
-                leading-[23px]
-
-                !text-[#475467]
-
-                sm:text-[16px]
-                sm:leading-[26px]
-
-                lg:text-[18px]
-                lg:leading-[28px]
-              "
-            >
+            <p className="mt-4 font-inter text-[14px] font-normal leading-[23px] !text-[#475467] sm:text-[16px] sm:leading-[26px] lg:text-[18px] lg:leading-[28px]">
               {article.conclusion.description}
             </p>
 
-            {/* =============================================
-                COMPARE WITH BILLGOOSE HIGHLIGHT
-            ============================================== */}
+            {/* COMPARE WITH BILLGOOSE HIGHLIGHT */}
 
-            <div
-              className="
-                mt-5
-                w-full
-
-                rounded-[2px]
-
-                border
-                border-[#00897B]
-
-                bg-[#F0FDFB]
-
-                p-4
-
-                sm:p-5
-
-                lg:p-6
-              "
-            >
-              <h3
-                className="
-                  font-inter
-
-                  text-[16px]
-                  font-bold
-                  leading-[24px]
-
-                  text-[#00897B]
-
-                  sm:text-[17px]
-                  sm:leading-[26px]
-
-                  lg:text-[18px]
-                  lg:leading-[28px]
-                "
-              >
+            <div className="mt-5 w-full rounded-[2px] border border-[#00897B] bg-[#F0FDFB] p-4 sm:p-5 lg:p-6">
+              <h3 className="font-inter text-[16px] font-bold leading-[24px] text-[#00897B] sm:text-[17px] sm:leading-[26px] lg:text-[18px] lg:leading-[28px]">
                 {article.conclusion.highlight.heading}
               </h3>
 
-              <p
-                className="
-                  mt-2
-
-                  font-inter
-                  text-[14px]
-                  font-normal
-                  leading-[23px]
-
-                  !text-[#475467]
-
-                  sm:text-[15px]
-                  sm:leading-[25px]
-
-                  lg:text-[16px]
-                  lg:leading-[26px]
-                "
-              >
+              <p className="mt-2 font-inter text-[14px] font-normal leading-[23px] !text-[#475467] sm:text-[15px] sm:leading-[25px] lg:text-[16px] lg:leading-[26px]">
                 {article.conclusion.highlight.description}
               </p>
             </div>
