@@ -286,6 +286,9 @@ export default function CareersHero() {
             className="
               relative
 
+              hidden
+              lg:block
+
               mx-auto
 
               h-[430px]
@@ -362,23 +365,17 @@ export default function CareersHero() {
               className="
                 pointer-events-none
 
-                absolute
+                hidden
+                md:block
+                md:absolute
 
-                left-1/2
-                top-[-6px]
-
-                h-[440px]
-                w-[360px]
-
-                -translate-x-1/2
-
-                sm:top-[-10px]
-                sm:h-[510px]
-                sm:w-[420px]
-
+                md:left-1/2
                 md:top-[-14px]
+
                 md:h-[580px]
                 md:w-[470px]
+
+                md:-translate-x-1/2
 
                 lg:left-[52%]
                 lg:top-[-20px]
@@ -397,8 +394,7 @@ export default function CareersHero() {
                 fill
                 priority
                 sizes="
-                  (max-width: 639px) 360px,
-                  (max-width: 767px) 420px,
+                  (max-width: 767px) 470px,
                   (max-width: 1023px) 470px,
                   (max-width: 1279px) 440px,
                   500px

@@ -521,11 +521,11 @@ function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGri
                   text-[12px]
                   leading-[20px]
 
-                  ${isActive ? 'font-[645] text-[#00897B]' : 'font-[550] text-[#667085]'}
+                  ${isActive ? 'font-[645] text-[#00897B]' : 'font-[550] font-semibold text-[#667085]'}
 
                   sm:text-[13px]
 
-                  lg:text-[14px]
+                  lg:text-[16px]
                 `}
               >
                 {service.label}

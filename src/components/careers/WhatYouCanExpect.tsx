@@ -10,7 +10,7 @@ export default function WhatYouCanExpect() {
         bg-white
 
         px-3
-        pb-[100px]
+        pb-[60px]
         pt-[60px]
 
         sm:px-5

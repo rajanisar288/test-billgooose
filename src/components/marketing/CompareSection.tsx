@@ -1,19 +1,13 @@
-'use client';
-
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { ArrowRight, Mail } from 'lucide-react';
 
-import {
-  type HomepageService,
-  useServiceJourneyNavigation,
-} from '@/components/marketing/use-service-journey-navigation';
 import data from '@/data/content.json';
 
 const NEWSLETTER_IMAGE = '/images/compare-mail.png';
 
 export default function Compare() {
-  const { navigateToService } = useServiceJourneyNavigation();
   const { compare, newsletter } = data;
 
   const activeItems = compare.items;
@@ -195,6 +189,10 @@ export default function Compare() {
           "
         >
           {activeItems.map((item) => {
+            const isBundleBills = item.title.toLowerCase().includes('bundle');
+
+            const itemHref = isBundleBills ? '/compare?service=energy&flow=bundle' : item.href;
+
             return (
               <article
                 key={item.id}
@@ -216,6 +214,12 @@ export default function Compare() {
                   bg-white
 
                   shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+
+                  transition-all
+                  duration-300
+
+                  hover:border-[#00897B]
+                  hover:shadow-[0px_8px_24px_0px_rgba(0,137,123,0.25),0px_1px_2px_0px_rgba(0,137,123,0.1)]
 
                   sm:min-h-[160px]
                   sm:rounded-[20px]
@@ -368,11 +372,8 @@ export default function Compare() {
                     lg:h-[48px]
                   "
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void navigateToService(item.id as HomepageService);
-                    }}
+                  <Link
+                    href={itemHref}
                     className="
                       inline-flex
                       items-center
@@ -415,7 +416,7 @@ export default function Compare() {
                       "
                       strokeWidth={2}
                     />
-                  </button>
+                  </Link>
                 </div>
               </article>
             );

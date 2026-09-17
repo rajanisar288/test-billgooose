@@ -12,12 +12,12 @@ export default function WorkAtBillGoose() {
         bg-white
 
         px-3
-        pb-[100px]
-        pt-[60px]
+        pb-[0px]
+        pt-[0px]
 
         sm:px-5
-        sm:pb-[120px]
-        sm:pt-[70px]
+        sm:pb-[0px]
+        sm:pt-[0px]
 
         md:px-6
         md:pb-[140px]

@@ -209,7 +209,7 @@ export default function Hero() {
                       lg:mt-6
                       lg:max-w-[625px]
                       lg:font-inter
-                      lg:text-[16px]
+                      lg:text-[18px]
                       lg:leading-[1.45]
                     "
                   >
@@ -372,7 +372,7 @@ export default function Hero() {
             TRUST + PROVIDERS
         ====================================================== */}
         <div className="relative">
-          <div className="absolute left-0 right-0 top-[17px] h-px bg-[#EAECF0] lg:top-[24px]" />
+          <div className="absolute left-0 right-0 top-[12px] h-px bg-[#EAECF0] lg:top-[14px]" />
 
           {/* =================================================
               TRUST LABEL
@@ -381,9 +381,9 @@ export default function Hero() {
             <div
               className="
                 flex
-                h-[30px]
+                h-[36px]
                 w-full
-                max-w-[320px]
+                max-w-[340px]
 
                 items-center
                 justify-center
@@ -395,12 +395,13 @@ export default function Hero() {
 
                 bg-white
 
-                px-2
+                px-4
                 py-1
 
-                min-[390px]:h-[34px]
-                min-[390px]:w-[404px]
+                min-[390px]:h-[38px]
+                min-[390px]:w-[420px]
                 min-[390px]:max-w-full
+                min-[390px]:px-5
               "
             >
               <p
@@ -408,12 +409,14 @@ export default function Hero() {
                   whitespace-nowrap
 
                   font-red-hat-display
-                  text-[14px]
+                  text-[13px]
                   font-[467]
+                  leading-[20px]
 
-                  text-secondary
+                  text-[#344054]
 
-                  min-[390px]:text-[13.7px]
+                  min-[390px]:text-[14px]
+                  min-[390px]:leading-[22px]
                 "
               >
                 {hero.trust.startText}{' '}
@@ -734,7 +737,7 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
 
                   font-red-hat-display
 
-                  ${isActive ? 'font-extrabold' : 'font-[550]'}
+                  ${isActive ? 'font-extrabold' : 'font-semibold'}
 
                   ${
                     compact
@@ -746,7 +749,7 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
                         sm:text-[15px]
                       `
                       : `
-                        text-[18px]
+                        text-[21px]
                         leading-6
                       `
                   }

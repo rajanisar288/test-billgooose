@@ -12,11 +12,11 @@ export default function HowWeSupportYou() {
         bg-white
 
         px-3
-        pb-[70px]
+        pb-[40px]
         pt-[40px]
 
         sm:px-5
-        sm:pb-[80px]
+        sm:pb-[40px]
         sm:pt-[46px]
 
         md:px-6

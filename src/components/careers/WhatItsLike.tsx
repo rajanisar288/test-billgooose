@@ -10,10 +10,10 @@ export default function WhatItsLike() {
         bg-white
 
         px-4
-        pb-[60px]
+        pb-[0px]
 
         sm:px-6
-        sm:pb-[70px]
+        sm:pb-[0px]
 
         md:px-8
         md:pb-[80px]

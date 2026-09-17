@@ -12,7 +12,7 @@ export default function AboutHero() {
         bg-white
 
         px-3
-        pb-[60px]
+        pb-[24px]
         pt-[36px]
 
         sm:px-5
@@ -155,7 +155,7 @@ export default function AboutHero() {
           className="
             relative
 
-            min-h-[650px]
+            min-h-auto
             w-full
 
             overflow-hidden
@@ -169,13 +169,13 @@ export default function AboutHero() {
             lg:min-h-[820px]
 
             xl:min-h-[900px]
+
+            bg-none
+            md:bg-[url('/images/about-us-bg.png')]
+            md:bg-cover
+            md:bg-center
+            md:bg-no-repeat
           "
-          style={{
-            backgroundImage: `url(${aboutUs.backgroundImage.src})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center bottom',
-            backgroundRepeat: 'no-repeat',
-          }}
         >
           {/* =====================================================
               LEFT CONTENT
@@ -186,22 +186,27 @@ export default function AboutHero() {
               z-10
 
               px-5
-              pt-[62px]
+              pb-[60px]
+              pt-[30px]
 
               sm:px-8
               sm:pt-[72px]
+              sm:pb-[80px]
 
               md:w-[62%]
               md:px-10
               md:pt-[84px]
+              md:pb-[84px]
 
               lg:w-[56%]
               lg:px-[72px]
               lg:pt-[104px]
+              lg:pb-[104px]
 
               xl:w-[52%]
               xl:px-[80px]
               xl:pt-[112px]
+              xl:pb-[112px]
             "
           >
             <h2
