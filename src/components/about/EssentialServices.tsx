@@ -13,11 +13,11 @@ export default function EssentialServices() {
 
         px-3
         pb-[70px]
-        pt-[30px]
+        pt-[0px]
 
         sm:px-5
         sm:pb-[80px]
-        sm:pt-[36px]
+        sm:pt-[0px]
 
         md:px-6
         md:pb-[90px]
@@ -76,15 +76,8 @@ export default function EssentialServices() {
           className="
             pointer-events-none
 
-            relative
-            mx-auto
-
-            h-[300px]
-            w-[230px]
-
-            sm:h-[360px]
-            sm:w-[280px]
-
+            hidden
+            md:block
             md:absolute
             md:left-[24px]
             md:top-[60px]

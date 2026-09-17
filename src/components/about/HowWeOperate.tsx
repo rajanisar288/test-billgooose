@@ -13,11 +13,11 @@ export default function HowWeOperate() {
 
         px-3
         pb-[70px]
-        pt-[30px]
+        pt-[0px]
 
         sm:px-5
         sm:pb-[80px]
-        sm:pt-[36px]
+        sm:pt-[0px]
 
         md:px-6
         md:pb-[90px]

@@ -11,7 +11,7 @@ export default function WhyWeCreatedBillGoose() {
 
         px-3
         pb-[60px]
-        pt-[24px]
+        pt-[0px]
 
         sm:px-5
         sm:pb-[70px]
@@ -100,31 +100,31 @@ export default function WhyWeCreatedBillGoose() {
         ====================================================== */}
         <div
           className="
-    mt-5
-    max-w-[1096px]
+            mt-5
+            max-w-[1096px]
 
-    space-y-0
+            space-y-0
 
-    font-red-hat-display
-    font-[467]
+            font-red-hat-display
+            font-[467]
 
-    text-[14px]
-    leading-[160%]
+            text-[14px]
+            leading-[160%]
 
-    tracking-[0.01em]
+            tracking-[0.01em]
 
-    sm:text-[15px]
+            sm:text-[15px]
 
-    md:mt-6
-    md:text-[16px]
-    md:leading-[165%]
+            md:mt-6
+            md:text-[16px]
+            md:leading-[165%]
 
-    lg:text-[18px]
-    lg:leading-[170%]
+            lg:text-[18px]
+            lg:leading-[170%]
 
-    xl:text-[20px]
-    xl:leading-[174%]
-  "
+            xl:text-[20px]
+            xl:leading-[174%]
+          "
         >
           {whyWeCreated.paragraphs.map((paragraph) => (
             <p

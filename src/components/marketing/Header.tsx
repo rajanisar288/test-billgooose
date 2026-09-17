@@ -547,7 +547,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                               px-4
 
                               font-inter
-                              text-[14px]
+                              tex t-[16px]
                               font-medium
 
                               transition-colors
