@@ -4,8 +4,9 @@
 /* eslint-disable no-console, react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
+import FullPageLoader from '@/components/common/FullPageLoader';
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import { type Journey } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
@@ -14,6 +15,7 @@ import { useJourneyStore } from '@/store/journeyStore';
 import { generateRequestId } from '@/utils/uuid';
 
 export function LoadConfig() {
+  const router = useRouter();
   const { setJourney, journey } = useJourneyStore();
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
@@ -28,11 +30,19 @@ export function LoadConfig() {
 
       console.log('✅ Created journey response:', createdJourney);
 
-      if (createdJourney?.data?.journeyId) {
-        localStorage.setItem(storeJourney, createdJourney.data.journeyId);
-        setJourney(createdJourney.data);
+      const journeyData = createdJourney?.data;
+      const journeyId = journeyData?.id;
 
-        console.log('💾 New journey saved to store:', createdJourney.data);
+      if (journeyId) {
+        localStorage.setItem(storeJourney, journeyId);
+        setJourney(journeyData);
+
+        console.log('💾 New journey saved to store:', journeyData);
+
+        if (journeyData?.lastUrl) {
+          router.push(journeyData.lastUrl);
+        }
+        return journeyData;
       } else {
         console.error('❌ No journeyId in created response');
       }
@@ -51,8 +61,7 @@ export function LoadConfig() {
         pathname === '/dashboard' ||
         pathname.startsWith('/dashboard/') ||
         pathname === '/journey' ||
-        pathname.startsWith('/journey/') ||
-        pathname.startsWith('/steps');
+        pathname.startsWith('/journey/');
 
       if (isBypassPage) {
         setIsLoading(false);
@@ -87,6 +96,10 @@ export function LoadConfig() {
               setJourney(journeyRes.data);
 
               console.log('✅ Journey set in store:', journeyRes.data);
+
+              if (journeyRes.data.lastUrl) {
+                router.push(journeyRes.data.lastUrl);
+              }
             } else {
               console.warn('⚠️ No journey data in response');
               await createNewJourney();
@@ -112,7 +125,7 @@ export function LoadConfig() {
   }, [journey]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <FullPageLoader message="Loading configuration..." />;
   }
 
   return null;
