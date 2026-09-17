@@ -31,7 +31,7 @@ export function LoadConfig() {
       console.log('✅ Created journey response:', createdJourney);
 
       const journeyData = createdJourney?.data;
-      const journeyId = journeyData?.id;
+      const journeyId = journeyData?.id || journeyData?.journeyId;
 
       if (journeyId) {
         localStorage.setItem(storeJourney, journeyId);
