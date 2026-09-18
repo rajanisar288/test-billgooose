@@ -12,8 +12,7 @@ import FullPageLoader, { InlineSpinner } from '@/components/common/FullPageLoade
 import Header from '@/components/marketing/Header';
 import data from '@/data/content.json';
 import { authApi } from '@/lib/api/endpoints/auth.api';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+(?:\.[A-Za-z]{2,10})+$/;
+import { EMAIL_REGEX, sanitizeEmailInput } from '@/utils/validation';
 
 type LoginStage = 'email' | 'otp' | 'success';
 
@@ -590,9 +589,10 @@ export default function SignInPage() {
                                   error={emailError}
                                   onBlur={handleEmailBlur}
                                   onChange={(value) => {
-                                    setEmail(value);
+                                    const sanitized = sanitizeEmailInput(value);
+                                    setEmail(sanitized);
                                     if (emailError) {
-                                      if (EMAIL_REGEX.test(value.trim())) {
+                                      if (EMAIL_REGEX.test(sanitized.trim())) {
                                         setEmailError('');
                                       }
                                     }

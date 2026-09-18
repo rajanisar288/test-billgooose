@@ -21,28 +21,17 @@ import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
+import {
+  EMAIL_REGEX,
+  isValidUkMobile,
+  normalizeUkMobile,
+  sanitizeEmailInput,
+  sanitizeUkMobileInput,
+  UK_MOBILE_REGEX,
+} from '@/utils/validation';
 
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+(?:\.[A-Za-z]{2,10})+$/;
-const UK_MOBILE_REGEX = /^(?:07\d{9}|\+447\d{9})$/;
+export { EMAIL_REGEX, isValidUkMobile, normalizeUkMobile, UK_MOBILE_REGEX };
 const MIN_AGE = 18;
-
-export function normalizeUkMobile(value: string): string {
-  const compact = value.replace(/[\s()-]/g, '');
-
-  if (compact.startsWith('0044')) {
-    return `+${compact.slice(2)}`;
-  }
-
-  if (compact.startsWith('447')) {
-    return `+${compact}`;
-  }
-
-  return compact;
-}
-
-export function isValidUkMobile(value: string): boolean {
-  return UK_MOBILE_REGEX.test(normalizeUkMobile(value));
-}
 
 function calculateAge(dob: string): number | null {
   const birthDate = new Date(dob);
@@ -523,35 +512,14 @@ export default function PersonalDetailsForm() {
             type="email"
             value={email}
             onChange={(event) => {
-              let value = event.target.value;
-
-              // Remove spaces and invalid characters
-              value = value.replace(/\s/g, '').replace(/[^a-zA-Z0-9.!#$%&'*+/=?^_`{|}~@-]/g, '');
-
-              // Allow only one @
-              const atIndex = value.indexOf('@');
-
-              if (atIndex !== -1) {
-                const localPart = value.slice(0, atIndex);
-                let domain = value.slice(atIndex + 1);
-
-                // Prevent another @
-                domain = domain.replace(/@/g, '');
-
-                // Restrict TLD to maximum 10 characters
-                const lastDotIndex = domain.lastIndexOf('.');
-
-                if (lastDotIndex !== -1) {
-                  const domainName = domain.slice(0, lastDotIndex + 1);
-                  const tld = domain.slice(lastDotIndex + 1, lastDotIndex + 11);
-
-                  domain = domainName + tld;
-                }
-
-                value = `${localPart}@${domain}`;
-              }
-
+              const value = sanitizeEmailInput(event.target.value);
               setEmail(value);
+              if (errors.email && EMAIL_REGEX.test(value.trim())) {
+                setErrors((current) => ({
+                  ...current,
+                  email: '',
+                }));
+              }
             }}
             placeholder={fields.email.placeholder}
             autoComplete="email"
@@ -569,18 +537,7 @@ export default function PersonalDetailsForm() {
             type="tel"
             value={mobileNumber}
             onChange={(event) => {
-              let value = event.target.value;
-
-              // Allow only digits and +
-              value = value.replace(/[^\d+]/g, '');
-
-              // + can only appear at the beginning
-              if (value.includes('+')) {
-                value = `+${value.replace(/\+/g, '')}`;
-              }
-
-              value = value.slice(0, 14);
-
+              const value = sanitizeUkMobileInput(event.target.value);
               setMobileNumber(value);
 
               // Clear error once the value becomes valid

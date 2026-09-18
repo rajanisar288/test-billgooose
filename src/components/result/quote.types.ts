@@ -27,6 +27,8 @@ export type QuoteSupplier = {
 export type QuoteProductGroup = {
   groupType: string;
   displayName: string;
+  providerName?: string | null;
+  providerImageUrl?: string | null;
   selectionMode: 'single' | 'multiple' | string;
   totalProducts: number;
   products: QuoteProduct[];
@@ -139,12 +141,21 @@ export function mapQuoteResponseToPlans(
         [product.planName, product.variantName].filter(Boolean).join(' - ') ||
         product.planName ||
         provider;
+      const groupProviderImageUrl = group?.providerImageUrl || null;
+      const groupProviderName = group?.providerName || null;
+      const supplierImageUrl = supplier.imageUrl || null;
+      const productLogo = product.providerImageUrl || '';
       const fallbackLogo = resolveFallbackProviderLogo(
         product.providerName,
         group?.groupType ?? product.productType,
       );
       const supplierLogo =
-        supplier.imageUrl || product.providerImageUrl || fallbackLogo || '/images/result-logo.png';
+        service === 'bundle-bills'
+          ? productLogo
+          : supplier.imageUrl ||
+            product.providerImageUrl ||
+            fallbackLogo ||
+            '/images/result-logo.png';
       const broadbandObj = product.broadband as QuoteBroadband | null;
       const averageSpeed = broadbandObj?.downloadSpeedMbps
         ? `${broadbandObj.downloadSpeedMbps} Mbps`
@@ -182,6 +193,9 @@ export function mapQuoteResponseToPlans(
         productReferences: [product.productReference],
         groupType: group?.groupType ?? product.productType,
         groupDisplayName: group?.displayName ?? product.productType,
+        groupProviderName,
+        groupProviderImageUrl,
+        supplierImageUrl,
         selectionMode: group?.selectionMode ?? 'single',
         productType: product.productType,
         feeDetails: product.fees,

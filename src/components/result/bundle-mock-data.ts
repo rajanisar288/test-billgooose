@@ -1,6 +1,5 @@
 import type { BundleSupplierData } from '@/components/result/bundle-plan-card';
 import type { StandardPlan } from '@/components/result/plan.types';
-import { resolveFallbackProviderLogo } from '@/components/result/quote.types';
 
 /* =========================================================
    CANONICAL ORDERING & HELPERS
@@ -33,20 +32,13 @@ export function groupPlansIntoBundleSuppliers(plans: StandardPlan[]): BundleSupp
     const supplierName = plan.supplierName || plan.provider || 'Supplier';
 
     if (!supplierMap.has(supplierCode)) {
-      const isUW =
-        supplierCode.toLowerCase().includes('uw') ||
-        supplierName.toLowerCase().includes('warehouse');
-
       supplierMap.set(supplierCode, {
         supplierCode,
         supplierName,
-        imageUrl:
-          plan.logo && !plan.logo.includes('result-logo.png') && !plan.logo.includes('uw-provider')
-            ? plan.logo
-            : null,
+        imageUrl: plan.supplierImageUrl || null,
         servicesIncluded: [],
-        badges: isUW ? [] : ['24/7 chat support', 'Smart meter required'],
-        promoText: isUW ? "By bundling two services you'll get extras discount" : null,
+        badges: [],
+        promoText: null,
         serviceGroups: [],
       });
     }
@@ -62,33 +54,14 @@ export function groupPlansIntoBundleSuppliers(plans: StandardPlan[]): BundleSupp
 
     let group = supplier.serviceGroups.find((g) => g.groupType.toLowerCase() === groupType);
     if (!group) {
-      const isEnergy = groupType.includes('energy');
-      const resolvedLogo = resolveFallbackProviderLogo(plan.provider, groupType);
-
       group = {
         groupType,
         displayName,
-        // Only show provider name in header if it's Energy and distinct from supplier name
-        providerName:
-          isEnergy && plan.provider && plan.provider.toLowerCase() !== supplierName.toLowerCase()
-            ? plan.provider
-            : undefined,
-        providerLogo: isEnergy
-          ? plan.logo && !plan.logo.includes('result-logo.png')
-            ? plan.logo
-            : resolvedLogo
-          : undefined,
+        providerName: plan.groupProviderName || undefined,
+        providerLogo: plan.groupProviderImageUrl || undefined,
         products: [],
       };
       supplier.serviceGroups.push(group);
-    }
-
-    // Ensure broadband products have logo if known
-    if (groupType.includes('broadband') && (!plan.logo || plan.logo.includes('result-logo.png'))) {
-      const resolvedLogo = resolveFallbackProviderLogo(plan.provider, groupType);
-      if (resolvedLogo) {
-        plan.logo = resolvedLogo;
-      }
     }
 
     group.products.push(plan);

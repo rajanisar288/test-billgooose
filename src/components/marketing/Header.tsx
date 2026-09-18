@@ -250,9 +250,11 @@ export default function Header({ variant = 'default' }: HeaderProps) {
   }
 
   const locationParams = new URLSearchParams(locationSearch);
+  const urlService = locationParams.get('service');
+  const urlFlow = locationParams.get('flow');
 
-  const compareService = locationParams.get('service') || storedCompareService;
-  const compareFlow = locationParams.get('flow') || storedCompareFlow;
+  const compareService = urlService || storedCompareService;
+  const compareFlow = urlFlow !== null ? urlFlow : urlService ? '' : storedCompareFlow;
 
   /*
    * Show the journey icon on the compare flow screen.
@@ -306,6 +308,8 @@ export default function Header({ variant = 'default' }: HeaderProps) {
       }
       if (flowParam) {
         sessionStorage.setItem('billgooseJourneyFlow', flowParam);
+      } else {
+        sessionStorage.removeItem('billgooseJourneyFlow');
       }
     } catch {
       // Ignore URL parse error

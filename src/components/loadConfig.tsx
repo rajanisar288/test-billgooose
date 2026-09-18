@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import FullPageLoader from '@/components/common/FullPageLoader';
+import ResumeJourneyDialog from '@/components/journey/resume-journey-dialog';
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import { type Journey } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
@@ -18,6 +19,7 @@ export function LoadConfig() {
   const router = useRouter();
   const { setJourney, journey } = useJourneyStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingResumeJourney, setPendingResumeJourney] = useState<Journey | null>(null);
   const pathname = usePathname();
 
   async function createNewJourney() {
@@ -98,7 +100,7 @@ export function LoadConfig() {
               console.log('✅ Journey set in store:', journeyRes.data);
 
               if (journeyRes.data.lastUrl) {
-                router.push(journeyRes.data.lastUrl);
+                setPendingResumeJourney(journeyRes.data);
               }
             } else {
               console.warn('⚠️ No journey data in response');
@@ -126,6 +128,15 @@ export function LoadConfig() {
 
   if (isLoading) {
     return <FullPageLoader message="Loading configuration..." />;
+  }
+
+  if (pendingResumeJourney) {
+    return (
+      <ResumeJourneyDialog
+        deviceJourney={pendingResumeJourney}
+        onClose={() => setPendingResumeJourney(null)}
+      />
+    );
   }
 
   return null;

@@ -1682,7 +1682,7 @@ function SummaryRow({ label, value, logo, logoAlt, subtitle }: SummaryRowProps) 
       "
     >
       <div className="flex items-center gap-2.5 min-w-0">
-        {logo && (
+        {logo && !logo.includes('result-logo.png') && (
           <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-[8px] border border-[#EAECF0] bg-white p-0.5">
             <Image
               src={logo}

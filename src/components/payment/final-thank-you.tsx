@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -106,6 +106,86 @@ export default function FinalThankYou() {
 
   const { journey, clearJourney, setJourney } = useJourneyStore();
   const [isResettingJourney, setIsResettingJourney] = useState(false);
+  const isNavigatingAwayExplicitly = useRef(false);
+
+  const handleRoute = useCallback(
+    async (route: string) => {
+      if (isResettingJourney) return;
+      setIsResettingJourney(true);
+
+      // Reset in-memory Zustand store
+      clearJourney();
+      clearJourneyStorage();
+
+      try {
+        const [configResponse, journeyResponse] = await Promise.all([
+          partnerConfigApi.getConfig(),
+          journeyApi.createJourney(getDefaultJourney()),
+        ]);
+
+        if (configResponse?.data) {
+          localStorage.setItem(storePartnerConfig, JSON.stringify(configResponse.data));
+        }
+
+        const newJourney = journeyResponse.data;
+        const newJourneyId = newJourney?.id || newJourney?.journeyId;
+        if (!newJourney || !newJourneyId) throw new Error('No journey ID received from API');
+
+        localStorage.setItem(storeJourney, newJourneyId);
+        setJourney(newJourney);
+        isNavigatingAwayExplicitly.current = true;
+        router.push(route);
+      } catch (error) {
+        console.error('Failed to initialize a new journey:', error);
+        setIsResettingJourney(false);
+      }
+    },
+    [clearJourney, isResettingJourney, router, setJourney],
+  );
+
+  useEffect(() => {
+    // Push dummy history entry so the browser back button fires popstate
+    window.history.pushState(null, '', window.location.href);
+
+    const handlePopState = () => {
+      void handleRoute('/');
+    };
+
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const anchor = target?.closest('a');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      if (
+        !href ||
+        href.startsWith('#') ||
+        href.startsWith('javascript:') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:') ||
+        anchor.hasAttribute('download') ||
+        anchor.target === '_blank'
+      ) {
+        return;
+      }
+
+      if (href.startsWith('/sign-in')) {
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+      void handleRoute(href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('click', handleGlobalClick, true);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('click', handleGlobalClick, true);
+    };
+  }, [handleRoute]);
 
   const isBundleFlow = journey?.serviceType == 'billPackage';
 
@@ -144,46 +224,7 @@ export default function FinalThankYou() {
       heading: `First Direct Debit: ${CONFIRMATION_DETAILS.collectionDay}`,
       description: `${monthlyAmount} will be collected from your selected payment account on this date.`,
     },
-    // {
-    //   id: 'start-saving',
-    //   icon: '/images/thanks-heart.png',
-    //   iconAlt: 'Start saving',
-    //   heading: 'Start saving!',
-    //   description: selectedPlan?.annualSaving
-    //     ? `You could save £${selectedPlan.annualSaving} per year compared to the average tariff.`
-    //     : 'You could save money compared to the average tariff.',
-    // },
   ];
-
-  const handleRoute = async (route: string) => {
-    if (isResettingJourney) return;
-    setIsResettingJourney(true);
-
-    // Reset in-memory Zustand store
-    clearJourney();
-
-    clearJourneyStorage();
-
-    try {
-      const [configResponse, journeyResponse] = await Promise.all([
-        partnerConfigApi.getConfig(),
-        journeyApi.createJourney(getDefaultJourney()),
-      ]);
-
-      localStorage.setItem(storePartnerConfig, JSON.stringify(configResponse.data));
-
-      const newJourney = journeyResponse.data;
-      const newJourneyId = newJourney?.id || newJourney?.journeyId;
-      if (!newJourney || !newJourneyId) throw new Error('No journey ID received from API');
-
-      localStorage.setItem(storeJourney, newJourneyId);
-      setJourney(newJourney);
-      router.push(route);
-    } catch (error) {
-      console.error('Failed to initialize a new journey:', error);
-      setIsResettingJourney(false);
-    }
-  };
 
   return (
     <main

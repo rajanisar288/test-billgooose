@@ -24,6 +24,9 @@ export type SelectPlan = {
   productReferences?: string[];
   groupType?: string;
   groupDisplayName?: string;
+  groupProviderName?: string | null;
+  groupProviderImageUrl?: string | null;
+  supplierImageUrl?: string | null;
   selectionMode?: 'single' | 'multiple' | string;
   supplierCode?: string;
   paymentMethod?: string;
@@ -64,6 +67,9 @@ export type ViewDealPlan = {
   productReferences?: string[];
   groupType?: string;
   groupDisplayName?: string;
+  groupProviderName?: string | null;
+  groupProviderImageUrl?: string | null;
+  supplierImageUrl?: string | null;
   selectionMode?: 'single' | 'multiple' | string;
   paymentMethod?: string;
   annualPrice?: string;

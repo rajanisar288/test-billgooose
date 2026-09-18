@@ -553,7 +553,7 @@ function ServicePanel({
       </div>
 
       {/* Product Rows */}
-      <div className="flex flex-col divide-y divide-[#F2F4F7]">
+      <div className="flex flex-col rounded-lg border border-[#F2F4F7]">
         {group.products.map((plan) => {
           const isSelected = selectedId === plan.id;
           const speed = extractSpeedBadge(plan);
@@ -577,88 +577,39 @@ function ServicePanel({
                 cursor-pointer
                 items-center
                 justify-between
-                rounded-lg
+                border-b border-[#F2F4F7]
                 p-2
                 transition-colors
                 hover:bg-[#F9FAFB]
               "
             >
               {/* Product Info: Name + Speed Badge */}
-              <div className="flex min-w-0 items-center gap-2 pr-2">
-                {group.groupType.toLowerCase().includes('broadband') &&
-                  (plan.logo && !plan.logo.includes('result-logo.png') ? (
+              <div className="flex flex-col min-w-0 items-start gap-2 pr-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  {plan.logo && !plan.logo.includes('result-logo.png') ? (
                     <div className="relative h-4 w-4 shrink-0 overflow-hidden">
                       <Image
                         src={plan.logo}
-                        alt={plan.provider}
+                        alt={plan.provider || plan.planName || ''}
                         fill
                         unoptimized
                         className="object-contain"
                       />
                     </div>
-                  ) : (
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-[#F2F4F7] text-[#475467]">
-                      <Wifi className="h-2.5 w-2.5" />
-                    </span>
-                  ))}
+                  ) : null}
 
-                {group.groupType.toLowerCase().includes('water') && (
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#0BA5EC] text-white">
-                    <Droplet className="h-2.5 w-2.5" />
-                  </span>
-                )}
-
-                {group.groupType.toLowerCase().includes('tv') &&
-                  (plan.logo && !plan.logo.includes('result-logo.png') ? (
-                    <div className="relative h-4 w-4 shrink-0 overflow-hidden">
-                      <Image
-                        src={plan.logo}
-                        alt={plan.provider}
-                        fill
-                        unoptimized
-                        className="object-contain"
-                      />
-                    </div>
-                  ) : (
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-[#7F56D9] text-white">
-                      <Tv className="h-2.5 w-2.5" />
-                    </span>
-                  ))}
-
-                <span
-                  className="
+                  <span
+                    className={`
                     truncate
                     font-red-hat-display
                     text-[13px]
-                    font-semibold
-                    text-[#101828]
-                  "
-                >
-                  {formatPlanDisplayName(plan, speed)}
-                </span>
-
-                {speed && (
-                  <span
-                    className="
-                      inline-flex
-                      items-center
-                      rounded
-                      bg-[#0B2B43]
-                      px-1.5
-                      py-0.5
-                      font-inter
-                      text-[10px]
-                      font-bold
-                      text-white
-                    "
+                    font-bold
+                    ${isSelected ? 'text-[#00897B]' : 'text-[#0D3B66]'}
+                  `}
                   >
-                    {speed}
+                    {formatPlanDisplayName(plan, speed)}
                   </span>
-                )}
-              </div>
-
-              {/* Price + View Details Link + Radio Check Circle */}
-              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                </div>
                 <span
                   className="
                     font-red-hat-display
@@ -669,7 +620,49 @@ function ServicePanel({
                 >
                   {plan.price}
                 </span>
+              </div>
 
+              {/* Price + View Details Link + Radio Check Circle */}
+              <div className="flex flex-col shrink-0 items-end gap-2 sm:gap-3">
+                <div className="flex gap-2">
+                  {speed && (
+                    <span
+                      className="
+                      inline-flex
+                      items-center
+                      rounded
+                      bg-[#0D3B66]
+                      px-1.5
+                      py-0.5
+                      font-inter
+                      text-[10px]
+                      font-bold
+                      text-white
+                    "
+                    >
+                      {speed}
+                    </span>
+                  )}
+                  {/* Radio selection circle */}
+                  <div
+                    className={`
+                      flex
+                      h-[18px]
+                      w-[18px]
+                      items-center
+                      justify-center
+                      rounded-full
+                      transition-all
+                      ${
+                        isSelected
+                          ? 'bg-[#00897B] text-white shadow-xs'
+                          : 'border border-[#D0D5DD] bg-white group-hover:border-[#98A2B3]'
+                      }
+                    `}
+                  >
+                    {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                  </div>
+                </div>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -691,26 +684,6 @@ function ServicePanel({
                   <span>View Details</span>
                   <ChevronRight className="ml-0.5 h-3 w-3" />
                 </button>
-
-                {/* Radio selection circle */}
-                <div
-                  className={`
-                    flex
-                    h-[18px]
-                    w-[18px]
-                    items-center
-                    justify-center
-                    rounded-full
-                    transition-all
-                    ${
-                      isSelected
-                        ? 'bg-[#00897B] text-white shadow-xs'
-                        : 'border border-[#D0D5DD] bg-white group-hover:border-[#98A2B3]'
-                    }
-                  `}
-                >
-                  {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
-                </div>
               </div>
             </div>
           );

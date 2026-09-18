@@ -10,10 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, ChevronRight, ExternalLink, Globe2, LoaderCircle, X } from 'lucide-react';
 
 import BackendErrorAlert from '@/components/common/BackendErrorAlert';
-import {
-  getMockBundleSuppliers,
-  groupPlansIntoBundleSuppliers,
-} from '@/components/result/bundle-mock-data';
+import { groupPlansIntoBundleSuppliers } from '@/components/result/bundle-mock-data';
 import BundlePlanCard, { type BundleSupplierData } from '@/components/result/bundle-plan-card';
 import FeaturedBroadbandCard from '@/components/result/featured-broadband-card';
 import PlanCard from '@/components/result/plan-card';
@@ -253,7 +250,7 @@ export default function ResultPlans({
       }
     }
 
-    return getMockBundleSuppliers();
+    return [];
   }, [isBundleService, quotePlans]);
 
   /* =========================================================

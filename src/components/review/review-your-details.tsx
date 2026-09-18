@@ -209,7 +209,6 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{7,8}$/;
 export default function ReviewYourDetails() {
   const router = useRouter();
   const { journey, setJourney } = useJourneyStore();
-  console.log('🚀 ~ ReviewYourDetails ~ journey:', journey);
   const { journey: journeyData } = data;
   const searchParams = useSearchParams();
 
@@ -621,9 +620,10 @@ export default function ReviewYourDetails() {
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={password}
-                          maxLength={32}
+                          maxLength={8}
                           onChange={(e) => {
-                            setPassword(e.target.value);
+                            const val = e.target.value.slice(0, 8);
+                            setPassword(val);
                             if (passwordError) setPasswordError('');
                           }}
                           placeholder="Enter account password"
@@ -1164,23 +1164,23 @@ function SelectedPlanCard({ selectedPlans }: { selectedPlans: StandardPlan[] }) 
                 key={plan.id}
                 className="flex items-center gap-3"
               >
-                <Image
-                  src={plan.logo}
-                  alt={plan.logoAlt || plan.provider}
-                  width={54}
-                  height={54}
-                  unoptimized
-                  className="
-                h-[54px]
-                w-[54px]
-                shrink-0
-
-    items-center
-    justify-center
-
-                object-contain
-              "
-                />
+                {plan.logo && !plan.logo.includes('result-logo.png') ? (
+                  <Image
+                    src={plan.logo}
+                    alt={plan.logoAlt || plan.provider}
+                    width={54}
+                    height={54}
+                    unoptimized
+                    className="
+                      h-[54px]
+                      w-[54px]
+                      shrink-0
+                      items-center
+                      justify-center
+                      object-contain
+                    "
+                  />
+                ) : null}
 
                 <div className="min-w-0 flex-1">
                   <p
@@ -1640,7 +1640,7 @@ function SummaryRow({
       "
     >
       <div className="flex items-center gap-2 min-w-0">
-        {logo && (
+        {logo && !logo.includes('result-logo.png') && (
           <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-[6px] border border-[#EAECF0] bg-white p-0.5">
             <Image
               src={logo}
