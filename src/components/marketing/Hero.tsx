@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -16,12 +14,11 @@ export default function Hero() {
 
   const { hero } = data;
 
-  const [selectedService, setSelectedService] = useState<ServiceType>(
-    hero.serviceTabs.defaultValue as ServiceType,
-  );
+  // No service is pre-selected. Selection only happens on click/hover.
+  // const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
 
   function handleServiceSelect(service: ServiceType) {
-    setSelectedService(service);
+    // setSelectedService(service);
 
     if (service === 'bundle-bills') {
       router.push('/compare?service=energy&flow=bundle');
@@ -240,10 +237,7 @@ export default function Hero() {
                       lg:block
                     "
                   >
-                    <HeroServiceGrid
-                      selectedService={selectedService}
-                      onSelect={handleServiceSelect}
-                    />
+                    <HeroServiceGrid onSelect={handleServiceSelect} />
                   </div>
                 </div>
               </div>
@@ -359,7 +353,6 @@ export default function Hero() {
                 "
               >
                 <HeroServiceGrid
-                  selectedService={selectedService}
                   onSelect={handleServiceSelect}
                   compact
                 />
@@ -428,14 +421,6 @@ export default function Hero() {
 
           {/* =================================================
               PROVIDERS CONTINUOUS CAROUSEL
-
-              ALL SCREENS:
-              MOBILE
-              TABLET
-              LAPTOP
-              DESKTOP
-
-              1 → 2 → ... → 22 → 1 → ...
           ================================================== */}
           <div
             className="
@@ -460,9 +445,7 @@ export default function Hero() {
                 items-center
               "
             >
-              {/* ===============================================
-                  ORIGINAL PROVIDER SET
-              ================================================ */}
+              {/* ORIGINAL PROVIDER SET */}
               <div
                 className="
                   flex
@@ -529,12 +512,7 @@ export default function Hero() {
                 ))}
               </div>
 
-              {/* ===============================================
-                  DUPLICATE SET
-
-                  Needed for seamless:
-                  22 → 1
-              ================================================ */}
+              {/* DUPLICATE SET */}
               <div
                 aria-hidden="true"
                 className="
@@ -614,12 +592,11 @@ export default function Hero() {
 ========================================================= */
 
 type HeroServiceGridProps = {
-  selectedService: ServiceType;
   onSelect: (service: ServiceType) => void;
   compact?: boolean;
 };
 
-function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroServiceGridProps) {
+function HeroServiceGrid({ onSelect, compact = false }: HeroServiceGridProps) {
   const services = data.hero.serviceTabs.items;
 
   return (
@@ -641,13 +618,18 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
         "
       >
         {services.map((service, index) => {
-          const isActive = selectedService === service.value;
+          // 3-col grid (sm+): no right border on last col, no bottom border on last row
+          const isThirdColumn = index % 3 === 2;
+          const isFirstRow = index < 3;
+
+          // 2-col grid (mobile): no right border on right col, no bottom border on last row
+          const isRightColumnMobile = index % 2 === 1;
+          const isLastRowMobile = index >= 4;
 
           return (
             <button
               key={service.id}
               type="button"
-              aria-pressed={isActive}
               onClick={() => {
                 onSelect(service.value as ServiceType);
               }}
@@ -656,8 +638,6 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
 
                 flex
                 items-center
-
-                border-[#EAECF0]
 
                 text-left
 
@@ -681,37 +661,69 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
                     `
                 }
 
-                ${index % 3 !== 2 ? 'sm:border-r' : ''}
+                /* --- Mobile (2 cols): right border on left column, bottom border on all but last row --- */
+                ${!isRightColumnMobile ? 'border-r' : ''}
+                ${!isLastRowMobile ? 'border-b' : ''}
 
-                ${index < 3 ? 'sm:border-b' : ''}
+                /* --- sm+ (3 cols): reset mobile borders, then apply 3-col borders --- */
+                sm:border-r-0
+                sm:border-b-0
+                ${!isThirdColumn ? 'sm:border-r' : ''}
+                ${isFirstRow ? 'sm:border-b' : ''}
 
-                ${index % 2 === 0 ? 'border-r' : ''}
+                border-[#EAECF0]
 
-                ${index < 4 ? 'border-b' : ''}
+                /* --- Default: neutral gray look --- */
+                bg-white
+                text-[#667085]
 
-                ${
-                  isActive
-                    ? `
-                      bg-[#E7F6F5]
-                      text-[#00897B]
-                    `
-                    : `
-                      bg-white
-                      text-[#667085]
-
-                      hover:bg-[#F9FAFB]
-                    `
-                }
+                /* --- Hover: teal active look (matches old selected style) --- */
+                hover:bg-[#E7F6F5]
+                hover:text-[#00897B]
               `}
             >
+              {/* Default icon */}
               <Image
-                src={isActive ? service.activeIcon : service.icon}
+                src={service.icon}
                 alt={service.iconAlt}
                 width={48}
                 height={48}
                 className={`
                   shrink-0
                   object-contain
+
+                  group-hover:hidden
+
+                  ${
+                    compact
+                      ? `
+                        h-[20px]
+                        w-[20px]
+
+                        sm:h-[24px]
+                        sm:w-[24px]
+                      `
+                      : `
+                        h-[28px]
+                        w-[28px]
+                      `
+                  }
+                `}
+              />
+
+              {/* Hover (active-colored) icon */}
+              <Image
+                src={service.activeIcon}
+                alt=""
+                aria-hidden="true"
+                width={48}
+                height={48}
+                className={`
+                  hidden
+                  shrink-0
+                  object-contain
+
+                  group-hover:block
 
                   ${
                     compact
@@ -737,7 +749,9 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
 
                   font-red-hat-display
 
-                  ${isActive ? 'font-extrabold' : 'font-semibold'}
+                  font-semibold
+
+                  group-hover:font-extrabold
 
                   ${
                     compact
@@ -749,8 +763,9 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
                         sm:text-[15px]
                       `
                       : `
-                        text-[21px]
-                        leading-6
+                        text-[18px]
+                        leading-[1.15]
+                        xl:text-[19px]
                       `
                   }
                 `}
@@ -758,19 +773,21 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
                 {service.label}
               </span>
 
-              {isActive && (
-                <ChevronRight
-                  aria-hidden="true"
-                  className="
-                    h-5
-                    w-5
-                    shrink-0
+              {/* Chevron only on hover */}
+              <ChevronRight
+                aria-hidden="true"
+                className="
+                  hidden
+                  h-5
+                  w-5
+                  shrink-0
 
-                    text-[#0C3354]
-                  "
-                  strokeWidth={2}
-                />
-              )}
+                  text-[#0C3354]
+
+                  group-hover:block
+                "
+                strokeWidth={2}
+              />
             </button>
           );
         })}

@@ -55,13 +55,13 @@
         "status": "available"
       },
       {
-        "id": "sim-only",
-        "label": "SIM only",
-        "value": "sim-only",
+        "id": 4,
+        "label": "SIM Only",
+        "description": "Latest SIM-Only Plans And Contract Offers",
         "href": "/result?service=sim-only",
-        "icon": "/images/sim-icon-gray.png",
-        "activeIcon": "/images/sim-icon-green.png",
-        "iconAlt": "SIM only"
+        "icon": "/images/sim-icon.png",
+        "iconAlt": "SIM only",
+        "status": "available"
       },
       {
         "id": 5,
@@ -75,9 +75,9 @@
       {
         "id": 6,
         "label": "Bundle Bills",
-        "description": "Bundle your household bills and save more",
+        "description": "Bundle Your Household Bills And Save More",
         "href": "/compare?service=energy&flow=bundle",
-        "icon": "/images/bundle-icon.png",
+        "icon": "/images/bundles-card-icon.png",
         "iconAlt": "Bundle Bills",
         "status": "available"
       }
@@ -328,7 +328,7 @@
         },
         {
           "id": "sim-only",
-          "label": "SIM only",
+          "label": "SIM Only",
           "value": "sim-only",
           "icon": "/images/sim-icon-gray.png",
           "activeIcon": "/images/sim-icon-green.png",
@@ -648,7 +648,10 @@
       "text": "Why billgoose",
       "icon": "/images/why-billgoose-icon.png"
     },
-    "heading": "Why thousands of UK households choose us",
+    "heading": {
+      "firstLine": "Why thousands of UK",
+      "secondLine": "households choose us"
+    },
     "description": "Independent, transparent, and refreshingly simple.",
     "items": [
       {
@@ -721,13 +724,13 @@
   },
   "guides": {
     "badge": {
-      "text": "Guides",
+      "text": "Guides & Blogs",
       "icon": "/images/guides-icon.png"
     },
     "heading": "Money advice from the flock",
     "description": "Impartial UK guides written by our editorial team.",
     "allGuides": {
-      "text": "All guides",
+      "text": "Guides & Blogs",
       "href": "/blogs"
     },
     "items": [
@@ -1405,7 +1408,7 @@
   },
   "newsletter": {
     "heading": "Never miss a better deal",
-    "description": "Monthly savings tips, price alerts, and UK bill guides straight to your inbox.",
+    "description": "Join our list to get launch announcements, product updates and smart money tips.",
     "form": {
       "label": "Email address",
       "placeholder": "Enter your email",
@@ -1425,33 +1428,39 @@
           {
             "id": "energy",
             "label": "Energy",
-            "href": "/energy"
+            "href": "/compare?service=energy"
           },
           {
             "id": "broadband",
             "label": "Broadband",
-            "href": "/broadband"
+            "href": "/compare?service=broadband"
           },
           {
             "id": "mobile",
             "label": "Mobile",
-            "href": "/mobile",
-            "badge": "New"
+            "href": "/result?service=mobile"
+          },
+          {
+            "id": "sim-only",
+            "label": "SIM only",
+            "href": "/result?service=sim-only"
           },
           {
             "id": "insurance",
             "label": "Insurance",
-            "href": "/insurance"
+            "href": "/compare?service=insurance"
           },
           {
             "id": "credit-cards",
             "label": "Credit Cards",
-            "href": "/credit-cards"
+            "href": "/credit-cards",
+            "badge": "Coming soon"
           },
           {
             "id": "loans",
             "label": "Loans",
-            "href": "/loans"
+            "href": "/loans",
+            "badge": "Coming soon"
           }
         ]
       },
@@ -1471,13 +1480,8 @@
           },
           {
             "id": "blogs",
-            "label": "Blogs",
+            "label": "Guides & Blogs",
             "href": "/blogs"
-          },
-          {
-            "id": "company-contact",
-            "label": "Contact",
-            "href": "/contact"
           }
         ]
       },
@@ -1494,11 +1498,6 @@
             "id": "support-contact",
             "label": "Contact",
             "href": "/contact"
-          },
-          {
-            "id": "accessibility",
-            "label": "Accessibility",
-            "href": "/accessibility"
           }
         ]
       },
@@ -5167,6 +5166,61 @@
           "answer": "We will explain the next step clearly and keep you updated where further work is needed."
         }
       ]
+    }
+  },
+  "contact": {
+    "hero": {
+      "heading": "Get in touch",
+      "breadcrumb": {
+        "homeLabel": "Home",
+        "homeHref": "/",
+        "separator": ">",
+        "currentLabel": "Contact"
+      }
+    },
+    "info": {
+      "heading": "Get in Touch",
+      "description": "You can connect with us when need help!",
+      "items": [
+        {
+          "id": "phone",
+          "type": "phone",
+          "label": "+44 (0)1652 601400",
+          "href": "tel:+441652601400"
+        },
+        {
+          "id": "email",
+          "type": "email",
+          "label": "contact@billgoose.com",
+          "href": "mailto:contact@billgoose.com"
+        },
+        {
+          "id": "address",
+          "type": "address",
+          "label": "912 Park Ave, Ketchikan, Alaska 99901, UK"
+        }
+      ]
+    },
+    "form": {
+      "fields": {
+        "firstName": {
+          "label": "First name",
+          "placeholder": "Enter your first name"
+        },
+        "lastName": {
+          "label": "Last name",
+          "placeholder": "Enter your last name"
+        },
+        "email": {
+          "label": "Email address",
+          "placeholder": "Enter your email address"
+        },
+        "message": {
+          "label": "Message",
+          "placeholder": "Write your message here..."
+        }
+      },
+      "submitLabel": "Send Message"
     }
   }
 }

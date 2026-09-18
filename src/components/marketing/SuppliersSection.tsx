@@ -133,7 +133,7 @@ export default function SuppliersSection() {
               text-center
 
               font-red-hat-display
-              font-[645]
+              font-[800]
 
               text-[30px]
               leading-[36px]

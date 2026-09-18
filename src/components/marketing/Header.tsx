@@ -605,7 +605,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                               px-4
 
                               font-inter
-                              tex t-[16px]
+                              text-[16px]
                               font-medium
 
                               transition-colors
@@ -645,8 +645,10 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                             top-[calc(100%+16px)]
                             z-[100]
 
-                            h-[480px]
+                            flex
+                            h-[510px]
                             w-[324px]
+                            flex-col
 
                             overflow-hidden
 
@@ -664,269 +666,286 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                             shadow-[0px_11px_24px_0px_rgba(38,38,38,0.11),0px_44px_44px_0px_rgba(38,38,38,0.10),0px_98px_59px_0px_rgba(38,38,38,0.06),0px_175px_70px_0px_rgba(38,38,38,0.02),0px_273px_77px_0px_rgba(38,38,38,0)]
                           "
                         >
-                          <div className="flex h-full flex-col">
-                            {/* =========================================
-                                AVAILABLE SERVICES
-                            ========================================== */}
-                            <div className="flex flex-col gap-[2px]">
-                              {header.compareMenu
-                                .filter(
-                                  (menuItem) =>
-                                    menuItem.label === 'Energy' ||
-                                    menuItem.label === 'Broadband' ||
-                                    menuItem.label === 'Mobile' ||
-                                    menuItem.label === 'Insurance',
-                                )
-                                .map((menuItem) => {
-                                  const isEnergyItem = menuItem.href === '/compare?service=energy';
+                          {/* =========================================
+                              SCROLLABLE SERVICES LIST
+                              Fixed height shows exactly 4 cards.
+                              Vertical scroll only.
+                          ========================================== */}
+                          <div
+                            className="
+                              compare-menu-scroll
 
-                                  const isBroadbandItem =
-                                    menuItem.href === '/compare?service=broadband';
+                              flex
+                              h-[350px]
+                              w-full
+                              shrink-0
+                              flex-col
+                              gap-[2px]
 
-                                  const isInsuranceItem =
-                                    menuItem.href === '/compare?service=insurance';
+                              overflow-y-auto
+                              overflow-x-hidden
+                              overscroll-contain
 
-                                  const isMobileItem = menuItem.href === '/result?service=mobile';
+                              pr-[2px]
+                            "
+                          >
+                            {header.compareMenu.map((menuItem) => {
+                              const isEnergyItem = menuItem.href === '/compare?service=energy';
 
-                                  const isActiveItem =
-                                    (pathname === '/compare' &&
-                                      ((compareService === 'energy' &&
-                                        compareFlow !== 'bundle' &&
-                                        isEnergyItem) ||
-                                        (compareService === 'broadband' && isBroadbandItem) ||
-                                        (compareService === 'insurance' && isInsuranceItem))) ||
-                                    (pathname === '/result' &&
-                                      compareService === 'mobile' &&
-                                      isMobileItem);
+                              const isBroadbandItem =
+                                menuItem.href === '/compare?service=broadband';
 
-                                  return (
-                                    <Link
-                                      key={menuItem.id}
-                                      href={menuItem.href}
-                                      role="menuitem"
-                                      onClick={() => {
-                                        handleCompareItemClick(menuItem.href);
-                                      }}
-                                      className={`
-                                        group
+                              const isInsuranceItem =
+                                menuItem.href === '/compare?service=insurance';
 
+                              const isMobileItem = menuItem.href === '/result?service=mobile';
+
+                              const isSimOnlyItem = menuItem.href === '/result?service=sim-only';
+
+                              const isBundleItem =
+                                menuItem.href === '/compare?service=energy&flow=bundle';
+
+                              const isActiveItem =
+                                (pathname === '/compare' &&
+                                  ((compareService === 'energy' &&
+                                    compareFlow !== 'bundle' &&
+                                    isEnergyItem) ||
+                                    (compareService === 'broadband' && isBroadbandItem) ||
+                                    (compareService === 'insurance' && isInsuranceItem) ||
+                                    (compareService === 'energy' &&
+                                      compareFlow === 'bundle' &&
+                                      isBundleItem))) ||
+                                (pathname === '/result' &&
+                                  ((compareService === 'mobile' && isMobileItem) ||
+                                    (compareService === 'sim-only' && isSimOnlyItem)));
+
+                              return (
+                                <Link
+                                  key={menuItem.id}
+                                  href={menuItem.href}
+                                  role="menuitem"
+                                  onClick={closeMenus}
+                                  className={`
+                                    group
+
+                                    flex
+                                    h-[86px]
+                                    w-[312px]
+                                    shrink-0
+                                    items-center
+                                    justify-between
+
+                                    rounded-[12px]
+
+                                    p-2
+
+                                    transition-colors
+
+                                    ${
+                                      isActiveItem
+                                        ? `
+                                          bg-[linear-gradient(0deg,rgba(0,137,123,0.05),rgba(0,137,123,0.05)),linear-gradient(0deg,rgba(255,255,255,0.95),rgba(255,255,255,0.95))]
+                                        `
+                                        : `
+                                          bg-white
+                                          hover:bg-[#F9FAFB]
+                                        `
+                                    }
+                                  `}
+                                >
+                                  <div className="flex min-w-0 items-center gap-3">
+                                    <div
+                                      className="
                                         flex
-                                        h-[86px]
-                                        w-[312px]
+                                        h-[70px]
+                                        w-[70px]
+                                        shrink-0
                                         items-center
-                                        justify-between
+                                        justify-center
+
+                                        overflow-hidden
 
                                         rounded-[12px]
 
-                                        p-2
+                                        border-[0.5px]
+                                        border-[#EAECF0]
 
-                                        transition-colors
+                                        bg-white
 
-                                        ${
-                                          isActiveItem
-                                            ? `
-                                              bg-[linear-gradient(0deg,rgba(0,137,123,0.05),rgba(0,137,123,0.05)),linear-gradient(0deg,rgba(255,255,255,0.95),rgba(255,255,255,0.95))]
-                                            `
-                                            : `
-                                              bg-white
-                                              hover:bg-[#F9FAFB]
-                                            `
-                                        }
-                                      `}
+                                        shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+                                      "
                                     >
-                                      <div className="flex min-w-0 items-center gap-3">
-                                        <div
-                                          className="
-                                            flex
-                                            h-[70px]
-                                            w-[70px]
-                                            shrink-0
-                                            items-center
-                                            justify-center
-
-                                            overflow-hidden
-
-                                            rounded-[12px]
-
-                                            border-[0.5px]
-                                            border-[#EAECF0]
-
-                                            bg-white
-
-                                            shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
-                                          "
-                                        >
-                                          <Image
-                                            src={menuItem.icon}
-                                            alt={menuItem.iconAlt}
-                                            width={52}
-                                            height={52}
-                                            className="
-                                              h-[52px]
-                                              w-[52px]
-                                              object-contain
-                                            "
-                                          />
-                                        </div>
-
-                                        <div className="min-w-0">
-                                          <p
-                                            className="
-                                              font-red-hat-display
-                                              text-[16px]
-                                              font-[645]
-                                              leading-[18px]
-                                              tracking-[0]
-
-                                              text-black
-                                            "
-                                          >
-                                            {menuItem.label}
-                                          </p>
-
-                                          {'description' in menuItem && menuItem.description && (
-                                            <p
-                                              className="
-                                                  mt-1
-                                                  max-w-[180px]
-
-                                                  font-inter
-                                                  text-[13px]
-                                                  font-normal
-                                                  leading-[13px]
-                                                  tracking-[0]
-
-                                                  text-[#667085]
-                                                "
-                                            >
-                                              {menuItem.description}
-                                            </p>
-                                          )}
-                                        </div>
-                                      </div>
-
-                                      <span
-                                        aria-hidden="true"
+                                      <Image
+                                        src={menuItem.icon}
+                                        alt={menuItem.iconAlt}
+                                        width={52}
+                                        height={52}
                                         className="
-                                          shrink-0
+                                          h-[52px]
+                                          w-[52px]
+                                          object-contain
+                                        "
+                                      />
+                                    </div>
 
-                                          font-inter
-                                          text-[18px]
-                                          font-normal
-                                          leading-none
+                                    <div className="min-w-0">
+                                      <p
+                                        className="
+                                          font-red-hat-display
+                                          text-[16px]
+                                          font-[645]
+                                          font-bold
+                                          leading-[18px]
+                                          tracking-[0]
 
-                                          text-[#98A2B3]
-
-                                          transition-colors
-
-                                          group-hover:text-[#00897B]
+                                          text-black
                                         "
                                       >
-                                        ›
-                                      </span>
-                                    </Link>
-                                  );
-                                })}
-                            </div>
+                                        {menuItem.label}
+                                      </p>
 
-                            {/* =========================================
-                                COMING SOON
-                            ========================================== */}
-                            <div className="mt-auto">
-                              <div className="relative mb-[10px] flex items-center justify-center">
-                                <span
-                                  aria-hidden="true"
-                                  className="
-                                    absolute
-                                    left-0
-                                    right-0
-                                    top-1/2
+                                      {'description' in menuItem && menuItem.description && (
+                                        <p
+                                          className="
+                                              mt-1
+                                              max-w-[180px]
 
-                                    border-t
-                                    border-dashed
-                                    border-[#EAECF0]
-                                  "
-                                />
+                                              font-inter
+                                              text-[13px]
+                                              font-normal
+                                              leading-100%
+                                              tracking-[0]
 
-                                <span
-                                  className="
-                                    relative
-                                    z-10
+                                              text-[#667085]
+                                            "
+                                        >
+                                          {menuItem.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
 
-                                    rounded-full
-                                    border
-                                    border-[#D1E9FF]
-
-                                    bg-[#EFF8FF]
-
-                                    px-2
-                                    py-[2px]
-
-                                    font-inter
-                                    text-[9px]
-                                    font-medium
-                                    leading-[12px]
-
-                                    text-[#1570EF]
-                                  "
-                                >
-                                  Coming Soon
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-2">
-                                {data.compare.comingSoonItems.map((item) => (
-                                  <div
-                                    key={item.id}
+                                  <span
+                                    aria-hidden="true"
                                     className="
-                                      flex
-                                      h-[70px]
-                                      w-[144px]
-                                      items-center
-                                      justify-center
-                                      gap-2
+                                      shrink-0
 
-                                      rounded-[8px]
+                                      font-inter
+                                      text-[18px]
+                                      font-normal
+                                      leading-none
 
-                                      border
-                                      border-[#EAECF0]
-                                      border-t-[#F2F4F7]
+                                      text-[#98A2B3]
 
-                                      bg-white
+                                      transition-colors
 
-                                      px-3
-
-                                      shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+                                      group-hover:text-[#00897B]
                                     "
                                   >
-                                    <Image
-                                      src={item.icon}
-                                      alt={item.title}
-                                      width={38}
-                                      height={38}
-                                      className="
-                                        h-[38px]
-                                        w-[38px]
-                                        shrink-0
-                                        object-contain
-                                      "
-                                    />
+                                    ›
+                                  </span>
+                                </Link>
+                              );
+                            })}
+                          </div>
 
-                                    <span
-                                      className="
-                                        font-red-hat-display
-                                        text-[11px]
-                                        font-[645]
-                                        leading-[14px]
+                          {/* =========================================
+                              COMING SOON — FIXED AT BOTTOM
+                          ========================================== */}
+                          <div className="mt-auto shrink-0">
+                            <div className="relative mb-[10px] flex items-center justify-center">
+                              <span
+                                aria-hidden="true"
+                                className="
+                                  absolute
+                                  left-0
+                                  right-0
+                                  top-1/2
 
-                                        text-[#101828]
-                                      "
-                                    >
-                                      {item.title}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
+                                  border-t
+                                  border-dashed
+                                  border-[#EAECF0]
+                                "
+                              />
+
+                              <span
+                                className="
+                                  relative
+                                  z-10
+
+                                  rounded-full
+                                  border
+                                  border-[#D1E9FF]
+
+                                  bg-[#EFF8FF]
+
+                                  px-3
+                                  py-[3px]
+
+                                  font-inter
+                                  text-[11px]
+                                  font-semibold
+                                  leading-[14px]
+
+                                  text-[#1570EF]
+                                "
+                              >
+                                Coming Soon
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              {data.compare.comingSoonItems.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="
+                                    flex
+                                    h-[110px]
+                                    w-[144px]
+                                    flex-col
+                                    items-center
+                                    justify-center
+                                    gap-2
+
+                                    rounded-[12px]
+
+                                    border
+                                    border-[#EAECF0]
+
+                                    bg-white
+
+                                    px-3
+
+                                    shadow-[0px_8px_24px_0px_rgba(15,30,60,0.06),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+                                  "
+                                >
+                                  <Image
+                                    src={item.icon}
+                                    alt={item.title}
+                                    width={52}
+                                    height={52}
+                                    className="
+                                      h-[52px]
+                                      w-[52px]
+                                      shrink-0
+                                      object-contain
+                                    "
+                                  />
+
+                                  <span
+                                    className="
+                                      font-red-hat-display
+                                      text-[13px]
+                                      font-[645]
+                                      leading-[16px]
+
+                                      text-[#101828]
+                                    "
+                                  >
+                                    {item.title}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </div>

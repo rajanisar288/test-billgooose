@@ -177,35 +177,37 @@ export default function WhyBillGoose() {
             >
               <h2
                 className="
-                  font-red-hat-display
+    font-red-hat-display
 
-                  text-[26px]
-                  font-[645]
-                  leading-[31px]
-                  tracking-[0]
+    text-[26px]
+    font-[645]
+    leading-[31px]
+    tracking-[0]
 
-                  text-white
+    text-white
 
-                  min-[360px]:text-[28px]
-                  min-[360px]:leading-[33px]
+    min-[360px]:text-[28px]
+    min-[360px]:leading-[33px]
 
-                  min-[390px]:text-[30px]
-                  min-[390px]:leading-[36px]
+    min-[390px]:text-[30px]
+    min-[390px]:leading-[36px]
 
-                  md:text-[36px]
-                  md:font-extrabold
-                  md:leading-[44px]
+    md:text-[36px]
+    md:font-extrabold
+    md:leading-[44px]
 
-                  min-[900px]:text-[38px]
-                  min-[900px]:leading-[46px]
+    min-[900px]:text-[38px]
+    min-[900px]:leading-[46px]
 
-                  lg:text-[44px]
-                  lg:font-extrabold
-                  lg:leading-[52px]
-                  lg:tracking-[0]
-                "
+    lg:text-[44px]
+    lg:font-extrabold
+    lg:leading-[52px]
+    lg:tracking-[0]
+  "
               >
-                {whyBillGoose.heading}
+                <span className="block">{whyBillGoose.heading.firstLine}</span>
+
+                <span className="block">{whyBillGoose.heading.secondLine}</span>
               </h2>
 
               <p

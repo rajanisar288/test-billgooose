@@ -425,7 +425,7 @@ type LowerHeroServiceGridProps = {
   tablet?: boolean;
 };
 
-function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGridProps) {
+function LowerHeroServiceGrid({ onSelect }: LowerHeroServiceGridProps) {
   const services = data.lowerHero.serviceTabs.items;
 
   return (
@@ -454,8 +454,6 @@ function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGri
         "
       >
         {services.map((service, index) => {
-          const isActive = selectedService === service.value;
-
           const isFirstRow = index < 3;
           const isLastColumn = index % 3 === 2;
 
@@ -463,9 +461,10 @@ function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGri
             <button
               key={service.id}
               type="button"
-              aria-pressed={isActive}
               onClick={() => onSelect(service.value as ServiceType)}
               className={`
+                group
+
                 flex
                 h-[56px]
                 min-w-0
@@ -486,23 +485,16 @@ function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGri
 
                 ${isFirstRow ? 'border-b border-[#E5E7EB]' : ''}
 
-                ${
-                  isActive
-                    ? `
-                      bg-[#E7F6F5]
-                      text-[#00897B]
-                    `
-                    : `
-                      bg-white
-                      text-[#667085]
+                bg-white
+                text-[#667085]
 
-                      hover:bg-[#F9FAFB]
-                    `
-                }
+                hover:bg-[#E7F6F5]
+                hover:text-[#00897B]
               `}
             >
+              {/* Default icon */}
               <Image
-                src={isActive ? service.activeIcon : service.icon}
+                src={service.icon}
                 alt={service.iconAlt}
                 width={18}
                 height={18}
@@ -511,6 +503,26 @@ function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGri
                   w-[18px]
                   shrink-0
                   object-contain
+
+                  group-hover:hidden
+                "
+              />
+
+              {/* Hover (active-colored) icon */}
+              <Image
+                src={service.activeIcon}
+                alt=""
+                aria-hidden="true"
+                width={18}
+                height={18}
+                className="
+                  hidden
+                  h-[18px]
+                  w-[18px]
+                  shrink-0
+                  object-contain
+
+                  group-hover:block
                 "
               />
 
@@ -521,7 +533,13 @@ function LowerHeroServiceGrid({ selectedService, onSelect }: LowerHeroServiceGri
                   text-[12px]
                   leading-[20px]
 
-                  ${isActive ? 'font-[645] text-[#00897B]' : 'font-[550] font-semibold text-[#667085]'}
+                  font-[550]
+                  font-semibold
+
+                  text-[#667085]
+
+                  group-hover:font-[645]
+                  group-hover:text-[#00897B]
 
                   sm:text-[13px]
 

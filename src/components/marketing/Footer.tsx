@@ -68,7 +68,29 @@ export default function Footer() {
                           <span>{link.label}</span>
 
                           {link.badge && (
-                            <span className="inline-flex min-h-[18px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[9px] font-bold leading-none text-primary min-[390px]:min-h-5 min-[390px]:text-[11px]">
+                            <span
+                              className="
+                                inline-flex
+                                items-center
+                                justify-center
+
+                                rounded-full
+
+                                bg-[#EFF8FF]
+
+                                px-2
+                                py-[2px]
+
+                                font-red-hat-display
+                                text-[12px]
+                                font-[645]
+                                leading-[18px]
+                                tracking-[0]
+                                text-center
+
+                                text-[#175CD3]
+                              "
+                            >
                               {link.badge}
                             </span>
                           )}
@@ -166,7 +188,29 @@ export default function Footer() {
                     <span>{link.label}</span>
 
                     {link.badge && (
-                      <span className="inline-flex min-h-[20px] items-center justify-center rounded-full bg-[#ECFDF3] px-2 font-red-hat-display text-[11px] font-bold leading-none text-primary">
+                      <span
+                        className="
+                          inline-flex
+                          items-center
+                          justify-center
+
+                          rounded-full
+
+                          bg-[#EFF8FF]
+
+                          px-2
+                          py-[2px]
+
+                          font-red-hat-display
+                          text-[12px]
+                          font-[645]
+                          leading-[18px]
+                          tracking-[0]
+                          text-center
+
+                          text-[#175CD3]
+                        "
+                      >
                         {link.badge}
                       </span>
                     )}
@@ -177,10 +221,10 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="flex-1" />
+        <div className="flex-1 mt-9" />
 
         {/* Desktop footer bottom */}
-        <div className="mx-auto flex min-h-[66px] w-full max-w-[1280px] items-end justify-between gap-8 border-t border-[#EAECF0] px-8 pt-5">
+        <div className="mx-auto flex min-h-[66px] w-full max-w-[1280px] items-end justify-between gap-8 border-t border-[#EAECF0] pt-5">
           {/* LOGO + DIVIDER + SOCIALS */}
           <div className="flex items-center">
             <Link
@@ -211,7 +255,7 @@ export default function Footer() {
             />
 
             {/* Social icons */}
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2">
               {footer.socials.map((social) => (
                 <Link
                   key={social.id}
@@ -253,7 +297,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <p className="text-right font-red-hat-display text-[16px] leading-[1.5] text-[#667085]">
+          <p className="text-right font-red-hat-display text-extrabold text-[16px] leading-[1.5] text-[#667085]">
             {footer.copyright}
           </p>
         </div>
