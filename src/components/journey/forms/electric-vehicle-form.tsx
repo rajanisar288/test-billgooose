@@ -6,10 +6,12 @@ import { useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { JOURNEY_ROUTES } from '@/components/journey/journey-routes';
 import {
   notifyJourneyStepFailed,
+  useJourneyStepError,
   useJourneyStepStatus,
 } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
@@ -23,6 +25,7 @@ const EV_VALUE_MAP: Record<string, number> = {
 
 export default function ElectricVehicleForm() {
   const { updateJourney } = useUpdateJourney();
+  const { stepError } = useJourneyStepError();
   const { journey } = useJourneyStore();
   const searchParams = useSearchParams();
 
@@ -127,6 +130,11 @@ export default function ElectricVehicleForm() {
           sm:space-y-4
         "
       >
+        <BackendErrorAlert
+          error={stepError}
+          className="w-full"
+        />
+
         <fieldset>
           <legend className="sr-only">{electricVehicle.heading}</legend>
 

@@ -229,6 +229,8 @@ export default function ResultFilterSidebar({
 
   const [includeSupplier, setIncludeSupplier] = useState(false);
 
+  const [isYourPlansOpen, setIsYourPlansOpen] = useState(true);
+
   /* =========================================================
      SIM FILTER STATE
   ========================================================= */
@@ -450,12 +452,16 @@ export default function ResultFilterSidebar({
                 EXISTING ENERGY/BROADBAND FILTERS
             ================================================ */}
 
-            <div
+            <button
+              type="button"
+              onClick={() => setIsYourPlansOpen((prev) => !prev)}
+              aria-expanded={isYourPlansOpen}
               className="
                 mt-3
 
                 flex
                 h-[34px]
+                w-full
 
                 items-center
                 justify-between
@@ -465,6 +471,12 @@ export default function ResultFilterSidebar({
                 bg-[#F9FAFB]
 
                 px-2.5
+
+                text-left
+
+                transition-colors
+
+                hover:bg-[#F2F4F7]
 
                 lg:h-[38px]
               "
@@ -484,39 +496,53 @@ export default function ResultFilterSidebar({
                 Your plans
               </span>
 
-              <Minus
-                aria-hidden="true"
+              {isYourPlansOpen ? (
+                <Minus
+                  aria-hidden="true"
+                  className="
+                    h-3.5
+                    w-3.5
+
+                    text-[#667085]
+                  "
+                />
+              ) : (
+                <Plus
+                  aria-hidden="true"
+                  className="
+                    h-3.5
+                    w-3.5
+
+                    text-[#667085]
+                  "
+                />
+              )}
+            </button>
+
+            {isYourPlansOpen && (
+              <div
                 className="
-                  h-3.5
-                  w-3.5
-
-                  text-[#667085]
+                  mt-3
+                  space-y-2.5
                 "
-              />
-            </div>
+              >
+                <FilterCheckbox
+                  label="Only show plans BillGoose can help me switch to"
+                  checked={onlyBillGoose}
+                  onClick={() => {
+                    setOnlyBillGoose((current) => !current);
+                  }}
+                />
 
-            <div
-              className="
-                mt-3
-                space-y-2.5
-              "
-            >
-              <FilterCheckbox
-                label="Only show plans BillGoose can help me switch to"
-                checked={onlyBillGoose}
-                onClick={() => {
-                  setOnlyBillGoose((current) => !current);
-                }}
-              />
-
-              <FilterCheckbox
-                label="Include plans that require switching directly through the supplier"
-                checked={includeSupplier}
-                onClick={() => {
-                  setIncludeSupplier((current) => !current);
-                }}
-              />
-            </div>
+                <FilterCheckbox
+                  label="Include plans that require switching directly through the supplier"
+                  checked={includeSupplier}
+                  onClick={() => {
+                    setIncludeSupplier((current) => !current);
+                  }}
+                />
+              </div>
+            )}
 
             <div
               className="

@@ -10,6 +10,7 @@ export default function SingleJourneyPage() {
   const [journeyId, setJourneyId] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setJourneyId(getResumeJourneyIdFromPath(window.location.pathname));
   }, []);
 

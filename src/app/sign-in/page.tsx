@@ -7,17 +7,17 @@ import { useRouter } from 'next/navigation';
 
 import { ArrowRight, Check } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import FullPageLoader, { InlineSpinner } from '@/components/common/FullPageLoader';
 import Header from '@/components/marketing/Header';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { authApi } from '@/lib/api/endpoints/auth.api';
+import { EMAIL_REGEX, sanitizeEmailInput } from '@/utils/validation';
 
 type LoginStage = 'email' | 'otp' | 'success';
 
 export default function SignInPage() {
   const router = useRouter();
-  const { showSuccess, showError } = useToast();
 
   const { hero, footer2 } = data;
 
@@ -25,6 +25,10 @@ export default function SignInPage() {
   const [stage, setStage] = useState<LoginStage>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [termsError, setTermsError] = useState('');
+  const [authError, setAuthError] = useState('');
 
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,28 +97,46 @@ export default function SignInPage() {
   }
 
   /* =========================================================
+     EMAIL VALIDATION
+  ========================================================= */
+
+  function handleEmailBlur() {
+    const trimmed = email.trim();
+    if (!trimmed) {
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmed)) {
+      setEmailError('Please enter a valid email address.');
+    } else {
+      setEmailError('');
+    }
+  }
+
+  /* =========================================================
      GET OTP
   ========================================================= */
 
   async function handleGetOtp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setEmailError('');
+    setOtpError('');
+    setTermsError('');
+    setAuthError('');
 
     if (!termsAccepted) {
-      showError('Please accept the terms & conditions to proceed.');
+      setTermsError('Please accept the terms & conditions to proceed.');
       return;
     }
 
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
-      showError('Please enter your email address.');
+      setEmailError('Please enter your email address.');
       return;
     }
 
-    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
-
-    if (!emailIsValid) {
-      showError('Please enter a valid email address.');
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setEmailError('Please enter a valid email address.');
       return;
     }
 
@@ -122,10 +144,9 @@ export default function SignInPage() {
 
     try {
       await authApi.sendCode({ email: trimmedEmail });
-      showSuccess('OTP code sent to your email.');
       setStage('otp');
     } catch (error: any) {
-      showError(error?.data?.error || 'Failed to send OTP code. Please try again.');
+      setAuthError(error?.data?.error || 'Failed to send OTP code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -137,14 +158,17 @@ export default function SignInPage() {
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setOtpError('');
+    setTermsError('');
+    setAuthError('');
 
     if (!termsAccepted) {
-      showError('Please accept the terms & conditions to proceed.');
+      setTermsError('Please accept the terms & conditions to proceed.');
       return;
     }
 
     if (!otp.trim()) {
-      showError('Please enter your OTP.');
+      setOtpError('Please enter your OTP.');
       return;
     }
 
@@ -182,10 +206,9 @@ export default function SignInPage() {
        */
       window.dispatchEvent(new Event('billgoose-auth-changed'));
 
-      showSuccess('Signed in successfully.');
       setStage('success');
     } catch (error: any) {
-      showError(error?.data?.error || 'Incorrect OTP or verification failed. Please try again.');
+      setAuthError(error?.data?.error || 'Incorrect OTP or verification failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -329,7 +352,7 @@ export default function SignInPage() {
 
                         sm:rounded-[28px]
 
-                        ${stage === 'otp' ? 'lg:h-[550px]' : 'lg:h-[509px]'}
+                        ${stage === 'otp' ? 'lg:h-[590px]' : 'lg:h-[509px]'}
                         lg:rounded-[36px]
                       `}
                     >
@@ -513,7 +536,7 @@ export default function SignInPage() {
                                   lg:leading-[52px]
                                 "
                               >
-                                Login to BillGoose
+                                Signin to BillGoose
                               </h1>
 
                               <p
@@ -541,6 +564,12 @@ export default function SignInPage() {
                                 Please enter your credential
                               </p>
                             </header>
+                            {authError && (
+                              <BackendErrorAlert
+                                error={authError}
+                                className="my-4"
+                              />
+                            )}
 
                             {/* =====================================
                                 EMAIL STAGE
@@ -549,13 +578,7 @@ export default function SignInPage() {
                               <form
                                 onSubmit={handleGetOtp}
                                 noValidate
-                                className="
-                                  mt-8
-
-                                  sm:mt-9
-
-                                  lg:mt-[54px]
-                                "
+                                className={`${authError ? 'mt-2 sm:mt-3 lg:mt-[12px]' : 'mt-8 sm:mt-9 lg:mt-[54px]'}`}
                               >
                                 <LoginField
                                   id="login-email"
@@ -563,14 +586,23 @@ export default function SignInPage() {
                                   label="Email address"
                                   placeholder="Enter your email address"
                                   value={email}
+                                  error={emailError}
+                                  onBlur={handleEmailBlur}
                                   onChange={(value) => {
-                                    setEmail(value);
+                                    const sanitized = sanitizeEmailInput(value);
+                                    setEmail(sanitized);
+                                    if (emailError) {
+                                      if (EMAIL_REGEX.test(sanitized.trim())) {
+                                        setEmailError('');
+                                      }
+                                    }
+                                    if (authError) setAuthError('');
                                   }}
                                 />
 
                                 <button
                                   type="submit"
-                                  disabled={!termsAccepted || isLoading}
+                                  disabled={isLoading}
                                   className="
                                     mt-5
 
@@ -634,16 +666,10 @@ export default function SignInPage() {
                               <form
                                 onSubmit={handleLogin}
                                 noValidate
-                                className="
-                                  mt-7
-
-                                  sm:mt-8
-
-                                  lg:mt-[42px]
-                                "
+                                className={`${authError ? 'mt-2 sm:mt-4 lg:mt-[12px]' : 'mt-7 sm:mt-8 lg:mt-[42px]'}`}
                               >
                                 <LoginField
-                                  id="login-email"
+                                  id="login-email-disabled"
                                   type="email"
                                   label="Email address"
                                   placeholder="Enter your email address"
@@ -657,6 +683,8 @@ export default function SignInPage() {
                                     onClick={() => {
                                       setStage('email');
                                       setOtp('');
+                                      setOtpError('');
+                                      setAuthError('');
                                     }}
                                     className="font-inter text-[12px] font-medium text-[#00897B] hover:underline"
                                   >
@@ -672,18 +700,21 @@ export default function SignInPage() {
                                     label="Enter OTP"
                                     placeholder="Enter your OTP"
                                     value={otp}
+                                    error={otpError}
                                     maxLength={6}
                                     onChange={(value) => {
                                       const numericValue = value.replace(/\D/g, '').slice(0, 6);
 
                                       setOtp(numericValue);
+                                      if (otpError) setOtpError('');
+                                      if (authError) setAuthError('');
                                     }}
                                   />
                                 </div>
 
                                 <button
                                   type="submit"
-                                  disabled={!termsAccepted || isLoading}
+                                  disabled={isLoading}
                                   className="
                                     mt-5
 
@@ -744,101 +775,105 @@ export default function SignInPage() {
                             {/* =====================================
                                 TERMS
                             ====================================== */}
-                            <div
-                              className={`
-                                flex
-                                items-start
-                                gap-2
+                            <div className={stage === 'email' ? 'mt-6 lg:mt-[27px]' : 'mt-5'}>
+                              <div className="flex items-start gap-2">
+                                <button
+                                  type="button"
+                                  role="checkbox"
+                                  aria-checked={termsAccepted}
+                                  onClick={() => {
+                                    setTermsAccepted((prev) => {
+                                      const next = !prev;
+                                      if (next) setTermsError('');
+                                      return next;
+                                    });
+                                  }}
+                                  className={`
+                                    mt-[2px]
+                                    flex
+                                    h-[16px]
+                                    w-[16px]
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-[4px]
+                                    border
+                                    transition-colors
+                                    focus-visible:outline-none
+                                    focus-visible:ring-2
+                                    focus-visible:ring-[#00897B]
+                                    ${
+                                      termsAccepted
+                                        ? 'border-[#00897B] bg-[#00897B]'
+                                        : 'border-[#D0D5DD] bg-white hover:border-[#00897B]'
+                                    }
+                                  `}
+                                >
+                                  {termsAccepted && (
+                                    <Check
+                                      aria-hidden="true"
+                                      className="
+                                        h-[10px]
+                                        w-[10px]
+                                        text-white
+                                      "
+                                      strokeWidth={3}
+                                    />
+                                  )}
+                                </button>
 
-                                ${stage === 'email' ? 'mt-6 lg:mt-[27px]' : 'mt-5'}
-                              `}
-                            >
-                              <button
-                                type="button"
-                                role="checkbox"
-                                aria-checked={termsAccepted}
-                                onClick={() => {
-                                  setTermsAccepted((prev) => !prev);
-                                }}
-                                className={`
-                                  mt-[2px]
-                                  flex
-                                  h-[16px]
-                                  w-[16px]
-                                  shrink-0
-                                  items-center
-                                  justify-center
-                                  rounded-[4px]
-                                  border
-                                  transition-colors
-                                  focus-visible:outline-none
-                                  focus-visible:ring-2
-                                  focus-visible:ring-[#00897B]
-                                  ${
-                                    termsAccepted
-                                      ? 'border-[#00897B] bg-[#00897B]'
-                                      : 'border-[#D0D5DD] bg-white hover:border-[#00897B]'
-                                  }
-                                `}
-                              >
-                                {termsAccepted && (
-                                  <Check
-                                    aria-hidden="true"
+                                <p
+                                  className="
+                                    max-w-[410px]
+
+                                    font-inter
+                                    text-[10px]
+                                    font-normal
+                                    leading-[15px]
+
+                                    text-[#667085]
+
+                                    sm:text-[11px]
+                                    sm:leading-[16px]
+
+                                    lg:text-[12px]
+                                    lg:leading-[18px]
+                                  "
+                                >
+                                  By proceeding with BillGoose, you are confirming that you agree to
+                                  the{' '}
+                                  <a
+                                    href="/terms"
                                     className="
-                                      h-[10px]
-                                      w-[10px]
-                                      text-white
+                                      font-medium
+                                      text-[#00897B]
+                                      underline
+                                      underline-offset-2
                                     "
-                                    strokeWidth={3}
-                                  />
-                                )}
-                              </button>
+                                  >
+                                    terms &amp; conditions
+                                  </a>{' '}
+                                  of our service and to our{' '}
+                                  <a
+                                    href="/privacy"
+                                    className="
+                                      font-medium
+                                      text-[#00897B]
+                                      underline
+                                      underline-offset-2
+                                    "
+                                  >
+                                    privacy policy
+                                  </a>{' '}
+                                  that govern how your information will be processed.
+                                </p>
+                              </div>
 
-                              <p
-                                className="
-                                  max-w-[410px]
-
-                                  font-inter
-                                  text-[10px]
-                                  font-normal
-                                  leading-[15px]
-
-                                  text-[#667085]
-
-                                  sm:text-[11px]
-                                  sm:leading-[16px]
-
-                                  lg:text-[12px]
-                                  lg:leading-[18px]
-                                "
-                              >
-                                By proceeding with BillGoose, you are confirming that you agree to
-                                the{' '}
-                                <a
-                                  href="/terms"
-                                  className="
-                                    font-medium
-                                    text-[#00897B]
-                                    underline
-                                    underline-offset-2
-                                  "
-                                >
-                                  terms &amp; conditions
-                                </a>{' '}
-                                of our service and to our{' '}
-                                <a
-                                  href="/privacy"
-                                  className="
-                                    font-medium
-                                    text-[#00897B]
-                                    underline
-                                    underline-offset-2
-                                  "
-                                >
-                                  privacy policy
-                                </a>{' '}
-                                that govern how your information will be processed.
-                              </p>
+                              {termsError && (
+                                <p className="mt-1.5 font-inter text-[11px] font-normal leading-4 text-[#D92D20] sm:text-[12px]">
+                                  {termsError}
+                                </p>
+                              )}
                             </div>
                           </>
                         )}
@@ -1078,6 +1113,7 @@ type LoginFieldProps = {
   inputMode?: 'text' | 'numeric' | 'decimal' | 'email' | 'tel' | 'search' | 'url' | 'none';
   maxLength?: number;
   onChange: (value: string) => void;
+  onBlur?: () => void;
 };
 
 function LoginField({
@@ -1090,6 +1126,7 @@ function LoginField({
   inputMode,
   maxLength,
   onChange,
+  onBlur,
 }: LoginFieldProps) {
   return (
     <div>
@@ -1122,6 +1159,7 @@ function LoginField({
         maxLength={maxLength}
         value={value}
         placeholder={placeholder}
+        onBlur={onBlur}
         onChange={(event) => {
           onChange(event.target.value);
         }}

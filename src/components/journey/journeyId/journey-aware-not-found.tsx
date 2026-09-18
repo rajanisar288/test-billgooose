@@ -12,6 +12,7 @@ export default function JourneyAwareNotFound() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResumeJourneyId(getResumeJourneyIdFromPath(window.location.pathname) || null);
     setIsReady(true);
   }, []);

@@ -9,13 +9,14 @@ import { useRouter } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import {
   notifyJourneyStepFailed,
+  useJourneyStepError,
   useJourneyStepStatus,
 } from '@/components/journey/journey-step-status';
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { serviceRequiresConsumption, useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
@@ -70,7 +71,6 @@ function subscribeToJourneyService(callback: () => void) {
 export default function PaymentMethodForm() {
   const router = useRouter();
   const { journey, setJourney } = useJourneyStore();
-  const { showError } = useToast();
 
   const { paymentMethod, broadbandContractLength } = data.journey;
 
@@ -90,6 +90,7 @@ export default function PaymentMethodForm() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethod.defaultValue);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { stepError } = useJourneyStepError();
 
   /* =========================================================
      BROADBAND STATE
@@ -195,8 +196,9 @@ export default function PaymentMethodForm() {
       );
     } catch (error: any) {
       console.error('Failed to complete payment method step:', error);
-      showError(error?.message);
-      notifyJourneyStepFailed();
+      notifyJourneyStepFailed(
+        error?.message || 'Failed to update payment method. Please try again.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -247,6 +249,11 @@ export default function PaymentMethodForm() {
           onSubmit={handleSubmit}
           className="space-y-3 sm:space-y-4"
         >
+          <BackendErrorAlert
+            error={stepError}
+            className="w-full"
+          />
+
           <fieldset>
             <legend className="sr-only">{broadbandContractLength.heading}</legend>
 
@@ -415,6 +422,11 @@ export default function PaymentMethodForm() {
         onSubmit={handleSubmit}
         className="space-y-3 sm:space-y-4"
       >
+        <BackendErrorAlert
+          error={stepError}
+          className="w-full"
+        />
+
         {paymentMethod.options.map((option, index) => {
           const isSelected = selectedPaymentMethod === option.value;
 

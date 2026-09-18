@@ -258,7 +258,7 @@ export default function CurrentUsageSummary({
                 "
               />
 
-              {summary.serviceLabel}
+              {energyUsage?.gas?.isAvailable ? summary.serviceLabel : 'Electricity'}
             </span>
           </div>
 

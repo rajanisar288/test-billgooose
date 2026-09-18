@@ -10,9 +10,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ArrowRight, CalendarDays, Check, ChevronDown } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { storeJourney, storePartnerConfig } from '@/constants/shared';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { MoveStatus, type Address, type Journey } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { serviceRequiresConsumption, useServiceFields } from '@/lib/service-fields';
@@ -27,7 +27,9 @@ export default function CompareFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { journey, setJourney } = useJourneyStore();
-  const { showError, showSuccess } = useToast();
+
+  const [addressError, setAddressError] = useState<string>('');
+  const [submitError, setSubmitError] = useState<string>('');
 
   const requestedService = searchParams.get('service');
   const requestedFlow = searchParams.get('flow');
@@ -151,6 +153,7 @@ export default function CompareFlow() {
     ? hasRequiredValue('energySupplyType', energyServiceType) &&
       hasRequiredValue('occupancyStatus', renterHomeOwner) &&
       hasRequiredValue('moveStatus', alreadyInProperty) &&
+      alreadyInProperty &&
       hasRequiredValue('moveInDate', moveInDate)
     : requestedService === 'energy'
       ? hasRequiredValue('energySupplyType', energyServiceType) &&
@@ -209,6 +212,8 @@ export default function CompareFlow() {
 
       if (mappedAddresses.length > 0 && !preferredAddress) {
         setAddressDropdownOpen(true);
+      } else if (mappedAddresses?.length <= 0) {
+        setAddressError('No address found for this postcode. Please try again.');
       }
     } catch (error) {
       console.error(error);
@@ -276,8 +281,10 @@ export default function CompareFlow() {
         }
       }
 
+      setSubmitError('');
+
       if (!journeyId) {
-        showError('Journey ID is required.');
+        setSubmitError('Journey ID is required.');
         return;
       }
 
@@ -332,7 +339,9 @@ export default function CompareFlow() {
       } catch (error: any) {
         console.error('createJourney failed:', error);
 
-        showError(error?.message);
+        setSubmitError(
+          error?.message || 'Failed to initialize comparison journey. Please try again.',
+        );
 
         return;
       }
@@ -365,7 +374,9 @@ export default function CompareFlow() {
         } catch (error: any) {
           console.error('prepareConsumption failed:', error);
 
-          showError(error?.message);
+          setSubmitError(
+            error?.message || 'Failed to prepare consumption details. Please try again.',
+          );
 
           return;
         }
@@ -408,17 +419,7 @@ export default function CompareFlow() {
       localStorage.setItem('journey-storage', JSON.stringify(existingStorage));
 
       // =========================================================
-      // 6. SUCCESS
-      // =========================================================
-
-      const formattedPostcode = postcode.trim().toUpperCase().replace(/\s+/g, ' ');
-
-      showSuccess(
-        `🎉 Great! We're getting you in at ${formattedPostcode}! Let's finalize your details. 🚀`,
-      );
-
-      // =========================================================
-      // 7. NAVIGATION
+      // 6. NAVIGATION
       // =========================================================
 
       if (requestedService === 'broadband') {
@@ -435,7 +436,7 @@ export default function CompareFlow() {
     } catch (error: any) {
       console.error('Unexpected compare flow error:', error);
 
-      showError(error?.message);
+      setSubmitError(error?.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -443,9 +444,11 @@ export default function CompareFlow() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setAddressError('');
+    setSubmitError('');
 
     if (serviceFields.isVisible('address') && !selectedAddress) {
-      showError(
+      setAddressError(
         'Please select an address by clicking Find address or fill in the address before continuing the journey.',
       );
       return;
@@ -800,6 +803,13 @@ export default function CompareFlow() {
               FORM
           ================================================== */}
 
+          {submitError && (
+            <BackendErrorAlert
+              error={submitError}
+              className="mt-6"
+            />
+          )}
+
           <form
             noValidate
             onSubmit={handleSubmit}
@@ -1001,6 +1011,12 @@ export default function CompareFlow() {
                 </p>
               )}
 
+              {addressError && !selectedAddress && addressOptions?.length === 0 && (
+                <p className="mt-1.5 font-inter text-[11px] font-normal leading-4 text-[#D92D20] lg:text-[12px]">
+                  {addressError}
+                </p>
+              )}
+
               <button
                 type="button"
                 onClick={() => {
@@ -1185,6 +1201,7 @@ export default function CompareFlow() {
                             aria-selected={isSelected}
                             onClick={() => {
                               setSelectedAddress(address.fullAddressObject);
+                              setAddressError('');
                               setAddressDropdownOpen(false);
                             }}
                             className={`
@@ -1228,7 +1245,7 @@ export default function CompareFlow() {
                   )}
                 </div>
 
-                <button
+                {/* <button
                   type="button"
                   className="
                   mt-2 block
@@ -1248,7 +1265,13 @@ export default function CompareFlow() {
                 "
                 >
                   {compareFlow.form.address.manualText}
-                </button>
+                </button> */}
+
+                {addressError && (
+                  <p className="mt-1.5 font-inter text-[11px] font-normal leading-4 text-[#D92D20] lg:text-[12px]">
+                    {addressError}
+                  </p>
+                )}
               </div>
             )}
 

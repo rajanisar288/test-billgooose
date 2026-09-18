@@ -15,14 +15,14 @@
       },
       {
         "id": 2,
-        "label": "Guides",
+        "label": "Guides & Blogs",
         "href": "/blogs",
         "hasDropdown": false
       },
       {
         "id": 3,
-        "label": "Help",
-        "href": "/help",
+        "label": "Contact",
+        "href": "/contact",
         "hasDropdown": false
       }
     ],
@@ -615,7 +615,7 @@
       {
         "id": "insurance",
         "title": "Insurance",
-        "description": "Protect what matters with trusted insurance deals.",
+        "description": "Protect What Matters With Trusted Insurance Deals.",
         "icon": "/images/insurance.png",
         "linkText": "Compare Now",
         "href": "/compare?service=insurance"

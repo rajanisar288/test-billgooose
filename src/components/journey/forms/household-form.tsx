@@ -7,10 +7,12 @@ import { useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute } from '@/components/journey/journey-routes';
 import {
   notifyJourneyStepFailed,
+  useJourneyStepError,
   useJourneyStepStatus,
 } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
@@ -66,6 +68,7 @@ export default function HouseholdForm() {
   const isBundle = requestedFlow === 'bundle' || requestedService === 'bundle-bills';
 
   const { updateJourney } = useUpdateJourney();
+  const { stepError } = useJourneyStepError();
 
   const { household, broadbandSpeed } = data.journey;
 
@@ -241,6 +244,11 @@ export default function HouseholdForm() {
           onSubmit={handleSubmit}
           noValidate
         >
+          <BackendErrorAlert
+            error={stepError}
+            className="w-full mb-4"
+          />
+
           <fieldset>
             <legend className="sr-only">{broadbandSpeed.heading}</legend>
 
@@ -412,6 +420,11 @@ export default function HouseholdForm() {
           lg:space-y-7
         "
       >
+        <BackendErrorAlert
+          error={stepError}
+          className="w-full"
+        />
+
         {/* =====================================================
             PROPERTY TYPE
         ====================================================== */}

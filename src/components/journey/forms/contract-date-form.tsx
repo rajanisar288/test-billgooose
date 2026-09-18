@@ -7,10 +7,12 @@ import { useSearchParams } from 'next/navigation';
 
 import { CalendarDays, Check } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute } from '@/components/journey/journey-routes';
 import {
   notifyJourneyStepFailed,
+  useJourneyStepError,
   useJourneyStepStatus,
 } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
@@ -62,6 +64,7 @@ function subscribeToJourneyService(callback: () => void) {
 export default function ContractDateForm() {
   const { journey } = useJourneyStore();
   const { updateJourney } = useUpdateJourney();
+  const { stepError } = useJourneyStepError();
   const searchParams = useSearchParams();
 
   const requestedService = searchParams.get('service');
@@ -182,6 +185,7 @@ export default function ContractDateForm() {
         selectedProvider={selectedProvider}
         onSelectProvider={setSelectedProvider}
         onSubmit={handleSubmit}
+        stepError={stepError}
       />
     );
   }
@@ -231,6 +235,11 @@ export default function ContractDateForm() {
         className="space-y-5 lg:space-y-6"
         noValidate
       >
+        <BackendErrorAlert
+          error={stepError}
+          className="w-full"
+        />
+
         <FormField label={fields.contractDate.label}>
           <div className="relative">
             <input
@@ -445,12 +454,14 @@ type BroadbandProviderFormProps = {
   selectedProvider: string;
   onSelectProvider: (provider: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  stepError?: string;
 };
 
 function BroadbandProviderForm({
   selectedProvider,
   onSelectProvider,
   onSubmit,
+  stepError = '',
 }: BroadbandProviderFormProps) {
   const { broadbandProvider } = data.journey;
 
@@ -492,6 +503,11 @@ function BroadbandProviderForm({
         onSubmit={onSubmit}
         noValidate
       >
+        <BackendErrorAlert
+          error={stepError}
+          className="w-full mb-4"
+        />
+
         <div
           className="
             grid

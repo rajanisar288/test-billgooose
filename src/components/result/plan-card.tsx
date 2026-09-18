@@ -69,6 +69,7 @@ export default function PlanCard({
             alt={plan.logoAlt}
             width={74}
             height={74}
+            unoptimized
             className="
               h-[74px]
               w-[74px]
@@ -94,7 +95,7 @@ export default function PlanCard({
                 text-[#101828]
               "
             >
-              {plan.provider}
+              {plan.planName || plan.provider}
             </h3>
 
             <p
@@ -428,6 +429,7 @@ export default function PlanCard({
             alt={plan.logoAlt}
             width={74}
             height={74}
+            unoptimized
             className="
               h-[74px]
               w-[74px]
@@ -453,7 +455,7 @@ export default function PlanCard({
                 text-[#101828]
               "
             >
-              {plan.provider}
+              {plan.planName || plan.provider}
             </h3>
 
             <p
@@ -716,41 +718,41 @@ export default function PlanCard({
               xl:gap-5
             "
           >
-            {showSaving && (
-              <div
+            <div
+              className="
+                flex
+                h-[72px]
+                w-[72px]
+                shrink-0
+
+                items-center
+                justify-center
+
+                overflow-hidden
+
+                rounded-[11.25px]
+
+                border-[1.13px]
+                border-[#EAECF0]
+
+                bg-white
+                p-1
+              "
+            >
+              <Image
+                src={plan.logo}
+                alt={plan.logoAlt}
+                width={72}
+                height={72}
+                unoptimized
                 className="
-    flex
-    h-[72px]
-    w-[72px]
-    shrink-0
+                  h-full
+                  w-full
 
-    items-center
-    justify-center
-
-    overflow-hidden
-
-    rounded-[11.25px]
-
-    border-[1.13px]
-    border-[#EAECF0]
-
-    bg-[#EAF2F8]
-  "
-              >
-                <Image
-                  src={plan.logo}
-                  alt={plan.logoAlt}
-                  width={72}
-                  height={72}
-                  className="
-      h-full
-      w-full
-
-      object-contain
-    "
-                />
-              </div>
-            )}
+                  object-contain
+                "
+              />
+            </div>
 
             <div className="min-w-0 flex-1">
               <h3
@@ -766,7 +768,7 @@ export default function PlanCard({
                   text-[#101828]
                 "
               >
-                {plan.provider}
+                {plan.planName || plan.provider}
               </h3>
 
               <p

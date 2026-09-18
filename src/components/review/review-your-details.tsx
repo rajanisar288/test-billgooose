@@ -20,12 +20,12 @@ import {
   Wifi,
 } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import FinalThankYou from '@/components/payment/final-thank-you';
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
 import { readStoredSelectedPlans, sumPlanPrices } from '@/components/result/selected-plans';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useServiceFields } from '@/lib/service-fields';
 import { useJourneyStore } from '@/store/journeyStore';
@@ -209,7 +209,6 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{7,8}$/;
 export default function ReviewYourDetails() {
   const router = useRouter();
   const { journey, setJourney } = useJourneyStore();
-  const { showError } = useToast();
   const { journey: journeyData } = data;
   const searchParams = useSearchParams();
 
@@ -222,6 +221,7 @@ export default function ReviewYourDetails() {
   const serviceFields = useServiceFields(isBundle ? 'billPackage' : journey?.serviceType);
 
   const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState<string>('');
   const [updatedCustomerFields, setUpdatedCustomerFields] = useState<Record<string, unknown>>({});
   const [storedSelectedPlans] = useState<StandardPlan[]>(readStoredSelectedPlans);
   const [isPrepaymentComplete, setIsPrepaymentComplete] = useState(false);
@@ -251,21 +251,30 @@ export default function ReviewYourDetails() {
       },
 
       household: {
-        propertyType: journey?.details?.propertyType ?? '',
+        propertyType: journey?.customer?.propertyType ?? journey?.details?.propertyType ?? '',
+
         occupants:
-          journey?.details?.occupants !== null && journey?.details?.occupants !== undefined
-            ? String(journey?.details.occupants)
-            : '',
+          journey?.details?.occupants != null
+            ? String(journey.details.occupants)
+            : journey?.customer?.occupants != null
+              ? String(journey.customer.occupants)
+              : '',
+
         bedrooms:
-          journey?.details?.bedrooms !== null && journey?.details?.bedrooms !== undefined
-            ? String(journey?.details.bedrooms)
-            : '',
+          journey?.details?.bedrooms != null
+            ? String(journey.details.bedrooms)
+            : journey?.customer?.bedrooms != null
+              ? String(journey.customer.bedrooms)
+              : '',
       },
 
-      paymentMethod: journey?.details?.paymentPreference ?? '',
+      paymentMethod:
+        journey?.details?.paymentPreference ?? journey?.customer?.paymentPreference ?? '',
 
       contractDetails: {
-        contractDate: journey?.details?.preferredStartDate ?? '',
+        contractDate:
+          journey?.customer?.preferredStartDate ?? journey?.details?.preferredStartDate ?? '',
+
         acknowledged: false,
       },
 
@@ -285,6 +294,7 @@ export default function ReviewYourDetails() {
       return;
     }
 
+    setConfirmError('');
     setPasswordError('');
 
     // Password validation when service is energy and flow is bundle
@@ -359,7 +369,7 @@ export default function ReviewYourDetails() {
       }
     } catch (error: any) {
       console.error('Failed to confirm journey:', error);
-      showError(error?.message);
+      setConfirmError(error?.message || 'Failed to confirm your details. Please try again.');
     } finally {
       setIsConfirming(false);
     }
@@ -458,6 +468,13 @@ export default function ReviewYourDetails() {
             <p className="mt-1 max-w-[760px] font-red-hat-display text-[13px] font-[467] leading-[19px] tracking-[0] text-[#667085] sm:text-[14px] sm:leading-[20px] md:text-[16px] md:leading-[23px] lg:text-[18px] lg:leading-[25px]">
               {review.description}
             </p>
+
+            {confirmError && (
+              <BackendErrorAlert
+                error={confirmError}
+                className="mt-3"
+              />
+            )}
           </header>
 
           <div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start xl:grid-cols-[minmax(0,1fr)_390px] xl:gap-6">
@@ -603,9 +620,10 @@ export default function ReviewYourDetails() {
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={password}
-                          maxLength={32}
+                          maxLength={8}
                           onChange={(e) => {
-                            setPassword(e.target.value);
+                            const val = e.target.value.slice(0, 8);
+                            setPassword(val);
                             if (passwordError) setPasswordError('');
                           }}
                           placeholder="Enter account password"
@@ -1146,22 +1164,23 @@ function SelectedPlanCard({ selectedPlans }: { selectedPlans: StandardPlan[] }) 
                 key={plan.id}
                 className="flex items-center gap-3"
               >
-                <Image
-                  src={plan.logo}
-                  alt={plan.logoAlt}
-                  width={54}
-                  height={54}
-                  className="
-                h-[54px]
-                w-[54px]
-                shrink-0
-
-    items-center
-    justify-center
-
-                object-contain
-              "
-                />
+                {plan.logo && !plan.logo.includes('result-logo.png') ? (
+                  <Image
+                    src={plan.logo}
+                    alt={plan.logoAlt || plan.provider}
+                    width={54}
+                    height={54}
+                    unoptimized
+                    className="
+                      h-[54px]
+                      w-[54px]
+                      shrink-0
+                      items-center
+                      justify-center
+                      object-contain
+                    "
+                  />
+                ) : null}
 
                 <div className="min-w-0 flex-1">
                   <p
@@ -1174,7 +1193,7 @@ function SelectedPlanCard({ selectedPlans }: { selectedPlans: StandardPlan[] }) 
                   text-[#101828]
                 "
                   >
-                    {plan.provider}
+                    {plan.planName || plan.provider}
                   </p>
 
                   <p
@@ -1349,6 +1368,9 @@ function SummaryCard({
             key={plan.id}
             label={plan.groupDisplayName ?? plan.provider}
             value={plan.annualPrice ?? plan.price}
+            logo={plan.logo}
+            logoAlt={plan.logoAlt || plan.provider}
+            subtitle={plan.planName && plan.planName !== plan.provider ? plan.planName : undefined}
           />
         ))}
 
@@ -1583,12 +1605,24 @@ function SummaryCard({
    SUMMARY ROW
 ========================================================= */
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({
+  label,
+  value,
+  logo,
+  logoAlt,
+  subtitle,
+}: {
+  label: string;
+  value: string;
+  logo?: string;
+  logoAlt?: string;
+  subtitle?: string;
+}) {
   return (
     <div
       className="
         flex
-        min-h-[35px]
+        min-h-[38px]
 
         items-center
         justify-between
@@ -1596,6 +1630,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 
         border-b
         border-[#F2F4F7]
+        py-1.5
 
         font-inter
         text-[10px]
@@ -1604,7 +1639,27 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
         font-[660]
       "
     >
-      <span className="text-[#667085] font-[660]">{label}</span>
+      <div className="flex items-center gap-2 min-w-0">
+        {logo && !logo.includes('result-logo.png') && (
+          <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-[6px] border border-[#EAECF0] bg-white p-0.5">
+            <Image
+              src={logo}
+              alt={logoAlt || label}
+              fill
+              unoptimized
+              className="object-contain"
+            />
+          </div>
+        )}
+        <div className="min-w-0">
+          <span className="text-[#667085] font-[660] truncate block">{label}</span>
+          {subtitle && (
+            <span className="text-[11px] font-normal text-[#98A2B3] truncate block">
+              {subtitle}
+            </span>
+          )}
+        </div>
+      </div>
 
       <span
         className="
