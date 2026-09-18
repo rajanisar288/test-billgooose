@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -17,10 +15,10 @@ export default function Hero() {
   const { hero } = data;
 
   // No service is pre-selected. Selection only happens on click/hover.
-  const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
+  // const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
 
   function handleServiceSelect(service: ServiceType) {
-    setSelectedService(service);
+    // setSelectedService(service);
 
     if (service === 'bundle-bills') {
       router.push('/compare?service=energy&flow=bundle');
