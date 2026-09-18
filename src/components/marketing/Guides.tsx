@@ -88,7 +88,7 @@ export default function Guides() {
 
               <Link
                 href={guides.allGuides.href}
-                className="mt-4 inline-flex h-9 w-32 shrink-0 items-center justify-center gap-2 rounded-full border border-[#01285433] bg-white px-4 py-2 font-inter text-[13px] font-[467] leading-none text-secondary shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.1)] transition-transform duration-200 hover:-translate-y-0.5 min-[390px]:text-[14px] lg:mt-0 lg:self-auto lg:font-inter lg:font-[600]"
+                className="mt-4 inline-flex h-9 w-39 shrink-0 items-center justify-center gap-2 rounded-full border border-[#01285433] bg-white px-4 py-2 font-inter text-[13px] font-[467] leading-none text-secondary shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.1)] transition-transform duration-200 hover:-translate-y-0.5 min-[390px]:text-[14px] lg:mt-0 lg:self-auto lg:font-inter lg:font-[600]"
               >
                 <span>{guides.allGuides.text}</span>
 

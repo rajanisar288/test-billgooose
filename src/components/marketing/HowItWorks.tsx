@@ -38,10 +38,39 @@ export default function HowItWorks() {
             className="pointer-events-none absolute bottom-[55px] left-[40px] top-[8px] border-l border-dashed border-[#C7DCE3] min-[360px]:left-[44px] min-[390px]:left-[54px] sm:hidden"
           />
 
-          {/* Desktop dashed connector */}
+          {/* =================================================
+              TABLET + DESKTOP HORIZONTAL DASHED CONNECTOR
+
+              - Sits behind the icon containers (z-0)
+              - Aligned with vertical center of the icon boxes
+              - Only spans the visible width between outer icons
+          ================================================= */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute left-[10%] right-[10%] top-[99px] hidden border-t border-dashed border-[#C7DCE3] lg:block"
+            className="
+              pointer-events-none
+              absolute
+              z-0
+
+              hidden
+
+              /* align line with vertical center of icon boxes */
+              sm:top-[75px]
+              lg:top-[99.5px]
+
+              /* start/end aligned to the icon column centers */
+              sm:left-[125px]
+              sm:right-[125px]
+
+              lg:left-[100px]
+              lg:right-[100px]
+
+              border-t
+              border-dashed
+              border-[#C7DCE3]
+
+              sm:block
+            "
           />
 
           <div className="relative z-10 flex flex-col gap-6 min-[360px]:gap-7 min-[390px]:gap-8 sm:grid sm:grid-cols-2 sm:justify-items-center sm:gap-12 lg:grid-cols-4 lg:gap-6">
@@ -52,8 +81,8 @@ export default function HowItWorks() {
               >
                 {/* Image and step number */}
                 <div className="relative shrink-0">
-                  {/* Main image container */}
-                  <div className="relative flex h-[88px] w-[88px] items-center justify-center rounded-[9px] border-[0.54px] border-transparent border-t-[#00B1AA33] bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)] min-[360px]:h-[96px] min-[360px]:w-[96px] min-[360px]:rounded-[10px] min-[390px]:h-[108px] min-[390px]:w-[108px] min-[390px]:rounded-[10.84px] sm:h-[150px] sm:w-[150px] sm:rounded-[16px] lg:h-[199px] lg:w-[199px] lg:rounded-[20px] lg:border-t">
+                  {/* Main image container — solid gradient bg so it masks the dashed line */}
+                  <div className="relative z-10 flex h-[88px] w-[88px] items-center justify-center rounded-[9px] border-[0.54px] border-transparent border-t-[#00B1AA33] bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)] min-[360px]:h-[96px] min-[360px]:w-[96px] min-[360px]:rounded-[10px] min-[390px]:h-[108px] min-[390px]:w-[108px] min-[390px]:rounded-[10.84px] sm:h-[150px] sm:w-[150px] sm:rounded-[16px] lg:h-[199px] lg:w-[199px] lg:rounded-[20px] lg:border-t">
                     <Image
                       src={step.image}
                       alt={step.imageAlt}

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ArrowRight, Mail } from 'lucide-react';
+import { ArrowRight, Info, Mail } from 'lucide-react';
 
 import data from '@/data/content.json';
 
@@ -357,6 +357,8 @@ export default function Compare() {
                 ================================================== */}
                 <div
                   className="
+                    relative
+
                     flex
                     h-[42px]
                     shrink-0
@@ -417,6 +419,90 @@ export default function Compare() {
                       strokeWidth={2}
                     />
                   </Link>
+
+                  {/* =============================================
+                      BUNDLE BILLS TOOLTIP
+                  ============================================== */}
+                  {isBundleBills && (
+                    <div className="group absolute right-3 top-1/2 z-30 -translate-y-1/2">
+                      {/* Info icon trigger */}
+                      <button
+                        type="button"
+                        aria-label="More information about Bundle Bills"
+                        className="
+                          flex
+                          h-[18px]
+                          w-[18px]
+                          items-center
+                          justify-center
+
+                          rounded-full
+
+                          text-[#98A2B3]
+
+                          transition-colors
+
+                          hover:text-[#475467]
+
+                          focus-visible:outline-none
+                          focus-visible:ring-2
+                          focus-visible:ring-[#00897B]
+                          focus-visible:ring-offset-2
+
+                          lg:h-5
+                          lg:w-5
+                        "
+                      >
+                        <Info
+                          aria-hidden="true"
+                          className="h-full w-full"
+                          strokeWidth={1.6}
+                        />
+                      </button>
+
+                      {/* Tooltip bubble — appears on hover / focus */}
+                      <div
+                        role="tooltip"
+                        className="
+                          pointer-events-none
+
+                          absolute
+                          right-[-10px]
+                          bottom-[calc(100%+10px)]
+
+                          whitespace-nowrap
+
+                          rounded-[8px]
+
+                          bg-[#1D2939]
+
+                          px-3
+                          py-2
+
+                          font-inter
+                          text-[11px]
+                          font-medium
+                          leading-[1.3]
+
+                          text-white
+
+                          opacity-0
+
+                          shadow-[0px_10px_20px_-4px_rgba(16,24,40,0.25),0px_4px_8px_-4px_rgba(16,24,40,0.15)]
+
+                          transition-opacity
+                          duration-200
+
+                          group-hover:opacity-100
+                          group-focus-within:opacity-100
+
+                          lg:text-[12px]
+                        "
+                      >
+                        This is a tooltip
+                      </div>
+                    </div>
+                  )}
                 </div>
               </article>
             );
@@ -632,192 +718,216 @@ export default function Compare() {
           </div>
 
           {/* NEWSLETTER */}
+          {/* NEWSLETTER */}
           <div
             className="
-              relative
+    relative
 
-              min-h-[190px]
+    min-h-[190px]
 
-              overflow-hidden
+    overflow-hidden
 
-              rounded-[18px]
+    rounded-[18px]
 
-              border
-              border-[#EAECF0]
+    border
+    border-[#EAECF0]
 
-              bg-white
+    bg-white
 
-              p-4
+    p-4
 
-              shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+    shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
 
-              sm:rounded-[20px]
-              sm:p-5
+    sm:rounded-[20px]
+    sm:p-5
 
-              lg:h-[200px]
-              lg:min-h-[200px]
-              lg:rounded-[22px]
-              lg:px-6
-              lg:py-5
-            "
+    lg:h-[200px]
+    lg:min-h-[200px]
+    lg:rounded-[22px]
+    lg:px-6
+    lg:py-5
+  "
           >
+            {/* =====================================================
+      DECORATIVE GRADIENT — TOP-RIGHT QUARTER-CIRCLE WEDGE
+      - Anchored to top-right corner
+      - Curved bottom-left edge
+      - Sits behind the mailbox icon
+  ====================================================== */}
             <div
               aria-hidden="true"
               className="
-                pointer-events-none
+      pointer-events-none
 
-                absolute
-                right-0
-                top-0
+      absolute
+      right-0
+      top-0
+      z-0
 
-                h-[100px]
-                w-[130px]
+      h-[120px]
+      w-[120px]
 
-                rounded-bl-[80px]
+      sm:h-[140px]
+      sm:w-[140px]
 
-                bg-[linear-gradient(135deg,rgba(231,246,245,0.9)_0%,rgba(255,255,255,0)_100%)]
+      lg:h-[160px]
+      lg:w-[160px]
 
-                lg:h-[125px]
-                lg:w-[165px]
-              "
+      rounded-bl-full
+
+      bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
+    "
             />
 
+            {/* =====================================================
+      MAILBOX ICON — centered inside the gradient wedge
+  ====================================================== */}
             <div
               className="
-                pointer-events-none
+      pointer-events-none
 
-                absolute
-                right-2
-                top-2
-                z-10
+      absolute
+      right-4
+      top-3
+      z-10
 
-                h-[72px]
-                w-[72px]
+      h-[72px]
+      w-[72px]
 
-                sm:h-[82px]
-                sm:w-[82px]
+      sm:right-5
+      sm:top-4
+      sm:h-[82px]
+      sm:w-[82px]
 
-                lg:right-4
-                lg:top-2
-                lg:h-[98px]
-                lg:w-[98px]
-              "
+      lg:right-6
+      lg:top-4
+      lg:h-[92px]
+      lg:w-[92px]
+    "
             >
               <Image
                 src={NEWSLETTER_IMAGE}
                 alt=""
                 fill
-                sizes="98px"
+                sizes="92px"
                 className="object-contain"
               />
             </div>
 
+            {/* =====================================================
+      COPY
+  ====================================================== */}
             <div
               className="
-                relative
-                z-20
+      relative
+      z-20
 
-                max-w-[70%]
+      max-w-[70%]
 
-                sm:max-w-[72%]
+      sm:max-w-[72%]
 
-                lg:max-w-[350px]
-              "
+      lg:max-w-[350px]
+    "
             >
               <h3
                 className="
-                  font-red-hat-display
+        font-red-hat-display
 
-                  text-[19px]
-                  font-extrabold
-                  leading-[25px]
+        text-[19px]
+        font-extrabold
+        leading-[25px]
 
-                  text-[#0C3354]
+        text-[#0C3354]
 
-                  sm:text-[21px]
+        sm:text-[21px]
 
-                  lg:text-[24px]
-                  lg:leading-[30px]
-                "
+        lg:text-[24px]
+        lg:leading-[30px]
+      "
               >
                 Be the first to know
               </h3>
 
               <p
                 className="
-                  mt-1
+        mt-3
 
-                  max-w-[340px]
+        max-w-[340px]
 
-                  font-red-hat-display
-                  text-[11px]
-                  font-[467]
-                  leading-[15px]
+        font-red-hat-display
+        text-[11px]
+        font-[467]
+        leading-[15px]
 
-                  text-[#576574]
+        text-[#576574]
 
-                  sm:text-[12px]
-                  sm:leading-[16px]
+        sm:text-[12px]
+        sm:leading-[16px]
 
-                  lg:text-[13px]
-                  lg:leading-[17px]
-                "
+        lg:text-[16px]
+        lg:leading-[22px]
+      "
               >
                 {newsletter.description}
               </p>
             </div>
 
+            {/* =====================================================
+      FORM — bottom aligned
+  ====================================================== */}
             <form
               className="
-                absolute
-                bottom-4
-                left-4
-                right-4
-                z-20
+      absolute
+      bottom-4
+      left-4
+      right-4
+      z-20
 
-                sm:bottom-5
-                sm:left-5
-                sm:right-5
+      sm:bottom-5
+      sm:left-5
+      sm:right-5
 
-                lg:left-6
-                lg:right-6
-              "
+      lg:left-6
+      lg:right-6
+    "
             >
               <div
                 className="
-                  flex
-                  h-[44px]
-                  w-full
+        flex
+        h-[44px]
+        w-full
 
-                  items-center
+        items-center
 
-                  rounded-full
+        rounded-full
 
-                  border
-                  border-[#D0D5DD]
+        border
+        border-[#D0D5DD]
 
-                  bg-white
+        bg-white
 
-                  pl-3
+        pl-4
 
-                  sm:h-[46px]
-                  sm:pl-4
+        sm:h-[46px]
+        sm:pl-4
 
-                  lg:h-[48px]
-                "
+        lg:h-[48px]
+        lg:pl-5
+      "
               >
+                {/* Mail icon — vertically centered */}
                 <Mail
                   aria-hidden="true"
                   className="
-                    h-[14px]
-                    w-[14px]
-                    shrink-0
+          h-[15px]
+          w-[15px]
+          shrink-0
 
-                    text-[#355E87]
+          text-[#355E87]
 
-                    lg:h-4
-                    lg:w-4
-                  "
+          lg:h-[17px]
+          lg:w-[17px]
+        "
                   strokeWidth={1.7}
                 />
 
@@ -828,88 +938,95 @@ export default function Compare() {
                   {newsletter.form.label}
                 </label>
 
+                {/* Input — full height flex-centered so text aligns with icon */}
                 <input
                   id="compare-newsletter-email"
                   type="email"
                   placeholder={newsletter.form.placeholder}
                   className="
-                    min-w-0
-                    flex-1
+          flex
+          h-full
+          min-w-0
+          flex-1
+          items-center
 
-                    bg-transparent
+          bg-transparent
 
-                    px-2
+          px-3
 
-                    font-inter
-                    text-[10px]
+          font-inter
+          text-[11px]
 
-                    text-[#0C3354]
+          leading-none
 
-                    outline-none
+          text-[#0C3354]
 
-                    placeholder:text-[#475467]
+          outline-none
 
-                    sm:text-[11px]
+          placeholder:text-[#475467]
 
-                    lg:px-3
-                    lg:text-[12px]
-                  "
+          sm:text-[12px]
+
+          lg:px-4
+          lg:text-[13px]
+        "
                 />
 
+                {/* Subscribe button — navy pill with teal ring */}
                 <div
                   className="
-                    hero-animated-border
+          -mr-px
 
-                    -mr-px
+          h-[44px]
+          w-[105px]
+          shrink-0
 
-                    h-[44px]
-                    w-[105px]
-                    shrink-0
+          rounded-full
 
-                    rounded-full
+          border-[1.5px]
+          border-[#00B1AA]
 
-                    p-[2px]
+          p-[2px]
 
-                    sm:h-[46px]
-                    sm:w-[115px]
+          sm:h-[46px]
+          sm:w-[115px]
 
-                    lg:h-[48px]
-                    lg:w-[125px]
-                    lg:p-[2px]
-                  "
+          lg:h-[48px]
+          lg:w-[125px]
+        "
                 >
                   <button
                     type="submit"
                     className="
-                      flex
-                      h-full
-                      w-full
+            flex
+            h-full
+            w-full
 
-                      items-center
-                      justify-center
+            items-center
+            justify-center
 
-                      whitespace-nowrap
+            whitespace-nowrap
 
-                      rounded-full
+            rounded-full
 
-                      bg-[#0D3B66]
+            bg-[#0D3B66]
 
-                      px-3
+            px-3
 
-                      font-red-hat-display
-                      text-[10px]
-                      font-semibold
+            font-red-hat-display
+            text-[10px]
+            font-semibold
 
-                      text-white
+            text-white
 
-                      transition-colors
+            transition-colors
 
-                      hover:bg-[#124A7E]
+            hover:bg-[#124A7E]
 
-                      sm:text-[11px]
+            sm:text-[11px]
 
-                      lg:text-[12px]
-                    "
+            lg:text-[12px]
+          "
                   >
                     {newsletter.form.buttonLabel}
                   </button>
