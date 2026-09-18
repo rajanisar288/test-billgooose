@@ -2,6 +2,7 @@
 
 type FullPageLoaderProps = {
   message?: string;
+  className?: string;
 };
 
 export function InlineSpinner({ className = 'h-5 w-5 text-[#00897B]' }: { className?: string }) {
@@ -29,9 +30,16 @@ export function InlineSpinner({ className = 'h-5 w-5 text-[#00897B]' }: { classN
   );
 }
 
-export default function FullPageLoader({ message = 'Loading...' }: FullPageLoaderProps) {
+export default function FullPageLoader({
+  message = 'Loading...',
+  className = '',
+}: FullPageLoaderProps) {
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-white">
+    <div
+      role="status"
+      aria-live="polite"
+      className={`fixed inset-0 z-[9999] flex h-screen w-screen flex-col items-center justify-center bg-white ${className}`}
+    >
       <div className="flex flex-col items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#00897B]/20 bg-[#EEFFFB]">
           <InlineSpinner className="h-6 w-6 text-[#00897B]" />

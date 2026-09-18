@@ -16,12 +16,12 @@ import {
 } from 'lucide-react';
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { InlineSpinner } from '@/components/common/FullPageLoader';
 import Header from '@/components/marketing/Header';
 import { humanizeLabel } from '@/components/result/result-labels';
 import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
 
@@ -158,7 +158,6 @@ function subscribeToAccount(callback: () => void) {
 
 export default function MyInfoPage() {
   const router = useRouter();
-  const { showError } = useToast();
 
   const { footer2 } = data;
 
@@ -166,6 +165,7 @@ export default function MyInfoPage() {
   const [customerJourneys, setCustomerJourneys] = useState<any[]>([]);
   const [isLoadingJourneys, setIsLoadingJourneys] = useState<boolean>(false);
   const [continuingJourneyId, setContinuingJourneyId] = useState<string | null>(null);
+  const [journeyError, setJourneyError] = useState<{ id: string; message: string } | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -213,6 +213,7 @@ export default function MyInfoPage() {
     }
 
     setContinuingJourneyId(journeyId);
+    setJourneyError(null);
 
     try {
       const response = await journeyApi.getJourney(jItem?.journeyReference);
@@ -231,7 +232,10 @@ export default function MyInfoPage() {
       }
     } catch (err: any) {
       console.error('❌ Failed to fetch journey details:', err);
-      showError(err?.data?.error || 'Failed to fetch journey details. Please try again.');
+      setJourneyError({
+        id: journeyId,
+        message: err?.data?.error || 'Failed to fetch journey details. Please try again.',
+      });
     } finally {
       setContinuingJourneyId(null);
     }
@@ -1162,24 +1166,33 @@ export default function MyInfoPage() {
                               )}
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            disabled={continuingJourneyId === (j.id || j.uuid)}
-                            onClick={() => handleContinueJourney(j)}
-                            className="inline-flex h-[40px] items-center justify-center gap-2 rounded-full bg-[#00897B] px-4 font-red-hat-display text-[12px] font-bold text-white transition-colors hover:bg-[#00796D] disabled:opacity-50"
-                          >
-                            {continuingJourneyId === (j.id || j.uuid) ? (
-                              <>
-                                <InlineSpinner className="h-4 w-4 text-white" />
-                                <span>Loading...</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>Continue Journey</span>
-                                <ArrowRight className="h-4 w-4" />
-                              </>
-                            )}
-                          </button>
+                          {!['completed']?.includes(j.status) && (
+                            <button
+                              type="button"
+                              disabled={continuingJourneyId === (j.id || j.uuid)}
+                              onClick={() => handleContinueJourney(j)}
+                              className="inline-flex h-[40px] items-center justify-center gap-2 rounded-full bg-[#00897B] px-4 font-red-hat-display text-[12px] font-bold text-white transition-colors hover:bg-[#00796D] disabled:opacity-50"
+                            >
+                              {continuingJourneyId === (j.id || j.uuid) ? (
+                                <>
+                                  <InlineSpinner className="h-4 w-4 text-white" />
+                                  <span>Loading...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>Continue Journey</span>
+                                  <ArrowRight className="h-4 w-4" />
+                                </>
+                              )}
+                            </button>
+                          )}
+
+                          {journeyError && journeyError.id === (j.id || j.uuid) && (
+                            <BackendErrorAlert
+                              error={journeyError.message}
+                              className="w-full mt-2"
+                            />
+                          )}
                         </article>
                       ))}
                     </div>

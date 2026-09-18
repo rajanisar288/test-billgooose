@@ -2,13 +2,19 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Check, ChevronRight, ExternalLink, Globe2, LoaderCircle, X } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
+import {
+  getMockBundleSuppliers,
+  groupPlansIntoBundleSuppliers,
+} from '@/components/result/bundle-mock-data';
+import BundlePlanCard, { type BundleSupplierData } from '@/components/result/bundle-plan-card';
 import FeaturedBroadbandCard from '@/components/result/featured-broadband-card';
 import PlanCard from '@/components/result/plan-card';
 import PlanDetailsDrawer from '@/components/result/plan-details-drawer';
@@ -23,7 +29,6 @@ import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import type { ResultFilterState } from '@/components/result/result-filter.types';
 import { readStoredSelectedPlans } from '@/components/result/selected-plans';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
@@ -206,7 +211,7 @@ export default function ResultPlans({
   const searchParams = useSearchParams();
   const { journey, setJourney } = useJourneyStore();
   const { filters: appliedFilters } = useResultFilters();
-  const { showError } = useToast();
+  const [actionError, setActionError] = useState<string>('');
   const [selectingPlanId, setSelectingPlanId] = useState<string | null>(null);
   const [isContinuingBundle, setIsContinuingBundle] = useState(false);
 
@@ -236,6 +241,20 @@ export default function ResultPlans({
 
   const isSimOnly = service === 'sim-only';
   const isInsurance = service === 'insurance';
+
+  const bundleSuppliers: BundleSupplierData[] = useMemo(() => {
+    if (!isBundleService) return [];
+
+    if (quotePlans && quotePlans.length > 0) {
+      const standardPlans = quotePlans.filter(isStandardPlan);
+      const liveSuppliers = groupPlansIntoBundleSuppliers(standardPlans);
+      if (liveSuppliers.length > 0) {
+        return liveSuppliers;
+      }
+    }
+
+    return getMockBundleSuppliers();
+  }, [isBundleService, quotePlans]);
 
   /* =========================================================
      PLAN DATA
@@ -369,8 +388,10 @@ export default function ResultPlans({
 
       const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
 
+      setActionError('');
+
       if (!journeyId) {
-        showError('Journey ID is required. Please try again.');
+        setActionError('Journey ID is required. Please try again.');
         return;
       }
 
@@ -391,7 +412,7 @@ export default function ResultPlans({
 
         setJourney(response.data);
       } catch (error: any) {
-        showError(error?.message);
+        setActionError(error?.message || 'We could not save your selected plan. Please try again.');
         setSelectingPlanId(null);
         return;
       }
@@ -487,31 +508,58 @@ export default function ResultPlans({
     router.push('/steps/personal-details-form?service=energy');
   };
 
-  const handleBundleContinue = async () => {
-    const selectedPlans = Object.values(selectedBundlePlans);
+  const handleSelectBundle = async (
+    supplier: BundleSupplierData,
+    selectedPlans: StandardPlan[],
+  ) => {
+    if (selectedPlans.length === 0 || isContinuingBundle) return;
+
+    setActionError('');
+    setIsContinuingBundle(true);
+
     const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
 
-    if (!journeyId || selectedPlans.length === 0 || isContinuingBundle) return;
+    if (journeyId) {
+      try {
+        const response = await journeyApi.createJourney({
+          journeyId,
+          uuid: journeyId,
+          lastUrl: getCurrentRelativeUrl(),
+          cart: selectedPlans,
+        });
 
-    setIsContinuingBundle(true);
-    try {
-      const response = await journeyApi.createJourney({
-        journeyId,
-        uuid: journeyId,
-        lastUrl: getCurrentRelativeUrl(),
-        cart: selectedPlans,
-      });
-      if (!response?.data) throw new Error('We could not save your selected products.');
-
-      setJourney(response.data);
-      sessionStorage.setItem('billgooseJourneyService', 'energy');
-      sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
-      router.push('/review-your-details?service=energy&flow=bundle');
-    } catch (error: any) {
-      showError(error?.message);
-    } finally {
-      setIsContinuingBundle(false);
+        if (response?.data) {
+          setJourney(response.data);
+        }
+      } catch (error: any) {
+        setActionError(
+          error?.message || 'We could not save your selected bundle. Please try again.',
+        );
+        setIsContinuingBundle(false);
+        return;
+      }
     }
+
+    sessionStorage.setItem('journeySelectedPlans', JSON.stringify(selectedPlans));
+    const primaryPlan = selectedPlans[0];
+    sessionStorage.setItem(
+      'journeySelectedPlan',
+      JSON.stringify({
+        ...primaryPlan,
+        service: 'bundle-bills',
+        supplierName: supplier.supplierName,
+        supplierCode: supplier.supplierCode,
+        productReferences: selectedPlans.flatMap(
+          (item) =>
+            item.productReferences ?? (item.productReference ? [item.productReference] : []),
+        ),
+      }),
+    );
+
+    sessionStorage.setItem('billgooseJourneyService', 'energy');
+    sessionStorage.setItem('billgooseJourneyFlow', 'bundle');
+
+    router.push('/review-your-details?service=energy&flow=bundle');
   };
 
   /* =========================================================
@@ -624,6 +672,18 @@ export default function ResultPlans({
   ========================================================= */
 
   const renderNormalCards = () => {
+    if (isBundleService) {
+      return bundleSuppliers.map((supplier) => (
+        <BundlePlanCard
+          key={supplier.supplierCode}
+          supplier={supplier}
+          onViewDetails={handleViewDetails}
+          onSelectBundle={handleSelectBundle}
+          isSelecting={isContinuingBundle}
+        />
+      ));
+    }
+
     if (service === 'insurance') {
       return filteredInsurancePlanItems.map((plan) => (
         <InsurancePlanCard
@@ -667,13 +727,9 @@ export default function ResultPlans({
             onViewDetails={handleViewDetails}
             onSelectPlan={handleSelectPlan}
             isSelecting={selectingPlanId === plan.id}
-            isSelected={Boolean(
-              isBundleService &&
-              plan.groupType &&
-              selectedBundlePlans[plan.groupType]?.id === plan.id,
-            )}
+            isSelected={false}
             showSaving={!quotePlans}
-            service={service === 'bundle-bills' ? 'bundle-bills' : 'energy'}
+            service="energy"
           />
         );
       }
@@ -758,29 +814,18 @@ export default function ResultPlans({
           2xl:px-0
         "
       >
+        {actionError && (
+          <BackendErrorAlert
+            error={actionError}
+            className="mb-5"
+          />
+        )}
+
         {/* =====================================================
             MOBILE + TABLET
         ====================================================== */}
 
         <div className="lg:hidden">
-          {isBundleService && Object.keys(selectedBundlePlans).length > 0 && (
-            <button
-              type="button"
-              onClick={() => void handleBundleContinue()}
-              disabled={isContinuingBundle}
-              className="mb-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#00897B] px-6 font-red-hat-display text-sm font-bold text-white disabled:opacity-60"
-            >
-              {isContinuingBundle
-                ? 'Saving selections...'
-                : `Continue with ${Object.keys(selectedBundlePlans).length} selected ${
-                    Object.keys(selectedBundlePlans).length === 1 ? 'product' : 'products'
-                  }`}
-              <ChevronRight
-                className="ml-2 h-4 w-4"
-                aria-hidden="true"
-              />
-            </button>
-          )}
           <div
             className="
               space-y-4
@@ -1000,26 +1045,6 @@ export default function ResultPlans({
                 </button>
               </div> */}
             </div>
-            {isBundleService && Object.keys(selectedBundlePlans).length > 0 && (
-              <div className="mt-6 flex justify-end mb-2">
-                <button
-                  type="button"
-                  onClick={() => void handleBundleContinue()}
-                  disabled={isContinuingBundle}
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-[#00897B] px-8 font-red-hat-display text-sm font-bold text-white hover:bg-[#00796D]"
-                >
-                  {isContinuingBundle
-                    ? 'Saving selections...'
-                    : `Continue with ${Object.keys(selectedBundlePlans).length} selected ${
-                        Object.keys(selectedBundlePlans).length === 1 ? 'product' : 'products'
-                      }`}
-                  <ChevronRight
-                    className="ml-2 h-4 w-4"
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-            )}
 
             <div className="min-w-0 space-y-3">{renderCards()}</div>
           </div>

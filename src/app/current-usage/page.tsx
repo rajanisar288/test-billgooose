@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import CurrentUsageHeader, {
   type UsagePeriod,
 } from '@/components/current-usage/current-usage-header';
@@ -22,7 +23,6 @@ import {
   type ConsumptionFuel,
 } from '@/components/journey/modal/update-consumption-modal';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
@@ -36,13 +36,13 @@ type EnergyUsage = {
 export default function CurrentUsagePage() {
   const { currentUsage } = data;
   const router = useRouter();
-  const { showError, showSuccess } = useToast();
   const { journey, setJourney } = useJourneyStore();
   const [energyUsage, setEnergyUsage] = useState<EnergyUsage | null>(null);
   const [editedConsumption, setEditedConsumption] = useState<
     Partial<Record<ConsumptionFuel, ConsumptionFormValues>>
   >({});
   const [isComparing, setIsComparing] = useState(false);
+  const [compareError, setCompareError] = useState<string>('');
 
   useEffect(() => {
     const storedUsage = localStorage.getItem('energyUsage');
@@ -107,8 +107,10 @@ export default function CurrentUsagePage() {
 
     const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
 
+    setCompareError('');
+
     if (!journeyId) {
-      showError('Journey ID is required. Please try again.');
+      setCompareError('Journey ID is required. Please try again.');
       return;
     }
 
@@ -142,18 +144,15 @@ export default function CurrentUsagePage() {
 
       if (updatedJourney?.data) {
         setJourney(updatedJourney.data);
-        if (Object.keys(consumption).length > 0) {
-          showSuccess('Consumption details updated successfully.');
-        }
       } else {
-        showError('We could not update your consumption details. Please try again.');
+        setCompareError('We could not update your consumption details. Please try again.');
         return;
       }
 
       localStorage.setItem('energyUsage', JSON.stringify(energyUsage || {}));
       router.push(`/result?service=${journey?.serviceType || 'energy'}`);
     } catch (error: any) {
-      showError(error?.message);
+      setCompareError(error?.message || 'Failed to update consumption. Please try again.');
     } finally {
       setIsComparing(false);
     }
@@ -180,6 +179,13 @@ export default function CurrentUsagePage() {
           period={period}
           onPeriodChange={setPeriod}
         />
+
+        {compareError && (
+          <BackendErrorAlert
+            error={compareError}
+            className="mt-4"
+          />
+        )}
 
         <div
           className="

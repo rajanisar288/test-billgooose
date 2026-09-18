@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { X } from 'lucide-react';
 
 import type { StandardPlan } from '@/components/result/plan.types';
+import { humanizeLabel } from '@/components/result/result-labels';
 import data from '@/data/content.json';
 
 type PlanDetailsDrawerProps = {
@@ -65,6 +66,10 @@ export default function PlanDetailsDrawer({
   const annualCost = useMemo(() => {
     if (!plan) {
       return '';
+    }
+
+    if (plan.annualPrice) {
+      return plan.annualPrice;
     }
 
     const numericPrice = Number(plan.price.replace(/[£,\s]/g, ''));
@@ -273,9 +278,10 @@ export default function PlanDetailsDrawer({
               >
                 <Image
                   src={plan.logo}
-                  alt={plan.logoAlt}
+                  alt={plan.logoAlt || plan.provider}
                   width={72}
                   height={72}
+                  unoptimized
                   className="
                     h-[56px]
                     w-[56px]
@@ -303,7 +309,7 @@ export default function PlanDetailsDrawer({
                       sm:leading-[24px]
                     "
                   >
-                    {plan.provider}
+                    {plan.planName || plan.provider}
                   </h3>
 
                   <p
@@ -590,17 +596,20 @@ export default function PlanDetailsDrawer({
               sm:px-5
             "
           >
-            {planDetailsDrawer.tabs.options.map((tab) => {
-              const isSelected = activeTab === tab.value;
+            {planDetailsDrawer.tabs.options
+              /* Comparison tab is commented out for now */
+              .filter((tab) => tab.value !== 'comparison')
+              .map((tab) => {
+                const isSelected = activeTab === tab.value;
 
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(tab.value as DrawerTab);
-                  }}
-                  className={`
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.value as DrawerTab);
+                    }}
+                    className={`
                       flex
                       h-[45px]
                       shrink-0
@@ -626,11 +635,11 @@ export default function PlanDetailsDrawer({
                           : 'border-transparent font-medium text-[#667085] hover:text-[#344054]'
                       }
                     `}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
           </div>
 
           {/* Content */}
@@ -645,12 +654,15 @@ export default function PlanDetailsDrawer({
               sm:py-6
             "
           >
-            {activeTab === 'details' && <DetailsTable />}
+            {activeTab === 'details' && <DetailsTable plan={plan} />}
 
+            {/* Comparison tab is commented out for now
             {activeTab === 'comparison' && <ComparisonTable plan={plan} />}
+            */}
 
             {activeTab === 'supplier' && <SupplierTable plan={plan} />}
 
+            {/* Extra plan information section is commented out for now
             <h3
               className="
                 mt-5
@@ -668,6 +680,7 @@ export default function PlanDetailsDrawer({
             >
               {planDetailsDrawer.extraInformationHeading}
             </h3>
+            */}
           </div>
         </div>
 
@@ -826,32 +839,114 @@ function CostSummary({ label, value, variant }: CostSummaryProps) {
   );
 }
 
-/* =========================================================
-   DETAILS TABLE
-========================================================= */
+function formatPence(value?: number | null): string {
+  if (value === undefined || value === null || !Number.isFinite(value)) return '—';
+  return `${Number(value)
+    .toFixed(3)
+    .replace(/\.?0+$/, '')}p`;
+}
 
-function DetailsTable() {
+function formatKwh(value?: number | null): string {
+  if (value === undefined || value === null || !Number.isFinite(value)) return '—';
+  return `${Number(value).toLocaleString('en-GB', { maximumFractionDigits: 1 })} kWh`;
+}
+
+function formatCostGbp(value?: number | null): string {
+  if (value === undefined || value === null || !Number.isFinite(value)) return '—';
+  return `£${Number(value).toFixed(2)}`;
+}
+
+type DetailsTableProps = {
+  plan: StandardPlan;
+};
+
+function DetailsTable({ plan }: DetailsTableProps) {
   const { details } = data.resultPage.planDetailsDrawer;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const energy = plan.energy as any;
+  const elec = energy?.electricity;
+  const gas = energy?.gas;
+
+  const tariffType = humanizeLabel(plan.rateType) || 'Variable';
+  const contractLength = plan.contract || '12 months';
+  const paymentMethod = humanizeLabel(plan.paymentMethod) || 'Monthly Direct Debit';
+
+  const rows: TableRow[] = [
+    {
+      id: 'tariff-type',
+      label: 'Tariff type',
+      second: tariffType,
+      third: tariffType,
+    },
+    {
+      id: 'contract-length',
+      label: 'Contract length',
+      second: contractLength,
+      third: contractLength,
+    },
+    {
+      id: 'unit-rate',
+      label: 'Unit rate per kWh',
+      second: elec
+        ? formatPence(elec.unitRatePencePerKwh)
+        : details.rows.find((r) => r.id === 'unit-rate')?.electricity || '—',
+      third: gas
+        ? formatPence(gas.unitRatePencePerKwh)
+        : details.rows.find((r) => r.id === 'unit-rate')?.gas || '—',
+    },
+    {
+      id: 'standing-charge',
+      label: 'Standing charge per day',
+      second: elec
+        ? formatPence(elec.standingChargePencePerDay)
+        : details.rows.find((r) => r.id === 'standing-charge')?.electricity || '—',
+      third: gas
+        ? formatPence(gas.standingChargePencePerDay)
+        : details.rows.find((r) => r.id === 'standing-charge')?.gas || '—',
+    },
+    {
+      id: 'annual-usage',
+      label: 'Estimated annual usage',
+      second: elec ? formatKwh(elec.pricingUsageKwh) : '—',
+      third: gas ? formatKwh(gas.pricingUsageKwh) : '—',
+    },
+    {
+      id: 'annual-cost',
+      label: 'Estimated annual cost',
+      second: elec ? formatCostGbp(elec.annualCost) : '—',
+      third: gas ? formatCostGbp(gas.annualCost) : '—',
+    },
+    {
+      id: 'payment-method',
+      label: 'Payment method',
+      second: paymentMethod,
+      third: paymentMethod,
+    },
+    // {
+    //   id: 'early-exit-fees',
+    //   label: 'Early exit fees',
+    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //   second: elec?.fees?.length ? elec.fees.map((f: any) => f.name).join(', ') : '£0.00',
+    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //   third: gas?.fees?.length ? gas.fees.map((f: any) => f.name).join(', ') : '£0.00',
+    // },
+  ];
 
   return (
     <ThreeColumnTable
       firstHeading={details.columns.first}
       secondHeading={details.columns.electricity}
       thirdHeading={details.columns.gas}
-      rows={details.rows.map((row) => ({
-        id: row.id,
-        label: row.label,
-        second: row.electricity,
-        third: row.gas,
-      }))}
+      rows={rows}
     />
   );
 }
 
 /* =========================================================
-   COMPARISON
+   COMPARISON (Commented out for now)
 ========================================================= */
 
+/*
 type ComparisonTableProps = {
   plan: StandardPlan;
 };
@@ -886,6 +981,7 @@ function ComparisonTable({ plan }: ComparisonTableProps) {
     />
   );
 }
+*/
 
 /* =========================================================
    SUPPLIER
@@ -898,12 +994,52 @@ type SupplierTableProps = {
 function SupplierTable({ plan }: SupplierTableProps) {
   const { supplier } = data.resultPage.planDetailsDrawer;
 
-  const rows = supplier.rows.map((row) => ({
-    id: row.id,
-    label: row.label,
-    second: row.id === 'supplier-name' ? plan.provider : row.value,
-    third: '',
-  }));
+  const tariffType = humanizeLabel(plan.rateType) || 'Variable';
+  const contractLength = plan.contract || '12 months';
+  const paymentMethod = humanizeLabel(plan.paymentMethod) || 'Monthly Direct Debit';
+
+  const rows: TableRow[] = [
+    {
+      id: 'supplier-name',
+      label: 'Supplier',
+      second: plan.supplierName || plan.provider,
+      third: '',
+    },
+    {
+      id: 'plan-name',
+      label: 'Plan name',
+      second: plan.planName || plan.provider,
+      third: '',
+    },
+    {
+      id: 'tariff-type',
+      label: 'Tariff type',
+      second: tariffType,
+      third: '',
+    },
+    {
+      id: 'contract-length',
+      label: 'Contract length',
+      second: contractLength,
+      third: '',
+    },
+    {
+      id: 'payment-method',
+      label: 'Payment method',
+      second: paymentMethod,
+      third: '',
+    },
+    ...(plan.productReference
+      ? [
+          {
+            id: 'product-reference',
+            label: 'Product reference',
+            second: plan.productReference,
+            third: '',
+          },
+        ]
+      : []),
+  ];
 
   return (
     <ThreeColumnTable

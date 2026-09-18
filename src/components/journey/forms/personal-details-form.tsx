@@ -7,14 +7,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { getNextJourneyRoute, type JourneyService } from '@/components/journey/journey-routes';
 import {
   notifyJourneyStepFailed,
+  useJourneyStepError,
   useJourneyStepStatus,
 } from '@/components/journey/journey-step-status';
 import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
-import { useToast } from '@/hooks/useToast';
 import { type CustomerDetails } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useServiceFields } from '@/lib/service-fields';
@@ -59,7 +60,6 @@ function calculateAge(dob: string): number | null {
 
 export function useUpdateJourney() {
   const { journey, setJourney } = useJourneyStore();
-  const { showSuccess, showError } = useToast();
   const router = useRouter();
 
   const updateJourney = async (
@@ -71,8 +71,7 @@ export function useUpdateJourney() {
       const journeyId = journey?.id || journey?.journeyId || localStorage.getItem(storeJourney);
 
       if (!journeyId) {
-        showError('Journey ID is required');
-        notifyJourneyStepFailed();
+        notifyJourneyStepFailed('Journey ID is required');
         return false;
       }
 
@@ -87,14 +86,12 @@ export function useUpdateJourney() {
       }
 
       setJourney(updatedJourney.data);
-      showSuccess('🎉 Great!');
       localStorage.setItem('journey-storage', JSON.stringify(updatedJourney.data));
       router.push(nextRoute);
       return true;
     } catch (error: any) {
       console.error('Failed to update journey:', error);
-      showError(error?.message);
-      notifyJourneyStepFailed();
+      notifyJourneyStepFailed(error?.message || 'Failed to save your progress. Please try again.');
       return false;
     }
   };
@@ -146,6 +143,7 @@ export default function PersonalDetailsForm() {
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { updateJourney } = useUpdateJourney();
+  const { stepError } = useJourneyStepError();
 
   useJourneyStepStatus(
     'journey-step-form-1',
@@ -300,6 +298,11 @@ export default function PersonalDetailsForm() {
         "
         noValidate
       >
+        <BackendErrorAlert
+          error={stepError}
+          className="w-full"
+        />
+
         {/* Title */}
         <FormField
           label={fields.title.label}

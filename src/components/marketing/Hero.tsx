@@ -685,9 +685,9 @@ function HeroServiceGrid({ selectedService, onSelect, compact = false }: HeroSer
 
                 ${index < 3 ? 'sm:border-b' : ''}
 
-                ${index % 2 === 0 ? 'border-r sm:border-r-0' : ''}
+                ${index % 2 === 0 ? 'border-r' : ''}
 
-                ${index < 4 ? 'border-b sm:border-b-0' : ''}
+                ${index < 4 ? 'border-b' : ''}
 
                 ${
                   isActive

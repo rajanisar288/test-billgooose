@@ -30,7 +30,8 @@ export default function ResultPageContent() {
   const service = searchParams.get('service');
   const flow = searchParams.get('flow');
 
-  const isQuoteService = service === 'energy';
+  const isBundleFlow = flow === 'bundle' || service === 'bundle-bills';
+  const isQuoteService = service === 'energy' || isBundleFlow;
   const journeyId = journey?.id || journey?.journeyId || journey?.uuid;
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function ResultPageContent() {
       return;
     }
 
-    const quoteRequestKey = `${service}:${flow ?? ''}:${journeyId}`;
+    const quoteRequestKey = `${service ?? ''}:${flow ?? ''}:${journeyId}`;
 
     if (quoteRequestKeyRef.current === quoteRequestKey) {
       return;
@@ -78,7 +79,7 @@ export default function ResultPageContent() {
         const response = await journeyApi.getQuote(journeyId, {});
         const mappedPlans = mapQuoteResponseToPlans(
           response.data as QuoteResponse,
-          flow === 'bundle' ? 'bundle-bills' : 'energy',
+          isBundleFlow ? 'bundle-bills' : 'energy',
         ) as ResultPlan[];
 
         setQuotePlans(mappedPlans);

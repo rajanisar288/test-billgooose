@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { usePathname, useSearchParams } from 'next/navigation';
 
@@ -20,68 +20,40 @@ export default function AppRouteLoader() {
 
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPathRef = useRef(`${pathname}?${searchParams.toString()}`);
-
-  /* =========================================================
-     DETECT ROUTE CHANGE
-  ========================================================= */
-
-  useEffect(() => {
-    const currentPath = `${pathname}?${searchParams.toString()}`;
-
-    if (currentPath !== prevPathRef.current) {
-      // Route changed — complete the progress bar
-      prevPathRef.current = currentPath;
-      // eslint-disable-next-line react-hooks/immutability
-      completeProgress();
-    }
-  }, [pathname, searchParams]);
-
-  /* =========================================================
-     INTERCEPT LINK CLICKS / PROGRAMMATIC NAVIGATION
-  ========================================================= */
-
-  useEffect(() => {
-    function handleAnchorClick(event: MouseEvent) {
-      const anchor = (event.target as Element).closest('a');
-
-      if (!anchor) return;
-
-      const href = anchor.getAttribute('href');
-
-      if (!href) return;
-
-      // Only intercept same-origin internal links
-      if (
-        href.startsWith('/') ||
-        (href.startsWith(window.location.origin) &&
-          !href.startsWith('mailto:') &&
-          !href.startsWith('tel:'))
-      ) {
-        // eslint-disable-next-line react-hooks/immutability
-        startProgress();
-      }
-    }
-
-    document.addEventListener('click', handleAnchorClick, true);
-
-    return () => {
-      document.removeEventListener('click', handleAnchorClick, true);
-    };
-  }, []);
 
   /* =========================================================
      PROGRESS CONTROL
   ========================================================= */
 
-  function startProgress() {
+  const completeProgress = useCallback(() => {
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+
+    setProgress(100);
+    setLoading(false);
+
+    hideTimerRef.current = setTimeout(() => {
+      setVisible(false);
+      setProgress(0);
+    }, 400);
+  }, []);
+
+  const startProgress = useCallback(() => {
     // Clear any existing timers
     if (progressTimerRef.current) clearInterval(progressTimerRef.current);
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
 
     setProgress(0);
     setLoading(true);
     setVisible(true);
+
+    // Safety fallback: if Next.js does not finish route transition in 3.5s, auto-complete
+    fallbackTimerRef.current = setTimeout(() => {
+      completeProgress();
+    }, 3500);
 
     // Animate progress from 0 → ~85% while waiting for route change
     let current = 0;
@@ -96,25 +68,95 @@ export default function AppRouteLoader() {
 
       setProgress(current);
     }, 200);
-  }
+  }, [completeProgress]);
 
-  function completeProgress() {
-    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+  /* =========================================================
+     DETECT ROUTE CHANGE
+  ========================================================= */
 
-    setProgress(100);
-    setLoading(false);
+  useEffect(() => {
+    const currentPath = `${pathname}?${searchParams.toString()}`;
 
-    hideTimerRef.current = setTimeout(() => {
-      setVisible(false);
-      setProgress(0);
-    }, 400);
-  }
+    if (currentPath !== prevPathRef.current) {
+      // Route changed — complete the progress bar
+      prevPathRef.current = currentPath;
+      completeProgress();
+    }
+  }, [completeProgress, pathname, searchParams]);
+
+  /* =========================================================
+     INTERCEPT LINK CLICKS / PROGRAMMATIC NAVIGATION
+  ========================================================= */
+
+  useEffect(() => {
+    function handleAnchorClick(event: MouseEvent) {
+      // Ignore prevented clicks or non-primary mouse clicks
+      if (event.defaultPrevented || event.button !== 0) return;
+
+      // Ignore modifier keys that open new tabs or windows
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const anchor = (event.target as Element).closest('a');
+      if (!anchor) return;
+
+      // Ignore download links or links targeting other windows/tabs
+      if (anchor.hasAttribute('download')) return;
+      if (anchor.target && anchor.target !== '_self') return;
+
+      const rawHref = anchor.getAttribute('href');
+      if (!rawHref) return;
+
+      // Ignore in-page hash links, protocols, and javascript pseudo-links
+      if (
+        rawHref.startsWith('#') ||
+        rawHref.startsWith('javascript:') ||
+        rawHref.startsWith('mailto:') ||
+        rawHref.startsWith('tel:') ||
+        rawHref.startsWith('data:')
+      ) {
+        return;
+      }
+
+      try {
+        const targetUrl = new URL(anchor.href, window.location.href);
+        const currentUrl = new URL(window.location.href);
+
+        // Only intercept same-origin navigation
+        if (targetUrl.origin !== currentUrl.origin) return;
+
+        // Ignore same URL clicks (same pathname and search params, e.g. clicking logo on homepage)
+        if (targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search) {
+          return;
+        }
+      } catch {
+        return;
+      }
+
+      startProgress();
+    }
+
+    function handleHistoryEvent() {
+      // Ensure progress bar completes on browser back/forward or pageshow
+      completeProgress();
+    }
+
+    document.addEventListener('click', handleAnchorClick, true);
+    window.addEventListener('popstate', handleHistoryEvent);
+    window.addEventListener('pageshow', handleHistoryEvent);
+
+    return () => {
+      document.removeEventListener('click', handleAnchorClick, true);
+      window.removeEventListener('popstate', handleHistoryEvent);
+      window.removeEventListener('pageshow', handleHistoryEvent);
+    };
+  }, [completeProgress, startProgress]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (progressTimerRef.current) clearInterval(progressTimerRef.current);
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     };
   }, []);
 

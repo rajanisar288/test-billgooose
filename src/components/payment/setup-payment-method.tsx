@@ -9,10 +9,10 @@ import { useRouter } from 'next/navigation';
 
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import type { StandardPlan } from '@/components/result/plan.types';
 import { humanizeLabel } from '@/components/result/result-labels';
 import { readStoredSelectedPlans, sumPlanPrices } from '@/components/result/selected-plans';
-import { useToast } from '@/hooks/useToast';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
@@ -89,7 +89,8 @@ const DIRECT_DEBIT_GUARANTEE_ITEMS = [
 export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProps) {
   const router = useRouter();
   const { journey, setJourney } = useJourneyStore();
-  const { showError, showSuccess } = useToast();
+
+  const [submitError, setSubmitError] = useState<string>('');
 
   const [form, setForm] = useState<PaymentForm>({
     accountHolderName: '',
@@ -112,6 +113,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
       [field]: value,
     }));
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
+    if (submitError) setSubmitError('');
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -138,9 +140,9 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
       nextErrors.acceptedGuarantee = 'Accept the Direct Debit Guarantee.';
 
     setFieldErrors(nextErrors);
+    setSubmitError('');
 
     if (Object.keys(nextErrors).length > 0) {
-      showError('Enter valid bank details and accept the Direct Debit Guarantee.');
       return;
     }
 
@@ -148,7 +150,7 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
     const orderId = sessionStorage.getItem('journeyOrderId');
 
     if (!journeyId || !orderId) {
-      showError('Your journey order is missing. Please return to review and try again.');
+      setSubmitError('Your journey order is missing. Please return to review and try again.');
       return;
     }
 
@@ -180,10 +182,9 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
         'journeyPaymentDetails',
         JSON.stringify({ ...form, accountHolderName, bankName, sortCode, accountNumber }),
       );
-      showSuccess('Your payment details were submitted successfully.');
       onSuccess();
     } catch (error: any) {
-      showError(error.message);
+      setSubmitError(error?.message || 'Failed to submit payment details. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -490,6 +491,13 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                   </p>
                 </div>
               </div>
+
+              {submitError && (
+                <BackendErrorAlert
+                  error={submitError}
+                  className="mt-4 mx-4"
+                />
+              )}
 
               {/* ===============================================
                   FORM BODY
@@ -825,6 +833,12 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                     </span>
                   </label>
 
+                  {fieldErrors.acceptedGuarantee && (
+                    <p className="mt-1.5 font-inter text-[11px] font-normal leading-4 text-[#D92D20] sm:text-[12px]">
+                      {fieldErrors.acceptedGuarantee}
+                    </p>
+                  )}
+
                   {/* =================================================
                       DIRECT DEBIT GUARANTEE ACCORDION
                   ================================================== */}
@@ -1117,6 +1131,11 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                       key={plan.id}
                       label={plan.groupDisplayName ?? plan.provider}
                       value={plan.annualPrice ?? plan.price}
+                      logo={plan.logo}
+                      logoAlt={plan.logoAlt || plan.provider}
+                      subtitle={
+                        plan.planName && plan.planName !== plan.provider ? plan.planName : undefined
+                      }
                     />
                   ))}
 
@@ -1280,10 +1299,8 @@ export default function SetupPaymentMethod({ onSuccess }: SetupPaymentMethodProp
                     type="submit"
                     form="direct-debit-form"
                     disabled={isSubmitting}
-                    aria-busy={isSubmitting}
                     className="
                       mt-4
-
                       inline-flex
                       h-[46px]
                       w-full
@@ -1639,14 +1656,17 @@ function PaymentField({
 type SummaryRowProps = {
   label: string;
   value: string;
+  logo?: string;
+  logoAlt?: string;
+  subtitle?: string;
 };
 
-function SummaryRow({ label, value }: SummaryRowProps) {
+function SummaryRow({ label, value, logo, logoAlt, subtitle }: SummaryRowProps) {
   return (
     <div
       className="
         flex
-        min-h-[38px]
+        min-h-[42px]
 
         items-center
         justify-between
@@ -1654,25 +1674,34 @@ function SummaryRow({ label, value }: SummaryRowProps) {
 
         border-b
         border-[#F2F4F7]
+        py-2
 
         font-inter
 
-        lg:min-h-[44px]
+        lg:min-h-[48px]
       "
     >
-      <span
-        className="
-          text-[12px]
-          font-[660]
-          leading-4
-
-          text-[#667085]
-
-          lg:text-[13px]
-        "
-      >
-        {label}
-      </span>
+      <div className="flex items-center gap-2.5 min-w-0">
+        {logo && (
+          <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-[8px] border border-[#EAECF0] bg-white p-0.5">
+            <Image
+              src={logo}
+              alt={logoAlt || label}
+              fill
+              unoptimized
+              className="object-contain"
+            />
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="text-[12px] font-[660] leading-4 text-[#344054] truncate lg:text-[13px]">
+            {label}
+          </p>
+          {subtitle && (
+            <p className="text-[11px] font-normal leading-3 text-[#667085] truncate">{subtitle}</p>
+          )}
+        </div>
+      </div>
 
       <span
         className="

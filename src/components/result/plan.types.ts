@@ -29,6 +29,12 @@ export type SelectPlan = {
   paymentMethod?: string;
   annualPrice?: string;
   productType?: string;
+  planName?: string;
+  supplierName?: string;
+  rateType?: string;
+  action?: string;
+  energy?: unknown;
+  broadband?: unknown;
   feeDetails?: unknown[];
   priceIncreaseDetails?: unknown[];
   viewDetailsButton: string;
@@ -62,6 +68,13 @@ export type ViewDealPlan = {
   paymentMethod?: string;
   annualPrice?: string;
   productType?: string;
+  planName?: string;
+  supplierName?: string;
+  supplierCode?: string;
+  rateType?: string;
+  action?: string;
+  energy?: unknown;
+  broadband?: unknown;
   feeDetails?: unknown[];
   priceIncreaseDetails?: unknown[];
   viewDetailsButton: string;

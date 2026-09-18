@@ -6,10 +6,12 @@ import { useSearchParams } from 'next/navigation';
 
 import { Check } from 'lucide-react';
 
+import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { useUpdateJourney } from '@/components/journey/forms/personal-details-form';
 import { getNextJourneyRoute, type JourneyService } from '@/components/journey/journey-routes';
 import {
   notifyJourneyStepFailed,
+  useJourneyStepError,
   useJourneyStepStatus,
 } from '@/components/journey/journey-step-status';
 import data from '@/data/content.json';
@@ -21,6 +23,7 @@ import { getCurrentRelativeUrl } from '@/utils/helper';
 export default function HouseDetailsForm() {
   const { journey } = useJourneyStore();
   const { updateJourney } = useUpdateJourney();
+  const { stepError } = useJourneyStepError();
   const searchParams = useSearchParams();
 
   const requestedService = searchParams.get('service');
@@ -124,6 +127,11 @@ export default function HouseDetailsForm() {
         className="space-y-6"
         noValidate
       >
+        <BackendErrorAlert
+          error={stepError}
+          className="w-full"
+        />
+
         <OptionSection
           visible={serviceFields.isVisible('insuredHomeType')}
           label={insuranceHouseDetails.homeType.label}

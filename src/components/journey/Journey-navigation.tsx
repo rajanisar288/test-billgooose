@@ -30,7 +30,7 @@ export default function JourneyNavigation({
 
   useEffect(() => {
     const updateStatus = () => {
-      const form = document.getElementById(formId);
+      const form = document.getElementById(formId) as HTMLFormElement | null;
       setIsValid(form?.dataset.journeyValid === 'true');
     };
 

@@ -76,3 +76,8 @@ temp/
 # OS files
 Thumbs.db
 .DS_Store
+
+
+# AI /
+AGENTS.md
+context.md

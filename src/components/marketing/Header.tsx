@@ -106,6 +106,31 @@ function getLocationSearchServerSnapshot(): string {
   return '';
 }
 
+type HistoryPatchedWindow = Window & {
+  __billgooseHistoryPatched?: boolean;
+};
+
+// Intercept pushState & replaceState so Next.js client router transitions
+// immediately notify the Header's location search listener.
+if (typeof window !== 'undefined') {
+  const customWindow = window as unknown as HistoryPatchedWindow;
+  if (!customWindow.__billgooseHistoryPatched) {
+    customWindow.__billgooseHistoryPatched = true;
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function (...args) {
+      const result = originalPushState.apply(this, args);
+      window.dispatchEvent(new Event('billgoose-location-changed'));
+      return result;
+    };
+    const originalReplaceState = window.history.replaceState;
+    window.history.replaceState = function (...args) {
+      const result = originalReplaceState.apply(this, args);
+      window.dispatchEvent(new Event('billgoose-location-changed'));
+      return result;
+    };
+  }
+}
+
 function subscribeToLocationSearch(callback: () => void) {
   const handleLocationChange = () => {
     callback();
@@ -113,10 +138,12 @@ function subscribeToLocationSearch(callback: () => void) {
 
   window.addEventListener('popstate', handleLocationChange);
   window.addEventListener('billgoose-location-changed', handleLocationChange);
+  window.addEventListener('billgoose-compare-flow-changed', handleLocationChange);
 
   return () => {
     window.removeEventListener('popstate', handleLocationChange);
     window.removeEventListener('billgoose-location-changed', handleLocationChange);
+    window.removeEventListener('billgoose-compare-flow-changed', handleLocationChange);
   };
 }
 
@@ -268,6 +295,25 @@ export default function Header({ variant = 'default' }: HeaderProps) {
     setIsAccountOpen(false);
   }
 
+  function handleCompareItemClick(href: string) {
+    closeMenus();
+    try {
+      const url = new URL(href, window.location.origin);
+      const serviceParam = url.searchParams.get('service') ?? '';
+      const flowParam = url.searchParams.get('flow') ?? '';
+      if (serviceParam) {
+        sessionStorage.setItem('billgooseJourneyService', serviceParam);
+      }
+      if (flowParam) {
+        sessionStorage.setItem('billgooseJourneyFlow', flowParam);
+      }
+    } catch {
+      // Ignore URL parse error
+    }
+    window.dispatchEvent(new Event('billgoose-location-changed'));
+    window.dispatchEvent(new Event('billgoose-compare-flow-changed'));
+  }
+
   /* =========================================================
       SIGN IN
     ========================================================= */
@@ -344,6 +390,14 @@ export default function Header({ variant = 'default' }: HeaderProps) {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
+
+  /* =========================================================
+      SYNC ROUTE CHANGE
+    ========================================================= */
+
+  useEffect(() => {
+    window.dispatchEvent(new Event('billgoose-location-changed'));
+  }, [pathname]);
 
   /* =========================================================
       MOBILE BODY SCROLL
@@ -646,7 +700,9 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                                       key={menuItem.id}
                                       href={menuItem.href}
                                       role="menuitem"
-                                      onClick={closeMenus}
+                                      onClick={() => {
+                                        handleCompareItemClick(menuItem.href);
+                                      }}
                                       className={`
                                         group
 
@@ -1408,7 +1464,9 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                             <Link
                               key={menuItem.id}
                               href={menuItem.href}
-                              onClick={closeMenus}
+                              onClick={() => {
+                                handleCompareItemClick(menuItem.href);
+                              }}
                               className="
                                 flex
                                 min-h-[44px]
