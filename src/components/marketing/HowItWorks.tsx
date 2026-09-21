@@ -26,7 +26,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Main heading */}
-        <h2 className="mx-auto mt-4 max-w-[280px] text-center font-red-hat-display text-[28px] font-[645] leading-[32px] tracking-[0] text-secondary min-[360px]:max-w-[310px] min-[360px]:text-[30px] min-[360px]:leading-[34px] min-[390px]:mt-5 min-[390px]:max-w-[340px] min-[390px]:text-[32px] min-[390px]:leading-[36px] sm:max-w-[850px] sm:text-[38px] lg:text-[44px] lg:font-extrabold lg:leading-[1.12] lg:tracking-[-1px]">
+        <h2 className="mx-auto mt-4 max-w-[280px] text-center font-red-hat-display text-[28px] font-[645] leading-[32px] tracking-[0] text-secondary min-[360px]:max-w-[310px] min-[360px]:text-[30px] min-[360px]:leading-[34px] min-[390px]:mt-5 min-[390px]:max-w-[340px] min-[390px]:text-[32px] min-[390px]:leading-[36px] sm:max-w-[850px] sm:text-[38px] font-extrabold lg:text-[44px] lg:font-extrabold lg:leading-[1.12] lg:tracking-[-1px]">
           {howItWorks.heading}
         </h2>
 

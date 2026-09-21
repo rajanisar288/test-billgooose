@@ -5,12 +5,51 @@ import { useState } from 'react';
 
 import data from '@/data/content.json';
 
-export default function Newsletter() {
-  const { newsletter } = data;
+type NewsletterProps = {
+  /**
+   * Optional override for the description paragraph.
+   * When provided, it replaces the copy from content.json.
+   */
+  description?: string;
+};
+
+export default function Newsletter({ description }: NewsletterProps) {
+  const { newsletter } = data as {
+    newsletter: {
+      heading: string;
+      description?: string;
+      placeholder?: string;
+      buttonLabel?: string;
+      form?: {
+        label?: string;
+        placeholder?: string;
+        buttonLabel?: string;
+        emptyError?: string;
+        invalidError?: string;
+        successMessage?: string;
+        helperText?: string;
+      };
+    };
+  };
 
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  const descriptionText =
+    description ??
+    newsletter.description ??
+    'Join our list to get launch announcements, product updates and smart money tips.';
+
+  const placeholder =
+    newsletter.placeholder ?? newsletter.form?.placeholder ?? 'Enter your email address';
+
+  const buttonLabel = newsletter.buttonLabel ?? newsletter.form?.buttonLabel ?? 'Subscribe';
+
+  const emptyError = newsletter.form?.emptyError ?? 'Please enter your email address.';
+  const invalidError = newsletter.form?.invalidError ?? 'Please enter a valid email address.';
+  const successMessage = newsletter.form?.successMessage ?? 'Thanks for subscribing!';
+  const helperText = newsletter.form?.helperText ?? '';
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -18,7 +57,7 @@ export default function Newsletter() {
     const formattedEmail = email.trim();
 
     if (!formattedEmail) {
-      setEmailError(newsletter.form.emptyError);
+      setEmailError(emptyError);
       setSubmitted(false);
       return;
     }
@@ -26,7 +65,7 @@ export default function Newsletter() {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailPattern.test(formattedEmail)) {
-      setEmailError(newsletter.form.invalidError);
+      setEmailError(invalidError);
       setSubmitted(false);
       return;
     }
@@ -58,7 +97,7 @@ export default function Newsletter() {
               </h2>
 
               <p className="mt-1.5 max-w-[310px] font-red-hat-display text-[11px] font-[467] leading-[15px] tracking-[0] text-[#576574] min-[360px]:max-w-[345px] min-[360px]:text-[12px] min-[360px]:leading-[16px] min-[390px]:mt-1 min-[390px]:max-w-[400px] min-[390px]:text-[14px] min-[390px]:leading-[100%] lg:mt-4 lg:max-w-none lg:text-[18px] lg:leading-[1.5]">
-                {newsletter.description}
+                {descriptionText}
               </p>
             </div>
 
@@ -74,7 +113,7 @@ export default function Newsletter() {
                     htmlFor="newsletter-email"
                     className="sr-only"
                   >
-                    {newsletter.form.label}
+                    {newsletter.form?.label ?? 'Email'}
                   </label>
 
                   <input
@@ -83,7 +122,7 @@ export default function Newsletter() {
                     type="email"
                     value={email}
                     onChange={(event) => handleEmailChange(event.target.value)}
-                    placeholder={newsletter.form.placeholder}
+                    placeholder={placeholder}
                     autoComplete="email"
                     aria-invalid={Boolean(emailError)}
                     aria-describedby={
@@ -99,7 +138,7 @@ export default function Newsletter() {
                   type="submit"
                   className="flex h-11 w-[96px] shrink-0 items-center justify-center rounded-[100px] border border-[#00897B] bg-[#00897B] px-3 py-3 font-red-hat-display text-[11px] font-semibold text-white shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] transition-colors hover:bg-[#00796D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-[360px]:h-[46px] min-[360px]:w-[104px] min-[360px]:text-[12px] min-[390px]:h-12 min-[390px]:w-[114px] min-[390px]:px-5 min-[390px]:text-[14px]"
                 >
-                  {newsletter.form.buttonLabel}
+                  {buttonLabel}
                 </button>
               </div>
 
@@ -112,16 +151,16 @@ export default function Newsletter() {
                 </p>
               ) : submitted ? (
                 <p className="mt-2 font-red-hat-display text-[10px] leading-[14px] text-primary min-[360px]:text-[11px] min-[390px]:text-[14px] min-[390px]:leading-[1.4]">
-                  {newsletter.form.successMessage}
+                  {successMessage}
                 </p>
-              ) : (
+              ) : helperText ? (
                 <p
                   id="newsletter-helper-text"
                   className="mt-2 font-red-hat-display text-[10px] leading-[14px] text-[#475467] min-[360px]:text-[11px] min-[390px]:text-[14px] min-[390px]:leading-[1.4]"
                 >
-                  {newsletter.form.helperText}
+                  {helperText}
                 </p>
-              )}
+              ) : null}
             </form>
           </div>
         </div>

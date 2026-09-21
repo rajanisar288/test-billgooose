@@ -8,6 +8,7 @@ import RealValue from '@/components/about/RealValue';
 import WhyWeCreatedBillGoose from '@/components/about/WhyWeCreatedBillGoose';
 import Footer from '@/components/marketing/Footer';
 import Header from '@/components/marketing/Header';
+import LiveChatWidget from '@/components/marketing/LiveChatWidget';
 import LowerHero from '@/components/marketing/LowerHero';
 import Newsletter from '@/components/marketing/NewsLetter';
 
@@ -18,6 +19,8 @@ export default function AboutPage() {
 
       <main className="w-full">
         <AboutHero />
+
+        <LiveChatWidget />
 
         <WhyWeCreatedBillGoose />
 

@@ -6,7 +6,7 @@ export default function WhyBillGoose() {
   const { whyBillGoose } = data;
 
   return (
-    <section className="w-full bg-white px-2 pb-[72px] min-[360px]:px-3 min-[390px]:px-5 min-[390px]:pb-[100px] lg:px-8">
+    <section className="w-full bg-white px-2 pb-10 min-[360px]:px-3 min-[390px]:px-5 min-[390px]:pb-10 lg:px-8 lg:pb-[100px]">
       <div className="mx-auto w-full max-w-[1216px]">
         <div
           className="
@@ -49,11 +49,6 @@ export default function WhyBillGoose() {
             lg:py-14
           "
         >
-          {/* =====================================================
-              TABLET + DESKTOP BACKGROUND IMAGE
-
-              Mobile remains plain blue.
-          ====================================================== */}
           <Image
             src={whyBillGoose.backgroundImage}
             alt=""
@@ -68,7 +63,6 @@ export default function WhyBillGoose() {
             "
           />
 
-          {/* Tablet + desktop overlay */}
           <div
             className="
               pointer-events-none
@@ -84,7 +78,6 @@ export default function WhyBillGoose() {
           />
 
           <div className="relative z-10">
-            {/* Top badge */}
             <div className="flex justify-center">
               <div
                 className="
@@ -156,7 +149,6 @@ export default function WhyBillGoose() {
               </div>
             </div>
 
-            {/* Heading */}
             <div
               className="
                 mx-auto
@@ -244,7 +236,6 @@ export default function WhyBillGoose() {
               </p>
             </div>
 
-            {/* Cards */}
             <div
               className="
                 mt-6
@@ -323,9 +314,6 @@ export default function WhyBillGoose() {
                     lg:p-[13px]
                   "
                 >
-                  {/* =================================================
-                      MOBILE IMAGE
-                  ================================================== */}
                   <div
                     className="
                       relative
@@ -358,11 +346,6 @@ export default function WhyBillGoose() {
                     />
                   </div>
 
-                  {/* =================================================
-                      TABLET + DESKTOP IMAGE
-
-                      Desktop image dimensions remain overridden by lg.
-                  ================================================== */}
                   <div
                     className="
                       relative
@@ -410,7 +393,6 @@ export default function WhyBillGoose() {
                     />
                   </div>
 
-                  {/* Card content */}
                   <div
                     className="
                       min-w-0
