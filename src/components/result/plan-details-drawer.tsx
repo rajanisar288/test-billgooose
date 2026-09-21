@@ -862,6 +862,87 @@ type DetailsTableProps = {
 
 function DetailsTable({ plan }: DetailsTableProps) {
   const { details } = data.resultPage.planDetailsDrawer;
+
+  if (plan.service === 'broadband' || plan.broadband) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bb = (plan.broadband || {}) as any;
+    const speed = plan.averageSpeed || (bb.download_speed ? `${bb.download_speed} Mbps` : '—');
+    const upload = bb.upload_speed ? `${bb.upload_speed} Mbps` : '—';
+    const pkg = bb.package_type ? String(bb.package_type).replace(/_/g, ' ') : 'Broadband';
+    const conn = bb.connection_type ? String(bb.connection_type).replace(/_/g, ' ') : 'Fibre';
+    const setup = plan.upfrontCost || 'Free setup';
+    const firstYear = bb.total_first_year_cost
+      ? `£${Number(bb.total_first_year_cost).toFixed(2)}`
+      : '—';
+    const fullCost = bb.full_contract_cost ? `£${Number(bb.full_contract_cost).toFixed(2)}` : '—';
+    const gift = bb.gift || plan.saving || 'None';
+
+    const bbRows: TableRow[] = [
+      { id: 'download-speed', label: 'Average download speed', second: speed, third: '' },
+      { id: 'upload-speed', label: 'Average upload speed', second: upload, third: '' },
+      { id: 'package-type', label: 'Package type', second: pkg, third: '' },
+      { id: 'connection-type', label: 'Connection type', second: conn, third: '' },
+      {
+        id: 'contract-length',
+        label: 'Contract length',
+        second: plan.contract || '24 months',
+        third: '',
+      },
+      { id: 'upfront-setup', label: 'Upfront / Setup fee', second: setup, third: '' },
+      {
+        id: 'monthly-cost',
+        label: 'Monthly cost',
+        second: `${plan.price} ${plan.pricePeriod || '/month'}`,
+        third: '',
+      },
+      { id: 'first-year-cost', label: 'First year total cost', second: firstYear, third: '' },
+      { id: 'full-contract-cost', label: 'Full contract total cost', second: fullCost, third: '' },
+      { id: 'gift-offer', label: 'Offer / Gift', second: gift, third: '' },
+    ];
+
+    return (
+      <ThreeColumnTable
+        firstHeading="Feature"
+        secondHeading="Details"
+        thirdHeading=""
+        rows={bbRows}
+        hideThirdColumn
+      />
+    );
+  }
+
+  if (plan.service === 'sim-only') {
+    const simRows: TableRow[] = [
+      { id: 'provider', label: 'Network Provider', second: plan.provider, third: '' },
+      {
+        id: 'data-allowance',
+        label: 'Data allowance',
+        second: plan.description || 'Unlimited',
+        third: '',
+      },
+      { id: 'calls-texts', label: 'Calls & Texts', second: 'Unlimited calls & texts', third: '' },
+      {
+        id: 'contract-length',
+        label: 'Contract duration',
+        second: plan.contract || '12 months',
+        third: '',
+      },
+      { id: 'monthly-cost', label: 'Monthly cost', second: plan.price, third: '' },
+      { id: 'upfront-cost', label: 'Upfront cost', second: plan.upfrontCost || '£0', third: '' },
+      { id: 'roaming', label: 'Roaming', second: 'EU Roaming included', third: '' },
+    ];
+
+    return (
+      <ThreeColumnTable
+        firstHeading="Feature"
+        secondHeading="Details"
+        thirdHeading=""
+        rows={simRows}
+        hideThirdColumn
+      />
+    );
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const energy = plan.energy as any;
   const elec = energy?.electricity;
@@ -993,6 +1074,37 @@ type SupplierTableProps = {
 
 function SupplierTable({ plan }: SupplierTableProps) {
   const { supplier } = data.resultPage.planDetailsDrawer;
+
+  if (plan.service === 'broadband' || plan.broadband) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bb = (plan.broadband || {}) as any;
+    const bbSupplierRows: TableRow[] = [
+      { id: 'supplier', label: 'Supplier', second: plan.provider, third: '' },
+      { id: 'plan-name', label: 'Plan name', second: plan.planName || plan.provider, third: '' },
+      {
+        id: 'network',
+        label: 'Infrastructure',
+        second: bb.openreach ? 'Openreach Network' : bb.technology || 'Full Fibre Network',
+        third: '',
+      },
+      {
+        id: 'contract',
+        label: 'Contract duration',
+        second: plan.contract || '24 months',
+        third: '',
+      },
+      { id: 'payment', label: 'Payment frequency', second: 'Monthly Direct Debit', third: '' },
+    ];
+    return (
+      <ThreeColumnTable
+        firstHeading="Supplier Information"
+        secondHeading="Details"
+        thirdHeading=""
+        rows={bbSupplierRows}
+        hideThirdColumn
+      />
+    );
+  }
 
   const tariffType = humanizeLabel(plan.rateType) || 'Variable';
   const contractLength = plan.contract || '12 months';

@@ -1086,18 +1086,18 @@ export default function PlanCard({
             "
           >
             <ResultMetric
-              label="Monthly cost"
-              value={plan.price}
-            />
-
-            <ResultMetric
-              label="Average speed"
+              label="Avg speed"
               value={plan.averageSpeed ?? '—'}
             />
 
             <ResultMetric
-              label="Upfront costs"
-              value={plan.upfrontCost ?? '£0.00'}
+              label="Price per month"
+              value={plan.price}
+            />
+
+            <ResultMetric
+              label="Claim up to"
+              value={plan.claimText || plan.saving || '—'}
             />
           </div>
         ) : isInsurance ? (

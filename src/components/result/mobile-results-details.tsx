@@ -11,6 +11,9 @@ import { ChevronLeft, ChevronRight, Globe2 } from 'lucide-react';
 import ResultPlans from '@/components/result/result-plans';
 import ResultsStatus from '@/components/result/results-status';
 import data from '@/data/content.json';
+import { isMobileDeal, type StickeeDeal } from '@/lib/stickee/types';
+import { useStickeeDeals } from '@/lib/stickee/useStickeeDeals';
+import { VERTICALS } from '@/lib/stickee/verticals';
 
 /* =========================================================
    TYPES
@@ -154,6 +157,16 @@ export default function MobileResultsDetails({
   const router = useRouter();
   const details = mobileResults.detailsPage;
 
+  const { deals: stickeeDeals } = useStickeeDeals({
+    vertical: 'mobile',
+    fixed: VERTICALS.mobile_paym.fixed as Record<string, unknown>,
+    enabled: true,
+  });
+
+  const matchedDeal = useMemo(() => {
+    return stickeeDeals.find((d) => d.id === itemId && isMobileDeal(d)) as StickeeDeal | undefined;
+  }, [stickeeDeals, itemId]);
+
   const selectedBrand = useMemo(
     () => mobileResults.brands.find((item) => item.id === brand) ?? mobileResults.brands[0],
     [brand],
@@ -183,11 +196,50 @@ export default function MobileResultsDetails({
 
   const [selectedColour, setSelectedColour] = useState(details.colour.defaultValue);
 
+  const dynamicExclusivePlan: ExclusivePlan = useMemo(() => {
+    if (matchedDeal) {
+      const dataStr =
+        matchedDeal.tariff.data === -1 || matchedDeal.tariff.data >= 999999
+          ? 'Unlimited'
+          : `${(matchedDeal.tariff.data / 1000).toFixed(0)}GB`;
+      const upfrontStr =
+        matchedDeal.discount_line_rental != null && matchedDeal.discount_line_rental > 0
+          ? `£${matchedDeal.discount_line_rental.toFixed(2)}`
+          : '£0';
+      const badgeStr = matchedDeal.is_exclusive
+        ? 'Exclusive plan'
+        : matchedDeal.cashback > 0
+          ? `£${matchedDeal.cashback.toFixed(0)} Cashback`
+          : 'Recommended plan';
+
+      return {
+        badge: badgeStr,
+        provider: matchedDeal.retailer.name,
+        networkDescription: `${matchedDeal.tariff.network.name} Network`,
+        logo: matchedDeal.tariff.network.image || '',
+        logoAlt: matchedDeal.tariff.network.name,
+        providerUrl: matchedDeal.url || '',
+        badges: [badgeStr],
+        primaryPriceLabel: 'Monthly cost',
+        primaryPrice: `£${matchedDeal.price.toFixed(2)}`,
+        dataLabel: 'Data',
+        data: `${dataStr} data`,
+        secondaryPriceLabel: 'Upfront cost',
+        secondaryPrice: `${upfrontStr} upfront`,
+        roaming: 'EU Roaming included',
+        button: 'View Deal',
+      };
+    }
+    return details.exclusivePlan as ExclusivePlan;
+  }, [matchedDeal, details.exclusivePlan]);
+
   if (!selectedBrand || !selectedItem) {
     return null;
   }
 
-  const phoneName = selectedItem.name;
+  const phoneName = matchedDeal?.model.name || selectedItem.name;
+  const brandLabel = matchedDeal?.model.brand.name || selectedBrand.label;
+  const phoneImage = matchedDeal?.main_model_image || selectedItem.image;
 
   const relatedDealsHeading = `List of ${phoneName} deals`;
 
@@ -276,7 +328,7 @@ export default function MobileResultsDetails({
           />
 
           <span className="shrink-0">
-            {selectedBrand.label} {details.breadcrumb.yearSuffix}
+            {brandLabel} {details.breadcrumb.yearSuffix}
           </span>
 
           <ChevronRight
@@ -362,8 +414,8 @@ export default function MobileResultsDetails({
             "
           >
             <Image
-              src={selectedItem.image}
-              alt={selectedItem.imageAlt}
+              src={phoneImage}
+              alt={phoneName}
               width={302}
               height={374}
               priority
@@ -398,7 +450,7 @@ export default function MobileResultsDetails({
             <div className="flex items-center gap-1.5">
               <Image
                 src={selectedBrand.icon}
-                alt={selectedBrand.iconAlt}
+                alt={brandLabel}
                 width={15}
                 height={15}
                 className="
@@ -419,7 +471,7 @@ export default function MobileResultsDetails({
                   text-[#667085]
                 "
               >
-                {selectedBrand.label}
+                {brandLabel}
               </span>
             </div>
 
@@ -560,9 +612,9 @@ export default function MobileResultsDetails({
           </div>
 
           <ExclusiveMobilePlan
-            plan={details.exclusivePlan}
+            plan={dynamicExclusivePlan}
             onBuyNow={() => {
-              handleMobileDetailsProviderRedirect(details.exclusivePlan);
+              handleMobileDetailsProviderRedirect(dynamicExclusivePlan);
             }}
           />
         </div>
@@ -572,7 +624,7 @@ export default function MobileResultsDetails({
           SPONSORED SLIDER
       ====================================================== */}
       <SponsoredPlansSlider
-        plan={details.exclusivePlan}
+        plan={dynamicExclusivePlan}
         onBuyNow={(plan) => {
           handleMobileDetailsProviderRedirect(plan);
         }}

@@ -1,138 +1,260 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { ArrowDownUp, ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { ArrowDownUp, ChevronDown, LoaderCircle, Plus, SlidersHorizontal, X } from 'lucide-react';
 
+import Loading from '@/app/loading';
+import PlanDetailsDrawer from '@/components/result/plan-details-drawer';
+import type { StandardPlan } from '@/components/result/plan.types';
+import { useResultFilters } from '@/components/result/result-filter-context';
+import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import ResultFilters from '@/components/result/result-filters';
 import ResultHero from '@/components/result/result-hero';
 import data from '@/data/content.json';
+import { isMobileDeal, type StickeeDeal } from '@/lib/stickee/types';
+import { useStickeeDeals } from '@/lib/stickee/useStickeeDeals';
+import { MOBILE_SORTS, VERTICALS } from '@/lib/stickee/verticals';
 
 /* =========================================================
    TYPES
 ========================================================= */
 
-type MobileBrand = 'apple' | 'samsung' | 'google' | 'motorola' | 'oppo';
+type MobileBrand = string;
 
-type MobilePhonePlan = {
-  id: string;
-  name: string;
-  provider: string;
-
-  image: string;
-  imageAlt: string;
-
-  badges: string[];
-
-  saving: string;
-  savingDescription: string;
-
-  data: string;
-  startingPrice: string;
-  priceRise: string;
-  upfrontCost: string;
-};
-
-type MobileDeal = {
-  id: string;
-
-  name: string;
-  provider: string;
-
-  image: string;
-  imageAlt: string;
-
-  description: string;
-
-  price: string;
-};
-
-type MobileBrandContent = {
+type MobileBrandTab = {
   id: MobileBrand;
-
   label: string;
-
   icon: string;
   iconAlt: string;
-
-  featuredPlans: MobilePhonePlan[];
-
-  deals: MobileDeal[];
 };
 
 type MobileResultsContent = {
   labels: {
     resultsSummary: string;
     phonesFoundSuffix: string;
-
     sort: string;
     sortDefault: string;
-
     viewDetails: string;
     seeAllDeals: string;
-
     loadMore: string;
     noMoreData: string;
-
     perMonth: string;
-
     data: string;
     startingPrice: string;
     priceRises: string;
     upfrontCost: string;
   };
-
-  brands: MobileBrandContent[];
+  brands: Array<{
+    id: string;
+    label: string;
+    icon: string;
+    iconAlt: string;
+  }>;
 };
 
 /* =========================================================
-   CONTENT
+   STATIC CONTENT & HELPERS
 ========================================================= */
 
-const mobileResults = data.resultPage.mobileResults as MobileResultsContent;
+const mobileResultsStatic = data.resultPage.mobileResults as unknown as MobileResultsContent;
+
+function formatData(mb: number): string {
+  if (mb === -1 || mb >= 999999) return 'Unlimited';
+  if (mb >= 1000) return `${(mb / 1000).toFixed(0)}GB`;
+  return `${mb}MB`;
+}
+
+function formatPriceIncreaseDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = d.getDate();
+  const month = d.toLocaleDateString('en-GB', { month: 'long' });
+  const year = d.getFullYear();
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? 'st'
+      : day % 10 === 2 && day !== 12
+        ? 'nd'
+        : day % 10 === 3 && day !== 13
+          ? 'rd'
+          : 'th';
+  return `${day}${suffix} ${month} ${year}`;
+}
+
+function extractPromos(promos: unknown): string[] {
+  if (!promos) return [];
+  if (Array.isArray(promos)) {
+    return promos
+      .map((p) => {
+        if (typeof p === 'string') return p;
+        if (typeof p === 'object' && p !== null) {
+          const obj = p as Record<string, unknown>;
+          return (obj.title || obj.text || obj.name || obj.description || '') as string;
+        }
+        return String(p);
+      })
+      .filter(Boolean);
+  }
+  if (typeof promos === 'object') {
+    return Object.values(promos as Record<string, unknown>)
+      .map((p) => {
+        if (typeof p === 'string') return p;
+        if (typeof p === 'object' && p !== null) {
+          const obj = p as Record<string, unknown>;
+          return (obj.title || obj.text || obj.name || obj.description || '') as string;
+        }
+        return String(p);
+      })
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function convertDealToPlan(deal: StickeeDeal): StandardPlan {
+  const promos = extractPromos(deal.promos);
+  const dataStr =
+    deal.tariff.data === -1 || deal.tariff.data >= 999999
+      ? 'Unlimited data'
+      : `${formatData(deal.tariff.data)} data`;
+  const upfrontStr =
+    deal.discount_line_rental != null && deal.discount_line_rental > 0
+      ? `£${deal.discount_line_rental.toFixed(2)} upfront`
+      : 'Free upfront';
+
+  return {
+    id: deal.id,
+    type: 'view-deal',
+    service: 'mobile',
+    provider: deal.retailer.name,
+    planName: deal.model.name,
+    description: `${deal.tariff.network.name} Network · ${deal.tariff.contract_length || 24} ${deal.tariff.contract_length > 1 ? 'Months' : 'Month'} contract`,
+    logo: deal.tariff.network.image || deal.retailer.image || '/images/brand-placeholder.png',
+    logoAlt: deal.tariff.network.name,
+    rating: deal.tariff.network.score ? `${deal.tariff.network.score}` : '',
+    contract: `${deal.tariff.contract_length || 24} ${deal.tariff.contract_length > 1 ? 'Months' : 'Month'} contract`,
+    features: [dataStr, upfrontStr, ...promos].filter(Boolean),
+    priceLabel: 'Monthly cost',
+    price: `£${deal.price.toFixed(2)}`,
+    pricePeriod: '/month',
+    saving: deal.cashback > 0 ? `£${deal.cashback.toFixed(0)} Cashback` : '',
+    upfrontCost:
+      deal.discount_line_rental != null && deal.discount_line_rental > 0
+        ? `£${deal.discount_line_rental.toFixed(2)}`
+        : '£0.00',
+    providerUrl: deal.url,
+    viewDetailsButton: 'View Details',
+    primaryButton: 'Buy Now',
+  };
+}
 
 /* =========================================================
-   COMPONENT
+   MAIN COMPONENT
 ========================================================= */
 
 export default function MobileResults() {
   const router = useRouter();
+  const { filters: appliedFilters, sortKey, setSortKey } = useResultFilters();
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  const [selectedBrand, setSelectedBrand] = useState<MobileBrand>('apple');
+  // Drawer state
+  const [selectedPlan, setSelectedPlan] = useState<StandardPlan | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<StickeeDeal | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const [loadMoreClicked, setLoadMoreClicked] = useState(false);
+  const activeSortConfig = useMemo(() => {
+    const found = MOBILE_SORTS[sortKey as keyof typeof MOBILE_SORTS];
+    return found
+      ? { sort: found.sort, reverse: found.reverse }
+      : { sort: 'RECOMMENDED', reverse: false };
+  }, [sortKey]);
 
-  const selectedBrandContent =
-    mobileResults.brands.find((brand) => brand.id === selectedBrand) ?? mobileResults.brands[0];
+  const {
+    deals: rawDeals,
+    facets: stickeeFacets,
+    loading: stickeeLoading,
+    isFetchingMore,
+    hasMorePages,
+    loadMore,
+  } = useStickeeDeals({
+    vertical: 'mobile',
+    fixed: VERTICALS.mobile_paym.fixed as Record<string, unknown>,
+    filters: appliedFilters.stickeeFilters,
+    sort: activeSortConfig.sort,
+    reverse: activeSortConfig.reverse,
+    enabled: true,
+  });
 
-  if (!selectedBrandContent) {
-    return null;
-  }
+  const stickeeDeals: StickeeDeal[] = useMemo(() => {
+    return rawDeals.filter(isMobileDeal);
+  }, [rawDeals]);
 
-  const featuredPlans = selectedBrandContent.featuredPlans;
+  const brandTabs: MobileBrandTab[] = useMemo(() => {
+    if (stickeeLoading || !stickeeDeals.length) {
+      return [];
+    }
 
-  const deals = selectedBrandContent.deals;
+    const brandOrder: string[] = [];
+    for (const deal of stickeeDeals) {
+      const brandName = deal.model?.brand?.name;
+      if (brandName && !brandOrder.includes(brandName)) brandOrder.push(brandName);
+    }
 
-  const phoneCount = featuredPlans.length + deals.length;
+    return brandOrder.map((brandName) => {
+      const staticBrand = mobileResultsStatic.brands?.find(
+        (b) => b.label?.toLowerCase() === brandName.toLowerCase(),
+      );
+
+      return {
+        id: brandName,
+        label: brandName,
+        icon: staticBrand?.icon ?? '/images/brand-placeholder.png',
+        iconAlt: `${brandName} logo`,
+      };
+    });
+  }, [stickeeDeals, stickeeLoading]);
+
+  const [selectedBrand, setSelectedBrand] = useState<MobileBrand>('');
+
+  const activeBrandId = selectedBrand || brandTabs[0]?.id || '';
+
+  const displayedDeals = useMemo(() => {
+    if (!stickeeDeals.length) return [];
+    if (!activeBrandId) return stickeeDeals;
+    return stickeeDeals.filter((d) => d.model?.brand?.name === activeBrandId);
+  }, [stickeeDeals, activeBrandId]);
 
   const handleBrandSelect = (brand: MobileBrand) => {
     setSelectedBrand(brand);
-    setLoadMoreClicked(false);
   };
 
   /* =========================================================
-     DETAILS ROUTING
+     ACTIONS
   ========================================================= */
 
-  const openMobileDetails = (id: string, type: 'featured' | 'deal') => {
-    router.push(
-      `/mobile-results-details?service=sim-only&brand=${selectedBrand}&type=${type}&id=${encodeURIComponent(
-        id,
-      )}`,
-    );
+  const handleViewDetails = (deal: StickeeDeal) => {
+    const plan = convertDealToPlan(deal);
+    setSelectedDeal(deal);
+    setSelectedPlan(plan);
+    setIsDetailsOpen(true);
+  };
+
+  const handleBuyNow = (deal: StickeeDeal) => {
+    if (!deal.url) return;
+
+    sessionStorage.setItem('journeySelectedPlan', JSON.stringify(deal));
+    sessionStorage.setItem('externalRedirectUrl', deal.url);
+    sessionStorage.setItem('externalRedirectProvider', deal.retailer.name);
+    sessionStorage.setItem('externalRedirectService', 'mobile');
+    sessionStorage.setItem('externalRedirectOrigin', 'mobile');
+    sessionStorage.setItem('billgooseJourneyService', 'mobile');
+    sessionStorage.setItem('billgooseJourneyFlow', 'mobile');
+
+    router.push('/redirecting?service=mobile');
   };
 
   return (
@@ -146,924 +268,566 @@ export default function MobileResults() {
           mx-auto
           w-full
           max-w-[1440px]
-
           px-4
           pb-14
           pt-5
-
           min-[390px]:px-5
-
           sm:px-6
           sm:pt-6
-
           md:px-8
-
-          lg:px-[80px]
+          lg:px-8
           lg:pb-20
-
-          xl:px-[112px]
+          xl:px-10
         "
       >
-        <div className="mx-auto w-full max-w-none">
-          {/* =================================================
-              RESULT SUMMARY
-          ================================================== */}
-
-          <div>
-            <h2
-              className="
-                font-red-hat-display
-
-                text-[18px]
-                font-extrabold
-                leading-6
-
-                text-[#101828]
-
-                md:text-[20px]
-                md:leading-7
-              "
-            >
-              {mobileResults.labels.resultsSummary}
-            </h2>
-
-            <p
-              className="
-                mt-1
-
-                font-inter
-                text-[12px]
-                font-normal
-                leading-[18px]
-
-                text-[#667085]
-
-                md:text-[13px]
-                md:leading-5
-              "
-            >
-              {phoneCount} {mobileResults.labels.phonesFoundSuffix}
-            </p>
+        <div
+          className="
+            grid
+            grid-cols-1
+            lg:grid-cols-[326px_minmax(0,1fr)]
+            lg:items-start
+            lg:gap-5
+            xl:gap-6
+          "
+        >
+          {/* DESKTOP FILTER SIDEBAR */}
+          <div className="hidden lg:block">
+            <ResultFilterSidebar
+              isMobile
+              facets={stickeeFacets}
+              isLoading={stickeeLoading}
+            />
           </div>
 
-          {/* =================================================
-              TABS + SORT
-          ================================================== */}
-
-          <div
-            className="
-              mt-5
-
-              flex
-              flex-col
-
-              gap-4
-
-              md:flex-row
-              md:items-center
-              md:justify-between
-            "
-          >
-            <div
-              className="
-                flex
-                max-w-full
-
-                items-center
-
-                gap-2
-
-                overflow-x-auto
-
-                pb-1
-
-                [scrollbar-width:none]
-
-                [&::-webkit-scrollbar]:hidden
-              "
-            >
-              {mobileResults.brands.map((brand) => {
-                const isActive = selectedBrand === brand.id;
-
-                return (
-                  <button
-                    key={brand.id}
-                    type="button"
-                    aria-pressed={isActive}
-                    onClick={() => {
-                      handleBrandSelect(brand.id);
-                    }}
-                    className={`
-                      inline-flex
-                      h-[32px]
-                      shrink-0
-
-                      items-center
-                      justify-center
-
-                      gap-1.5
-
-                      rounded-[6px]
-
-                      border
-
-                      px-[6px]
-
-                      ${
-                        isActive
-                          ? `
-                            border-[#00897B]
-                            bg-[#E6F4F2]
-                          `
-                          : `
-                            border-[#EAECF0]
-                            bg-white
-                          `
-                      }
-                    `}
-                  >
-                    <Image
-                      src={brand.icon}
-                      alt={brand.iconAlt}
-                      width={23}
-                      height={23}
-                      className="
-                        h-[23px]
-                        w-[23px]
-                        shrink-0
-
-                        object-contain
-                      "
-                    />
-
-                    <span
-                      className="
-                        font-red-hat-display
-
-                        text-[13px]
-                        font-[467]
-                        leading-5
-
-                        text-[#101828]
-                      "
-                    >
-                      {brand.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex shrink-0 items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <ArrowDownUp
-                  aria-hidden="true"
-                  className="h-4 w-4 text-[#344054]"
-                  strokeWidth={1.7}
-                />
-
-                <span
+          <div className="min-w-0 w-full">
+            {/* RESULT SUMMARY */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2
                   className="
                     font-red-hat-display
-                    text-[12px]
-                    font-medium
-                    leading-5
-                    text-[#344054]
+                    text-[18px]
+                    font-extrabold
+                    leading-6
+                    text-[#101828]
+                    md:text-[20px]
+                    md:leading-7
                   "
                 >
-                  {mobileResults.labels.sort}
-                </span>
+                  {mobileResultsStatic.labels?.resultsSummary ?? 'Results summary'}
+                </h2>
+
+                <p
+                  className="
+                    mt-1
+                    font-inter
+                    text-[12px]
+                    font-normal
+                    leading-[18px]
+                    text-[#667085]
+                    md:text-[13px]
+                    md:leading-5
+                  "
+                >
+                  {stickeeLoading
+                    ? 'Loading mobile deals...'
+                    : `${stickeeDeals.length} ${mobileResultsStatic.labels?.phonesFoundSuffix ?? 'deals found'}`}
+                </p>
               </div>
 
+              {/* MOBILE FILTER BUTTON */}
               <button
                 type="button"
+                onClick={() => setIsMobileFilterOpen(true)}
                 className="
                   inline-flex
-                  h-[34px]
-                  min-w-[130px]
-
+                  h-[36px]
+                  shrink-0
                   items-center
-                  justify-between
-
-                  gap-2
-
-                  rounded-[6px]
-
+                  justify-center
+                  gap-1.5
+                  rounded-full
                   border
                   border-[#D0D5DD]
-
                   bg-white
-
                   px-3
-
                   font-red-hat-display
                   text-[12px]
-                  font-normal
-                  leading-5
-
-                  text-[#667085]
-
-                  shadow-[0px_1px_2px_0px_#1018280D]
+                  font-semibold
+                  text-[#344054]
+                  shadow-sm
+                  lg:hidden
                 "
               >
-                {mobileResults.labels.sortDefault}
-
-                <ChevronDown
-                  aria-hidden="true"
-                  className="h-4 w-4"
-                  strokeWidth={1.8}
-                />
+                <SlidersHorizontal className="h-4 w-4" />
+                Filters
               </button>
             </div>
-          </div>
 
-          {/* =================================================
-              FEATURED TWO
-          ================================================== */}
-
-          <div className="mt-7 space-y-4">
-            {featuredPlans.map((plan) => (
-              <MobilePhoneCard
-                key={plan.id}
-                plan={plan}
-                labels={mobileResults.labels}
-                onViewDetails={() => {
-                  openMobileDetails(plan.id, 'featured');
-                }}
-              />
-            ))}
-          </div>
-
-          {/* =================================================
-              SMALL DEALS
-          ================================================== */}
-
-          <div
-            className="
-              mt-8
-
-              grid
-              grid-cols-1
-
-              gap-4
-
-              sm:grid-cols-2
-              sm:gap-5
-
-              lg:mt-10
-              lg:grid-cols-3
-              lg:gap-5
-
-              xl:gap-6
-            "
-          >
-            {deals.map((deal) => (
-              <MobileDealCard
-                key={deal.id}
-                deal={deal}
-                labels={mobileResults.labels}
-                onSeeDeals={() => {
-                  openMobileDetails(deal.id, 'deal');
-                }}
-              />
-            ))}
-          </div>
-
-          {/* =================================================
-              LOAD MORE
-          ================================================== */}
-
-          <div
-            className="
-              relative
-
-              mt-10
-
-              flex
-              w-full
-
-              items-center
-              justify-center
-
-              sm:mt-12
-
-              lg:mt-14
-            "
-          >
-            <span
-              aria-hidden="true"
+            {/* TABS + SORT */}
+            <div
               className="
-                absolute
-                left-0
-                right-[calc(50%+90px)]
-                top-1/2
-
-                h-px
-
-                bg-[#EAECF0]
+                mt-5
+                flex
+                flex-col
+                gap-4
+                md:flex-row
+                md:items-center
+                md:justify-between
               "
-            />
-
-            <span
-              aria-hidden="true"
-              className="
-                absolute
-                left-[calc(50%+90px)]
-                right-0
-                top-1/2
-
-                h-px
-
-                bg-[#EAECF0]
-              "
-            />
-
-            {!loadMoreClicked ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setLoadMoreClicked(true);
-                }}
-                className="btn-load-more"
-              >
-                <Plus
-                  aria-hidden="true"
-                  strokeWidth={2}
-                />
-
-                {mobileResults.labels.loadMore}
-              </button>
-            ) : (
+            >
+              {/* BRAND TABS */}
               <div
                 className="
-                  relative
-                  z-10
-
-                  rounded-full
-
-                  bg-[#F8F9FA]
-
-                  px-5
-                  py-2
-
-                  font-red-hat-display
-
-                  text-[13px]
-                  font-medium
-
-                  text-[#667085]
+                  flex
+                  max-w-full
+                  items-center
+                  gap-2
+                  overflow-x-auto
+                  pb-1
+                  [scrollbar-width:none]
+                  [&::-webkit-scrollbar]:hidden
                 "
               >
-                {mobileResults.labels.noMoreData}
+                {brandTabs.map((brand) => {
+                  const isActive = activeBrandId === brand.id;
+
+                  return (
+                    <button
+                      key={brand.id}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => {
+                        handleBrandSelect(brand.id);
+                      }}
+                      className={`
+                        inline-flex
+                        h-[32px]
+                        shrink-0
+                        items-center
+                        justify-center
+                        gap-1.5
+                        rounded-[6px]
+                        border
+                        px-[8px]
+                        ${isActive ? 'border-[#00897B] bg-[#E6F4F2]' : 'border-[#EAECF0] bg-white'}
+                      `}
+                    >
+                      <Image
+                        src={brand.icon}
+                        alt={brand.iconAlt}
+                        width={20}
+                        height={20}
+                        className="h-[20px] w-[20px] shrink-0 object-contain"
+                      />
+
+                      <span
+                        className="
+                          font-red-hat-display
+                          text-[13px]
+                          font-[500]
+                          leading-5
+                          text-[#101828]
+                        "
+                      >
+                        {brand.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* DYNAMIC SORT */}
+              <div className="flex shrink-0 items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <ArrowDownUp
+                    aria-hidden="true"
+                    className="h-4 w-4 text-[#344054]"
+                    strokeWidth={1.7}
+                  />
+
+                  <span
+                    className="
+                      font-red-hat-display
+                      text-[12px]
+                      font-medium
+                      leading-5
+                      text-[#344054]
+                    "
+                  >
+                    {mobileResultsStatic.labels?.sort ?? 'Sort:'}
+                  </span>
+                </div>
+
+                <div className="relative inline-flex items-center">
+                  <select
+                    value={sortKey}
+                    onChange={(e) => setSortKey(e.target.value)}
+                    aria-label="Sort mobile deals"
+                    className="
+                      h-[34px]
+                      min-w-[140px]
+                      cursor-pointer
+                      appearance-none
+                      rounded-[6px]
+                      border
+                      border-[#D0D5DD]
+                      bg-white
+                      pl-3
+                      pr-8
+                      font-red-hat-display
+                      text-[12px]
+                      font-normal
+                      text-[#344054]
+                      outline-none
+                      focus:border-[#00897B]
+                      shadow-[0px_1px_2px_0px_#1018280D]
+                    "
+                  >
+                    {Object.entries(MOBILE_SORTS).map(([key, cfg]) => (
+                      <option
+                        key={key}
+                        value={key}
+                      >
+                        {cfg.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-2.5 h-4 w-4 text-[#667085]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* CONTENT AREA: LOADER / EMPTY / CARDS */}
+            {stickeeLoading ? (
+              <div className="my-7 overflow-hidden rounded-[16px] border border-[#EAECF0]">
+                <Loading />
+              </div>
+            ) : displayedDeals.length === 0 ? (
+              <div className="flex bg-white justify-center items-center h-[200px] w-full rounded-[16px] my-7 border border-[#EAECF0]">
+                <p className="font-inter text-[14px] text-[#667085]">
+                  No mobile deals match your current filters.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* DEALS LIST */}
+                <div className="mt-7 space-y-4">
+                  {displayedDeals.map((deal) => (
+                    <MobilePhoneCard
+                      key={deal.id}
+                      deal={deal}
+                      onViewDetails={() => handleViewDetails(deal)}
+                      onBuyNow={() => handleBuyNow(deal)}
+                    />
+                  ))}
+                </div>
+
+                {/* LOAD MORE / PAGINATION */}
+                <div
+                  className="
+                    relative
+                    mt-10
+                    flex
+                    w-full
+                    items-center
+                    justify-center
+                    sm:mt-12
+                    lg:mt-14
+                  "
+                >
+                  <span
+                    aria-hidden="true"
+                    className="
+                      absolute
+                      left-0
+                      right-[calc(50%+90px)]
+                      top-1/2
+                      h-px
+                      bg-[#EAECF0]
+                    "
+                  />
+
+                  <span
+                    aria-hidden="true"
+                    className="
+                      absolute
+                      left-[calc(50%+90px)]
+                      right-0
+                      top-1/2
+                      h-px
+                      bg-[#EAECF0]
+                    "
+                  />
+
+                  {hasMorePages ? (
+                    <button
+                      type="button"
+                      disabled={isFetchingMore}
+                      onClick={() => loadMore()}
+                      className="btn-load-more inline-flex items-center gap-2"
+                    >
+                      {isFetchingMore ? (
+                        <>
+                          <LoaderCircle className="h-4 w-4 animate-spin text-[#00897B]" />
+                          Loading deals...
+                        </>
+                      ) : (
+                        <>
+                          <Plus
+                            aria-hidden="true"
+                            strokeWidth={2}
+                          />
+                          {mobileResultsStatic.labels?.loadMore ?? 'Load More Deals'}
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <div
+                      className="
+                        relative
+                        z-10
+                        rounded-full
+                        border
+                        border-[#EAECF0]
+                        bg-white
+                        px-5
+                        py-2
+                        font-red-hat-display
+                        text-[13px]
+                        font-medium
+                        text-[#667085]
+                        shadow-sm
+                      "
+                    >
+                      {mobileResultsStatic.labels?.noMoreData ?? 'All deals shown'}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
       </section>
+
+      {/* PLAN DETAILS DRAWER */}
+      <PlanDetailsDrawer
+        plan={selectedPlan}
+        isOpen={isDetailsOpen}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setSelectedDeal(null);
+          setSelectedPlan(null);
+        }}
+        onSelectPlan={() => {
+          if (selectedDeal) {
+            handleBuyNow(selectedDeal);
+          }
+        }}
+      />
+
+      {/* MOBILE FILTER DRAWER */}
+      {isMobileFilterOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-[rgba(16,24,40,0.35)] lg:hidden"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setIsMobileFilterOpen(false);
+          }}
+        >
+          <div className="absolute inset-y-0 right-0 w-[min(92vw,360px)] bg-white shadow-xl flex flex-col">
+            <div className="flex h-14 items-center justify-between border-b border-[#EAECF0] px-4">
+              <h3 className="font-red-hat-display text-base font-bold text-[#101828]">Filters</h3>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-1 rounded text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <ResultFilterSidebar
+                mobilePanel
+                isMobile
+                facets={stickeeFacets}
+                isLoading={stickeeLoading}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
 /* =========================================================
-   FEATURED PHONE CARD
+   MOBILE PHONE CARD (LAYOUT MATCHING REFERENCE IMAGE)
 ========================================================= */
 
 type MobilePhoneCardProps = {
-  plan: MobilePhonePlan;
-  labels: MobileResultsContent['labels'];
+  deal: StickeeDeal;
   onViewDetails: () => void;
+  onBuyNow: () => void;
 };
 
-function MobilePhoneCard({ plan, labels, onViewDetails }: MobilePhoneCardProps) {
+function MobilePhoneCard({ deal, onViewDetails, onBuyNow }: MobilePhoneCardProps) {
+  const promos = extractPromos(deal.promos);
+
   return (
-    <article
-      className="
-        w-full
-        overflow-hidden
-        rounded-[14px]
-        border
-        border-[#EAECF0]
-        bg-white
-        shadow-[0px_1px_2px_0px_#1018280D]
-      "
-    >
-      <div
-        className="
-          flex
-          flex-col
+    <article className="w-full rounded-[16px] border border-[#EAECF0] bg-white p-4 sm:p-5 md:p-6 shadow-sm hover:border-[#00897B] transition-colors">
+      {/* Title & Badge */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <h3 className="font-red-hat-display text-[17px] sm:text-[18px] font-bold text-[#101828]">
+          {deal.model.name}
+        </h3>
+        {deal.is_refurbished ? (
+          <span className="shrink-0 rounded-full bg-[#00897B] px-3.5 py-1 text-[12px] font-bold text-white">
+            Refurbished
+          </span>
+        ) : deal.is_exclusive ? (
+          <span className="shrink-0 rounded-full bg-[#00897B] px-3.5 py-1 text-[12px] font-bold text-white">
+            Exclusive
+          </span>
+        ) : deal.cashback > 0 ? (
+          <span className="shrink-0 rounded-full bg-[#00897B] px-3.5 py-1 text-[12px] font-bold text-white">
+            £{deal.cashback.toFixed(0)} Cashback
+          </span>
+        ) : null}
+      </div>
 
-          lg:h-[207px]
-          lg:flex-row
-        "
-      >
-        <div
-          className="
-            flex
-            min-h-[180px]
-            w-full
-            shrink-0
-
-            items-center
-            justify-center
-
-            border-b
-            border-[#EAECF0]
-
-            bg-white
-
-            p-4
-
-            sm:min-h-[200px]
-
-            lg:h-[207px]
-            lg:min-h-0
-            lg:w-[217px]
-
-            lg:border-b-0
-            lg:border-r
-
-            lg:p-0
-          "
-        >
+      {/* Main Image & Metric Boxes */}
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+        {/* Device Image */}
+        <div className="flex h-[130px] w-[90px] shrink-0 items-center justify-center">
           <Image
-            src={plan.image}
-            alt={plan.imageAlt}
-            width={166}
-            height={166}
-            className="
-              h-[150px]
-              w-[150px]
-
-              object-contain
-
-              sm:h-[166px]
-              sm:w-[166px]
-            "
+            src={deal.main_model_image || '/images/phone-placeholder.png'}
+            alt={deal.model.name}
+            width={90}
+            height={130}
+            className="max-h-[130px] w-auto object-contain"
           />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div
-            className="
-              flex
-              min-h-[113px]
-              flex-col
+        {/* 4 Metric Boxes */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 flex-1 w-full">
+          {/* Box 1: Data */}
+          <div className="flex flex-col justify-start rounded-[8px] bg-[#F2F4F7] p-3 min-h-[90px]">
+            <span className="font-red-hat-display text-[16px] sm:text-[18px] font-bold text-[#00897B]">
+              {formatData(deal.tariff.data)}
+            </span>
+            <span className="mt-1 font-inter text-[12px] sm:text-[13px] font-medium text-[#667085]">
+              Data
+            </span>
+          </div>
 
-              md:flex-row
-            "
-          >
-            <div
-              className="
-                min-w-0
-                flex-1
+          {/* Box 2: Monthly Contract */}
+          <div className="flex flex-col justify-start rounded-[8px] bg-[#F2F4F7] p-3 min-h-[90px]">
+            <span className="font-red-hat-display text-[16px] sm:text-[18px] font-bold text-[#00897B]">
+              {deal.tariff.contract_length || 24}
+            </span>
+            <span className="mt-1 font-inter text-[12px] sm:text-[13px] font-medium text-[#667085]">
+              Months contract
+            </span>
+          </div>
 
-                p-4
+          {/* Box 3: Upfront Cost */}
+          <div className="flex flex-col justify-start rounded-[8px] bg-[#F2F4F7] p-3 min-h-[90px]">
+            <span className="font-red-hat-display text-[16px] sm:text-[18px] font-bold text-[#00897B]">
+              {deal.discount_line_rental != null && deal.discount_line_rental > 0
+                ? `£${deal.discount_line_rental.toFixed(2)}`
+                : '£0.00'}
+            </span>
+            <span className="mt-1 font-inter text-[12px] sm:text-[13px] font-medium text-[#667085]">
+              upfront cost
+            </span>
+          </div>
 
-                sm:p-5
+          {/* Box 4: Price Per Month with Price Increases */}
+          <div className="flex flex-col justify-start rounded-[8px] bg-[#F2F4F7] p-3 min-h-[90px]">
+            <span className="font-red-hat-display text-[16px] sm:text-[18px] font-bold text-[#00897B]">
+              £{deal.price.toFixed(2)}
+            </span>
+            <span className="mt-1 font-inter text-[12px] sm:text-[13px] font-medium text-[#667085]">
+              per month
+            </span>
 
-                lg:px-4
-                lg:py-4
-              "
-            >
-              <h3
-                className="
-                  font-red-hat-display
-
-                  text-[20px]
-                  font-[645]
-                  leading-[21.75px]
-
-                  text-[#101828]
-                "
-              >
-                {plan.name}
-              </h3>
-
-              <p
-                className="
-                  mt-1
-
-                  font-red-hat-display
-
-                  text-[13px]
-                  font-[467]
-                  leading-[19.5px]
-
-                  text-[#667085]
-                "
-              >
-                {plan.provider}
-              </p>
-
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {plan.badges.map((badge) => (
-                  <span
-                    key={badge}
-                    className="
-                      inline-flex
-                      min-h-[21px]
-                      items-center
-                      justify-center
-                      rounded-[3px]
-                      bg-[#EEF4FA]
-                      px-1.5
-                      font-red-hat-display
-                      text-[10px]
-                      font-bold
-                      leading-[15px]
-                      text-[#105089]
-                    "
-                  >
-                    {badge}
-                  </span>
+            {deal.price_increases && deal.price_increases.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-[#D0D5DD]/40 text-[11px] text-[#475467] leading-tight space-y-0.5">
+                <span className="font-medium text-[#344054] block">Increasing to:</span>
+                {deal.price_increases.map((inc, i) => (
+                  <div key={i}>
+                    £{inc.price.toFixed(2)} from {formatPriceIncreaseDate(inc.date)}
+                  </div>
                 ))}
               </div>
-            </div>
-
-            <div
-              className="
-                flex
-                shrink-0
-                items-center
-                px-4
-                pb-4
-
-                md:w-[145px]
-                md:px-3
-                md:py-3
-              "
-            >
-              <div
-                className="
-                  flex
-                  min-h-[75px]
-                  w-full
-                  flex-col
-                  justify-center
-                  rounded-[8px]
-                  border
-                  border-[#6CE9A6]
-                  bg-[#F6FEF9]
-                  px-3
-                  py-2
-                "
-              >
-                <p
-                  className="
-                    font-red-hat-display
-                    text-[20px]
-                    font-bold
-                    leading-6
-                    text-[#039855]
-                  "
-                >
-                  {plan.saving}
-                </p>
-
-                <p
-                  className="
-                    mt-[2px]
-                    font-red-hat-display
-                    text-[9px]
-                    font-medium
-                    leading-[12px]
-                    text-[#027A48]
-                  "
-                >
-                  {plan.savingDescription}
-                </p>
-              </div>
-            </div>
-
-            <div
-              className="
-                flex
-                min-h-[76px]
-                shrink-0
-                items-center
-                justify-center
-                border-t
-                border-[#EAECF0]
-                px-4
-
-                md:w-[160px]
-                md:border-l
-                md:border-t-0
-              "
-            >
-              <button
-                type="button"
-                onClick={onViewDetails}
-                className="btn-view-details"
-              >
-                {labels.viewDetails}
-
-                <ChevronRight
-                  aria-hidden="true"
-                  strokeWidth={2}
-                />
-              </button>
-            </div>
-          </div>
-
-          <div
-            className="
-              grid
-              grid-cols-1
-              gap-3
-              border-t
-              border-[#EAECF0]
-              p-4
-
-              sm:grid-cols-2
-
-              lg:h-[93px]
-              lg:grid-cols-4
-            "
-          >
-            <MobileMetricCard
-              label={labels.data}
-              value={plan.data}
-            />
-
-            <MobileMetricCard
-              label={labels.startingPrice}
-              value={plan.startingPrice}
-            />
-
-            <MobileMetricCard
-              label={labels.priceRises}
-              value={plan.priceRise}
-            />
-
-            <MobileMetricCard
-              label={labels.upfrontCost}
-              value={plan.upfrontCost}
-            />
+            )}
           </div>
         </div>
       </div>
-    </article>
-  );
-}
 
-/* =========================================================
-   METRIC
-========================================================= */
-
-function MobileMetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      className="
-        flex
-        min-h-[61px]
-        flex-col
-        justify-center
-        rounded-[8px]
-        border
-        border-[#EAECF0]
-        bg-[#F9FAFB]
-        px-3
-        py-[10px]
-      "
-    >
-      <p
-        className="
-          font-red-hat-display
-          text-[13px]
-          font-[467]
-          leading-[19.5px]
-          text-[#667085]
-        "
-      >
-        {label}
-      </p>
-
-      <p
-        className="
-          mt-[1px]
-          font-red-hat-display
-          text-[14px]
-          font-[645]
-          leading-[21px]
-          tracking-[-0.01em]
-          text-[#101828]
-        "
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
-/* =========================================================
-   SMALL DEAL CARD
-========================================================= */
-
-type MobileDealCardProps = {
-  deal: MobileDeal;
-  labels: MobileResultsContent['labels'];
-  onSeeDeals: () => void;
-};
-
-function MobileDealCard({ deal, labels, onSeeDeals }: MobileDealCardProps) {
-  return (
-    <article
-      className="
-        flex
-        w-full
-        flex-col
-        overflow-hidden
-        rounded-[14px]
-        border
-        border-[#EAECF0]
-        bg-white
-        shadow-[0px_1px_2px_0px_#10182808]
-
-        sm:rounded-[16px]
-
-        lg:min-h-[459px]
-      "
-    >
-      <div
-        className="
-          flex
-          min-h-[230px]
-          w-full
-          flex-1
-          items-center
-          justify-center
-          bg-white
-          px-5
-          py-5
-
-          min-[390px]:min-h-[250px]
-
-          sm:min-h-[270px]
-
-          md:min-h-[285px]
-
-          lg:h-[322px]
-          lg:min-h-[322px]
-          lg:flex-none
-        "
-      >
-        <Image
-          src={deal.image}
-          alt={deal.imageAlt}
-          width={211}
-          height={260}
-          className="
-            h-[190px]
-            w-[160px]
-            object-contain
-
-            min-[390px]:h-[210px]
-            min-[390px]:w-[175px]
-
-            sm:h-[225px]
-            sm:w-[185px]
-
-            lg:h-[260px]
-            lg:w-[211px]
-          "
-        />
-      </div>
-
-      <div
-        className="
-          min-h-[136px]
-          border-t
-          border-[#EAECF0]
-          bg-[#F9FAFB]
-          px-3
-          pb-3
-          pt-[10px]
-
-          sm:px-[14px]
-          sm:pb-[14px]
-        "
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3
-              className="
-                truncate
-                font-red-hat-display
-                text-[16px]
-                font-[645]
-                leading-[18px]
-                text-[#101828]
-
-                sm:text-[17px]
-
-                lg:text-[18px]
-              "
-            >
-              {deal.name}
-            </h3>
-
-            <p
-              className="
-                mt-1
-                truncate
-                font-inter
-                text-[12px]
-                font-normal
-                leading-4
-                text-[#475467]
-
-                sm:text-[13px]
-
-                lg:text-[14px]
-              "
-            >
-              {deal.description}
-            </p>
-          </div>
-
-          <Image
-            src="/images/green-mobile.png"
-            alt=""
-            width={34}
-            height={34}
-            aria-hidden="true"
-            className="
-              h-[34px]
-              w-[34px]
-              shrink-0
-              object-contain
-            "
-          />
+      {/* Network & Sold By */}
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+        <div className="flex items-center justify-center gap-2 rounded-[8px] border border-[#EAECF0] py-2 px-3 text-[13px] text-[#475467]">
+          <span>Network:</span>
+          {deal.tariff.network.image ? (
+            <Image
+              src={deal.tariff.network.image}
+              alt={deal.tariff.network.name}
+              width={70}
+              height={20}
+              className="h-5 w-auto object-contain"
+            />
+          ) : (
+            <span className="font-semibold text-[#101828]">{deal.tariff.network.name}</span>
+          )}
         </div>
 
-        <div
-          className="
-            mt-[10px]
-            flex
-            min-h-[59px]
-            w-full
-            items-center
-            justify-between
-            gap-2
-            rounded-[10px]
-            border
-            border-[#EAECF0]
-            bg-white
-            px-2.5
-            py-2
+        <div className="flex items-center justify-center gap-2 rounded-[8px] border border-[#EAECF0] py-2 px-3 text-[13px] text-[#475467]">
+          <span>Sold by:</span>
+          {deal.retailer.image ? (
+            <Image
+              src={deal.retailer.image}
+              alt={deal.retailer.name}
+              width={70}
+              height={20}
+              className="h-5 w-auto object-contain"
+            />
+          ) : (
+            <span className="font-semibold text-[#101828]">{deal.retailer.name}</span>
+          )}
+        </div>
+      </div>
 
-            sm:px-3
-            sm:py-[10px]
-          "
+      {/* Action Buttons */}
+      <div className="mt-4 flex flex-col sm:flex-row items-center gap-3 w-full">
+        <button
+          type="button"
+          onClick={onViewDetails}
+          className="flex h-11 w-full sm:flex-1 items-center justify-center rounded-[8px] bg-[#F2F4F7] font-inter text-[14px] font-semibold text-[#101828] transition hover:bg-[#EAECF0]"
         >
-          <div className="min-w-0 flex-1">
-            <p
-              className="
-                font-inter
-                text-[14px]
-                font-semibold
-                leading-5
-                tracking-[-0.15px]
-                text-[#00897B]
+          View details
+        </button>
 
-                lg:text-[16px]
-              "
-            >
-              {deal.price}
-            </p>
-
-            <p
-              className="
-                font-inter
-                text-[10px]
-                font-normal
-                leading-4
-                text-[#475467]
-
-                sm:text-[11px]
-
-                lg:text-[12px]
-              "
-            >
-              {labels.perMonth}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onSeeDeals}
-            className="btn-see-all-deals"
-          >
-            {labels.seeAllDeals}
-
-            <ChevronRight
-              aria-hidden="true"
-              strokeWidth={2}
-            />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onBuyNow}
+          className="flex h-11 w-full sm:flex-1 items-center justify-center rounded-[8px] bg-[#00897B] font-inter text-[14px] font-bold text-white transition hover:bg-[#007A6C]"
+        >
+          Buy Now
+        </button>
       </div>
+
+      {/* Promos Footer (only if promos exist) */}
+      {promos.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-[#475467]">
+          {promos.map((promo, idx) => (
+            <div key={idx}>• {promo}</div>
+          ))}
+        </div>
+      )}
     </article>
   );
 }

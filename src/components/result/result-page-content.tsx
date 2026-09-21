@@ -99,7 +99,7 @@ export default function ResultPageContent() {
     };
 
     void loadQuote();
-  }, [flow, isQuoteService, journeyId, service]);
+  }, [flow, isBundleFlow, isQuoteService, journeyId, service]);
 
   if (service === 'mobile') {
     return (

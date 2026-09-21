@@ -1,5 +1,5 @@
 export type CompareResultService =
-  'energy' | 'bundle-bills' | 'broadband' | 'sim-only' | 'insurance';
+  'energy' | 'bundle-bills' | 'broadband' | 'sim-only' | 'mobile' | 'insurance';
 
 export type SelectPlan = {
   id: string;
@@ -38,6 +38,7 @@ export type SelectPlan = {
   action?: string;
   energy?: unknown;
   broadband?: unknown;
+  claimText?: string;
   feeDetails?: unknown[];
   priceIncreaseDetails?: unknown[];
   viewDetailsButton: string;
@@ -81,6 +82,8 @@ export type ViewDealPlan = {
   action?: string;
   energy?: unknown;
   broadband?: unknown;
+  mobile?: unknown;
+  claimText?: string;
   feeDetails?: unknown[];
   priceIncreaseDetails?: unknown[];
   viewDetailsButton: string;
@@ -126,6 +129,10 @@ export type SimOnlyPlan = {
   price: string;
   upfrontLabel: string;
   upfrontCost: string;
+  contract: string;
+  contractLength?: number;
+  totalCost?: string;
+  promos?: string[];
   roamingText: string;
   providerUrl: string;
   primaryButton: string;

@@ -39,6 +39,23 @@ const nextConfig: NextConfig = {
     // Empty config - add turbopack specific config here if needed
   },
 
+  ...(!isProdBuild
+    ? {
+        async rewrites() {
+          return [
+            {
+              source: '/stickee/mobile',
+              destination: 'https://bill-goose.stickeemobiles.co.uk/graphql',
+            },
+            {
+              source: '/stickee/broadband',
+              destination: 'https://bill-goose.stickeebroadband.co.uk/graphql',
+            },
+          ];
+        },
+      }
+    : {}),
+
   webpack: (config, { isServer }) => {
     config.optimization?.usedExports !== undefined && (config.optimization.usedExports = true);
 
