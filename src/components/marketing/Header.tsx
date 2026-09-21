@@ -112,20 +112,31 @@ type HistoryPatchedWindow = Window & {
 
 // Intercept pushState & replaceState so Next.js client router transitions
 // immediately notify the Header's location search listener.
+//
+// Note: we defer the notification with queueMicrotask so the store
+// callback is never invoked synchronously during React's render phase.
 if (typeof window !== 'undefined') {
   const customWindow = window as unknown as HistoryPatchedWindow;
   if (!customWindow.__billgooseHistoryPatched) {
     customWindow.__billgooseHistoryPatched = true;
+
+    const notifyLocationChanged = () => {
+      queueMicrotask(() => {
+        window.dispatchEvent(new Event('billgoose-location-changed'));
+      });
+    };
+
     const originalPushState = window.history.pushState;
     window.history.pushState = function (...args) {
       const result = originalPushState.apply(this, args);
-      window.dispatchEvent(new Event('billgoose-location-changed'));
+      notifyLocationChanged();
       return result;
     };
+
     const originalReplaceState = window.history.replaceState;
     window.history.replaceState = function (...args) {
       const result = originalReplaceState.apply(this, args);
-      window.dispatchEvent(new Event('billgoose-location-changed'));
+      notifyLocationChanged();
       return result;
     };
   }
@@ -133,7 +144,11 @@ if (typeof window !== 'undefined') {
 
 function subscribeToLocationSearch(callback: () => void) {
   const handleLocationChange = () => {
-    callback();
+    // Defer the callback so useSyncExternalStore never notifies
+    // synchronously during render or event propagation.
+    queueMicrotask(() => {
+      callback();
+    });
   };
 
   window.addEventListener('popstate', handleLocationChange);
@@ -451,7 +466,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
           {/* =================================================
                 LOGO
             ================================================== */}
-          <div className="flex shrink-0 items-center">
+          <div className="flex shrink-0 items-center lg:-translate-y-[6px]">
             <Link
               href="/"
               onClick={closeMenus}
@@ -459,6 +474,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               className="
                 inline-flex
                 shrink-0
+                items-center
               "
             >
               <Image
@@ -468,6 +484,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                 height={82}
                 priority
                 className="
+                  block
                   h-auto
                   w-[145px]
 
@@ -621,18 +638,25 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                       >
                         <span>{item.label}</span>
 
-                        <ChevronDown
+                        <span
                           aria-hidden="true"
                           className={`
-                                h-4
-                                w-4
+                            inline-block
+                            h-[6px]
+                            w-[10px]
 
-                                transition-transform
-                                duration-200
+                            shrink-0
 
-                                ${isCompareOpen ? 'rotate-180' : ''}
-                              `}
-                          strokeWidth={2}
+                            bg-current
+
+                            transition-transform
+                            duration-200
+
+                            ${isCompareOpen ? 'rotate-180' : ''}
+                          `}
+                          style={{
+                            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
+                          }}
                         />
                       </button>
 
@@ -666,11 +690,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                             shadow-[0px_11px_24px_0px_rgba(38,38,38,0.11),0px_44px_44px_0px_rgba(38,38,38,0.10),0px_98px_59px_0px_rgba(38,38,38,0.06),0px_175px_70px_0px_rgba(38,38,38,0.02),0px_273px_77px_0px_rgba(38,38,38,0)]
                           "
                         >
-                          {/* =========================================
-                              SCROLLABLE SERVICES LIST
-                              Fixed height shows exactly 4 cards.
-                              Vertical scroll only.
-                          ========================================== */}
                           <div
                             className="
                               compare-menu-scroll
@@ -849,9 +868,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                             })}
                           </div>
 
-                          {/* =========================================
-                              COMING SOON — FIXED AT BOTTOM
-                          ========================================== */}
                           <div className="mt-auto shrink-0">
                             <div className="relative mb-[10px] flex items-center justify-center">
                               <span
@@ -998,7 +1014,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                 ref={desktopAccountRef}
                 className="relative"
               >
-                {/* Control shown in your screenshot */}
                 <div
                   className={`
                       flex
@@ -1030,7 +1045,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                       }
                     `}
                 >
-                  {/* Three lines */}
                   <button
                     type="button"
                     onClick={toggleAccountMenu}
@@ -1063,7 +1077,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                     />
                   </button>
 
-                  {/* User */}
                   <button
                     type="button"
                     onClick={toggleAccountMenu}
@@ -1113,9 +1126,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                 )}
               </div>
             ) : (
-              /* =============================================
-                    LOGGED OUT
-                ============================================== */
               <Link
                 href="/sign-in"
                 aria-label="Sign In"
@@ -1244,7 +1254,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                   }
                 `}
             >
-              {/* Menu button */}
               <button
                 type="button"
                 onClick={() => {
@@ -1283,7 +1292,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
                 )}
               </button>
 
-              {/* User button */}
               {isSignedIn ? (
                 <button
                   type="button"
@@ -1607,9 +1615,6 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
           min-[390px]:w-[250px]
         "
     >
-      {/* =====================================================
-            USER
-        ====================================================== */}
       <div
         className="
             flex
@@ -1678,9 +1683,6 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
         </div>
       </div>
 
-      {/* =====================================================
-            MY DEALS
-        ====================================================== */}
       <Link
         href="/my-info"
         onClick={onClose}
@@ -1719,9 +1721,6 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
         <span>My Deals</span>
       </Link>
 
-      {/* =====================================================
-            SETTINGS
-        ====================================================== */}
       <Link
         href="/my-info"
         onClick={onClose}
@@ -1760,9 +1759,6 @@ function AccountMenu({ email, onClose, onLogout }: AccountMenuProps) {
         <span>Settings</span>
       </Link>
 
-      {/* =====================================================
-            LOGOUT
-        ====================================================== */}
       <button
         type="button"
         onClick={onLogout}

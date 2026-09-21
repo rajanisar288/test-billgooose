@@ -3,8 +3,6 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import { ChevronRight } from 'lucide-react';
-
 import data from '@/data/content.json';
 
 type ServiceType = 'energy' | 'broadband' | 'mobile' | 'sim-only' | 'insurance' | 'bundle-bills';
@@ -243,7 +241,7 @@ export default function Hero() {
               </div>
 
               {/* =================================================
-                  MOBILE / TABLET IMAGE
+                  MOBILE / TABLET IMAGE — slightly enlarged
               ================================================== */}
               <div
                 className="
@@ -254,18 +252,18 @@ export default function Hero() {
                   top-[175px]
                   z-10
 
-                  h-[430px]
-                  w-[405px]
+                  h-[460px]
+                  w-[435px]
 
                   -translate-x-1/2
 
                   sm:top-[205px]
-                  sm:h-[480px]
-                  sm:w-[460px]
+                  sm:h-[515px]
+                  sm:w-[495px]
 
                   md:top-[255px]
-                  md:h-[500px]
-                  md:w-[530px]
+                  md:h-[540px]
+                  md:w-[570px]
 
                   lg:hidden
                 "
@@ -275,7 +273,7 @@ export default function Hero() {
                   alt={hero.mobileImage.alt}
                   fill
                   priority
-                  sizes="(max-width:1023px) 530px"
+                  sizes="(max-width:1023px) 570px"
                   className="
                     object-contain
                     object-top-right
@@ -284,7 +282,7 @@ export default function Hero() {
               </div>
 
               {/* =================================================
-                  DESKTOP IMAGE
+                  DESKTOP IMAGE — slightly enlarged
               ================================================== */}
               <div
                 className="
@@ -302,11 +300,11 @@ export default function Hero() {
                     inset-0
 
                     lg:left-[2%]
-                    lg:right-[-14%]
+                    lg:right-[-18%]
                     lg:translate-y-10
 
                     xl:left-[5%]
-                    xl:right-[-28%]
+                    xl:right-[-32%]
                   "
                 >
                   <Image
@@ -314,7 +312,7 @@ export default function Hero() {
                     alt={hero.image.alt}
                     fill
                     priority
-                    sizes="(min-width:1024px) 54vw"
+                    sizes="(min-width:1024px) 58vw"
                     className="
                       object-contain
                       object-center
@@ -612,19 +610,13 @@ function HeroServiceGrid({ onSelect, compact = false }: HeroServiceGridProps) {
       <div
         className="
           grid
-          grid-cols-2
-
-          sm:grid-cols-3
+          grid-cols-3
         "
       >
         {services.map((service, index) => {
-          // 3-col grid (sm+): no right border on last col, no bottom border on last row
+          // 3-col grid (all screens): no right border on last col, no bottom border on last row
           const isThirdColumn = index % 3 === 2;
           const isFirstRow = index < 3;
-
-          // 2-col grid (mobile): no right border on right col, no bottom border on last row
-          const isRightColumnMobile = index % 2 === 1;
-          const isLastRowMobile = index >= 4;
 
           return (
             <button
@@ -661,15 +653,9 @@ function HeroServiceGrid({ onSelect, compact = false }: HeroServiceGridProps) {
                     `
                 }
 
-                /* --- Mobile (2 cols): right border on left column, bottom border on all but last row --- */
-                ${!isRightColumnMobile ? 'border-r' : ''}
-                ${!isLastRowMobile ? 'border-b' : ''}
-
-                /* --- sm+ (3 cols): reset mobile borders, then apply 3-col borders --- */
-                sm:border-r-0
-                sm:border-b-0
-                ${!isThirdColumn ? 'sm:border-r' : ''}
-                ${isFirstRow ? 'sm:border-b' : ''}
+                /* --- 3-col grid: right border except last col, bottom border on first row only --- */
+                ${!isThirdColumn ? 'border-r' : ''}
+                ${isFirstRow ? 'border-b' : ''}
 
                 border-[#EAECF0]
 
@@ -772,22 +758,6 @@ function HeroServiceGrid({ onSelect, compact = false }: HeroServiceGridProps) {
               >
                 {service.label}
               </span>
-
-              {/* Chevron only on hover */}
-              <ChevronRight
-                aria-hidden="true"
-                className="
-                  hidden
-                  h-5
-                  w-5
-                  shrink-0
-
-                  text-[#0C3354]
-
-                  group-hover:block
-                "
-                strokeWidth={2}
-              />
             </button>
           );
         })}

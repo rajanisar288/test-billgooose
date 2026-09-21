@@ -9,20 +9,135 @@ import { ArrowRight, ChevronRight, Clock3, Plus, Search } from 'lucide-react';
 
 import data from '@/data/content.json';
 
-const TOTAL_CARDS = 12;
-const GUIDE_PAGE_HREF = '/guides';
+/* =========================================================
+   16 BLOG CARDS — one per guide in guidePages
+   Images still cycle through the original 4 guide images.
+========================================================= */
+const BLOG_CARDS = [
+  {
+    post: 1,
+    category: 'Broadband',
+    readTime: '7 min read',
+    title: 'Are Broadband, TV and Mobile Bundles Really Cheaper?',
+  },
+  {
+    post: 2,
+    category: 'Energy',
+    readTime: '8 min read',
+    title: 'When Is the Best Time to Switch Energy Supplier?',
+  },
+  {
+    post: 3,
+    category: 'Broadband',
+    readTime: '8 min read',
+    title: 'Broadband Contract Ending? Your Step-by-Step Switching Checklist',
+  },
+  {
+    post: 4,
+    category: 'Credit Cards',
+    readTime: '8 min read',
+    title: 'Credit Card APR Explained Without the Jargon',
+  },
+  {
+    post: 5,
+    category: 'Energy',
+    readTime: '8 min read',
+    title: 'Fixed vs Variable Energy Tariffs: Which Is Better for You?',
+  },
+  {
+    post: 6,
+    category: 'Insurance',
+    readTime: '8 min read',
+    title: 'Home Insurance Explained: Buildings, Contents and Combined Cover',
+  },
+  {
+    post: 7,
+    category: 'Broadband',
+    readTime: '8 min read',
+    title: 'How Much Broadband Speed Do You Really Need?',
+  },
+  {
+    post: 8,
+    category: 'Mobile',
+    readTime: '8 min read',
+    title: 'How to Choose the Right Mobile Data Allowance',
+  },
+  {
+    post: 9,
+    category: 'Car Insurance',
+    readTime: '8 min read',
+    title: 'How to Compare Car Insurance Without Choosing the Wrong Cover',
+  },
+  {
+    post: 10,
+    category: 'Energy',
+    readTime: '8 min read',
+    title: 'How to Compare Energy Deals Without Getting Confused',
+  },
+  {
+    post: 11,
+    category: 'Energy',
+    readTime: '8 min read',
+    title: 'How to Read Your Energy Bill in Plain English',
+  },
+  {
+    post: 12,
+    category: 'Car Insurance',
+    readTime: '8 min read',
+    title: 'How to Reduce Your Car Insurance Premium Legally',
+  },
+  {
+    post: 13,
+    category: 'Pet Insurance',
+    readTime: '8 min read',
+    title: "Pet Insurance Explained: What Is and Isn't Usually Covered?",
+  },
+  {
+    post: 14,
+    category: 'Mobile',
+    readTime: '8 min read',
+    title: 'SIM-Only vs Phone Contract: Which Offers Better Value?',
+  },
+  {
+    post: 15,
+    category: 'Car Insurance',
+    readTime: '8 min read',
+    title: 'What Information Do You Need for a Car Insurance Quote?',
+  },
+  {
+    post: 16,
+    category: 'Energy',
+    readTime: '8 min read',
+    title: 'What to Do If Your Energy Deal Is Ending Soon',
+  },
+];
+
+/* Original four images, cycled through the 16 cards */
+const GUIDE_IMAGES = [
+  { src: '/images/guide-1.png', alt: 'Warm home interior during winter' },
+  { src: '/images/guide-2.png', alt: 'Broadband router and network cables' },
+  { src: '/images/guide-3.png', alt: 'Person using a credit card and mobile phone' },
+  { src: '/images/guide-4.png', alt: 'Electric car parked outside a home' },
+];
 
 export default function BlogsHero() {
-  const { blogsPage, guides } = data;
+  const { blogsPage } = data;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showNoMoreData, setShowNoMoreData] = useState(false);
 
-  // Display 12 cards using the existing guide content and images.
-  const allGuides = Array.from({ length: TOTAL_CARDS }, (_, index) => ({
-    ...guides.items[index % 3],
-    instanceId: `blog-card-${index + 1}`,
-  }));
+  const allGuides = BLOG_CARDS.map((card, index) => {
+    const image = GUIDE_IMAGES[index % GUIDE_IMAGES.length];
+
+    return {
+      ...card,
+      instanceId: `blog-card-${card.post}`,
+      href: `/guides?post=${card.post}`,
+      linkText: 'Read Guide',
+      image: image.src,
+      imageAlt: image.alt,
+    };
+  });
 
   const query = searchQuery.trim().toLowerCase();
 
@@ -50,7 +165,6 @@ export default function BlogsHero() {
       "
     >
       <div className="relative mx-auto w-full max-w-[1320px]">
-        {/* TOP GRADIENT PANEL */}
         <div
           aria-hidden="true"
           className="
@@ -78,9 +192,7 @@ export default function BlogsHero() {
           />
         </div>
 
-        {/* PAGE CONTENT */}
         <div className="relative z-10">
-          {/* HEADING CONTENT */}
           <div
             className="
               flex flex-col items-center
@@ -91,7 +203,6 @@ export default function BlogsHero() {
               lg:px-[52px] lg:pt-[44px]
             "
           >
-            {/* BADGE */}
             <span
               className="
                 inline-flex min-h-[26px]
@@ -108,7 +219,6 @@ export default function BlogsHero() {
               {blogsPage.badge.label}
             </span>
 
-            {/* HEADING */}
             <h1
               className="
                 mt-3
@@ -124,7 +234,6 @@ export default function BlogsHero() {
               {blogsPage.heading}
             </h1>
 
-            {/* BREADCRUMB */}
             <nav
               aria-label="Breadcrumb"
               className="
@@ -157,7 +266,6 @@ export default function BlogsHero() {
               <span>{blogsPage.breadcrumb.current}</span>
             </nav>
 
-            {/* SEARCH */}
             <div
               className="
                 mt-6 flex h-[46px] w-full max-w-[300px]
@@ -192,7 +300,6 @@ export default function BlogsHero() {
             </div>
           </div>
 
-          {/* ALL 12 GUIDE CARDS */}
           <div
             className="
               mx-auto mt-[52px]
@@ -217,9 +324,8 @@ export default function BlogsHero() {
                   lg:min-h-[374.25px] lg:rounded-[28px]
                 "
               >
-                {/* CARD IMAGE */}
                 <Link
-                  href={GUIDE_PAGE_HREF}
+                  href={guide.href}
                   aria-label={guide.title}
                   className="
                     relative block h-[190px] w-full
@@ -233,11 +339,7 @@ export default function BlogsHero() {
                     src={guide.image}
                     alt={guide.imageAlt}
                     fill
-                    sizes="
-                      (max-width: 639px) 100vw,
-                      (max-width: 1023px) 50vw,
-                      384px
-                    "
+                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 384px"
                     className="
                       object-cover object-center
                       transition-transform duration-300
@@ -246,7 +348,6 @@ export default function BlogsHero() {
                   />
                 </Link>
 
-                {/* CARD CONTENT */}
                 <div
                   className="
                     flex min-h-[159px] flex-1 flex-col
@@ -254,7 +355,6 @@ export default function BlogsHero() {
                     lg:px-6 lg:pb-6 lg:pt-5
                   "
                 >
-                  {/* CATEGORY AND READ TIME */}
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className="
@@ -281,12 +381,10 @@ export default function BlogsHero() {
                         strokeWidth={1.8}
                         aria-hidden="true"
                       />
-
                       {guide.readTime}
                     </span>
                   </div>
 
-                  {/* CARD HEADING */}
                   <h2
                     className="
                       mt-3 font-red-hat-display
@@ -298,18 +396,15 @@ export default function BlogsHero() {
                     "
                   >
                     <Link
-                      href={GUIDE_PAGE_HREF}
-                      className="
-                        transition-colors hover:text-[#00897B]
-                      "
+                      href={guide.href}
+                      className="transition-colors hover:text-[#00897B]"
                     >
                       {guide.title}
                     </Link>
                   </h2>
 
-                  {/* READ GUIDE */}
                   <Link
-                    href={GUIDE_PAGE_HREF}
+                    href={guide.href}
                     className="
                       mt-auto inline-flex w-fit
                       items-center gap-2 pt-4
@@ -320,7 +415,6 @@ export default function BlogsHero() {
                     "
                   >
                     <span>{guide.linkText}</span>
-
                     <ArrowRight
                       size={16}
                       strokeWidth={2}
@@ -332,7 +426,6 @@ export default function BlogsHero() {
             ))}
           </div>
 
-          {/* NO SEARCH RESULTS */}
           {visibleGuides.length === 0 && (
             <p
               role="status"
@@ -348,7 +441,6 @@ export default function BlogsHero() {
           )}
         </div>
 
-        {/* LOAD MORE / NO MORE DATA */}
         {visibleGuides.length > 0 && (
           <div
             className="
@@ -360,7 +452,6 @@ export default function BlogsHero() {
               lg:mt-[60px]
             "
           >
-            {/* DIVIDER */}
             <div
               aria-hidden="true"
               className="
@@ -395,7 +486,6 @@ export default function BlogsHero() {
                   strokeWidth={2}
                   aria-hidden="true"
                 />
-
                 <span>Load more</span>
               </button>
             ) : (

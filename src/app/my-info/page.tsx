@@ -19,6 +19,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { InlineSpinner } from '@/components/common/FullPageLoader';
 import Header from '@/components/marketing/Header';
+import LiveChatWidget from '@/components/marketing/LiveChatWidget';
 import { humanizeLabel } from '@/components/result/result-labels';
 import { storeJourney } from '@/constants/shared';
 import data from '@/data/content.json';
@@ -327,6 +328,7 @@ export default function MyInfoPage() {
           bg-white
         "
       >
+        <LiveChatWidget />
         {/* =====================================================
             DARK AREA
         ====================================================== */}

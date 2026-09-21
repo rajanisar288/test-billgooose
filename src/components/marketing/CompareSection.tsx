@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, type FormEvent } from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -7,11 +11,47 @@ import data from '@/data/content.json';
 
 const NEWSLETTER_IMAGE = '/images/compare-mail.png';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Compare() {
   const { compare, newsletter } = data;
 
   const activeItems = compare.items;
   const comingSoonItems = compare.comingSoonItems;
+
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'error' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const trimmed = email.trim();
+
+    if (!trimmed) {
+      setStatus('error');
+      setErrorMessage('Please enter your email address.');
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(trimmed)) {
+      setStatus('error');
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    setStatus('success');
+    setErrorMessage('');
+  }
+
+  function handleChange(value: string) {
+    setEmail(value);
+
+    if (status !== 'idle') {
+      setStatus('idle');
+      setErrorMessage('');
+    }
+  }
 
   return (
     <section
@@ -21,11 +61,11 @@ export default function Compare() {
 
         px-4
         pb-[72px]
-        pt-[40px]
+        pt-0
 
         min-[390px]:px-5
         min-[390px]:pb-[100px]
-        min-[390px]:pt-[48px]
+        min-[390px]:pt-0
 
         md:px-6
 
@@ -34,9 +74,6 @@ export default function Compare() {
       "
     >
       <div className="mx-auto w-full max-w-[1216px]">
-        {/* =====================================================
-            LABEL
-        ====================================================== */}
         <div className="flex justify-center">
           <div
             className="
@@ -94,9 +131,6 @@ export default function Compare() {
           </div>
         </div>
 
-        {/* =====================================================
-            HEADING
-        ====================================================== */}
         <div
           className="
             mx-auto
@@ -165,9 +199,6 @@ export default function Compare() {
           </p>
         </div>
 
-        {/* =====================================================
-            SIX ACTIVE SERVICE CARDS
-        ====================================================== */}
         <div
           className="
             mt-8
@@ -231,9 +262,6 @@ export default function Compare() {
                   lg:rounded-[22px]
                 "
               >
-                {/* =================================================
-                    TOP CONTENT
-                ================================================== */}
                 <div
                   className="
                     flex
@@ -255,7 +283,6 @@ export default function Compare() {
                     lg:py-[17px]
                   "
                 >
-                  {/* ICON */}
                   <div
                     className="
                       flex
@@ -302,7 +329,6 @@ export default function Compare() {
                     />
                   </div>
 
-                  {/* COPY */}
                   <div className="min-w-0 flex-1">
                     <h3
                       className="
@@ -352,9 +378,6 @@ export default function Compare() {
                   </div>
                 </div>
 
-                {/* =================================================
-                    CTA
-                ================================================== */}
                 <div
                   className="
                     relative
@@ -384,7 +407,7 @@ export default function Compare() {
                       gap-1.5
 
                       font-inter
-                      text-[11px]
+                      text-[13px]
                       font-semibold
                       leading-5
 
@@ -420,12 +443,8 @@ export default function Compare() {
                     />
                   </Link>
 
-                  {/* =============================================
-                      BUNDLE BILLS TOOLTIP
-                  ============================================== */}
                   {isBundleBills && (
                     <div className="group absolute right-3 top-1/2 z-30 -translate-y-1/2">
-                      {/* Info icon trigger */}
                       <button
                         type="button"
                         aria-label="More information about Bundle Bills"
@@ -460,7 +479,6 @@ export default function Compare() {
                         />
                       </button>
 
-                      {/* Tooltip bubble — appears on hover / focus */}
                       <div
                         role="tooltip"
                         className="
@@ -509,9 +527,6 @@ export default function Compare() {
           })}
         </div>
 
-        {/* =====================================================
-            BOTTOM ROW
-        ====================================================== */}
         <div
           className="
             mt-4
@@ -717,93 +732,90 @@ export default function Compare() {
             </div>
           </div>
 
-          {/* NEWSLETTER */}
-          {/* NEWSLETTER */}
+          {/* =====================================================
+              NEWSLETTER
+          ===================================================== */}
           <div
             className="
-    relative
+              relative
 
-    min-h-[190px]
+              flex
+              min-h-[190px]
+              flex-col
+              justify-between
 
-    overflow-hidden
+              overflow-hidden
 
-    rounded-[18px]
+              rounded-[18px]
 
-    border
-    border-[#EAECF0]
+              border
+              border-[#EAECF0]
 
-    bg-white
+              bg-white
 
-    p-4
+              p-4
 
-    shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
+              shadow-[0px_8px_24px_0px_rgba(15,30,60,0.05),0px_1px_2px_0px_rgba(15,30,60,0.04)]
 
-    sm:rounded-[20px]
-    sm:p-5
+              sm:rounded-[20px]
+              sm:p-5
 
-    lg:h-[200px]
-    lg:min-h-[200px]
-    lg:rounded-[22px]
-    lg:px-6
-    lg:py-5
-  "
+              lg:h-[200px]
+              lg:min-h-[200px]
+              lg:rounded-[22px]
+              lg:px-6
+              lg:py-5
+            "
           >
-            {/* =====================================================
-      DECORATIVE GRADIENT — TOP-RIGHT QUARTER-CIRCLE WEDGE
-      - Anchored to top-right corner
-      - Curved bottom-left edge
-      - Sits behind the mailbox icon
-  ====================================================== */}
+            {/* Decorative gradient wedge — top-right */}
             <div
               aria-hidden="true"
               className="
-      pointer-events-none
+                pointer-events-none
 
-      absolute
-      right-0
-      top-0
-      z-0
+                absolute
+                right-0
+                top-0
+                z-0
 
-      h-[120px]
-      w-[120px]
+                h-[120px]
+                w-[120px]
 
-      sm:h-[140px]
-      sm:w-[140px]
+                sm:h-[140px]
+                sm:w-[140px]
 
-      lg:h-[160px]
-      lg:w-[160px]
+                lg:h-[160px]
+                lg:w-[160px]
 
-      rounded-bl-full
+                rounded-bl-full
 
-      bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
-    "
+                bg-[linear-gradient(135deg,#E7F6F5_0%,#FFFFFF_100%)]
+              "
             />
 
-            {/* =====================================================
-      MAILBOX ICON — centered inside the gradient wedge
-  ====================================================== */}
+            {/* Mailbox icon — inside the wedge */}
             <div
               className="
-      pointer-events-none
+                pointer-events-none
 
-      absolute
-      right-4
-      top-3
-      z-10
+                absolute
+                right-4
+                top-3
+                z-10
 
-      h-[72px]
-      w-[72px]
+                h-[72px]
+                w-[72px]
 
-      sm:right-5
-      sm:top-4
-      sm:h-[82px]
-      sm:w-[82px]
+                sm:right-5
+                sm:top-4
+                sm:h-[82px]
+                sm:w-[82px]
 
-      lg:right-6
-      lg:top-4
-      lg:h-[92px]
-      lg:w-[92px]
-    "
+                lg:right-6
+                lg:top-4
+                lg:h-[92px]
+                lg:w-[92px]
+              "
             >
               <Image
                 src={NEWSLETTER_IMAGE}
@@ -814,223 +826,302 @@ export default function Compare() {
               />
             </div>
 
-            {/* =====================================================
-      COPY
-  ====================================================== */}
+            {/* Copy */}
             <div
               className="
-      relative
-      z-20
+                relative
+                z-20
 
-      max-w-[70%]
+                max-w-[70%]
 
-      sm:max-w-[72%]
+                sm:max-w-[72%]
 
-      lg:max-w-[350px]
-    "
+                lg:max-w-[350px]
+              "
             >
               <h3
                 className="
-        font-red-hat-display
+                  font-red-hat-display
 
-        text-[19px]
-        font-extrabold
-        leading-[25px]
+                  text-[19px]
+                  font-extrabold
+                  leading-[25px]
 
-        text-[#0C3354]
+                  text-[#0C3354]
 
-        sm:text-[21px]
+                  sm:text-[21px]
 
-        lg:text-[24px]
-        lg:leading-[30px]
-      "
+                  lg:text-[24px]
+                  lg:leading-[30px]
+                "
               >
                 Be the first to know
               </h3>
 
               <p
                 className="
-        mt-3
+                  mt-3
 
-        max-w-[340px]
+                  max-w-[340px]
 
-        font-red-hat-display
-        text-[11px]
-        font-[467]
-        leading-[15px]
+                  font-red-hat-display
+                  text-[11px]
+                  font-[467]
+                  leading-[15px]
 
-        text-[#576574]
+                  text-[#576574]
 
-        sm:text-[12px]
-        sm:leading-[16px]
+                  sm:text-[12px]
+                  sm:leading-[16px]
 
-        lg:text-[16px]
-        lg:leading-[22px]
-      "
+                  lg:text-[16px]
+                  lg:leading-[22px]
+                "
               >
                 {newsletter.description}
               </p>
             </div>
 
-            {/* =====================================================
-      FORM — bottom aligned
-  ====================================================== */}
+            {/* Form */}
             <form
+              onSubmit={handleSubmit}
+              noValidate
               className="
-      absolute
-      bottom-4
-      left-4
-      right-4
-      z-20
+                relative
+                z-20
 
-      sm:bottom-5
-      sm:left-5
-      sm:right-5
+                mt-4
+                w-full
 
-      lg:left-6
-      lg:right-6
-    "
+                sm:mt-5
+
+                lg:mt-0
+              "
             >
-              <div
-                className="
-        flex
-        h-[44px]
-        w-full
-
-        items-center
-
-        rounded-full
-
-        border
-        border-[#D0D5DD]
-
-        bg-white
-
-        pl-4
-
-        sm:h-[46px]
-        sm:pl-4
-
-        lg:h-[48px]
-        lg:pl-5
-      "
-              >
-                {/* Mail icon — vertically centered */}
-                <Mail
-                  aria-hidden="true"
-                  className="
-          h-[15px]
-          w-[15px]
-          shrink-0
-
-          text-[#355E87]
-
-          lg:h-[17px]
-          lg:w-[17px]
-        "
-                  strokeWidth={1.7}
-                />
-
-                <label
-                  htmlFor="compare-newsletter-email"
-                  className="sr-only"
-                >
-                  {newsletter.form.label}
-                </label>
-
-                {/* Input — full height flex-centered so text aligns with icon */}
-                <input
-                  id="compare-newsletter-email"
-                  type="email"
-                  placeholder={newsletter.form.placeholder}
-                  className="
-          flex
-          h-full
-          min-w-0
-          flex-1
-          items-center
-
-          bg-transparent
-
-          px-3
-
-          font-inter
-          text-[11px]
-
-          leading-none
-
-          text-[#0C3354]
-
-          outline-none
-
-          placeholder:text-[#475467]
-
-          sm:text-[12px]
-
-          lg:px-4
-          lg:text-[13px]
-        "
-                />
-
-                {/* Subscribe button — navy pill with teal ring */}
+              {/* =============================================
+                  INPUT ROW — ALWAYS rendered (never unmounted).
+                  The message is an absolutely-positioned
+                  overlay on top of it, so the layout CANNOT
+                  shift when status changes.
+              ============================================= */}
+              <div className="relative w-full">
+                {/* The real input row — hidden via `invisible` when
+                    a message is showing, but still occupies space. */}
                 <div
-                  className="
-          -mr-px
+                  className={`
+                    flex
+                    h-[48px]
+                    w-full
 
-          h-[44px]
-          w-[105px]
-          shrink-0
+                    items-center
 
-          rounded-full
+                    rounded-full
 
-          border-[1.5px]
-          border-[#00B1AA]
+                    border
+                    border-[#D0D5DD]
 
-          p-[2px]
+                    bg-white
 
-          sm:h-[46px]
-          sm:w-[115px]
+                    pl-4
 
-          lg:h-[48px]
-          lg:w-[125px]
-        "
+                    sm:h-[52px]
+                    sm:pl-5
+
+                    lg:h-[56px]
+                    lg:pl-6
+
+                    ${status !== 'idle' ? 'invisible' : ''}
+                  `}
                 >
-                  <button
-                    type="submit"
+                  <Mail
+                    aria-hidden="true"
                     className="
-            flex
-            h-full
-            w-full
+                      h-[16px]
+                      w-[16px]
+                      shrink-0
 
-            items-center
-            justify-center
+                      text-[#355E87]
 
-            whitespace-nowrap
+                      sm:h-[18px]
+                      sm:w-[18px]
 
-            rounded-full
+                      lg:h-[20px]
+                      lg:w-[20px]
+                    "
+                    strokeWidth={1.7}
+                  />
 
-            bg-[#0D3B66]
-
-            px-3
-
-            font-red-hat-display
-            text-[10px]
-            font-semibold
-
-            text-white
-
-            transition-colors
-
-            hover:bg-[#124A7E]
-
-            sm:text-[11px]
-
-            lg:text-[12px]
-          "
+                  <label
+                    htmlFor="compare-newsletter-email"
+                    className="sr-only"
                   >
-                    {newsletter.form.buttonLabel}
-                  </button>
+                    {newsletter.form.label}
+                  </label>
+
+                  <input
+                    id="compare-newsletter-email"
+                    type="email"
+                    placeholder={newsletter.form.placeholder}
+                    value={email}
+                    onChange={(e) => handleChange(e.target.value)}
+                    className="
+                      flex
+                      h-full
+                      min-w-0
+                      flex-1
+                      items-center
+
+                      bg-transparent
+
+                      px-3
+
+                      font-inter
+                      text-[14px]
+
+                      leading-none
+
+                      text-[#0C3354]
+
+                      outline-none
+
+                      placeholder:text-[#475467]
+
+                      sm:text-[15px]
+
+                      lg:px-4
+                      lg:text-[16px]
+                    "
+                  />
+
+                  <div
+                    className="
+                      -mr-px
+
+                      h-[48px]
+                      w-[120px]
+                      shrink-0
+
+                      rounded-full
+
+                      p-[3px]
+
+                      sm:h-[52px]
+                      sm:w-[132px]
+
+                      lg:h-[56px]
+                      lg:w-[148px]
+                    "
+                    style={{
+                      background: 'linear-gradient(77.21deg, #2E69A4 -1.53%, #01ACA7 136.17%)',
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="
+                        flex
+                        h-full
+                        w-full
+
+                        items-center
+                        justify-center
+
+                        whitespace-nowrap
+
+                        rounded-full
+
+                        px-3
+
+                        font-red-hat-display
+                        text-[13px]
+                        font-semibold
+
+                        text-white
+
+                        transition-opacity
+
+                        hover:opacity-90
+
+                        focus-visible:outline-none
+                        focus-visible:ring-2
+                        focus-visible:ring-[#01ACA7]
+                        focus-visible:ring-offset-2
+
+                        sm:text-[14px]
+
+                        lg:text-[16px]
+                      "
+                      style={{
+                        background: 'var(--Secondary-500, #0D3B66)',
+                      }}
+                    >
+                      {newsletter.form.buttonLabel}
+                    </button>
+                  </div>
                 </div>
+
+                {/* Success / error overlay — same size as the input
+                    row, absolutely positioned so nothing moves. */}
+                {status !== 'idle' && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    onClick={() => {
+                      setStatus('idle');
+                      setErrorMessage('');
+                    }}
+                    className="
+                      absolute
+                      inset-0
+                      z-30
+
+                      flex
+                      h-[48px]
+                      w-full
+
+                      cursor-pointer
+
+                      items-center
+                      justify-center
+
+                      rounded-full
+
+                      border
+
+                      px-4
+
+                      text-center
+
+                      transition-opacity
+
+                      hover:opacity-90
+
+                      sm:h-[52px]
+
+                      lg:h-[56px]
+                    "
+                    style={{
+                      borderColor: status === 'success' ? '#ABEFC6' : '#FDA29B',
+                      backgroundColor: status === 'success' ? '#ECFDF3' : '#FEF3F2',
+                    }}
+                  >
+                    <p
+                      className={`
+                        font-inter
+                        text-[13px]
+                        font-medium
+                        leading-none
+
+                        sm:text-[14px]
+
+                        lg:text-[16px]
+
+                        ${status === 'success' ? 'text-[#067647]' : 'text-[#D92D20]'}
+                      `}
+                    >
+                      {status === 'success' ? 'Thanks for subscribing' : errorMessage}
+                    </p>
+                  </div>
+                )}
               </div>
             </form>
           </div>
