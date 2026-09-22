@@ -1,13 +1,11 @@
-export interface AdditionalParameters {
-  additionalProp1: string;
-  additionalProp2: string;
-  additionalProp3: string;
-}
+export type AdditionalParameters = Record<string, string>;
 
 export interface Journey {
+  id?: string;
   address?: Address | null;
   lastUrl?: string;
   uuid?: string;
+  source?: string;
   sourceType?: null | string;
   sourceName?: string;
   sourceId?: string;
@@ -28,6 +26,8 @@ export interface Journey {
   utmCampaign?: string;
   utmTerm?: string;
   utmContent?: string;
+  tduid?: string;
+  tdclidSn?: string;
   additionalParameters?: AdditionalParameters;
   journeyId?: string;
   customer?: CustomerDetails | null;
