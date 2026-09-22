@@ -19,7 +19,7 @@ export const journeyApi = {
     }),
 
   // Create a Journey
-  createJourney: (payload: Journey) => apiClient.post('/api/v1/journeys', payload),
+  createJourney: (payload: Partial<Journey>) => apiClient.post('/api/v1/journeys', payload),
 
   // Check Consumption (energy service)
   prepareConsumption: (journeyId: string, payload: { forceRefresh: boolean }) =>

@@ -7,6 +7,7 @@ import WhatYouCanExpect from '@/components/careers/WhatYouCanExpect';
 import WorkAtBillGoose from '@/components/careers/WorkAtBillGoose';
 import Footer from '@/components/marketing/Footer';
 import Header from '@/components/marketing/Header';
+import LiveChatWidget from '@/components/marketing/LiveChatWidget';
 import Newsletter from '@/components/marketing/NewsLetter';
 
 export default function CareersPage() {
@@ -16,6 +17,7 @@ export default function CareersPage() {
 
       <main className="w-full">
         <CareersHero />
+        <LiveChatWidget />
         <WhatItsLike />
         <PeopleWhoDoWell />
         <WorkAtBillGoose />

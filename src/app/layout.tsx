@@ -47,7 +47,9 @@ export default function RootLayout({
           <ToastProvider>{children}</ToastProvider>
           {/* {children} */}
         </ShowcaseGuard>
-        <LoadConfig />
+        <Suspense fallback={null}>
+          <LoadConfig />
+        </Suspense>
         {/* <ToastProvider>{children}</ToastProvider> */}
 
         <Script

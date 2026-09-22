@@ -884,7 +884,7 @@ export default function SignInPage() {
                 </div>
 
                 {/* =================================================
-                    MOBILE + TABLET HERO IMAGE
+                    MOBILE + TABLET HERO IMAGE — enlarged
                 ================================================== */}
                 <div
                   className="
@@ -895,16 +895,16 @@ export default function SignInPage() {
                     left-1/2
                     z-10
 
-                    h-[300px]
-                    w-[320px]
+                    h-[340px]
+                    w-[365px]
 
                     -translate-x-1/2
 
-                    sm:h-[350px]
-                    sm:w-[380px]
+                    sm:h-[395px]
+                    sm:w-[430px]
 
-                    md:h-[390px]
-                    md:w-[440px]
+                    md:h-[440px]
+                    md:w-[495px]
 
                     lg:hidden
                   "
@@ -914,7 +914,7 @@ export default function SignInPage() {
                     alt={hero.mobileImage.alt}
                     fill
                     priority
-                    sizes="(max-width: 1023px) 440px, 0px"
+                    sizes="(max-width: 1023px) 495px, 0px"
                     className="
                       object-contain
                       object-bottom
@@ -923,7 +923,7 @@ export default function SignInPage() {
                 </div>
 
                 {/* =================================================
-                    DESKTOP HERO IMAGE
+                    DESKTOP HERO IMAGE — nudged left + slightly zoomed
                 ================================================== */}
                 <div
                   className="
@@ -940,12 +940,12 @@ export default function SignInPage() {
                       absolute
                       inset-0
 
-                      lg:left-[-2%]
+                      lg:left-[-10%]
                       lg:right-[-20%]
-                      lg:translate-y-8
+                      lg:translate-y-6
 
-                      xl:left-[0%]
-                      xl:right-[-34%]
+                      xl:left-[-8%]
+                      xl:right-[-32%]
                     "
                   >
                     <Image
@@ -953,7 +953,7 @@ export default function SignInPage() {
                       alt={hero.image.alt}
                       fill
                       priority
-                      sizes="(min-width: 1024px) 54vw, 0px"
+                      sizes="(min-width: 1024px) 60vw, 0px"
                       className="
                         object-contain
                         object-center

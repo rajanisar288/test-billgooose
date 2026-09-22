@@ -1,12 +1,27 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { ChevronRight, Clock3 } from 'lucide-react';
 
-import data from '@/data/content.json';
+type GuideHero = {
+  badge: { category: string; readTime: string };
+  heading: string;
+  breadcrumb: {
+    home: { label: string; href: string };
+    guides: { label: string; href: string };
+    current: string;
+  };
+  image: { src: string; alt: string };
+};
 
-export default function GuideArticleHero() {
-  const { staticGuidePage } = data;
+type GuideArticleHeroProps = {
+  heroData: GuideHero;
+};
+
+export default function GuideArticleHero({ heroData }: GuideArticleHeroProps) {
+  const page = heroData;
 
   return (
     <section
@@ -19,7 +34,6 @@ export default function GuideArticleHero() {
       "
     >
       <div className="relative mx-auto w-full max-w-[1320px]">
-        {/* TOP GRADIENT PANEL */}
         <div
           aria-hidden="true"
           className="
@@ -45,7 +59,6 @@ export default function GuideArticleHero() {
           />
         </div>
 
-        {/* HERO CONTENT */}
         <div
           className="
             relative z-10
@@ -56,7 +69,6 @@ export default function GuideArticleHero() {
             lg:px-[52px] lg:pt-[44px]
           "
         >
-          {/* CATEGORY + READING TIME */}
           <div
             className="
               inline-flex min-h-[30px]
@@ -79,7 +91,7 @@ export default function GuideArticleHero() {
                 lg:text-[14px]
               "
             >
-              {staticGuidePage.badge.category}
+              {page.badge.category}
             </span>
 
             <span
@@ -96,16 +108,14 @@ export default function GuideArticleHero() {
                 className="h-[14px] w-[14px] shrink-0"
                 strokeWidth={2.2}
               />
-
-              {staticGuidePage.badge.readTime}
+              {page.badge.readTime}
             </span>
           </div>
 
-          {/* MAIN HEADING */}
           <h1
             className="
               mt-4 max-w-[950px]
-              font-red-hat-display font-[645]
+              font-red-hat-display font-[845]
               text-[30px] leading-[38px]
               tracking-[-0.02em] text-[#0C3354]
               sm:text-[36px] sm:leading-[44px]
@@ -113,10 +123,9 @@ export default function GuideArticleHero() {
               lg:text-[48px] lg:leading-[60px]
             "
           >
-            {staticGuidePage.heading}
+            {page.heading}
           </h1>
 
-          {/* BREADCRUMB */}
           <nav
             aria-label="Breadcrumb"
             className="
@@ -130,14 +139,14 @@ export default function GuideArticleHero() {
             "
           >
             <Link
-              href={staticGuidePage.breadcrumb.home.href}
+              href={page.breadcrumb.home.href}
               className="
                 underline decoration-[1px]
                 underline-offset-[3px]
                 transition-colors hover:text-[#00897B]
               "
             >
-              {staticGuidePage.breadcrumb.home.label}
+              {page.breadcrumb.home.label}
             </Link>
 
             <ChevronRight
@@ -147,14 +156,14 @@ export default function GuideArticleHero() {
             />
 
             <Link
-              href={staticGuidePage.breadcrumb.guides.href}
+              href={page.breadcrumb.guides.href}
               className="
                 underline decoration-[1px]
                 underline-offset-[3px]
                 transition-colors hover:text-[#00897B]
               "
             >
-              {staticGuidePage.breadcrumb.guides.label}
+              {page.breadcrumb.guides.label}
             </Link>
 
             <ChevronRight
@@ -163,10 +172,9 @@ export default function GuideArticleHero() {
               strokeWidth={1.8}
             />
 
-            <span>{staticGuidePage.breadcrumb.current}</span>
+            <span>{page.breadcrumb.current}</span>
           </nav>
 
-          {/* MAIN IMAGE */}
           <div
             className="
               relative mt-8
@@ -180,8 +188,8 @@ export default function GuideArticleHero() {
             "
           >
             <Image
-              src={staticGuidePage.image.src}
-              alt={staticGuidePage.image.alt}
+              src={page.image.src}
+              alt={page.image.alt}
               fill
               priority
               quality={100}
