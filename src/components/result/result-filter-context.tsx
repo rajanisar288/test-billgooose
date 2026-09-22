@@ -22,6 +22,10 @@ type ResultFilterContextValue = {
   setStickeeFacets: (facets: AnyStickeeFacets | null) => void;
   sortKey: string;
   setSortKey: (sort: string) => void;
+  dealsCount: number | null;
+  setDealsCount: (count: number | null) => void;
+  isDealsLoading: boolean;
+  setIsDealsLoading: (loading: boolean) => void;
 };
 
 const ResultFilterContext = createContext<ResultFilterContextValue | null>(null);
@@ -30,6 +34,8 @@ export function ResultFilterProvider({ children }: { children: ReactNode }) {
   const [filters, setFilters] = useState<ResultFilterState>(EMPTY_FILTERS);
   const [stickeeFacets, setStickeeFacets] = useState<AnyStickeeFacets | null>(null);
   const [sortKey, setSortKey] = useState<string>('RECOMMENDED');
+  const [dealsCount, setDealsCount] = useState<number | null>(null);
+  const [isDealsLoading, setIsDealsLoading] = useState<boolean>(false);
 
   const value = useMemo(
     () => ({
@@ -40,8 +46,12 @@ export function ResultFilterProvider({ children }: { children: ReactNode }) {
       setStickeeFacets,
       sortKey,
       setSortKey,
+      dealsCount,
+      setDealsCount,
+      isDealsLoading,
+      setIsDealsLoading,
     }),
-    [filters, stickeeFacets, sortKey],
+    [filters, stickeeFacets, sortKey, dealsCount, isDealsLoading],
   );
 
   return <ResultFilterContext.Provider value={value}>{children}</ResultFilterContext.Provider>;

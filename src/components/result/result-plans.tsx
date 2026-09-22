@@ -250,7 +250,13 @@ export default function ResultPlans({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { journey, setJourney } = useJourneyStore();
-  const { filters: appliedFilters, sortKey, setSortKey } = useResultFilters();
+  const {
+    filters: appliedFilters,
+    sortKey,
+    setSortKey,
+    setIsDealsLoading,
+    setDealsCount,
+  } = useResultFilters();
   const [actionError, setActionError] = useState<string>('');
   const [selectingPlanId, setSelectingPlanId] = useState<string | null>(null);
   const [isContinuingBundle, setIsContinuingBundle] = useState(false);
@@ -515,6 +521,31 @@ export default function ResultPlans({
 
   const stickeeLoading = (isSimOnly && simLoading) || (service === 'broadband' && bbLoading);
   const stickeeError = (isSimOnly && simError) || (service === 'broadband' && bbError);
+
+  useEffect(() => {
+    const isLoading = isSimOnly ? simLoading : service === 'broadband' ? bbLoading : quoteLoading;
+    setIsDealsLoading(isLoading);
+    if (!isLoading) {
+      const count = isSimOnly
+        ? simOnlyPlanItems.length
+        : service === 'broadband'
+          ? broadbandPlanItems.length
+          : (resultCount ?? quotePlans?.length ?? null);
+      setDealsCount(count);
+    }
+  }, [
+    isSimOnly,
+    service,
+    simLoading,
+    bbLoading,
+    quoteLoading,
+    simOnlyPlanItems.length,
+    broadbandPlanItems.length,
+    resultCount,
+    quotePlans?.length,
+    setIsDealsLoading,
+    setDealsCount,
+  ]);
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(
     isInsurance ? 'monthly' : resultsStatus.planTabs.defaultValue,
@@ -1184,7 +1215,11 @@ export default function ResultPlans({
                   {heading ?? resultsStatus.heading}
                 </h2>
 
-                {!quoteLoading && (
+                {quoteLoading || stickeeLoading ? (
+                  <p className="mt-1 font-inter text-[15px] font-normal leading-5 text-[#667085]">
+                    <strong className="font-normal animate-pulse">Loading deals...</strong>
+                  </p>
+                ) : (
                   <p
                     className="
                     mt-1
@@ -1215,10 +1250,15 @@ export default function ResultPlans({
                         <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
                         sorted with lowest first.
                       </>
+                    ) : service === 'broadband' ? (
+                      <>
+                        <strong className="font-normal">{broadbandPlanItems.length} plans</strong>{' '}
+                        found based on your preferences.
+                      </>
                     ) : (
                       <>
                         <strong className="font-normal">
-                          {resultCount ?? resultsStatus.descriptionStart}
+                          {resultCount ?? quotePlans?.length ?? resultsStatus.descriptionStart}
                         </strong>{' '}
                         {resultsStatus.descriptionRest}
                       </>

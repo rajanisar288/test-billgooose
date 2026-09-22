@@ -38,6 +38,7 @@ export type SelectPlan = {
   action?: string;
   energy?: unknown;
   broadband?: unknown;
+  mobile?: unknown;
   claimText?: string;
   feeDetails?: unknown[];
   priceIncreaseDetails?: unknown[];

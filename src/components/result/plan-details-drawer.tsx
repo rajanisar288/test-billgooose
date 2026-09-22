@@ -68,17 +68,47 @@ export default function PlanDetailsDrawer({
       return '';
     }
 
+    if (plan.service === 'mobile' || plan.mobile) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mob = (plan.mobile || {}) as any;
+      if (mob.total_cost && Number(mob.total_cost) > 0) {
+        return `£${Number(mob.total_cost).toFixed(2)}`;
+      }
+      const monthly = Number(plan.price.replace(/[£,\s]/g, '')) || 0;
+      const contractMonths = mob.tariff?.contract_length || 24;
+      const upfront =
+        mob.discount_line_rental != null && Number(mob.discount_line_rental) > 0
+          ? Number(mob.discount_line_rental)
+          : 0;
+      const total = monthly * contractMonths + upfront;
+      return total > 0 ? `£${total.toFixed(2)}` : '£0';
+    }
+
+    if (plan.service === 'broadband' || plan.broadband) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const bb = (plan.broadband || {}) as any;
+      if (bb.total_first_year_cost && Number(bb.total_first_year_cost) > 0) {
+        return `£${Number(bb.total_first_year_cost).toFixed(2)}`;
+      }
+      if (bb.full_contract_cost && Number(bb.full_contract_cost) > 0) {
+        return `£${Number(bb.full_contract_cost).toFixed(2)}`;
+      }
+      const monthly = Number(plan.price.replace(/[£,\s]/g, '')) || 0;
+      const total = monthly * 12;
+      return total > 0 ? `£${total.toFixed(2)}` : '£0';
+    }
+
     if (plan.annualPrice) {
       return plan.annualPrice;
     }
 
     const numericPrice = Number(plan.price.replace(/[£,\s]/g, ''));
 
-    if (Number.isNaN(numericPrice)) {
+    if (Number.isNaN(numericPrice) || numericPrice <= 0) {
       return '';
     }
 
-    const total = numericPrice * planDetailsDrawer.annualMultiplier;
+    const total = numericPrice * (planDetailsDrawer.annualMultiplier || 12);
 
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -501,8 +531,9 @@ export default function PlanDetailsDrawer({
                   </span>
                 </div>
 
-                <span
-                  className="
+                {plan?.saving && (
+                  <span
+                    className="
                     mt-1
 
                     inline-flex
@@ -526,24 +557,25 @@ export default function PlanDetailsDrawer({
 
                     sm:text-[11.5px]
                   "
-                >
-                  <Image
-                    src={plans.savingIcon}
-                    alt=""
-                    width={12}
-                    height={12}
-                    aria-hidden="true"
-                    className="
+                  >
+                    <Image
+                      src={plans.savingIcon}
+                      alt=""
+                      width={12}
+                      height={12}
+                      aria-hidden="true"
+                      className="
                       h-3
                       w-3
                       shrink-0
 
                       object-contain
                     "
-                  />
+                    />
 
-                  {plan.saving}
-                </span>
+                    {plan.saving}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -567,7 +599,13 @@ export default function PlanDetailsDrawer({
               />
 
               <CostSummary
-                label={planDetailsDrawer.annualCostLabel}
+                label={
+                  plan.service === 'mobile' || plan.mobile
+                    ? 'Total Contract Cost'
+                    : plan.service === 'broadband' || plan.broadband
+                      ? 'First Year Cost'
+                      : planDetailsDrawer.annualCostLabel
+                }
                 value={annualCost}
                 variant="annual"
               />
@@ -840,19 +878,19 @@ function CostSummary({ label, value, variant }: CostSummaryProps) {
 }
 
 function formatPence(value?: number | null): string {
-  if (value === undefined || value === null || !Number.isFinite(value)) return '—';
+  if (value === undefined || value === null || !Number.isFinite(value) || value <= 0) return '-';
   return `${Number(value)
     .toFixed(3)
     .replace(/\.?0+$/, '')}p`;
 }
 
 function formatKwh(value?: number | null): string {
-  if (value === undefined || value === null || !Number.isFinite(value)) return '—';
+  if (value === undefined || value === null || !Number.isFinite(value) || value <= 0) return '-';
   return `${Number(value).toLocaleString('en-GB', { maximumFractionDigits: 1 })} kWh`;
 }
 
 function formatCostGbp(value?: number | null): string {
-  if (value === undefined || value === null || !Number.isFinite(value)) return '—';
+  if (value === undefined || value === null || !Number.isFinite(value) || value <= 0) return '-';
   return `£${Number(value).toFixed(2)}`;
 }
 
@@ -863,19 +901,104 @@ type DetailsTableProps = {
 function DetailsTable({ plan }: DetailsTableProps) {
   const { details } = data.resultPage.planDetailsDrawer;
 
+  if (plan.service === 'mobile' || plan.mobile) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mob = (plan.mobile || {}) as any;
+    const tariff = mob.tariff || {};
+    const model = mob.model || {};
+    const brand = model.brand?.name || 'Smartphone';
+    const network = tariff.network?.name || plan.logoAlt || 'Mobile Network';
+    const dataAllowance =
+      tariff.data === -1 || tariff.data >= 999999
+        ? 'Unlimited data'
+        : tariff.data
+          ? `${(tariff.data / 1000).toFixed(0)}GB data`
+          : 'Unlimited data';
+    const minsTexts = 'Unlimited mins & texts';
+    const contract = `${tariff.contract_length || 24} months`;
+    const upfront =
+      mob.discount_line_rental != null && Number(mob.discount_line_rental) > 0
+        ? `£${Number(mob.discount_line_rental).toFixed(2)}`
+        : 'Free upfront';
+    const monthly = `${plan.price} ${plan.pricePeriod || '/month'}`;
+    const monthlyNum = Number(plan.price.replace(/[£,\s]/g, '')) || 0;
+    const totalCost =
+      mob.total_cost && Number(mob.total_cost) > 0
+        ? `£${Number(mob.total_cost).toFixed(2)}`
+        : `£${(monthlyNum * (tariff.contract_length || 24) + (mob.discount_line_rental || 0)).toFixed(2)}`;
+    const retailer = mob.retailer?.name || plan.provider || 'Authorised Retailer';
+    const perks =
+      plan.features
+        ?.filter(
+          (f) =>
+            !f.toLowerCase().includes('data') &&
+            !f.toLowerCase().includes('upfront') &&
+            !f.toLowerCase().includes('contract'),
+        )
+        .join(', ') || 'Free standard delivery included';
+
+    const mobileRows: TableRow[] = [
+      {
+        id: 'device',
+        label: 'Handset / Device',
+        second: model.name || plan.planName || 'Device',
+        third: '',
+      },
+      { id: 'brand', label: 'Brand', second: brand, third: '' },
+      { id: 'network', label: 'Network Provider', second: network, third: '' },
+      { id: 'data', label: 'Data allowance', second: dataAllowance, third: '' },
+      { id: 'calls-texts', label: 'Calls & Texts', second: minsTexts, third: '' },
+      { id: 'contract-length', label: 'Contract duration', second: contract, third: '' },
+      { id: 'monthly-cost', label: 'Monthly cost', second: monthly, third: '' },
+      { id: 'upfront-cost', label: 'Upfront cost', second: upfront, third: '' },
+      { id: 'total-cost', label: 'Total contract cost', second: totalCost, third: '' },
+      { id: 'retailer', label: 'Sold & Dispatched by', second: retailer, third: '' },
+      { id: 'promos', label: 'Promotions & Perks', second: perks, third: '' },
+    ];
+
+    return (
+      <ThreeColumnTable
+        firstHeading="Feature"
+        secondHeading="Details"
+        thirdHeading=""
+        rows={mobileRows}
+        hideThirdColumn
+      />
+    );
+  }
+
   if (plan.service === 'broadband' || plan.broadband) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bb = (plan.broadband || {}) as any;
-    const speed = plan.averageSpeed || (bb.download_speed ? `${bb.download_speed} Mbps` : '—');
-    const upload = bb.upload_speed ? `${bb.upload_speed} Mbps` : '—';
+    const numericMonthly = Number(plan.price.replace(/[£,\s]/g, '')) || 0;
+    const speed =
+      plan.averageSpeed ||
+      (bb.download_speed ? `${bb.download_speed} Mbps` : 'Fast fibre broadband');
+    const upload =
+      bb.upload_speed && Number(bb.upload_speed) > 0
+        ? `${bb.upload_speed} Mbps`
+        : 'Fast fibre upload';
     const pkg = bb.package_type ? String(bb.package_type).replace(/_/g, ' ') : 'Broadband';
-    const conn = bb.connection_type ? String(bb.connection_type).replace(/_/g, ' ') : 'Fibre';
-    const setup = plan.upfrontCost || 'Free setup';
-    const firstYear = bb.total_first_year_cost
-      ? `£${Number(bb.total_first_year_cost).toFixed(2)}`
-      : '—';
-    const fullCost = bb.full_contract_cost ? `£${Number(bb.full_contract_cost).toFixed(2)}` : '—';
-    const gift = bb.gift || plan.saving || 'None';
+    const conn = bb.connection_type ? String(bb.connection_type).replace(/_/g, ' ') : 'Full Fibre';
+    const setup =
+      plan.upfrontCost &&
+      plan.upfrontCost !== '£0' &&
+      plan.upfrontCost !== '£0.00' &&
+      plan.upfrontCost !== '0'
+        ? plan.upfrontCost
+        : 'Free setup';
+    const firstYear =
+      bb.total_first_year_cost && Number(bb.total_first_year_cost) > 0
+        ? `£${Number(bb.total_first_year_cost).toFixed(2)}`
+        : `£${(numericMonthly * 12).toFixed(2)}`;
+    const fullCost =
+      bb.full_contract_cost && Number(bb.full_contract_cost) > 0
+        ? `£${Number(bb.full_contract_cost).toFixed(2)}`
+        : `£${(numericMonthly * 24).toFixed(2)}`;
+    const gift =
+      bb.gift && bb.gift !== 'None' && bb.gift !== '0'
+        ? bb.gift
+        : plan.saving || 'Standard package perks included';
 
     const bbRows: TableRow[] = [
       { id: 'download-speed', label: 'Average download speed', second: speed, third: '' },
@@ -917,7 +1040,7 @@ function DetailsTable({ plan }: DetailsTableProps) {
       {
         id: 'data-allowance',
         label: 'Data allowance',
-        second: plan.description || 'Unlimited',
+        second: plan.description || 'Unlimited data',
         third: '',
       },
       { id: 'calls-texts', label: 'Calls & Texts', second: 'Unlimited calls & texts', third: '' },
@@ -928,7 +1051,15 @@ function DetailsTable({ plan }: DetailsTableProps) {
         third: '',
       },
       { id: 'monthly-cost', label: 'Monthly cost', second: plan.price, third: '' },
-      { id: 'upfront-cost', label: 'Upfront cost', second: plan.upfrontCost || '£0', third: '' },
+      {
+        id: 'upfront-cost',
+        label: 'Upfront cost',
+        second:
+          plan.upfrontCost && plan.upfrontCost !== '£0' && plan.upfrontCost !== '£0.00'
+            ? plan.upfrontCost
+            : 'Free setup',
+        third: '',
+      },
       { id: 'roaming', label: 'Roaming', second: 'EU Roaming included', third: '' },
     ];
 
@@ -1074,6 +1205,77 @@ type SupplierTableProps = {
 
 function SupplierTable({ plan }: SupplierTableProps) {
   const { supplier } = data.resultPage.planDetailsDrawer;
+
+  if (plan.service === 'mobile' || plan.mobile) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mob = (plan.mobile || {}) as any;
+    const rows: TableRow[] = [
+      { id: 'retailer', label: 'Retailer', second: mob.retailer?.name || plan.provider, third: '' },
+      {
+        id: 'network',
+        label: 'Network Provider',
+        second: mob.tariff?.network?.name || 'Mobile Network',
+        third: '',
+      },
+      {
+        id: 'device',
+        label: 'Handset / Device',
+        second: mob.model?.name || plan.planName || 'Smartphone',
+        third: '',
+      },
+      {
+        id: 'contract',
+        label: 'Contract duration',
+        second: `${mob.tariff?.contract_length || 24} months`,
+        third: '',
+      },
+      {
+        id: 'delivery',
+        label: 'Delivery',
+        second: 'Free standard delivery (1-2 business days)',
+        third: '',
+      },
+      { id: 'payment', label: 'Payment method', second: 'Monthly Direct Debit', third: '' },
+    ];
+    return (
+      <ThreeColumnTable
+        firstHeading="Supplier Information"
+        secondHeading="Details"
+        thirdHeading=""
+        rows={rows}
+        hideThirdColumn
+      />
+    );
+  }
+
+  if (plan.service === 'sim-only') {
+    const rows: TableRow[] = [
+      { id: 'network', label: 'Network Provider', second: plan.provider, third: '' },
+      { id: 'plan-type', label: 'Plan type', second: 'SIM Only Plan', third: '' },
+      {
+        id: 'contract',
+        label: 'Contract duration',
+        second: plan.contract || '12 months',
+        third: '',
+      },
+      {
+        id: 'delivery',
+        label: 'SIM Delivery',
+        second: 'Free standard delivery (1-2 business days)',
+        third: '',
+      },
+      { id: 'payment', label: 'Payment method', second: 'Monthly Direct Debit', third: '' },
+    ];
+    return (
+      <ThreeColumnTable
+        firstHeading="Supplier Information"
+        secondHeading="Details"
+        thirdHeading=""
+        rows={rows}
+        hideThirdColumn
+      />
+    );
+  }
 
   if (plan.service === 'broadband' || plan.broadband) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

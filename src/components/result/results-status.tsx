@@ -26,8 +26,10 @@ export default function ResultsStatus({
   const searchParams = useSearchParams();
   const service = searchParams.get('service');
   const isBroadband = service === 'broadband';
-  const { stickeeFacets, sortKey, setSortKey } = useResultFilters();
+  const { stickeeFacets, sortKey, setSortKey, dealsCount, isDealsLoading } = useResultFilters();
   const sortOptions = isBroadband ? BROADBAND_SORTS : MOBILE_SORTS;
+  const effectiveLoading = isLoading || isDealsLoading;
+  const effectiveCount = dealsCount ?? resultCount;
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(resultsStatus.planTabs.defaultValue);
 
@@ -109,7 +111,26 @@ export default function ResultsStatus({
               {heading ?? resultsStatus.heading}
             </h2>
 
-            {!isLoading && (
+            {effectiveLoading ? (
+              <p
+                className="
+                mt-1
+
+                font-inter
+
+                text-[11px]
+                font-normal
+                leading-[17px]
+
+                text-[#667085]
+
+                sm:text-[12px]
+                sm:leading-[18px]
+              "
+              >
+                <strong className="font-normal animate-pulse">Loading deals...</strong>
+              </p>
+            ) : (
               <p
                 className="
                 mt-1
@@ -131,7 +152,10 @@ export default function ResultsStatus({
                 ) : (
                   <>
                     <strong className="font-normal">
-                      {resultCount ?? resultsStatus.descriptionStart}
+                      {effectiveCount ??
+                        (isBroadband || service === 'sim-only'
+                          ? '...'
+                          : resultsStatus.descriptionStart)}
                     </strong>{' '}
                     {resultsStatus.descriptionRest}
                   </>

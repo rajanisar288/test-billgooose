@@ -1,6 +1,11 @@
 export interface MinMax {
-  min: number;
-  max: number;
+  min: number | null;
+  max: number | null;
+}
+
+export interface DateMinMax {
+  min: string | null;
+  max: string | null;
 }
 
 /* =========================================================
@@ -77,7 +82,7 @@ export interface StickeeDeal {
 export interface StickeeFacets {
   hardware_types: string[];
   tariff_types: string[];
-  release_dates: MinMax;
+  release_dates: DateMinMax[];
   resellers: string[];
   cashback_types: string[];
   refurbished: string[];

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -22,15 +22,6 @@ import { MOBILE_SORTS, VERTICALS } from '@/lib/stickee/verticals';
 /* =========================================================
    TYPES
 ========================================================= */
-
-type MobileBrand = string;
-
-type MobileBrandTab = {
-  id: MobileBrand;
-  label: string;
-  icon: string;
-  iconAlt: string;
-};
 
 type MobileResultsContent = {
   labels: {
@@ -146,6 +137,7 @@ function convertDealToPlan(deal: StickeeDeal): StandardPlan {
       deal.discount_line_rental != null && deal.discount_line_rental > 0
         ? `£${deal.discount_line_rental.toFixed(2)}`
         : '£0.00',
+    mobile: deal,
     providerUrl: deal.url,
     viewDetailsButton: 'View Details',
     primaryButton: 'Buy Now',
@@ -158,7 +150,13 @@ function convertDealToPlan(deal: StickeeDeal): StandardPlan {
 
 export default function MobileResults() {
   const router = useRouter();
-  const { filters: appliedFilters, sortKey, setSortKey } = useResultFilters();
+  const {
+    filters: appliedFilters,
+    sortKey,
+    setSortKey,
+    setIsDealsLoading,
+    setDealsCount,
+  } = useResultFilters();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Drawer state
@@ -193,44 +191,14 @@ export default function MobileResults() {
     return rawDeals.filter(isMobileDeal);
   }, [rawDeals]);
 
-  const brandTabs: MobileBrandTab[] = useMemo(() => {
-    if (stickeeLoading || !stickeeDeals.length) {
-      return [];
+  const displayedDeals = stickeeDeals;
+
+  useEffect(() => {
+    setIsDealsLoading(stickeeLoading);
+    if (!stickeeLoading) {
+      setDealsCount(displayedDeals.length);
     }
-
-    const brandOrder: string[] = [];
-    for (const deal of stickeeDeals) {
-      const brandName = deal.model?.brand?.name;
-      if (brandName && !brandOrder.includes(brandName)) brandOrder.push(brandName);
-    }
-
-    return brandOrder.map((brandName) => {
-      const staticBrand = mobileResultsStatic.brands?.find(
-        (b) => b.label?.toLowerCase() === brandName.toLowerCase(),
-      );
-
-      return {
-        id: brandName,
-        label: brandName,
-        icon: staticBrand?.icon ?? '/images/brand-placeholder.png',
-        iconAlt: `${brandName} logo`,
-      };
-    });
-  }, [stickeeDeals, stickeeLoading]);
-
-  const [selectedBrand, setSelectedBrand] = useState<MobileBrand>('');
-
-  const activeBrandId = selectedBrand || brandTabs[0]?.id || '';
-
-  const displayedDeals = useMemo(() => {
-    if (!stickeeDeals.length) return [];
-    if (!activeBrandId) return stickeeDeals;
-    return stickeeDeals.filter((d) => d.model?.brand?.name === activeBrandId);
-  }, [stickeeDeals, activeBrandId]);
-
-  const handleBrandSelect = (brand: MobileBrand) => {
-    setSelectedBrand(brand);
-  };
+  }, [stickeeLoading, displayedDeals.length, setIsDealsLoading, setDealsCount]);
 
   /* =========================================================
      ACTIONS
@@ -373,11 +341,11 @@ export default function MobileResults() {
                 gap-4
                 md:flex-row
                 md:items-center
-                md:justify-between
+                md:justify-end
               "
             >
               {/* BRAND TABS */}
-              <div
+              {/* <div
                 className="
                   flex
                   max-w-full
@@ -435,8 +403,7 @@ export default function MobileResults() {
                     </button>
                   );
                 })}
-              </div>
-
+              </div> */}
               {/* DYNAMIC SORT */}
               <div className="flex shrink-0 items-center gap-2">
                 <div className="flex items-center gap-1.5">
@@ -674,7 +641,7 @@ type MobilePhoneCardProps = {
 };
 
 function MobilePhoneCard({ deal, onViewDetails, onBuyNow }: MobilePhoneCardProps) {
-  const promos = extractPromos(deal.promos);
+  // const promos = extractPromos(deal.promos);
 
   return (
     <article className="w-full rounded-[16px] border border-[#EAECF0] bg-white p-4 sm:p-5 md:p-6 shadow-sm hover:border-[#00897B] transition-colors">
@@ -821,13 +788,19 @@ function MobilePhoneCard({ deal, onViewDetails, onBuyNow }: MobilePhoneCardProps
       </div>
 
       {/* Promos Footer (only if promos exist) */}
-      {promos.length > 0 && (
+      {/* {promos.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-[#475467]">
           {promos.map((promo, idx) => (
-            <div key={idx}>• {promo}</div>
+            <div
+              key={idx}
+              className="flex items-center gap-1 font-medium text-[#00897B]"
+            >
+              <span>•</span>
+              <span>{promo}</span>
+            </div>
           ))}
         </div>
-      )}
+      )} */}
     </article>
   );
 }

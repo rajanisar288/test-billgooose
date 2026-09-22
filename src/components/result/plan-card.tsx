@@ -909,59 +909,6 @@ export default function PlanCard({
               gap-5
             "
           >
-            {!['energy', 'bundle-bills']?.includes(plan.service as string) && (
-              <div
-                className="
-                flex
-                w-[125px]
-                shrink-0
-
-                flex-col
-                justify-center
-
-                rounded-[8px]
-
-                border
-                border-[#A6F4C5]
-
-                bg-[#F6FEF9]
-
-                px-3
-                py-2.5
-              "
-              >
-                <p
-                  className="
-                  font-red-hat-display
-
-                  text-[20px]
-                  font-[645]
-                  leading-[30px]
-
-                  text-[#12B76A]
-                "
-                >
-                  {plan.saving}
-                </p>
-
-                <p
-                  className="
-                  mt-[2px]
-
-                  font-red-hat-display
-
-                  text-[12px]
-                  font-[467]
-                  leading-[14.4px]
-
-                  text-[#054F31]
-                "
-                >
-                  Annual saving at today&apos;s rates
-                </p>
-              </div>
-            )}
-
             <div
               className="
                 flex
@@ -1063,6 +1010,59 @@ export default function PlanCard({
             </div>
           </div>
         </div>
+        {!['energy', 'bundle-bills']?.includes(plan.service as string) && plan.saving && (
+          <div
+            className="
+                flex
+                w-max
+                ml-6 my-2
+                shrink-0
+
+                flex-col
+                justify-center
+
+                rounded-[8px]
+
+                border
+                border-[#A6F4C5]
+
+                bg-[#F6FEF9]
+
+                px-3
+                py-2.5
+              "
+          >
+            <p
+              className="
+                  font-red-hat-display
+
+                  text-[20px]
+                  font-[645]
+                  leading-[30px]
+
+                  text-[#12B76A]
+                "
+            >
+              {plan.saving}
+            </p>
+
+            <p
+              className="
+                  mt-[2px]
+
+                  font-red-hat-display
+
+                  text-[12px]
+                  font-[467]
+                  leading-[14.4px]
+
+                  text-[#054F31]
+                "
+            >
+              Annual saving at today&apos;s rates
+            </p>
+          </div>
+        )}
 
         {/* =================================================
             METRICS

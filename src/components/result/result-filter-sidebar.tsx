@@ -28,17 +28,23 @@ export type StickeeFilterFormState = {
   connectionTypes: string[];
   upfrontMax: number | null;
   monthlyMax: number | null;
+  broadbandMonthlyPrice: { min?: number | null; max?: number | null } | null;
   dataMin: number | null;
   speedMin: number | null;
+  minutesMin: number | null;
+  minutesTextsOption: 'ALL' | 'UNLIMITED_MINUTES' | 'UNLIMITED_TEXTS';
   refurbished: string;
   resellers: string;
   excludePriceIncreases: boolean;
   unlimitedMinsTexts: boolean;
   freeGifts: boolean;
+  mobileGiftOption: 'ALL' | 'WITH_GIFT' | 'WITHOUT_GIFT';
+  releaseYear: string | null;
+  cashbackType: string;
+  cashbackOption: 'INCLUDES' | 'EXCLUDES' | 'ONLY';
   memories: number[];
   colours: string[];
   giftTypes: string[];
-  fiveG: string;
 };
 
 const INITIAL_STICKEE_FILTER_STATE: StickeeFilterFormState = {
@@ -52,17 +58,23 @@ const INITIAL_STICKEE_FILTER_STATE: StickeeFilterFormState = {
   connectionTypes: [],
   upfrontMax: null,
   monthlyMax: null,
+  broadbandMonthlyPrice: null,
   dataMin: null,
   speedMin: null,
+  minutesMin: null,
+  minutesTextsOption: 'ALL',
   refurbished: 'ALL',
   resellers: 'ALL',
   excludePriceIncreases: false,
   unlimitedMinsTexts: false,
   freeGifts: false,
+  mobileGiftOption: 'ALL',
+  releaseYear: null,
+  cashbackType: 'ALL',
+  cashbackOption: 'INCLUDES',
   memories: [],
   colours: [],
   giftTypes: [],
-  fiveG: 'ALL',
 };
 
 type ResultFilterSidebarProps = {
@@ -136,6 +148,66 @@ export default function ResultFilterSidebar({
 
     const sf = appliedFilters.stickeeFilters || {};
 
+    let broadbandMonthlyPrice: { min?: number | null; max?: number | null } | null = null;
+    if (sf.monthly_price && typeof sf.monthly_price === 'object') {
+      const mp = sf.monthly_price as { min?: number | null; max?: number | null };
+      broadbandMonthlyPrice = { min: mp.min ?? null, max: mp.max ?? null };
+    }
+
+    let minutesMin: number | null = null;
+    if (sf.unlimited_mins_texts || sf.minutes_min === -1 || sf.minutes_min === 65535) {
+      minutesMin = -1;
+    } else if (typeof sf.minutes_min === 'number') {
+      minutesMin = sf.minutes_min;
+    }
+
+    let minutesTextsOption: 'ALL' | 'UNLIMITED_MINUTES' | 'UNLIMITED_TEXTS' = 'ALL';
+    if (
+      sf.unlimited_minutes ||
+      sf.minutes_min === -1 ||
+      (sf.minutes &&
+        typeof sf.minutes === 'object' &&
+        (sf.minutes as { min?: number }).min === 65535)
+    ) {
+      minutesTextsOption = 'UNLIMITED_MINUTES';
+    } else if (
+      sf.unlimited_texts ||
+      sf.texts_min === -1 ||
+      (sf.texts && typeof sf.texts === 'object' && (sf.texts as { min?: number }).min === 65535)
+    ) {
+      minutesTextsOption = 'UNLIMITED_TEXTS';
+    }
+
+    let mobileGiftOption: 'ALL' | 'WITH_GIFT' | 'WITHOUT_GIFT' = 'ALL';
+    if (Array.isArray(sf.gift_types) && sf.gift_types.length > 0) {
+      if (sf.gift_types.length === 1 && sf.gift_types[0] === '13') {
+        mobileGiftOption = 'WITHOUT_GIFT';
+      } else {
+        mobileGiftOption = 'WITH_GIFT';
+      }
+    }
+
+    const releaseYear = sf.release_date_from
+      ? (sf.release_date_from as string).split('-')[0]
+      : null;
+
+    let cashbackOption: 'INCLUDES' | 'EXCLUDES' | 'ONLY' = 'INCLUDES';
+    if (Array.isArray(sf.cashback_types)) {
+      if (sf.cashback_types.length === 1 && sf.cashback_types[0] === 'NONE') {
+        cashbackOption = 'EXCLUDES';
+      } else if (
+        sf.cashback_types.includes('AUTOMATIC') ||
+        sf.cashback_types.includes('MULTI_REDEMPTION')
+      ) {
+        cashbackOption = 'ONLY';
+      }
+    }
+
+    const cashbackType =
+      Array.isArray(sf.cashback_types) && sf.cashback_types[0]
+        ? (sf.cashback_types[0] as string)
+        : 'ALL';
+
     setStickeeForm({
       suppliers: Array.isArray(sf.suppliers) ? (sf.suppliers as string[]) : [],
       brands: Array.isArray(sf.brands) ? (sf.brands as string[]) : [],
@@ -150,17 +222,15 @@ export default function ResultFilterSidebar({
       packageTypes: Array.isArray(sf.package_types) ? (sf.package_types as string[]) : [],
       connectionTypes: Array.isArray(sf.connection_types) ? (sf.connection_types as string[]) : [],
       upfrontMax: typeof sf.upfront_max === 'number' ? sf.upfront_max : null,
-      monthlyMax:
-        typeof sf.monthly_max === 'number'
-          ? sf.monthly_max
-          : sf.monthly_price && typeof (sf.monthly_price as { max?: number }).max === 'number'
-            ? (sf.monthly_price as { max?: number }).max!
-            : null,
+      monthlyMax: typeof sf.monthly_max === 'number' ? sf.monthly_max : null,
+      broadbandMonthlyPrice,
       dataMin: typeof sf.data_min === 'number' ? sf.data_min : null,
       speedMin:
         sf.download_speed && typeof (sf.download_speed as { min?: number }).min === 'number'
           ? (sf.download_speed as { min?: number }).min!
           : null,
+      minutesMin,
+      minutesTextsOption,
       refurbished:
         Array.isArray(sf.refurbished) && sf.refurbished[0] ? (sf.refurbished[0] as string) : 'ALL',
       resellers:
@@ -168,15 +238,15 @@ export default function ResultFilterSidebar({
       excludePriceIncreases: Array.isArray(sf.price_increases)
         ? sf.price_increases.includes(false)
         : sf.contract_price_increases === false,
-      unlimitedMinsTexts: Boolean(sf.unlimited_mins_texts),
+      unlimitedMinsTexts: Boolean(sf.unlimited_mins_texts || minutesMin === -1),
       freeGifts: Boolean(sf.free_gifts || sf.gift),
+      mobileGiftOption,
+      releaseYear,
+      cashbackType,
+      cashbackOption,
       memories: Array.isArray(sf.internal_memories) ? (sf.internal_memories as number[]) : [],
       colours: Array.isArray(sf.colours) ? (sf.colours as string[]) : [],
       giftTypes: Array.isArray(sf.gift_types) ? (sf.gift_types as string[]) : [],
-      fiveG:
-        Array.isArray(sf.model_data_types) && sf.model_data_types[0]
-          ? (sf.model_data_types[0] as string)
-          : 'ALL',
     });
   }, [appliedFilters]);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -226,9 +296,18 @@ export default function ResultFilterSidebar({
           stickeeFilters.connection_types = stickeeForm.connectionTypes;
         if (stickeeForm.speedMin != null)
           stickeeFilters.download_speed = { min: stickeeForm.speedMin };
-        if (stickeeForm.monthlyMax != null)
+        if (stickeeForm.broadbandMonthlyPrice != null) {
+          const range: Record<string, number> = {};
+          if (stickeeForm.broadbandMonthlyPrice.min != null)
+            range.min = stickeeForm.broadbandMonthlyPrice.min;
+          if (stickeeForm.broadbandMonthlyPrice.max != null)
+            range.max = stickeeForm.broadbandMonthlyPrice.max;
+          stickeeFilters.monthly_price = range;
+        } else if (stickeeForm.monthlyMax != null) {
           stickeeFilters.monthly_price = { max: stickeeForm.monthlyMax };
+        }
         if (stickeeForm.freeGifts) stickeeFilters.gift = true;
+        if (stickeeForm.excludePriceIncreases) stickeeFilters.contract_price_increases = false;
       } else {
         // Mobile or SIM-Only
         if (stickeeForm.brands.length > 0) stickeeFilters.brands = stickeeForm.brands;
@@ -237,26 +316,69 @@ export default function ResultFilterSidebar({
         if (stickeeForm.retailers.length > 0) stickeeFilters.retailers = stickeeForm.retailers;
         if (stickeeForm.contractLengths.length > 0)
           stickeeFilters.contract_lengths_new = stickeeForm.contractLengths;
-        if (stickeeForm.upfrontMax != null) stickeeFilters.upfront_max = stickeeForm.upfrontMax;
-        if (stickeeForm.monthlyMax != null) stickeeFilters.monthly_max = stickeeForm.monthlyMax;
-        if (stickeeForm.dataMin != null) stickeeFilters.data_min = stickeeForm.dataMin;
+        if (stickeeForm.upfrontMax != null) {
+          stickeeFilters.upfront_max = stickeeForm.upfrontMax;
+          stickeeFilters.upfront_price = { max: stickeeForm.upfrontMax };
+        }
+        if (stickeeForm.monthlyMax != null) {
+          stickeeFilters.monthly_max = stickeeForm.monthlyMax;
+          stickeeFilters.effective_line_rental = { max: stickeeForm.monthlyMax };
+        }
+        if (stickeeForm.dataMin != null) {
+          stickeeFilters.data_min = stickeeForm.dataMin;
+          stickeeFilters.data = { min: stickeeForm.dataMin };
+        }
+        if (stickeeForm.minutesTextsOption === 'UNLIMITED_MINUTES') {
+          stickeeFilters.minutes = { min: 65535 };
+          stickeeFilters.minutes_min = -1;
+          stickeeFilters.unlimited_minutes = true;
+        } else if (stickeeForm.minutesTextsOption === 'UNLIMITED_TEXTS') {
+          stickeeFilters.texts = { min: 65535 };
+          stickeeFilters.texts_min = -1;
+          stickeeFilters.unlimited_texts = true;
+        } else if (stickeeForm.minutesMin != null) {
+          if (stickeeForm.minutesMin === -1 || stickeeForm.minutesMin >= 65535) {
+            stickeeFilters.unlimited_mins_texts = true;
+            stickeeFilters.minutes_min = -1;
+            stickeeFilters.texts_min = -1;
+            stickeeFilters.minutes = { min: 65535 };
+            stickeeFilters.texts = { min: 65535 };
+          } else {
+            stickeeFilters.minutes_min = stickeeForm.minutesMin;
+            stickeeFilters.minutes = { min: stickeeForm.minutesMin };
+          }
+        }
         if (stickeeForm.refurbished !== 'ALL')
           stickeeFilters.refurbished = [stickeeForm.refurbished];
         if (stickeeForm.resellers !== 'ALL') stickeeFilters.resellers = [stickeeForm.resellers];
         if (stickeeForm.excludePriceIncreases) stickeeFilters.price_increases = [false];
-        if (stickeeForm.unlimitedMinsTexts) {
-          stickeeFilters.unlimited_mins_texts = true;
-          stickeeFilters.minutes_min = -1;
-          stickeeFilters.texts_min = -1;
+        if (stickeeForm.releaseYear) {
+          stickeeFilters.release_date_from = `${stickeeForm.releaseYear}-01-01`;
+          stickeeFilters.release_date_to = `${stickeeForm.releaseYear}-12-31`;
+        }
+        if (stickeeForm.cashbackOption === 'EXCLUDES') {
+          stickeeFilters.cashback_types = ['NONE'];
+        } else if (stickeeForm.cashbackOption === 'ONLY') {
+          stickeeFilters.cashback_types = ['AUTOMATIC', 'MULTI_REDEMPTION'];
+        } else if (stickeeForm.cashbackType && stickeeForm.cashbackType !== 'ALL') {
+          stickeeFilters.cashback_types = [stickeeForm.cashbackType];
+        }
+        if (stickeeForm.mobileGiftOption === 'WITH_GIFT') {
+          const giftIds =
+            mobileFacets?.gift_types
+              ?.filter((g) => g.name?.toLowerCase() !== 'none')
+              .map((g) => g.id) || [];
+          if (giftIds.length > 0) {
+            stickeeFilters.gift_types = giftIds;
+          }
+        } else if (stickeeForm.mobileGiftOption === 'WITHOUT_GIFT') {
+          const noneId =
+            mobileFacets?.gift_types?.find((g) => g.name?.toLowerCase() === 'none')?.id || '13';
+          stickeeFilters.gift_types = [noneId];
         }
         if (stickeeForm.memories.length > 0)
           stickeeFilters.internal_memories = stickeeForm.memories;
         if (stickeeForm.colours.length > 0) stickeeFilters.colours = stickeeForm.colours;
-        if (stickeeForm.giftTypes.length > 0) stickeeFilters.gift_types = stickeeForm.giftTypes;
-        if (stickeeForm.fiveG !== 'ALL') {
-          stickeeFilters.model_data_types = [stickeeForm.fiveG];
-          stickeeFilters.tariff_data_types = [stickeeForm.fiveG];
-        }
       }
 
       setFilters({
@@ -287,71 +409,98 @@ export default function ResultFilterSidebar({
   const broadbandFacets = isBroadbandFacets(activeFacets) ? activeFacets : null;
   const mobileFacets = isMobileFacets(activeFacets) ? activeFacets : null;
 
-  // Dynamic broadband speed tiers from API download_speeds min/max
+  // Dynamic broadband speed tiers directly from API download_speeds
   const dynamicSpeedTiers = useMemo(() => {
-    if (!broadbandFacets) return [];
-    const maxSpeed = broadbandFacets.download_speeds?.[0]?.max ?? 1000;
-    return [
-      { label: 'Any speed', value: null },
-      { label: '30 Mbps+', value: 30 },
-      { label: '60 Mbps+', value: 60 },
-      { label: '100 Mbps+', value: 100 },
-      { label: '300 Mbps+', value: 300 },
-      { label: '500 Mbps+', value: 500 },
-      { label: 'Gigabit (900 Mbps+)', value: 900 },
-    ].filter((t) => t.value === null || t.value <= maxSpeed);
+    if (!broadbandFacets || !broadbandFacets.download_speeds) return [];
+    const tiers = broadbandFacets.download_speeds
+      .filter((s): s is typeof s & { min: number } => s.min != null)
+      .map((s) => ({
+        label: s.min >= 1000 ? `Gigabit (${(s.min / 1000).toFixed(0)} Gbps+)` : `${s.min} Mbps+`,
+        value: s.min,
+      }));
+    return [{ label: 'Any speed', value: null }, ...tiers];
   }, [broadbandFacets]);
 
-  // Dynamic broadband monthly price tiers from API monthly_prices min/max
+  // Dynamic broadband monthly price tiers directly from API monthly_prices
   const dynamicBroadbandPriceTiers = useMemo(() => {
-    if (!broadbandFacets) return [];
-    const minPrice = broadbandFacets.monthly_prices?.[0]?.min ?? 0;
-    return [
-      { label: 'Any price', value: null },
-      { label: 'Up to £25/mo', value: 25 },
-      { label: 'Up to £35/mo', value: 35 },
-      { label: 'Up to £50/mo', value: 50 },
-      { label: 'Up to £75/mo', value: 75 },
-    ].filter((t) => t.value === null || t.value >= minPrice);
+    if (!broadbandFacets || !broadbandFacets.monthly_prices) return [];
+    const tiers = broadbandFacets.monthly_prices.map((p) => {
+      let label = 'Any price';
+      if (p.min == null && p.max != null) {
+        label = `Up to £${Math.round(p.max)}/mo`;
+      } else if (p.min != null && p.max != null) {
+        label = `£${Math.round(p.min)} - £${Math.round(p.max)}/mo`;
+      } else if (p.min != null && p.max == null) {
+        label = `£${Math.round(p.min)}+/mo`;
+      }
+      return {
+        label,
+        min: p.min ?? null,
+        max: p.max ?? null,
+      };
+    });
+    return [{ label: 'Any price', min: null, max: null }, ...tiers];
   }, [broadbandFacets]);
 
-  // Dynamic mobile data tiers from API data min/max
+  // Dynamic mobile data tiers directly from API data
   const dynamicDataTiers = useMemo(() => {
-    if (!mobileFacets) return [];
-    return [
-      { label: 'Any data', value: null },
-      { label: '5GB+', value: 5000 },
-      { label: '20GB+', value: 20000 },
-      { label: '50GB+', value: 50000 },
-      { label: '100GB+', value: 100000 },
-      { label: 'Unlimited data', value: 999999 },
-    ];
+    if (!mobileFacets || !mobileFacets.data?.length) return [];
+    const tiers = mobileFacets.data
+      .filter((item): item is typeof item & { min: number } => item.min != null)
+      .map((item) => {
+        let label = `${item.min}MB+`;
+        if (item.min >= 65535000 || item.min >= 1000000) {
+          label = 'Unlimited data';
+        } else if (item.min >= 1000) {
+          label =
+            item.min % 1000 === 0 ? `${item.min / 1000}GB+` : `${(item.min / 1000).toFixed(1)}GB+`;
+        }
+        return {
+          label,
+          value: item.min,
+        };
+      });
+    return [{ label: 'Any data', value: null }, ...tiers];
   }, [mobileFacets]);
 
-  // Dynamic mobile monthly cost tiers from API effective_line_rentals
+  // Dynamic mobile monthly cost tiers directly from API effective_line_rentals
   const dynamicMobileMonthlyTiers = useMemo(() => {
-    if (!mobileFacets) return [];
-    const minRental = mobileFacets.effective_line_rentals?.[0]?.min ?? 0;
-    return [
-      { label: 'Any monthly cost', value: null },
-      { label: 'Up to £20/mo', value: 20 },
-      { label: 'Up to £35/mo', value: 35 },
-      { label: 'Up to £50/mo', value: 50 },
-      { label: 'Up to £70/mo', value: 70 },
-    ].filter((t) => t.value === null || t.value >= minRental);
+    if (!mobileFacets || !mobileFacets.effective_line_rentals?.length) return [];
+    const tiers = mobileFacets.effective_line_rentals
+      .filter((item): item is typeof item & { max: number } => item.max != null)
+      .map((item) => ({
+        label: `Up to £${item.max}/mo`,
+        value: item.max,
+      }));
+    return [{ label: 'Any monthly cost', value: null }, ...tiers];
   }, [mobileFacets]);
 
-  // Dynamic upfront cost tiers from API upfront_prices
+  // Dynamic upfront cost tiers directly from API upfront_prices
   const dynamicUpfrontTiers = useMemo(() => {
-    if (!mobileFacets) return [];
-    const maxUpfront = mobileFacets.upfront_prices?.[0]?.max ?? 500;
+    if (!mobileFacets || !mobileFacets.upfront_prices?.length) return [];
+    const tiers = mobileFacets.upfront_prices
+      .filter((item): item is typeof item & { max: number } => item.max != null)
+      .map((item) => ({
+        label: item.max === 0 ? 'Free upfront' : `Up to £${item.max}`,
+        value: item.max,
+      }));
+    return [{ label: 'Any upfront cost', value: null }, ...tiers];
+  }, [mobileFacets]);
+
+  // Dynamic release years directly from API release_dates
+  const dynamicReleaseYears = useMemo(() => {
+    if (!mobileFacets || !mobileFacets.release_dates?.length) return [];
+    const years = Array.from(
+      new Set(
+        mobileFacets.release_dates
+          .map((d) => d.min?.split('-')?.[0] || d.max?.split('-')?.[0])
+          .filter((y): y is string => Boolean(y)),
+      ),
+    ).sort((a, b) => Number(b) - Number(a));
     return [
-      { label: 'Any upfront cost', value: null },
-      { label: 'Free upfront', value: 0 },
-      { label: 'Up to £50', value: 50 },
-      { label: 'Up to £100', value: 100 },
-      { label: 'Up to £200', value: 200 },
-    ].filter((t) => t.value === null || t.value <= maxUpfront);
+      { label: 'Any release year', value: null },
+      ...years.map((y) => ({ label: y, value: y })),
+    ];
   }, [mobileFacets]);
 
   return (
@@ -434,14 +583,31 @@ export default function ResultFilterSidebar({
             {/* Monthly Cost */}
             {dynamicBroadbandPriceTiers.length > 0 && (
               <SimFilterSection label="Monthly Cost">
-                {dynamicBroadbandPriceTiers.map((tier) => (
-                  <SimRadio
-                    key={tier.label}
-                    label={tier.label}
-                    checked={stickeeForm.monthlyMax === tier.value}
-                    onClick={() => updateFilter('monthlyMax', tier.value)}
-                  />
-                ))}
+                {dynamicBroadbandPriceTiers.map((tier) => {
+                  const isChecked =
+                    (tier.min === null &&
+                      tier.max === null &&
+                      stickeeForm.broadbandMonthlyPrice === null) ||
+                    (stickeeForm.broadbandMonthlyPrice !== null &&
+                      stickeeForm.broadbandMonthlyPrice.min === tier.min &&
+                      stickeeForm.broadbandMonthlyPrice.max === tier.max);
+
+                  return (
+                    <SimRadio
+                      key={tier.label}
+                      label={tier.label}
+                      checked={isChecked}
+                      onClick={() =>
+                        updateFilter(
+                          'broadbandMonthlyPrice',
+                          tier.min === null && tier.max === null
+                            ? null
+                            : { min: tier.min, max: tier.max },
+                        )
+                      }
+                    />
+                  );
+                })}
               </SimFilterSection>
             )}
 
@@ -499,6 +665,17 @@ export default function ResultFilterSidebar({
                 label="Deals with free gifts / vouchers only"
                 checked={stickeeForm.freeGifts}
                 onClick={() => updateFilter('freeGifts', !stickeeForm.freeGifts)}
+              />
+            </SimFilterSection>
+
+            {/* Contract Price Increases */}
+            <SimFilterSection label="Contract Price Increases">
+              <SimCheckbox
+                label="Exclude price increases during contract"
+                checked={stickeeForm.excludePriceIncreases}
+                onClick={() =>
+                  updateFilter('excludePriceIncreases', !stickeeForm.excludePriceIncreases)
+                }
               />
             </SimFilterSection>
           </>
@@ -620,11 +797,27 @@ export default function ResultFilterSidebar({
               </SimFilterSection>
             )}
 
-            {/* 8. Condition (from API facet refurbished) */}
+            {/* 8. Minutes & Texts */}
+            <SimFilterSection label="Minutes & Texts">
+              {[
+                { label: 'Any', value: 'ALL' as const },
+                { label: 'Unlimited Minutes', value: 'UNLIMITED_MINUTES' as const },
+                { label: 'Unlimited Text', value: 'UNLIMITED_TEXTS' as const },
+              ].map((opt) => (
+                <SimRadio
+                  key={opt.value}
+                  label={opt.label}
+                  checked={stickeeForm.minutesTextsOption === opt.value}
+                  onClick={() => updateFilter('minutesTextsOption', opt.value)}
+                />
+              ))}
+            </SimFilterSection>
+
+            {/* 9. Condition (from API facet refurbished) */}
             {mobileFacets.refurbished?.length > 0 && (
               <SimFilterSection label="Condition">
                 {[
-                  { label: 'All conditions', value: 'ALL' },
+                  { label: 'Any condition', value: 'ALL' },
                   ...(mobileFacets.refurbished.includes('EXCLUDE_REFURB')
                     ? [{ label: 'Brand new only', value: 'EXCLUDE_REFURB' }]
                     : []),
@@ -642,7 +835,7 @@ export default function ResultFilterSidebar({
               </SimFilterSection>
             )}
 
-            {/* 9. Buy Through (Retailers) */}
+            {/* 10. Buy Through (Retailers) */}
             {mobileFacets.retailers?.length > 0 && (
               <SimFilterSection label="Buy Through">
                 {mobileFacets.retailers.map((r) => (
@@ -656,26 +849,118 @@ export default function ResultFilterSidebar({
               </SimFilterSection>
             )}
 
-            {/* 10. Resellers (from API facet resellers) */}
-            {mobileFacets.resellers?.length > 0 && (
-              <SimFilterSection label="Resellers">
-                {[
-                  { label: 'All deals', value: 'ALL' },
-                  ...(mobileFacets.resellers.includes('EXCLUDE_RESELLERS')
-                    ? [{ label: 'Direct from network only', value: 'EXCLUDE_RESELLERS' }]
-                    : []),
-                  ...(mobileFacets.resellers.includes('ONLY_RESELLERS')
-                    ? [{ label: 'Resellers only', value: 'ONLY_RESELLERS' }]
-                    : []),
-                ].map((opt) => (
-                  <SimRadio
-                    key={opt.value}
-                    label={opt.label}
-                    checked={stickeeForm.resellers === opt.value}
-                    onClick={() => updateFilter('resellers', opt.value)}
-                  />
-                ))}
-              </SimFilterSection>
+            {/* Extended Mobile Filters (Shown when showAllMobileFilters is true) */}
+            {showAllMobileFilters && (
+              <>
+                {/* 11. Resellers (from API facet resellers) */}
+                {mobileFacets.resellers?.length > 0 && (
+                  <SimFilterSection label="Resellers">
+                    {[
+                      { label: 'Any deal', value: 'ALL' },
+                      ...(mobileFacets.resellers.includes('EXCLUDE_RESELLERS')
+                        ? [{ label: 'Direct from network only', value: 'EXCLUDE_RESELLERS' }]
+                        : []),
+                      ...(mobileFacets.resellers.includes('ONLY_RESELLERS')
+                        ? [{ label: 'Resellers only', value: 'ONLY_RESELLERS' }]
+                        : []),
+                    ].map((opt) => (
+                      <SimRadio
+                        key={opt.value}
+                        label={opt.label}
+                        checked={stickeeForm.resellers === opt.value}
+                        onClick={() => updateFilter('resellers', opt.value)}
+                      />
+                    ))}
+                  </SimFilterSection>
+                )}
+
+                {/* 12. Release Year */}
+                {dynamicReleaseYears.length > 0 && (
+                  <SimFilterSection label="Release Year">
+                    {dynamicReleaseYears.map((tier) => (
+                      <SimRadio
+                        key={tier.label}
+                        label={tier.label}
+                        checked={stickeeForm.releaseYear === tier.value}
+                        onClick={() => updateFilter('releaseYear', tier.value)}
+                      />
+                    ))}
+                  </SimFilterSection>
+                )}
+
+                {/* 13. Cashback */}
+                <SimFilterSection label="Cashback">
+                  {[
+                    { label: 'Excludes Cashback Deal', value: 'EXCLUDES' as const },
+                    { label: 'Includes Cashback Deal', value: 'INCLUDES' as const },
+                    { label: 'Only Cashback Deal', value: 'ONLY' as const },
+                  ].map((opt) => (
+                    <SimRadio
+                      key={opt.value}
+                      label={opt.label}
+                      checked={stickeeForm.cashbackOption === opt.value}
+                      onClick={() => updateFilter('cashbackOption', opt.value)}
+                    />
+                  ))}
+                </SimFilterSection>
+
+                {/* 14. Free Gift */}
+                <SimFilterSection label="Free Gift">
+                  {[
+                    { label: 'Any', value: 'ALL' as const },
+                    { label: 'With a Gift', value: 'WITH_GIFT' as const },
+                    { label: 'Without a Gift', value: 'WITHOUT_GIFT' as const },
+                  ].map((opt) => (
+                    <SimRadio
+                      key={opt.value}
+                      label={opt.label}
+                      checked={stickeeForm.mobileGiftOption === opt.value}
+                      onClick={() => updateFilter('mobileGiftOption', opt.value)}
+                    />
+                  ))}
+                </SimFilterSection>
+
+                {/* 15. Exclude Price Increases (from API facet price_increases) */}
+                {mobileFacets.price_increases?.includes(false) && (
+                  <SimFilterSection label="Price Increases">
+                    <SimCheckbox
+                      label="Exclude price increases"
+                      checked={stickeeForm.excludePriceIncreases}
+                      onClick={() =>
+                        updateFilter('excludePriceIncreases', !stickeeForm.excludePriceIncreases)
+                      }
+                    />
+                  </SimFilterSection>
+                )}
+
+                {/* 16. Storage / Internal Memory */}
+                {mobileFacets.internal_memories?.length > 0 && (
+                  <SimFilterSection label="Internal Memory">
+                    {mobileFacets.internal_memories.map((mem) => (
+                      <SimCheckbox
+                        key={mem}
+                        label={`${mem}GB`}
+                        checked={stickeeForm.memories.includes(mem)}
+                        onClick={() => toggleArrayFilter('memories', mem)}
+                      />
+                    ))}
+                  </SimFilterSection>
+                )}
+
+                {/* 17. Colours */}
+                {mobileFacets.colours?.length > 0 && (
+                  <SimFilterSection label="Colours">
+                    {mobileFacets.colours.map((col) => (
+                      <SimCheckbox
+                        key={col.id}
+                        label={col.name}
+                        checked={stickeeForm.colours.includes(col.id)}
+                        onClick={() => toggleArrayFilter('colours', col.id)}
+                      />
+                    ))}
+                  </SimFilterSection>
+                )}
+              </>
             )}
 
             {/* Toggle Button for All Filters */}
@@ -694,88 +979,6 @@ export default function ResultFilterSidebar({
                 </>
               )}
             </button>
-
-            {/* Extended Mobile Filters (Shown when showAllMobileFilters is true) */}
-            {showAllMobileFilters && (
-              <>
-                {/* 11. Exclude Price Increases (from API facet price_increases) */}
-                {mobileFacets.price_increases?.includes(false) && (
-                  <SimFilterSection label="Price Increases">
-                    <SimCheckbox
-                      label="Exclude price increases"
-                      checked={stickeeForm.excludePriceIncreases}
-                      onClick={() =>
-                        updateFilter('excludePriceIncreases', !stickeeForm.excludePriceIncreases)
-                      }
-                    />
-                  </SimFilterSection>
-                )}
-
-                {/* 12. Storage / Internal Memory */}
-                {mobileFacets.internal_memories?.length > 0 && (
-                  <SimFilterSection label="Internal Memory">
-                    {mobileFacets.internal_memories.map((mem) => (
-                      <SimCheckbox
-                        key={mem}
-                        label={`${mem}GB`}
-                        checked={stickeeForm.memories.includes(mem)}
-                        onClick={() => toggleArrayFilter('memories', mem)}
-                      />
-                    ))}
-                  </SimFilterSection>
-                )}
-
-                {/* 13. Colours */}
-                {mobileFacets.colours?.length > 0 && (
-                  <SimFilterSection label="Colours">
-                    {mobileFacets.colours.map((col) => (
-                      <SimCheckbox
-                        key={col.id}
-                        label={col.name}
-                        checked={stickeeForm.colours.includes(col.id)}
-                        onClick={() => toggleArrayFilter('colours', col.id)}
-                      />
-                    ))}
-                  </SimFilterSection>
-                )}
-
-                {/* 14. Gift Types */}
-                {mobileFacets.gift_types?.length > 0 && (
-                  <SimFilterSection label="Gift Types">
-                    {mobileFacets.gift_types.map((gift) => (
-                      <SimCheckbox
-                        key={gift.id}
-                        label={gift.name}
-                        checked={stickeeForm.giftTypes.includes(gift.id)}
-                        onClick={() => toggleArrayFilter('giftTypes', gift.id)}
-                      />
-                    ))}
-                  </SimFilterSection>
-                )}
-
-                {/* 15. 5G / 4G Network Capability */}
-                {mobileFacets.model_data_types?.length > 0 && (
-                  <SimFilterSection label="Mobile Network Generation">
-                    {[
-                      { label: 'All speeds (4G & 5G)', value: 'ALL' },
-                      ...(mobileFacets.model_data_types.includes('FIVE_G')
-                        ? [{ label: '5G enabled only', value: 'FIVE_G' }]
-                        : []),
-                      ...(mobileFacets.model_data_types.includes('FOUR_G')
-                        ? [{ label: '4G only', value: 'FOUR_G' }]
-                        : []),
-                    ].map((opt) => (
-                      <SimRadio
-                        key={opt.value}
-                        label={opt.label}
-                        checked={stickeeForm.fiveG === opt.value}
-                        onClick={() => updateFilter('fiveG', opt.value)}
-                      />
-                    ))}
-                  </SimFilterSection>
-                )}
-              </>
-            )}
           </>
         )}
 
@@ -859,20 +1062,27 @@ export default function ResultFilterSidebar({
               </SimFilterSection>
             )}
 
-            {/* Unlimited Mins & Texts */}
+            {/* Minutes & Texts */}
             <SimFilterSection label="Minutes & Texts">
-              <SimCheckbox
-                label="Unlimited mins & texts only"
-                checked={stickeeForm.unlimitedMinsTexts}
-                onClick={() => updateFilter('unlimitedMinsTexts', !stickeeForm.unlimitedMinsTexts)}
-              />
+              {[
+                { label: 'Any', value: 'ALL' as const },
+                { label: 'Unlimited Minutes', value: 'UNLIMITED_MINUTES' as const },
+                { label: 'Unlimited Text', value: 'UNLIMITED_TEXTS' as const },
+              ].map((opt) => (
+                <SimRadio
+                  key={opt.value}
+                  label={opt.label}
+                  checked={stickeeForm.minutesTextsOption === opt.value}
+                  onClick={() => updateFilter('minutesTextsOption', opt.value)}
+                />
+              ))}
             </SimFilterSection>
 
             {/* Resellers */}
             {mobileFacets.resellers?.length > 0 && (
               <SimFilterSection label="Resellers">
                 {[
-                  { label: 'All deals', value: 'ALL' },
+                  { label: 'Any deal', value: 'ALL' },
                   ...(mobileFacets.resellers.includes('EXCLUDE_RESELLERS')
                     ? [{ label: 'Direct from network only', value: 'EXCLUDE_RESELLERS' }]
                     : []),
