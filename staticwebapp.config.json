@@ -9,6 +9,16 @@
   },
   "routes": [
     {
+      "route": "/stickee/mobile",
+      "rewrite": "https://bill-goose.stickeemobiles.co.uk/graphql",
+      "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
+      "route": "/stickee/broadband",
+      "rewrite": "https://bill-goose.stickeebroadband.co.uk/graphql",
+      "allowedRoles": ["anonymous", "authenticated"]
+    },
+    {
       "route": "/journey",
       "rewrite": "/journey/index.html"
     },

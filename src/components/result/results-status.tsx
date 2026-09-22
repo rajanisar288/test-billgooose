@@ -1,11 +1,13 @@
-'use client';
-
 import { useEffect, useState } from 'react';
+
+import { useSearchParams } from 'next/navigation';
 
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 
+import { useResultFilters } from '@/components/result/result-filter-context';
 import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import data from '@/data/content.json';
+import { BROADBAND_SORTS, MOBILE_SORTS } from '@/lib/stickee/verticals';
 
 type ResultsStatusProps = {
   heading?: string;
@@ -21,6 +23,13 @@ export default function ResultsStatus({
   isLoading = false,
 }: ResultsStatusProps) {
   const { resultsStatus } = data.resultPage;
+  const searchParams = useSearchParams();
+  const service = searchParams.get('service');
+  const isBroadband = service === 'broadband';
+  const { stickeeFacets, sortKey, setSortKey, dealsCount, isDealsLoading } = useResultFilters();
+  const sortOptions = isBroadband ? BROADBAND_SORTS : MOBILE_SORTS;
+  const effectiveLoading = isLoading || isDealsLoading;
+  const effectiveCount = dealsCount ?? resultCount;
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(resultsStatus.planTabs.defaultValue);
 
@@ -102,7 +111,26 @@ export default function ResultsStatus({
               {heading ?? resultsStatus.heading}
             </h2>
 
-            {!isLoading && (
+            {effectiveLoading ? (
+              <p
+                className="
+                mt-1
+
+                font-inter
+
+                text-[11px]
+                font-normal
+                leading-[17px]
+
+                text-[#667085]
+
+                sm:text-[12px]
+                sm:leading-[18px]
+              "
+              >
+                <strong className="font-normal animate-pulse">Loading deals...</strong>
+              </p>
+            ) : (
               <p
                 className="
                 mt-1
@@ -124,7 +152,10 @@ export default function ResultsStatus({
                 ) : (
                   <>
                     <strong className="font-normal">
-                      {resultCount ?? resultsStatus.descriptionStart}
+                      {effectiveCount ??
+                        (isBroadband || service === 'sim-only'
+                          ? '...'
+                          : resultsStatus.descriptionStart)}
                     </strong>{' '}
                     {resultsStatus.descriptionRest}
                   </>
@@ -258,42 +289,44 @@ export default function ResultsStatus({
           </div>
 
           {/* SORT */}
-          <button
-            type="button"
-            className="
-              inline-flex
-              h-[32px]
-
-              items-center
-              justify-between
-
-              gap-2
-
-              rounded-[6px]
-
-              border
-              border-[#D0D5DD]
-
-              bg-white
-
-              px-3
-
-              font-inter
-
-              text-[10px]
-              font-normal
-
-              text-[#667085]
-
-              sm:text-[11px]
-            "
-          >
-            Recommended
+          <div className="relative inline-flex items-center">
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value)}
+              aria-label="Sort deals"
+              className="
+                h-[32px]
+                cursor-pointer
+                appearance-none
+                rounded-[6px]
+                border
+                border-[#D0D5DD]
+                bg-white
+                pl-3
+                pr-7
+                font-inter
+                text-[10px]
+                font-normal
+                text-[#667085]
+                outline-none
+                focus:border-[#00897B]
+                sm:text-[11px]
+              "
+            >
+              {Object.entries(sortOptions).map(([key, cfg]) => (
+                <option
+                  key={key}
+                  value={key}
+                >
+                  {cfg.label}
+                </option>
+              ))}
+            </select>
             <ChevronDown
               aria-hidden="true"
-              className="h-3 w-3"
+              className="pointer-events-none absolute right-2.5 h-3 w-3 text-[#667085]"
             />
-          </button>
+          </div>
         </div>
       </section>
 
@@ -465,6 +498,8 @@ export default function ResultsStatus({
               <ResultFilterSidebar
                 showBanner={false}
                 mobilePanel
+                facets={stickeeFacets}
+                isBroadband={isBroadband}
               />
             </div>
           </div>

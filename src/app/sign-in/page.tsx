@@ -675,6 +675,7 @@ export default function SignInPage() {
                                   placeholder="Enter your email address"
                                   value={email}
                                   onChange={setEmail}
+                                  disabled
                                 />
 
                                 <div className="mt-1 flex items-center justify-between">
@@ -1114,6 +1115,7 @@ type LoginFieldProps = {
   maxLength?: number;
   onChange: (value: string) => void;
   onBlur?: () => void;
+  disabled?: boolean;
 };
 
 function LoginField({
@@ -1127,6 +1129,7 @@ function LoginField({
   maxLength,
   onChange,
   onBlur,
+  disabled = false,
 }: LoginFieldProps) {
   return (
     <div>
@@ -1164,6 +1167,7 @@ function LoginField({
           onChange(event.target.value);
         }}
         aria-invalid={Boolean(error)}
+        disabled={disabled}
         aria-describedby={error ? `${id}-error` : undefined}
         className={`
           h-[46px]
@@ -1187,6 +1191,7 @@ function LoginField({
           shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
 
           outline-none
+          disabled:opacity-70
 
           transition
 

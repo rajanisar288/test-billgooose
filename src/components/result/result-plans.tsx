@@ -7,8 +7,18 @@ import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Check, ChevronRight, ExternalLink, Globe2, LoaderCircle, X } from 'lucide-react';
+import {
+  ArrowDownUp,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  LoaderCircle,
+  Plus,
+  X,
+} from 'lucide-react';
 
+import Loading from '@/app/loading';
 import BackendErrorAlert from '@/components/common/BackendErrorAlert';
 import { groupPlansIntoBundleSuppliers } from '@/components/result/bundle-mock-data';
 import BundlePlanCard, { type BundleSupplierData } from '@/components/result/bundle-plan-card';
@@ -27,8 +37,41 @@ import type { ResultFilterState } from '@/components/result/result-filter.types'
 import { readStoredSelectedPlans } from '@/components/result/selected-plans';
 import data from '@/data/content.json';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { isBroadbandDeal, isMobileDeal } from '@/lib/stickee/types';
+import { useStickeeDeals } from '@/lib/stickee/useStickeeDeals';
+import { BROADBAND_SORTS, MOBILE_SORTS, VERTICALS } from '@/lib/stickee/verticals';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
+
+function extractPromos(promos: unknown): string[] {
+  if (!promos) return [];
+  if (Array.isArray(promos)) {
+    return promos
+      .map((p) => {
+        if (typeof p === 'string') return p;
+        if (typeof p === 'object' && p !== null) {
+          const obj = p as Record<string, unknown>;
+          return (obj.title || obj.text || obj.name || obj.description || '') as string;
+        }
+        return String(p);
+      })
+      .filter(Boolean);
+  }
+  if (typeof promos === 'string') {
+    try {
+      const parsed = JSON.parse(promos);
+      return extractPromos(parsed);
+    } catch {
+      return [promos];
+    }
+  }
+  if (typeof promos === 'object' && promos !== null) {
+    return Object.values(promos as Record<string, unknown>)
+      .map((v) => (typeof v === 'string' ? v : JSON.stringify(v)))
+      .filter(Boolean);
+  }
+  return [];
+}
 
 type CompareService = 'energy' | 'bundle-bills' | 'broadband' | 'sim-only' | 'insurance';
 
@@ -207,7 +250,13 @@ export default function ResultPlans({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { journey, setJourney } = useJourneyStore();
-  const { filters: appliedFilters } = useResultFilters();
+  const {
+    filters: appliedFilters,
+    sortKey,
+    setSortKey,
+    setIsDealsLoading,
+    setDealsCount,
+  } = useResultFilters();
   const [actionError, setActionError] = useState<string>('');
   const [selectingPlanId, setSelectingPlanId] = useState<string | null>(null);
   const [isContinuingBundle, setIsContinuingBundle] = useState(false);
@@ -283,16 +332,182 @@ export default function ResultPlans({
     if (validStoredPlans.length === 0) sessionStorage.removeItem('journeySelectedPlan');
   }, [isBundleService, quoteLoading, quotePlans]);
 
-  const broadbandPlanItems = (plans.broadbandItems ?? []) as StandardPlan[];
+  const broadbandPlanItemsStatic = (plans.broadbandItems ?? []) as StandardPlan[];
 
-  const simOnlyPlanItems = (plans.simOnlyItems ?? []) as SimOnlyPlan[];
+  const simOnlyPlanItemsStatic = (plans.simOnlyItems ?? []) as SimOnlyPlan[];
 
-  /* =========================================================
-     INSURANCE RESULT DATA
+  const activeSortConfig = useMemo(() => {
+    if (service === 'broadband') {
+      const found = BROADBAND_SORTS[sortKey as keyof typeof BROADBAND_SORTS];
+      return found
+        ? { sort: found.sort, reverse: found.reverse }
+        : { sort: 'RECOMMENDED', reverse: false };
+    }
+    const found = MOBILE_SORTS[sortKey as keyof typeof MOBILE_SORTS];
+    return found
+      ? { sort: found.sort, reverse: found.reverse }
+      : { sort: 'RECOMMENDED', reverse: false };
+  }, [service, sortKey]);
 
-     Insurance uses content.json so the card content can be
-     maintained without changing this component.
-  ========================================================= */
+  const {
+    deals: simDeals,
+    facets: simFacets,
+    loading: simLoading,
+    isFetchingMore: simIsFetchingMore,
+    hasMorePages: simHasMore,
+    loadMore: simLoadMore,
+    error: simError,
+  } = useStickeeDeals({
+    vertical: 'mobile',
+    fixed: VERTICALS.mobile_simo.fixed as Record<string, unknown>,
+    filters: appliedFilters.stickeeFilters,
+    sort: activeSortConfig.sort,
+    reverse: activeSortConfig.reverse,
+    enabled: isSimOnly,
+  });
+
+  const stickeeSimPlans: SimOnlyPlan[] = useMemo(() => {
+    if (!simDeals?.length) return [];
+    return simDeals
+      .map((rawDeal): SimOnlyPlan | null => {
+        if (!isMobileDeal(rawDeal)) return null;
+        const deal = rawDeal;
+        const dataValue =
+          deal.tariff.data === -1 || deal.tariff.data >= 999999
+            ? 'Unlimited'
+            : `${(deal.tariff.data / 1000).toFixed(0)}GB`;
+
+        const badges: string[] = [];
+        if (deal.is_exclusive) badges.push('Exclusive');
+        else if (deal.cashback > 0) badges.push(`£${deal.cashback.toFixed(0)} Cashback`);
+
+        const contract =
+          deal.tariff.contract_length > 1
+            ? `${deal.tariff.contract_length} Months contract`
+            : '1 Month contract';
+        const totalCost =
+          deal.total_cost != null && deal.total_cost > 0
+            ? `£${deal.total_cost.toFixed(2)}`
+            : `£${(deal.price * (deal.tariff.contract_length || 1)).toFixed(2)}`;
+        const promos = extractPromos(deal.promos);
+
+        return {
+          id: deal.id,
+          type: 'sim-only' as const,
+          service: 'sim-only' as const,
+          provider: deal.tariff.network.name,
+          networkDescription: `${deal.tariff.network.name} Network`,
+          logo: deal.tariff.network.image,
+          logoAlt: deal.tariff.network.name,
+          badges,
+          data: dataValue,
+          priceLabel: 'Monthly cost',
+          price: `£${deal.price.toFixed(2)}/month`,
+          upfrontLabel: 'Upfront cost',
+          upfrontCost: deal.is_sim_only ? '£0' : `£${(deal.discount_line_rental ?? 0).toFixed(2)}`,
+          contract,
+          contractLength: deal.tariff.contract_length,
+          totalCost,
+          promos,
+          roamingText: 'EU Roaming included',
+          providerUrl: deal.url,
+          primaryButton: 'View Deal',
+          secondaryButton: 'More Info',
+        } satisfies SimOnlyPlan;
+      })
+      .filter((plan): plan is SimOnlyPlan => plan !== null);
+  }, [simDeals]);
+
+  const {
+    deals: bbDeals,
+    facets: bbFacets,
+    loading: bbLoading,
+    isFetchingMore: bbIsFetchingMore,
+    hasMorePages: bbHasMore,
+    loadMore: bbLoadMore,
+    error: bbError,
+  } = useStickeeDeals({
+    vertical: 'broadband',
+    fixed: VERTICALS.broadband.fixed as Record<string, unknown>,
+    filters: appliedFilters.stickeeFilters,
+    sort: activeSortConfig.sort,
+    reverse: activeSortConfig.reverse,
+    enabled: service === 'broadband',
+  });
+
+  const stickeeBroadbandPlans: StandardPlan[] = useMemo(() => {
+    if (!bbDeals?.length) return [];
+    const filterGifts = Boolean(appliedFilters.stickeeFilters?.gift);
+    return bbDeals
+      .map((rawDeal): StandardPlan | null => {
+        if (!isBroadbandDeal(rawDeal)) return null;
+        if (filterGifts && !rawDeal.gift) return null;
+        const deal = rawDeal;
+        const speed = deal.download_speed ? `${deal.download_speed} Mbps` : '';
+        const contract = `${deal.min_contract_length || 24} months`;
+        const setupCost =
+          (deal.delivery_price || 0) + (deal.connection_price || 0) + (deal.equipment_price || 0);
+        const setupStr = setupCost > 0 ? `£${setupCost.toFixed(2)} setup` : 'Free setup';
+        const connLabel = deal.connection_type
+          ? deal.connection_type
+              .replace(/_/g, ' ')
+              .toLowerCase()
+              .replace(/\b\w/g, (l) => l.toUpperCase())
+          : '';
+
+        const features = [
+          contract,
+          speed ? `${speed} avg. download` : '',
+          deal.upload_speed ? `${deal.upload_speed} Mbps upload` : '',
+          connLabel,
+          deal.bullet_1 || '',
+          deal.bullet_2 || '',
+          setupStr,
+        ].filter(Boolean);
+
+        const supplierName = deal.supplier?.name || 'Broadband Provider';
+        const supplierLogo = deal.supplier?.image || deal.supplier_image || '';
+
+        return {
+          id: deal.id,
+          type: 'view-deal' as const,
+          service: 'broadband' as const,
+          provider: supplierName,
+          supplierName: supplierName,
+          planName: deal.name || `${supplierName} Broadband`,
+          description: deal.name || `${speed} avg download · ${contract} contract`,
+          logo: supplierLogo,
+          logoAlt: supplierName,
+          rating: '',
+          contract,
+          averageSpeed: speed,
+          upfrontCost: setupStr,
+          features,
+          priceLabel: 'Monthly cost',
+          price: `£${deal.monthly_price.toFixed(2)}`,
+          pricePeriod: '/month',
+          saving: deal.gift || '',
+          claimText:
+            deal.gift ||
+            (deal.discount_price
+              ? `Save £${(deal.monthly_price - deal.discount_price).toFixed(2)}/mo`
+              : '') ||
+            'No setup fee',
+          providerUrl: deal.url,
+          broadband: deal,
+          viewDetailsButton: 'View Details',
+          primaryButton: 'View Deal',
+        } satisfies StandardPlan;
+      })
+      .filter((plan): plan is StandardPlan => plan !== null);
+  }, [bbDeals]);
+
+  const broadbandPlanItems: StandardPlan[] =
+    service === 'broadband' ? stickeeBroadbandPlans : broadbandPlanItemsStatic;
+
+  const simOnlyPlanItems: SimOnlyPlan[] = isSimOnly ? stickeeSimPlans : simOnlyPlanItemsStatic;
+
+  const stickeeFacets = isSimOnly ? simFacets : service === 'broadband' ? bbFacets : null;
 
   const insurancePlanItems = (plans.insuranceItems ?? []) as InsurancePlan[];
 
@@ -303,6 +518,34 @@ export default function ResultPlans({
   const filteredBroadbandPlanItems = filterStandardPlans(broadbandPlanItems, appliedFilters);
   const filteredSimOnlyPlanItems = filterSimOnlyPlans(simOnlyPlanItems, appliedFilters);
   const filteredInsurancePlanItems = filterStandardPlans(insurancePlanItems, appliedFilters);
+
+  const stickeeLoading = (isSimOnly && simLoading) || (service === 'broadband' && bbLoading);
+  const stickeeError = (isSimOnly && simError) || (service === 'broadband' && bbError);
+
+  useEffect(() => {
+    const isLoading = isSimOnly ? simLoading : service === 'broadband' ? bbLoading : quoteLoading;
+    setIsDealsLoading(isLoading);
+    if (!isLoading) {
+      const count = isSimOnly
+        ? simOnlyPlanItems.length
+        : service === 'broadband'
+          ? broadbandPlanItems.length
+          : (resultCount ?? quotePlans?.length ?? null);
+      setDealsCount(count);
+    }
+  }, [
+    isSimOnly,
+    service,
+    simLoading,
+    bbLoading,
+    quoteLoading,
+    simOnlyPlanItems.length,
+    broadbandPlanItems.length,
+    resultCount,
+    quotePlans?.length,
+    setIsDealsLoading,
+    setDealsCount,
+  ]);
 
   const [selectedPlanTab, setSelectedPlanTab] = useState(
     isInsurance ? 'monthly' : resultsStatus.planTabs.defaultValue,
@@ -741,6 +984,39 @@ export default function ResultPlans({
 
   const renderCards = () => {
     if (isSimOnly) {
+      if (stickeeLoading) {
+        return (
+          <div className="my-4 w-full overflow-hidden rounded-[16px] border border-[#EAECF0]">
+            <Loading />
+          </div>
+        );
+      }
+
+      if (stickeeError) {
+        return (
+          <div className="flex bg-white justify-center items-center h-[200px] w-full">
+            <p className="rounded-[16px] bg-white p-6 text-[#D92D20]">
+              {typeof stickeeError === 'string'
+                ? stickeeError
+                : 'Unable to load deals at this time. Please try again.'}
+            </p>
+          </div>
+        );
+      }
+
+      if (filteredSimOnlyPlanItems.length === 0) {
+        return (
+          <div className="flex bg-white justify-center items-center h-[200px] w-full">
+            <p className="rounded-[16px] bg-white p-6 text-[#667085]">
+              No plans match your filters.
+            </p>
+            <p className="rounded-[16px] bg-white p-6 text-[#667085]">
+              No plans match your filters.
+            </p>
+          </div>
+        );
+      }
+
       return filteredSimOnlyPlanItems.map((plan) => (
         <SimOnlyCard
           key={plan.id}
@@ -755,12 +1031,30 @@ export default function ResultPlans({
       ));
     }
 
-    if (quoteLoading) {
+    if (service === 'broadband' && stickeeLoading) {
+      return (
+        <div className="my-4 w-full overflow-hidden rounded-[16px] border border-[#EAECF0]">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (service === 'broadband' && stickeeError) {
       return (
         <div className="flex bg-white justify-center items-center h-[200px] w-full">
-          <p className="flex rounded-[16px] p-6 text-[#667085]">
-            <LoaderCircle className="w-8 h-8 animate-spin" />
+          <p className="rounded-[16px] bg-white p-6 text-[#D92D20]">
+            {typeof stickeeError === 'string'
+              ? stickeeError
+              : 'Unable to load broadband deals at this time. Please try again.'}
           </p>
+        </div>
+      );
+    }
+
+    if (quoteLoading) {
+      return (
+        <div className="my-4 w-full overflow-hidden rounded-[16px] border border-[#EAECF0]">
+          <Loading />
         </div>
       );
     }
@@ -780,6 +1074,39 @@ export default function ResultPlans({
     ) : (
       <div className="flex bg-white justify-center items-center h-[200px] w-full">
         <p className="rounded-[16px] bg-white p-6 text-[#667085]">No plans match your filters.</p>
+      </div>
+    );
+  };
+
+  const renderLoadMoreButton = () => {
+    const hasMore = (service === 'broadband' && bbHasMore) || (isSimOnly && simHasMore);
+    const isFetching = isSimOnly ? simIsFetchingMore : bbIsFetchingMore;
+
+    if (!hasMore) return null;
+
+    return (
+      <div className="mt-8 flex w-full justify-center">
+        <button
+          type="button"
+          disabled={isFetching}
+          onClick={() => {
+            if (isSimOnly) simLoadMore();
+            else bbLoadMore();
+          }}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D0D5DD] bg-white px-6 font-inter text-[14px] font-semibold text-[#344054] shadow-sm hover:bg-[#F9FAFB] disabled:opacity-60 transition-colors"
+        >
+          {isFetching ? (
+            <>
+              <LoaderCircle className="h-4 w-4 animate-spin text-[#00897B]" />
+              Loading deals...
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4 text-[#344054]" />
+              Load More Deals
+            </>
+          )}
+        </button>
       </div>
     );
   };
@@ -830,6 +1157,7 @@ export default function ResultPlans({
             "
           >
             {renderCards()}
+            {renderLoadMoreButton()}
           </div>
         </div>
 
@@ -849,7 +1177,12 @@ export default function ResultPlans({
             xl:gap-6
           "
         >
-          <ResultFilterSidebar />
+          <ResultFilterSidebar
+            facets={stickeeFacets}
+            isBroadband={service === 'broadband'}
+            isSimOnly={isSimOnly}
+            isLoading={stickeeLoading}
+          />
 
           <div className="min-w-0 w-full">
             {/* ===============================================
@@ -882,7 +1215,11 @@ export default function ResultPlans({
                   {heading ?? resultsStatus.heading}
                 </h2>
 
-                {!quoteLoading && (
+                {quoteLoading || stickeeLoading ? (
+                  <p className="mt-1 font-inter text-[15px] font-normal leading-5 text-[#667085]">
+                    <strong className="font-normal animate-pulse">Loading deals...</strong>
+                  </p>
+                ) : (
                   <p
                     className="
                     mt-1
@@ -913,10 +1250,15 @@ export default function ResultPlans({
                         <strong className="font-normal">{insurancePlanItems.length} quotes</strong>{' '}
                         sorted with lowest first.
                       </>
+                    ) : service === 'broadband' ? (
+                      <>
+                        <strong className="font-normal">{broadbandPlanItems.length} plans</strong>{' '}
+                        found based on your preferences.
+                      </>
                     ) : (
                       <>
                         <strong className="font-normal">
-                          {resultCount ?? resultsStatus.descriptionStart}
+                          {resultCount ?? quotePlans?.length ?? resultsStatus.descriptionStart}
                         </strong>{' '}
                         {resultsStatus.descriptionRest}
                       </>
@@ -982,7 +1324,7 @@ export default function ResultPlans({
               </div>
 
               {/* SORT */}
-              {/* <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <div className="flex items-center gap-1.5">
                   <ArrowDownUp
                     aria-hidden="true"
@@ -1003,47 +1345,54 @@ export default function ResultPlans({
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  className="
-                    inline-flex
-                    h-[34px]
-                    min-w-[135px]
-
-                    items-center
-                    justify-between
-
-                    gap-2
-
-                    rounded-[6px]
-
-                    border
-                    border-[#D0D5DD]
-
-                    bg-white
-
-                    px-3
-
-                    font-inter
-
-                    text-[13px]
-                    font-[660]
-                    leading-5
-
-                    text-[#667085]
-                  "
-                >
-                  Recommended
+                <div className="relative inline-flex items-center">
+                  <select
+                    value={sortKey}
+                    onChange={(e) => setSortKey(e.target.value)}
+                    aria-label="Sort deals"
+                    className="
+                      h-[34px]
+                      min-w-[150px]
+                      cursor-pointer
+                      appearance-none
+                      rounded-[6px]
+                      border
+                      border-[#D0D5DD]
+                      bg-white
+                      pl-3
+                      pr-8
+                      font-inter
+                      text-[13px]
+                      font-[600]
+                      text-[#344054]
+                      outline-none
+                      focus:border-[#00897B]
+                      shadow-[0px_1px_2px_rgba(16,24,40,0.05)]
+                    "
+                  >
+                    {Object.entries(service === 'broadband' ? BROADBAND_SORTS : MOBILE_SORTS).map(
+                      ([key, cfg]) => (
+                        <option
+                          key={key}
+                          value={key}
+                        >
+                          {cfg.label}
+                        </option>
+                      ),
+                    )}
+                  </select>
                   <ChevronDown
                     aria-hidden="true"
-                    className="h-4 w-4"
-                    strokeWidth={1.8}
+                    className="pointer-events-none absolute right-2.5 h-4 w-4 text-[#667085]"
                   />
-                </button>
-              </div> */}
+                </div>
+              </div>
             </div>
 
-            <div className="min-w-0 space-y-3">{renderCards()}</div>
+            <div className="min-w-0 space-y-3">
+              {renderCards()}
+              {renderLoadMoreButton()}
+            </div>
           </div>
         </div>
       </section>
@@ -1916,17 +2265,33 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
         />
 
         <SimMetric
-          label={plan.priceLabel}
-          value={plan.price}
+          label="Monthly Contract"
+          value={
+            plan?.contract ||
+            `${plan?.contractLength || 12} ${plan?.contractLength && plan?.contractLength > 1 ? 'Months' : 'Month'} contract`
+          }
         />
 
         <SimMetric
-          label={plan.upfrontLabel}
-          value={plan.upfrontCost}
+          label="Cost"
+          value={plan.totalCost || plan.price}
         />
       </div>
 
-      <div className="flex items-center gap-2 px-3 pb-3 sm:px-4 sm:pb-4">
+      {plan.promos && plan.promos.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 px-3 pb-3 sm:px-4 sm:pb-4">
+          {plan.promos.map((promo, idx) => (
+            <span
+              key={idx}
+              className="inline-flex items-center gap-1 rounded-[4px] border border-[#FECDCA] bg-[#FEF3F2] px-2 py-0.5 font-red-hat-display text-[11px] font-semibold text-[#B42318]"
+            >
+              ★ {promo}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* <div className="flex items-center gap-2 px-3 pb-3 sm:px-4 sm:pb-4">
         <Globe2
           aria-hidden="true"
           className="
@@ -1949,7 +2314,7 @@ function SimOnlyCard({ plan, onViewDeal, onMoreInfo }: SimOnlyCardProps) {
         >
           {plan.roamingText}
         </p>
-      </div>
+      </div> */}
     </article>
   );
 }

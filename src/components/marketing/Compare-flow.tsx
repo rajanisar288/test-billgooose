@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ import data from '@/data/content.json';
 import { MoveStatus, type Address, type Journey } from '@/interfaces/shared';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
 import { serviceRequiresConsumption, useServiceFields } from '@/lib/service-fields';
+import { fetchStickeeDeals } from '@/lib/stickee/client';
 import { useJourneyStore } from '@/store/journeyStore';
 import { getCurrentRelativeUrl } from '@/utils/helper';
 
@@ -120,6 +121,52 @@ export default function CompareFlow() {
     selectedService === 'broadband' && Boolean(currentProvider) && !hasNoCurrentProvider;
 
   const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
+
+  const [broadbandSuppliers, setBroadbandSuppliers] = useState<
+    Array<{ id: string; label: string; value: string; image?: string }>
+  >([]);
+
+  useEffect(() => {
+    if (requestedService !== 'broadband' && selectedService !== 'broadband') return;
+
+    let isMounted = true;
+    fetchStickeeDeals({ vertical: 'broadband', first: 1 })
+      .then((res) => {
+        if (!isMounted) return;
+        const facets = res.deal_filters;
+        if ('suppliers' in facets && Array.isArray(facets.suppliers)) {
+          const dynamicOptions = facets.suppliers.map((s) => ({
+            id: s.id,
+            label: s.name,
+            value: s.name.toLowerCase().replace(/\s+/g, '-'),
+            image: s.image,
+          }));
+          setBroadbandSuppliers(dynamicOptions);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load dynamic broadband suppliers:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [requestedService, selectedService]);
+
+  type ProviderOption = { id: string; label: string; value: string; image?: string };
+
+  const broadbandProviderOptions: ProviderOption[] = useMemo(() => {
+    const staticOptions = compareFlow.form.broadband.currentProvider.options as ProviderOption[];
+    if (broadbandSuppliers.length === 0) {
+      return staticOptions;
+    }
+
+    const specialOptions = staticOptions.filter(
+      (opt) => opt.value === 'no-current-provider' || opt.value === 'other',
+    );
+
+    return [...broadbandSuppliers, ...specialOptions];
+  }, [broadbandSuppliers, compareFlow.form.broadband.currentProvider.options]);
 
   /* =========================================================
      INSURANCE STATE
@@ -1789,9 +1836,9 @@ export default function CompareFlow() {
                     >
                       <span className={currentProvider ? 'text-[#101828]' : 'text-[#667085]'}>
                         {currentProvider
-                          ? compareFlow.form.broadband.currentProvider.options.find(
-                              (option) => option.value === currentProvider,
-                            )?.label
+                          ? broadbandProviderOptions.find(
+                              (option: ProviderOption) => option.value === currentProvider,
+                            )?.label || currentProvider
                           : compareFlow.form.broadband.currentProvider.placeholder}
                       </span>
 
@@ -1814,7 +1861,7 @@ export default function CompareFlow() {
 
                     {providerDropdownOpen && (
                       <DropdownPanel>
-                        {compareFlow.form.broadband.currentProvider.options.map((provider) => {
+                        {broadbandProviderOptions.map((provider: ProviderOption) => {
                           const isSelected = currentProvider === provider.value;
 
                           return (
