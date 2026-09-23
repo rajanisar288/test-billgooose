@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, LoaderCircle } from 'lucide-react';
 
 import type { CompareResultService, StandardPlan } from '@/components/result/plan.types';
 import data from '@/data/content.json';
+import { trackSelectPlan } from '@/lib/gtm';
 
 type PlanCardProps = {
   plan: StandardPlan;
@@ -35,6 +36,13 @@ export default function PlanCard({
   const isInsurance = service === 'insurance';
 
   const handleSelectPlan = () => {
+    trackSelectPlan({
+      planName: plan.planName || plan.provider,
+      provider: plan.provider,
+      service,
+      price: plan.price,
+      planId: plan.id,
+    });
     onSelectPlan(plan);
   };
 

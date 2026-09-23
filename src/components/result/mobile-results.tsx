@@ -15,6 +15,7 @@ import ResultFilterSidebar from '@/components/result/result-filter-sidebar';
 import ResultFilters from '@/components/result/result-filters';
 import ResultHero from '@/components/result/result-hero';
 import data from '@/data/content.json';
+import { trackSelectPlan } from '@/lib/gtm';
 import { isMobileDeal, type StickeeDeal } from '@/lib/stickee/types';
 import { useStickeeDeals } from '@/lib/stickee/useStickeeDeals';
 import { MOBILE_SORTS, VERTICALS } from '@/lib/stickee/verticals';
@@ -213,6 +214,15 @@ export default function MobileResults() {
 
   const handleBuyNow = (deal: StickeeDeal) => {
     if (!deal.url) return;
+
+    const plan = convertDealToPlan(deal);
+    trackSelectPlan({
+      planName: plan.planName || plan.provider,
+      provider: plan.provider,
+      service: 'mobile',
+      price: plan.price,
+      planId: plan.id,
+    });
 
     sessionStorage.setItem('journeySelectedPlan', JSON.stringify(deal));
     sessionStorage.setItem('externalRedirectUrl', deal.url);

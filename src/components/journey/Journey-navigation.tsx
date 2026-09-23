@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, LoaderCircle } from 'lucide-react';
 
 import data from '@/data/content.json';
+import { trackJourneyStep } from '@/lib/gtm';
 
 import { JOURNEY_STEP_STATUS_EVENT, JOURNEY_STEP_SUBMIT_FAILED_EVENT } from './journey-step-status';
 
@@ -66,6 +67,11 @@ export default function JourneyNavigation({
 
       if (form.id === formId && form.dataset.journeyValid === 'true') {
         setIsSubmitting(true);
+        trackJourneyStep({
+          currentStep,
+          totalSteps,
+          service,
+        });
       }
     };
 
@@ -74,7 +80,7 @@ export default function JourneyNavigation({
     return () => {
       document.removeEventListener('submit', handleSubmit, true);
     };
-  }, [formId]);
+  }, [currentStep, formId, service, totalSteps]);
 
   // Safety timeout to prevent button getting permanently stuck in loading state
   useEffect(() => {

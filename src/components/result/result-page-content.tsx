@@ -15,6 +15,7 @@ import ResultHero from '@/components/result/result-hero';
 import ResultPlans from '@/components/result/result-plans';
 import ResultsStatus from '@/components/result/results-status';
 import { journeyApi } from '@/lib/api/endpoints/journey.api';
+import { trackQuoteResults } from '@/lib/gtm';
 import { useJourneyStore } from '@/store/journeyStore';
 
 export default function ResultPageContent() {
@@ -82,8 +83,15 @@ export default function ResultPageContent() {
           isBundleFlow ? 'bundle-bills' : 'energy',
         ) as ResultPlan[];
 
+        const count = response.data.totalProducts ?? mappedPlans.length;
         setQuotePlans(mappedPlans);
-        setQuoteProductCount(response.data.totalProducts ?? mappedPlans.length);
+        setQuoteProductCount(count);
+
+        trackQuoteResults({
+          service: service || (isBundleFlow ? 'bundle-bills' : 'energy'),
+          count,
+          journeyId,
+        });
       } catch (error) {
         setQuoteError(
           error &&

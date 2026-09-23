@@ -16,4 +16,8 @@ export const config = {
     defaultPage: 1,
     defaultLimit: 20,
   },
+
+  gtm: {
+    id: process.env.NEXT_PUBLIC_GTM_ID || '',
+  },
 } as const;
