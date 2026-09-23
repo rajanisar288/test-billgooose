@@ -26,7 +26,7 @@ const PROD_ENDPOINTS: Record<EndpointKey, string> = {
   // mobile: process.env.NEXT_PUBLIC_STICKEE_MOBILE_URL ?? '/stickee/mobile',
   // broadband: process.env.NEXT_PUBLIC_STICKEE_BROADBAND_URL ?? '/stickee/broadband',
     mobile: 'https://bill-goose.stickeemobiles.co.uk/graphql',
-  broadband: 'https://bill-goose.stickeemobiles.co.uk/graphql'
+  broadband: 'http://bill-goose.stickeebroadband.co.uk/graphql'
 };
 
 const ENDPOINTS = process.env.NODE_ENV === 'production' ? PROD_ENDPOINTS : DEV_ENDPOINTS;
